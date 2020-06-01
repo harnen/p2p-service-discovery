@@ -1,4 +1,5 @@
 VER=1.0.4
+LIB_JARS=`find -L . -name "*.jar" | tr [:space:] :`
 
 .PHONY: all clean doc release
 
@@ -66,3 +67,7 @@ release: clean all docnew
 	mv peersim-$(VER).jar peersim-$(VER)
 	cp jep-2.3.0.jar peersim-$(VER)
 	cp djep-1.0.0.jar peersim-$(VER)
+
+run:
+	java -Xmx500m -cp $(LIB_JARS):src peersim.Simulator example.cfg
+
