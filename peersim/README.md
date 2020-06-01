@@ -1,5 +1,4 @@
-Mon Sep 28 13:26:01 CEST 2009
-This is version 1.0.5 of the Peersim high level P2P network simulator.
+# Peersim implementation of Service discovery
 
 This archive is composed of:
 - the doc/ directory containing the javadoc-generated documentation
@@ -11,16 +10,14 @@ This archive is composed of:
   JEP is needed by the peersim core; it is distributed under
   the GNU General Public License (GPL)
 
-To run the examples, you need java 5 installed, and then type:
 
 java -cp "peersim-1.0.5.jar:jep-2.3.0.jar:djep-1.0.0.jar" peersim.Simulator example/config-example1.txt
 
-in the directory of this README file in the extracted archive.
-On a Windows system, substitute ':' with ';' in the classpath string.
+(PeerSim website)[http://peersim.sourceforge.net/]
 
-For more information and documentation visit the Peersim site at
-sourceforge:
+## Kademlia 
+We've added a Kademlia implementation (`src/peersim/kademlia`). It should compile automatically when invoking `make`. 
 
-http://peersim.sourceforge.net/
+To run a Kademlia example run `make run`.
 
 
