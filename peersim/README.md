@@ -18,6 +18,6 @@ java -cp "peersim-1.0.5.jar:jep-2.3.0.jar:djep-1.0.0.jar" peersim.Simulator exam
 ## Kademlia 
 We've added a Kademlia implementation (`src/peersim/kademlia`). It should compile automatically when invoking `make`. 
 
-To run a Kademlia example run `make run`. Documentation is available in [docs](./doc/kademlia_manual.pdf)
+To run a Kademlia example run `make run`. Documentation is available in [docs](./doc/kademlia.pdf)
 
 
