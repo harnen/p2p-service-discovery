@@ -13,11 +13,11 @@ This archive is composed of:
 
 java -cp "peersim-1.0.5.jar:jep-2.3.0.jar:djep-1.0.0.jar" peersim.Simulator example/config-example1.txt
 
-(PeerSim website)[http://peersim.sourceforge.net/]
+[PeerSim website](http://peersim.sourceforge.net/)
 
 ## Kademlia 
 We've added a Kademlia implementation (`src/peersim/kademlia`). It should compile automatically when invoking `make`. 
 
-To run a Kademlia example run `make run`.
+To run a Kademlia example run `make run`. Documentation is available in [docs](./doc/kademlia_manual.pdf)
 
 
