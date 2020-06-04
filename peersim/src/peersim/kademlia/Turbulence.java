@@ -148,7 +148,7 @@ public class Turbulence implements Control {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
 		} while ((start == null) || (!start.isUp()));
 
-		// create auto-search message (searc message with destination my own Id)
+		// create auto-search message (search message with destination my own Id)
 		Message m = Message.makeFindNode("Bootstrap traffic");
 		m.timestamp = CommonState.getTime();
 		m.dest = newKad.nodeId;

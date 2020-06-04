@@ -110,7 +110,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	}
 
 	/**
-	 * Search through the network the Node having a specific node Id, by performing binary serach (we concern about the ordering
+	 * Search through the network the Node having a specific node Id, by performing binary search (we concern about the ordering
 	 * of the network).
 	 * 
 	 * @param searchNodeId
@@ -152,7 +152,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 	/**
 	 * Perform the required operation upon receiving a message in response to a ROUTE message.<br>
-	 * Update the find operation record with the closest set of neighbour received. Than, send as many ROUTE request I can
+	 * Update the find operation record with the closest set of neighbour received. Then, send as many ROUTE request I can
 	 * (according to the ALPHA parameter).<br>
 	 * If no closest neighbour available and no outstanding messages stop the find operation.
 	 * 

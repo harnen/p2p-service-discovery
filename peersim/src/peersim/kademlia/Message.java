@@ -4,15 +4,15 @@ import java.math.BigInteger;
 
 /**
  * 
- * Message class provide all functionalities to magage the various messages, principally LOOKUP messages (messages from
- * application level sender destinated to another application level).<br>
+ * Message class provide all functionalities to manage the various messages, principally LOOKUP messages (messages from
+ * application level sender destined to another application level).<br>
  * 
  * Types Of messages:<br>
  * (application messages)<BR>
- * - MSG_LOOKUP: indicates that the body Object containes information to application level of the recipient<BR>
+ * - MSG_LOOKUP: indicates that the body Object contains information to application level of the recipient<BR>
  * <br>
  * (service internal protocol messages)<br>
- * - MSG_JOINREQUEST: message containing a join request of a node, the message is passed between many pastry nodes accorting to
+ * - MSG_JOINREQUEST: message containing a join request of a node, the message is passed between many pastry nodes according to
  * the protocol<br>
  * - MSG_JOINREPLY: according to protocol, the body transport information related to a join reply message <br>
  * - MSG_LSPROBEREQUEST:according to protocol, the body transport information related to a probe request message <br>
