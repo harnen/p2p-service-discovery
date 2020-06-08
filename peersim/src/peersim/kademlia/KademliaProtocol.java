@@ -161,7 +161,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void route(Message m, int myPid) {
+	private void find(Message m, int myPid) {
 		// add message source to my routing table
 		if (m.src != null) {
 			routingTable.addNeighbour(m.src);
@@ -185,7 +185,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 				if (neighbour != null) {
 					// create a new request to send to neighbour
-					Message request = new Message(Message.MSG_ROUTE);
+					Message request = new Message(Message.MSG_FIND);
 					request.operationId = m.operationId;
 					request.src = this.nodeId;
 					request.dest = m.dest;
@@ -227,7 +227,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void routeResponse(Message m, int myPid) {
+	private void replyFind(Message m, int myPid) {
 		// get the ALPHA closest node to destNode
 		BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, m.src);
 		/*System.out.print("Including neigbours");
@@ -257,7 +257,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void find(Message m, int myPid) {
+	private void initFind(Message m, int myPid) {
 
 		KademliaObserver.find_op.add(1);
 
@@ -273,13 +273,12 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		// set message operation id
 		m.operationId = fop.operationId;
-		m.type = Message.MSG_ROUTE;
+		m.type = Message.MSG_FIND;
 		m.src = this.nodeId;
 
 		// send ALPHA messages
 		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
 			BigInteger nextNode = fop.getNeighbour();
-			System.out.println("Sending request to neighbour " + nextNode);
 			if (nextNode != null) {
 				sendMessage(m.copy(), nextNode, myPid);
 				fop.nrHops++;
@@ -305,10 +304,12 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		Node src = nodeIdtoNode(this.nodeId);
 		Node dest = nodeIdtoNode(destId);
 
+		System.out.println(this.nodeId + " (" + m.messageTypetoString() + "/" + m.id + ") -> " + destId);
+
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		transport.send(src, dest, m, kademliaid);
 
-		if (m.getType() == Message.MSG_ROUTE) { // is a request
+		if (m.getType() == Message.MSG_FIND) { // is a request
 			Timeout t = new Timeout(destId, m.id, m.operationId);
 			long latency = transport.getLatency(src, dest);
 
@@ -333,10 +334,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// Parse message content Activate the correct event manager fot the particular event
 		this.kademliaid = myPid;
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT){
-			Message received = (Message) event;
-			System.out.println("Node " + nodeId + " received an event: " + event + " from " + received.src);
-		}else{
-			System.out.println("Node " + nodeId + " received a timeout: " + event);
+			Message m = (Message) event;
+			//System.out.println("Node " + nodeId + " received an event: " + received.messageTypetoString() + " ID: " + received.id + " from " + received.src);
+			System.out.println(nodeId + "<- (" + m.messageTypetoString() + "/" + m.id + ") " + m.src);
 		}
 
 		Message m;
@@ -346,17 +346,17 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			case Message.MSG_RESPONSE:
 				m = (Message) event;
 				sentMsg.remove(m.ackId);
-				route(m, myPid);
-				break;
-
-			case Message.MSG_FINDNODE:
-				m = (Message) event;
 				find(m, myPid);
 				break;
 
-			case Message.MSG_ROUTE:
+			case Message.MSG_INIT_FIND:
 				m = (Message) event;
-				routeResponse(m, myPid);
+				initFind(m, myPid);
+				break;
+
+			case Message.MSG_FIND:
+				m = (Message) event;
+				replyFind(m, myPid);
 				break;
 
 			case Message.MSG_EMPTY:
@@ -370,6 +370,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			case Timeout.TIMEOUT: // timeout
 				Timeout t = (Timeout) event;
 				if (sentMsg.containsKey(t.msgID)) { // the response msg isn't arrived
+					System.out.println("Node " + nodeId + " received a timeout: " + t.msgID + " from: " + t.node);
 					// remove form sentMsg
 					sentMsg.remove(t.msgID);
 					// remove node from my routing table
@@ -381,7 +382,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					m1.operationId = t.opID;
 					m1.src = nodeId;
 					m1.dest = this.findOp.get(t.opID).destNode;
-					this.route(m1, myPid);
+					this.find(m1, myPid);
 				}
 				break;
 

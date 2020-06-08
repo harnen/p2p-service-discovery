@@ -44,12 +44,12 @@ public class Message extends SimpleEvent {
 	/**
 	 * Message Type: FINDNODE (message regarding node find)
 	 */
-	public static final int MSG_FINDNODE = 2;
+	public static final int MSG_INIT_FIND = 2;
 
 	/**
 	 * Message Type: FINDVALUE (message regarding value find)
 	 */
-	public static final int MSG_ROUTE = 3;
+	public static final int MSG_FIND = 3;
 
 	/**
 	 * Message Type: RESPONSE (respons message to a findvalue or findnode)
@@ -147,7 +147,7 @@ public class Message extends SimpleEvent {
 	 * @return Message
 	 */
 	public static final Message makeFindNode(Object body) {
-		return new Message(MSG_FINDNODE, body);
+		return new Message(MSG_INIT_FIND, body);
 	}
 
 	// ______________________________________________________________________________________________
@@ -187,10 +187,10 @@ public class Message extends SimpleEvent {
 				return "MSG_EMPTY";
 			case MSG_STORE:
 				return "MSG_STORE";
-			case MSG_FINDNODE:
-				return "MSG_FINDNODE";
-			case MSG_ROUTE:
-				return "MSG_ROUTE";
+			case MSG_INIT_FIND:
+				return "MSG_INIT_FIND";
+			case MSG_FIND:
+				return "MSG_FIND";
 			case MSG_RESPONSE:
 				return "MSG_RESPONSE";
 			default:

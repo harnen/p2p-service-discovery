@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 /**
- * Gives an implementation for the rounting table component of a kademlia node
+ * Gives an implementation for the routing table component of a kademlia node
  * 
  * @author Daniele Furlan, Maurizio Bonani
  * @version 1.0
