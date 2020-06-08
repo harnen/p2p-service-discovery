@@ -220,7 +220,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 	/**
 	 * Response to a route request.<br>
-	 * Find the ALPHA closest node consulting the k-buckets and return them to the sender.
+	 * Respond with the peers in your k-bucket closest to the key that is being looked for
 	 * 
 	 * @param m
 	 *            Message
@@ -230,6 +230,12 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	private void routeResponse(Message m, int myPid) {
 		// get the ALPHA closest node to destNode
 		BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, m.src);
+		/*System.out.print("Including neigbours");
+		for(BigInteger n : neighbours){
+			System.out.print(", " + n);
+		}
+		System.out.println();*/
+
 
 		// create a response message containing the neighbours (with the same id of the request)
 		Message response = new Message(Message.MSG_RESPONSE, neighbours);
@@ -273,6 +279,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// send ALPHA messages
 		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
 			BigInteger nextNode = fop.getNeighbour();
+			System.out.println("Sending request to neighbour " + nextNode);
 			if (nextNode != null) {
 				sendMessage(m.copy(), nextNode, myPid);
 				fop.nrHops++;
@@ -282,7 +289,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	}
 
 	/**
-	 * send a message with current transport layer and starting the timeout timer (wich is an event) if the message is a request
+	 * send a message with current transport layer and starting the timeout timer (which is an event) if the message is a request
 	 * 
 	 * @param m
 	 *            the message to send
@@ -325,6 +332,12 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		// Parse message content Activate the correct event manager fot the particular event
 		this.kademliaid = myPid;
+		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT){
+			Message received = (Message) event;
+			System.out.println("Node " + nodeId + " received an event: " + event + " from " + received.src);
+		}else{
+			System.out.println("Node " + nodeId + " received a timeout: " + event);
+		}
 
 		Message m;
 

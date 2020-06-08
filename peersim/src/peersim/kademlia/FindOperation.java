@@ -122,7 +122,7 @@ public class FindOperation {
 	}
 
 	/**
-	 * get the first neighbour in closest set wich has not been already queried
+	 * get the first neighbour in closest set which has not been already queried
 	 * 
 	 * @return the Id of the node or null if there aren't available node
 	 */

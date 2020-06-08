@@ -23,6 +23,8 @@ public class TrafficGenerator implements Control {
 	 */
 	private final static String PAR_PROT = "protocol";
 
+	private boolean first = true;
+
 	/**
 	 * MSPastry Protocol ID to act
 	 */
@@ -61,6 +63,12 @@ public class TrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
+		//first = false;
+		if(!first){
+			return false;
+		}
+		first = false;
+		System.out.println("Execute called");
 		Node start;
 		do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
