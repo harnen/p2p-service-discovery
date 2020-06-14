@@ -10,7 +10,10 @@ Below is described the steps of the discovery process for DEVP2P to establish RL
 * Once a new node is started, preconfigured bootstrap nodes are stored in the local table and 3 random lookups are performed to fill up the table.
 * Results from lookups are stored in a bucket size buffer ordered by distance to the target.
 * Every time there is an empty slot in the connections list, a node is read from the buffer (and consumed) and a new connection is started. If the buffer is empty the process waits for the buffer to be filled again.
-* If the buffer is empty a lookup to random node is performed and the buffer filled with the random walk results according to the following process https://github.com/ethereum/devp2p/blob/master/discv4.md
+* If the buffer is empty a lookup to random node is performed and the buffer filled with the random walk results according to the following. The lookup initiator starts by picking `α` closest nodes to the target it knows of. The initiator then sends concurrent `FINDNODE` packets to those nodes. `α` is a system-wide concurrency parameter, such as `3`. In the recursive step, the initiator resends `FINDNODE` to nodes it has learned about from previous queries. Of the `k` nodes the initiator has heard of closest to the target, it picks `α` that it has not yet queried and resends `FINDNODE` to them. Nodes that fail to respond quickly are removed from consideration until and unless they do respond. If a round of `FINDNODE` queries fails to return a node any closer than the closest already seen, the initiator resends the find node to all of the `k` closest nodes it has not already queried. The lookup terminates when the initiator has queried and gotten responses from the `k` closest nodes it has seen.
+
+
+
 
 ### Discovery table
 
@@ -26,11 +29,11 @@ Note: There are currently two implementations of the node discovery DHT, one for
 
 The following are the network messages sent between peers to exchange discovery information:
 
-* WHOAREYOU: Contains the handshake challenge.
-* PING: It is sent during liveness checks.
-* PONG: It is the reply to PING.
-* FINDNODE: It is a query for nodes in the given bucket.
-* NODES / NEIGHBOURS: NEIGHBOURS is the reply to FINDNODE in v4. In v5 NODES is the reply to FINDNODE and TOPICQUERY.
+* `WHOAREYOU`: Contains the handshake challenge.
+* `PING`: It is sent during liveness checks.
+* `PONG`: It is the reply to `PING`.
+* `FINDNODE`: It is a query for nodes in the given bucket.
+* `NODES` / `NEIGHBOURS`: `NEIGHBOURS` is the reply to `FINDNODE` in v4. In v5 `NODES` is the reply to `FINDNODE` and `TOPICQUERY`.
 
 ## Topic discovery 
 
@@ -40,11 +43,11 @@ The following are the network messages sent between peers to exchange discovery 
 
 ### Network messages 
 
-* REQUESTTICKET: Requests a ticket for a topic queue.
-* TICKET: It is the response to REQUESTTICKET.
-* REGTOPIC: Registers the sender in a topic queue using a ticket.
-* REGCONFIRMATION: Is the reply to REGTOPIC.
-* TOPICQUERY: Ask nodes for a given topic.
+* `REQUESTTICKET`: Requests a ticket for a topic queue.
+* `TICKET`: It is the response to `REQUESTTICKET`.
+* `REGTOPIC`: Registers the sender in a topic queue using a ticket.
+* `REGCONFIRMATION`: Is the reply to `REGTOPIC`.
+* `TOPICQUERY`: Ask nodes for a given topic.
 
 # PeerSim implementation todo
 
