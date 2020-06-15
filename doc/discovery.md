@@ -22,8 +22,7 @@ Below is described the steps of the discovery process for DEVP2P to establish RL
 * A number of checks are performed before entering the table. TBC
 * Every 5 s (on average), the last node of a random bucket is pinged and replaced with a random node from the respective replacement list if it fails to respond. In contrast to buckets, the replacement list is a simple FIFO queue that evicts the last entry every time a previously unknown node is added to the list.
 
-Note: There are currently two implementations of the node discovery DHT, one for v4 and one for v5. I suspect the v5 version is just an improved version of v5 but the main functionalitites are the same. v5 version is actually not used yet, but have to check. 
-
+Note: There are currently two implementations of the node discovery DHT, one for v4 and one for v5 that works with the topic register. I'm not 100% v5 is complete and fully operational and nodes can discover peers using only v5.
 
 ### Network messages 
 
@@ -35,11 +34,51 @@ The following are the network messages sent between peers to exchange discovery 
 * `FINDNODE`: It is a query for nodes in the given bucket.
 * `NODES` / `NEIGHBOURS`: `NEIGHBOURS` is the reply to `FINDNODE` in v4. In v5 `NODES` is the reply to `FINDNODE` and `TOPICQUERY`.
 
+### Messages protocols
+TBC
+
 ## Topic discovery 
 
-### Topic discovery process
+### Topic advertisement process
+
+* A node that provides certain service (called topic)  tries to 'place an ad' for itself when it makes itself discoverable under that topic.
+* Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
+* Nodes keep a 'topics table', accepting topic ads from other nodes and later returning them to nodes searching for the same topic.
+* Topics registration are throttled and registrants must wait for a certain amount of time before they are admitted, in order to keep a constant advertisement lifetime.
+* The waiting time constant is defined to `target-ad-lifetime = 15min` Don't know why.
+* This is achieved via tickets.
+
+#### Tickets
+
+* In order to limit the number of registrations a node can issue, there is a process that uses tickets to set the registration pace.
+* When a node attempts to place an ad, it receives a 'ticket' which tells them how long they must wait before they will be accepted.
+* The registrant node should keep the ticket and present it to the node that receives the registration,  when the waiting time has elapsed.
+* The waiting time constant is, set to 15 min. `target-ad-lifetime = 15min`.
+* If the table or the topic queue is not full, the ad can be placed inmediately.
+* When the table is full, the waiting time is assigned based on the lifetime of the oldest ad across the whole table, i.e. the registrant must wait for a table slot to become available
+* When the topic queue is full, the waiting time depends on the lifetime of the oldest ad in the queue. The assigned time is `target-ad-lifetime - oldest-ad-lifetime` in this case.
+
+
+#### Topic radius and radius estimation
+
+* When the number of nodes advertising a topic is at least a certain percentage of the whole discovery network (rough estimate: at least 1%), ads may simply be placed on random nodes because searching for the topic on randomly selected will locate the ads quickly enough.
+* But when the number of advertisers is small, to keep topic search fast enough, advertisers should concentrate in a subset of the region of node ID address space, within a certain distance to the topic hash `H(t)`, called radius.
+* To place their ads, participants simply perform a random walk within the currently estimated radius and run the advertisement protocol by collecting tickets from all nodes encountered during the walk and using them when their waiting time is over.
+* But how to estimate the topic radius? This is the question. Instead we propose [Proposition1](doc/proposition1.md), but we could come up with something to compare.
+
+### Topic search process
+
+* To find nodes for a topic, the searcher generates random node IDs inside the estimated topic radius and performs Kademlia lookups for these IDs. All (intermediate) nodes encountered during lookup are asked for topic queue entries using the TOPICQUERY packet.
+
+* Radius estimation for topic search is similar to the estimation procedure for advertisement, but samples the average number of results from TOPICQUERY instead of average time to registration. The radius estimation value can be shared with the registration algorithm if the the same topic is being registered and searched for.
+
 
 ### Topic register table
+* Nodes store ads in a table orderd by topic with a limited number of ads for each topic. Default total max entries are 10000 and max entries per topic are 50.
+* The list of ads for a particular topic is called the 'topic queue' because it functions like a FIFO queue of limited length. 
+* A node must appear only once in any topic queue.
+* Ip addresses restrictions per queue should be considered. 
+
 
 ### Network messages 
 
@@ -49,8 +88,26 @@ The following are the network messages sent between peers to exchange discovery 
 * `REGCONFIRMATION`: Is the reply to `REGTOPIC`.
 * `TOPICQUERY`: Ask nodes for a given topic.
 
-# PeerSim implementation todo
+### Messages protocols
+
+TBC
+
+# PeerSim implementation TODO
 
 * Event-based vs cycle based -> Event based
 * App that will simulate DEVP2P node performing lookups based on connection list occupance.
+* Lookup [process](https://github.com/ethereum/devp2p/blob/master/discv5/discv5-theory.md#lookup)
+* Topic table
+* Messages:
+  * `FINDNODE`: 
+  * `PING`: 
+  * `PONG`: 
+  * `NEIGHBOURS`:
+  * `REQUESTTICKET`: 
+  * `TICKET`: 
+  * `REGTOPIC`: 
+  * `REGCONFIRMATION`: 
+  * `TOPICQUERY`: 
+* Protocols
+
 * Determine simulation parameters
