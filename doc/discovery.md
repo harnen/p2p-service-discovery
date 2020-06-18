@@ -12,6 +12,7 @@ Below is described the steps of the discovery process for DEVP2P to establish RL
 * Every time there is an empty slot in the connections list, a node is read from the buffer (and consumed) and a new connection is started. If the buffer is empty the process waits for the buffer to be filled again.
 * If the buffer is empty a lookup to random node is performed and the buffer filled with the random walk results according to the following. The lookup initiator starts by picking `α` closest nodes to the target it knows of. The initiator then sends concurrent `FINDNODE` packets to those nodes. `α` is a system-wide concurrency parameter, such as `3`. In the recursive step, the initiator resends `FINDNODE` to nodes it has learned about from previous queries. Of the `k` nodes the initiator has heard of closest to the target, it picks `α` that it has not yet queried and resends `FINDNODE` to them. Nodes that fail to respond quickly are removed from consideration until and unless they do respond. If a round of `FINDNODE` queries fails to return a node any closer than the closest already seen, the initiator resends the find node to all of the `k` closest nodes it has not already queried. The lookup terminates when the initiator has queried and gotten responses from the `k` closest nodes it has seen.
 
+Note: This is the process for Discv4 protocol. Discv5 is not used yet in the current implementation, it is only used to advertise Light Client service (nodes that relays transactions for non-full nodes) but not for searching. I assume Discv5 process would be the same but doing searches within a certain radius for the specific topic (ETH service), although is not clear to me  how to define the radius.
 
 
 
@@ -20,9 +21,8 @@ Below is described the steps of the discovery process for DEVP2P to establish RL
 * DEVP2P uses a Kademlia Distributed hash table with 17 buckets (257 buckets in v5???) and a bucket size of 16. Nodes in the buckets are ordered per log distance (check). If the bucket is already full, candidate nodes are stored in a so-called replacement list that stores up to 10 nodes (16 in v5 -check-).
 * The DHT stores node entries. Each entry contains node id and network information (IP address, etc)
 * A number of checks are performed before entering the table. TBC
-* Every 5 s (on average), the last node of a random bucket is pinged and replaced with a random node from the respective replacement list if it fails to respond. In contrast to buckets, the replacement list is a simple FIFO queue that evicts the last entry every time a previously unknown node is added to the list.
+* Every 5 s?(on average), the last node of a random bucket is pinged and replaced with a random node from the respective replacement list if it fails to respond. In contrast to buckets, the replacement list is a simple FIFO queue that evicts the last entry every time a previously unknown node is added to the list. This should be checked for v5.
 
-Note: There are currently two implementations of the node discovery DHT, one for v4 and one for v5 that works with the topic register. I'm not 100% v5 is complete and fully operational and nodes can discover peers using only v5.
 
 ### Network messages 
 
@@ -34,8 +34,22 @@ The following are the network messages sent between peers to exchange discovery 
 * `FINDNODE`: It is a query for nodes in the given bucket.
 * `NODES` / `NEIGHBOURS`: `NEIGHBOURS` is the reply to `FINDNODE` in v4. In v5 `NODES` is the reply to `FINDNODE` and `TOPICQUERY`.
 
-### Messages protocols
-TBC
+### Lookup protocol
+
+`A -> B FINDNODE(randomId)`
+
+`A <- B   WHOAREYOU (including id-nonce, enr-seq)`
+
+`A -> B   FINDNODE (with authentication header, encrypted with new initiator-write-key)`
+
+`A <- B   NODES (encrypted with new recipient-write-key)`
+
+
+### Liveness protocol
+
+* Checking node liveness whenever a node is to be added to a bucket is impractical and creates a DoS vector. Implementations should perform liveness checks asynchronously with bucket addition and occasionally verify that a random node in a random bucket is live by sending PING. When the PONG response indicates that a new version of the node record is available, the liveness check should pull the new record and update it in the local table.
+* When responding to FINDNODE, implementations must avoid relaying any nodes whose liveness has not been verified. This is easy to achieve by storing an additional flag per node in the table, tracking whether the node has ever successfully responded to a PING request.
+
 
 ## Topic discovery 
 
@@ -88,26 +102,42 @@ TBC
 * `REGCONFIRMATION`: Is the reply to `REGTOPIC`.
 * `TOPICQUERY`: Ask nodes for a given topic.
 
-### Messages protocols
+### Lookup protocol
 
-TBC
+Same v4 lookup [protocol](https://github.com/ethereum/devp2p/blob/master/discv5/discv5-theory.md#lookup) is used in the following situations:
+
+* Bucket refresh: chooseBucketRefreshTarget selects random refresh targets to keep all Kademlia buckets filled with live connections and keep the network topology healthy. This requires selecting addresses closer to our own with a higher probability in order to refresh closer buckets too. This algorithm approximates the distance distribution of existing nodes in the table by selecting a random node from the table and selecting a target address  with a distance less than twice of that of the selected node. This algorithm will be improved later to specifically target the least recently used buckets.
+* Table refresh: Lookup to self node when refresh process. This happens when booting, and after specific times depending on the table occupancy. Need to check timings. Don't know what is the difference purpose between this and the previous case. Need to check.
+* To collect tickets: There is a topicRegisterLookup timing set at 100ms that periodically checks local advertising topics and collect tickets to register to new nodes. Need to complete.
+* topicSearch lookup target determined by topic radius 
 
 # PeerSim implementation TODO
 
 * Event-based vs cycle based -> Event based
-* App that will simulate DEVP2P node performing lookups based on connection list occupance.
-* Lookup [process](https://github.com/ethereum/devp2p/blob/master/discv5/discv5-theory.md#lookup)
-* Topic table
-* Messages:
-  * `FINDNODE`: 
-  * `PING`: 
-  * `PONG`: 
-  * `NEIGHBOURS`:
-  * `REQUESTTICKET`: 
-  * `TICKET`: 
-  * `REGTOPIC`: 
-  * `REGCONFIRMATION`: 
-  * `TOPICQUERY`: 
-* Protocols
-
 * Determine simulation parameters
+* Development items for state-of-the-art discv5 implementation: 
+
+	* App that will simulate DEVP2P node performing lookups based on connection list occupance.
+	* Lookup [process](https://github.com/ethereum/devp2p/blob/master/discv5/discv5-theory.md#lookup)
+	* Topic table
+	* Ticket store
+	* Ticket registration windows
+	* Messages:
+  		* `FINDNODE`: 
+  		* `PING`: 
+  		* `PONG`: 
+ 	   * `NEIGHBOURS`:
+  		* `REQUESTTICKET`: 
+  		* `TICKET`: 
+  		* `REGTOPIC`: 
+  		* `REGCONFIRMATION`: 
+  		* `TOPICQUERY`: 
+
+* Development items for our proposal:
+
+
+# Geth implementation doubts
+
+* V5 version of the discovery table has 257 instead of 17. Why?
+* Need to check current implementation radius estimation. Not clear in the docs
+
