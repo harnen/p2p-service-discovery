@@ -138,6 +138,7 @@ Same v4 lookup [protocol](https://github.com/ethereum/devp2p/blob/master/discv5/
 
 # Geth implementation doubts
 
-* V5 version of the discovery table has 257 instead of 17. Why?
+* V5 version of the discovery table has 257 instead of 17. Why? In the eclipse attack papers say the following: In response to the eclipse attack, Geth ≥ 1.8.0 restricts the number of buckets to 17, starting from the furthest distance of 255 to the minimum possible log-distance of 239.
+The log-distance metric leads to a skewed distribution of nodes between buckets: most of the lower buckets are empty, since the probability to fall into a specific bucket decays exponentially with the associated distance.
 * Need to check current implementation radius estimation. Not clear in the docs
 
