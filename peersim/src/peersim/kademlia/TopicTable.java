@@ -6,8 +6,7 @@ import peersim.kademlia.Registration;
 
 interface TopicTable {
 
-    boolean register(Registration r);
-
-    Registration[] getTopic(String t); 
+    public boolean register(Registration r, Topic t);
+    public Registration[] getRegistration(Topic t);
   
 }

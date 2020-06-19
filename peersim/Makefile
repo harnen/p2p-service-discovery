@@ -68,8 +68,9 @@ release: clean all docnew
 	cp jep-2.3.0.jar peersim-$(VER)
 	cp djep-1.0.0.jar peersim-$(VER)
 
+#-ea is to enable assertion in Java
 run:
-	java -Xmx500m -cp $(LIB_JARS):src peersim.Simulator config/example.cfg
+	java -Xmx500m -cp $(LIB_JARS):src -ea peersim.Simulator config/example.cfg
 
 run_simple:
-	java -Xmx500m -cp $(LIB_JARS):src peersim.Simulator config/simple.cfg
+	java -Xmx500m -cp $(LIB_JARS):src -ea peersim.Simulator config/simple.cfg
