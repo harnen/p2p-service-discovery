@@ -50,6 +50,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	public RoutingTable routingTable;
 
+
 	/**
 	 * trace message sent for timeout purpose
 	 */
@@ -227,7 +228,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void replyFind(Message m, int myPid) {
+	private void handleFind(Message m, int myPid) {
 		// get the ALPHA closest node to destNode
 		BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, m.src);
 		/*System.out.print("Including neigbours");
@@ -248,6 +249,28 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		sendMessage(response, m.src, myPid);
 	}
 
+
+		/**
+	 * Response to a register request.<br>
+	 * Tries to register the requesting node under the
+	 * specified topic
+	 * 
+	 * @param m
+	 *            Message
+	 * @param myPid
+	 *            the sender Pid
+	 */
+	private void handleRegister(Message m, int myPid) {
+		String topic = (String) m.body;
+		
+		//decide whether to accept the registration
+		//get topic distance my id
+		//check if topics closer to the requested ones occupy already full space
+		//
+
+		handleFind(m, myPid);
+	}
+
 	/**
 	 * Start a find node opearation.<br>
 	 * Find the ALPHA closest node and send find request to them.
@@ -257,7 +280,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void initFind(Message m, int myPid) {
+	private void handleInitFind(Message m, int myPid) {
 
 		KademliaObserver.find_op.add(1);
 
@@ -351,12 +374,17 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 			case Message.MSG_INIT_FIND:
 				m = (Message) event;
-				initFind(m, myPid);
+				handleInitFind(m, myPid);
 				break;
 
 			case Message.MSG_FIND:
 				m = (Message) event;
-				replyFind(m, myPid);
+				handleFind(m, myPid);
+				break;
+			
+			case Message.MSG_REGISTER:
+				m = (Message) event;
+				handleRegister(m, myPid);
 				break;
 
 			case Message.MSG_EMPTY:

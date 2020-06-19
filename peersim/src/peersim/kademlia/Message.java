@@ -56,6 +56,11 @@ public class Message extends SimpleEvent {
 	 */
 	public static final int MSG_RESPONSE = 4;
 
+	/**
+	 * Message Type: REGISTER (register the node under a topic)
+	 */
+	public static final int MSG_REGISTER = 5;
+
 	// ______________________________________________________________________________________________
 	/**
 	 * This Object contains the body of the message, no matter what it contains
@@ -193,6 +198,8 @@ public class Message extends SimpleEvent {
 				return "MSG_FIND";
 			case MSG_RESPONSE:
 				return "MSG_RESPONSE";
+			case MSG_REGISTER:
+				return "MSG_REGISTER";
 			default:
 				return "UNKNOW:" + type;
 		}
