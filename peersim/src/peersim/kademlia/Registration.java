@@ -21,21 +21,16 @@ public class Registration implements Comparable<Registration>{
     public int compareTo(Registration r){
         
         if (this.topic != r.topic){
-            System.out.println("Not the same topic");
             return this.topic.compareTo(r.topic);
         }
 
-            if (this.id != r.id){
-                System.out.println("Not the same id");
-                return this.id.compareTo(r.id);
-            }
+        if (this.id != r.id){
+            return this.id.compareTo(r.id);
+        }
 
-            if (this.timestamp != r.timestamp){
-                System.out.println("Not the same timestamp");
-                return this.timestamp.compareTo(r.timestamp);
-            }
-        
-
+        if (this.timestamp != r.timestamp){
+            return this.timestamp.compareTo(r.timestamp);
+        }
         
         return 0;
     }

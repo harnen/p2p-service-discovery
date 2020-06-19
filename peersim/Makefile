@@ -69,5 +69,7 @@ release: clean all docnew
 	cp djep-1.0.0.jar peersim-$(VER)
 
 run:
-	java -Xmx500m -cp $(LIB_JARS):src peersim.Simulator example.cfg
+	java -Xmx500m -cp $(LIB_JARS):src peersim.Simulator config/example.cfg
 
+run_simple:
+	java -Xmx500m -cp $(LIB_JARS):src peersim.Simulator config/simple.cfg
