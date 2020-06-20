@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>peersim</groupId>
+  <artifactId>service-discovery</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>service-discovery</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>djep</groupId>
+	<artifactId>djep</artifactId>
+	<scope>system</scope>
+        <version>1.0.0</version>
+	<systemPath>${basedir}/lib/djep-1.0.0.jar</systemPath>
+    </dependency>
+    <dependency>
+        <groupId>jep</groupId>
+	<artifactId>jep</artifactId>
+        <scope>system</scope>
+        <version>2.3.0</version>
+	<systemPath>${basedir}/lib/jep-2.3.0.jar</systemPath>
+    </dependency>
+  </dependencies>
+</project>
