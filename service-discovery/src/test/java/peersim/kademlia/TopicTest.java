@@ -12,13 +12,13 @@ public class TopicTest extends TestCase {
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
         BigInteger hostID = new BigInteger("100000000000000000000000000000000000000000000000");
         t1 = new Topic(hostID, "topic1");
-        System.out.println("t1:" + t1);
+        //System.out.println("t1:" + t1);
         t2 = new Topic(hostID, "topic2");
-        System.out.println("t2:" + t2);
+        //System.out.println("t2:" + t2);
      }
 
-    public void testPrintMessage() {	
-        System.out.println("Inside testPrintMessage()");            
+    public void testComparison() {	
+        assertTrue(t1.compareTo(t2) == 1);
    }
 
 
