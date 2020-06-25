@@ -7,11 +7,12 @@ public class Registration implements Comparable<Registration>{
 
     public BigInteger node;
     //have to check how to use time (number of cycles in peersim)
-    public Integer timestamp;
+    public Long timestamp;
 
-    public Registration(BigInteger node, Integer timestamp) {
+    public Registration(BigInteger node) {
         this.node = node;
-        this.timestamp = timestamp;
+        Date date= new Date();
+        this.timestamp = date.getTime();
     }
 
     // a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object.

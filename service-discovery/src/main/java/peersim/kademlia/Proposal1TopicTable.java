@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.math.BigInteger;
 
 import peersim.kademlia.Topic;
+import sun.security.action.GetIntegerAction;
 import peersim.kademlia.Registration;
 
 
@@ -34,9 +35,14 @@ public class Proposal1TopicTable implements TopicTable {
         }
     }
 
-    public boolean register(Registration r, Topic t){
+    public boolean register(Registration r, Topic tRegistered){
+        //need to create a copy here. Without it - the topic class would be shared among 
+        //all the class where it's registered
+        Topic t = new Topic(tRegistered);
+        t.setHostID(this.hostID);
         //if we have space, always add the registration
         if(size < capacity){
+            System.out.println("Size lower than capacity - adding");
             add(r, t);
             return true;
         //table is full
@@ -61,6 +67,21 @@ public class Proposal1TopicTable implements TopicTable {
         
         return null;
     }
+
+    public int getCapacity(){
+        return this.capacity;
+    }
+
+    public void setCapacity(int capacity){
+        this.capacity = capacity;
+    }
     
+    public int getSize(){
+        return this.capacity;
+    }
+
+    public BigInteger getHostID(){
+        return this.hostID;
+    }
     
 }

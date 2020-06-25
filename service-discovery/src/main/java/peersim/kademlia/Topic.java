@@ -9,9 +9,9 @@ import java.nio.charset.StandardCharsets;
 public class Topic implements Comparable<Topic> {
     // ID of the node storing the topic - this is used to enable sorted collections,
     // priority queues etc.
-    BigInteger hostID;
-    BigInteger topicID;
-    String topic;
+    protected BigInteger hostID;
+    protected BigInteger topicID;
+    protected String topic;
     /*
      * Create a new topic. The topicID is created using SHA-256 hash of the string.
      * All the node IDs are positive, so to make it uniform, we create only positive
@@ -32,6 +32,12 @@ public class Topic implements Comparable<Topic> {
         
     }
 
+    public Topic(Topic t){
+        this.hostID = t.hostID;
+        this.topicID = t.topicID;
+        this.topic = t.topic;
+    }
+
 
     public int compareTo(Topic t){
         assert this.hostID == t.hostID : "Comparing topics with different hostID";
@@ -40,5 +46,13 @@ public class Topic implements Comparable<Topic> {
 
     public String toString(){
         return "[hostID=" + this.hostID + "][topicID=" + this.topicID + "][topic=" + this.topic + "]";
+    }
+
+    public void setHostID(BigInteger hostID){
+        this.hostID = hostID; 
+    }
+
+    public BigInteger getHostID(){
+        return this.hostID;
     }
 }
