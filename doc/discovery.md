@@ -79,6 +79,7 @@ The following are the network messages sent between peers to exchange discovery 
 * But when the number of advertisers is small, to keep topic search fast enough, advertisers should concentrate in a subset of the region of node ID address space, within a certain distance to the topic hash `H(t)`, called radius.
 * To place their ads, participants simply perform a random walk within the currently estimated radius and run the advertisement protocol by collecting tickets from all nodes encountered during the walk and using them when their waiting time is over.
 * But how to estimate the topic radius? This is the question. Instead we propose [Proposition1](doc/proposition1.md), but we could come up with something to compare.
+* Current implementation uses the waiting time as an indicator of how many other nodes are attempting to place ads in a certain region to estimate the radius. This is achieved by keeping track of the average time to successful registration within segments of the address space surrounding the topic hash. Advertisers initially assume the radius is 2^256, i.e. the entire network. As tickets are collected, the advertiser samples the time it takes to place an ad in each segment and adjusts the radius such that registration at the chosen distance takes approximately target-ad-lifetime / 2 to complete.
 
 ### Topic search process
 
@@ -111,6 +112,14 @@ Same v4 lookup [protocol](https://github.com/ethereum/devp2p/blob/master/discv5/
 * To collect tickets: There is a topicRegisterLookup timing set at 100ms that periodically checks local advertising topics and collect tickets to register to new nodes. Need to complete.
 * topicSearch lookup target determined by topic radius 
 
+### Related issues
+* https://github.com/ethereum/devp2p/issues/111
+* https://github.com/ethereum/devp2p/issues/112
+* https://github.com/ethereum/devp2p/issues/136
+* https://github.com/vacp2p/research/issues/15
+* https://github.com/vacp2p/research/issues/15
+* Disv5 research
+* Existing simulator: https://github.com/zilm13/discv5/tree/161315190a647552aec64e800c13e92aa89a5282
 # PeerSim implementation TODO
 
 * Event-based vs cycle based -> Event based
@@ -144,4 +153,3 @@ Same v4 lookup [protocol](https://github.com/ethereum/devp2p/blob/master/discv5/
 The log-distance metric leads to a skewed distribution of nodes between buckets: most of the lower buckets are empty, since the probability to fall into a specific bucket decays exponentially with the associated distance.
 * Need to check current implementation radius estimation. Not clear in the docs
 * How is multipath search done?
-*
