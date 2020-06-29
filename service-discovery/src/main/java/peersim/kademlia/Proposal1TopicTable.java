@@ -8,6 +8,7 @@ import java.math.BigInteger;
 
 import peersim.kademlia.Topic;
 import sun.security.action.GetIntegerAction;
+import peersim.core.CommonState;
 import peersim.kademlia.Registration;
 
 
@@ -36,11 +37,14 @@ public class Proposal1TopicTable implements TopicTable {
         this.size++;
     }
 
-    public boolean register(Registration r, Topic tRegistered){
-        //need to create a copy here. Without it - the topic class would be shared among 
+    public boolean register(Registration ri, Topic ti){
+        //need to create a copy here. Without it - the topic/registration class would be shared among 
         //all the class where it's registered
-        Topic t = new Topic(tRegistered);
+        Topic t = new Topic(ti);
         t.setHostID(this.hostID);
+        Registration r = new Registration(ri);
+        r.setTimestamp(CommonState.getTime());
+        
         //if we have space, always add the registration
         if(size < capacity){
             System.out.println("Size lower than capacity - adding");

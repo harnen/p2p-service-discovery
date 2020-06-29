@@ -19,6 +19,7 @@
 package peersim;
 
 import java.io.*;
+import java.util.Arrays;
 
 import peersim.cdsim.*;
 import peersim.config.*;
@@ -150,7 +151,7 @@ public static void main(String[] args)
 {
 	long time = System.currentTimeMillis();	
 	
-	System.err.println("Simulator: loading configuration");
+	System.err.println("Simulator: loading configuration" + Arrays.toString(args));
 	Configuration.setConfig( new ParsedProperties(args) );
 
 	PrintStream newout =
