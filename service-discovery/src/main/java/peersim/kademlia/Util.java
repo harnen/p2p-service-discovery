@@ -35,7 +35,7 @@ public class Util {
 	}
 
 	/**
-	 * return the distance between two number wich is defined as (a XOR b)
+	 * return the distance between two number which is defined as (a XOR b)
 	 * 
 	 * @param a
 	 *            BigInteger
@@ -47,6 +47,20 @@ public class Util {
 		return a.xor(b);
 	}
 
+	
+	/**
+	 * return the distance between two number wich is defined as (a XOR b)
+	 * 
+	 * @param a
+	 *            BigInteger
+	 * @param b
+	 *            BigInteger
+	 * @return BigInteger
+	 */
+	public static final double logdistance(BigInteger a, BigInteger b) {
+		return Math.log((double)a.xor(b).doubleValue());
+	}
+	
 	/**
 	 * convert a BigInteger into a String (base 2) and lead all needed non-significative zeroes in order to reach the canonical
 	 * length of a nodeid
