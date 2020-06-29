@@ -33,6 +33,7 @@ public class Proposal1TopicTable implements TopicTable {
         }else{
             table.get(t).add(r);
         }
+        this.size++;
     }
 
     public boolean register(Registration r, Topic tRegistered){
@@ -52,6 +53,7 @@ public class Proposal1TopicTable implements TopicTable {
                 table.get(table.lastKey()).remove(0);
                 //if a topic has no more registration - remove it
                 if(table.get(table.lastKey()).size() == 0) table.remove(table.lastKey());
+                this.size--;
                 add(r, t);
                 return true;
             }
@@ -77,11 +79,32 @@ public class Proposal1TopicTable implements TopicTable {
     }
     
     public int getSize(){
-        return this.capacity;
+        return this.size;
     }
 
     public BigInteger getHostID(){
         return this.hostID;
+    }
+
+    public void clear(){
+        this.table.clear();
+        this.size = 0;
+    }
+
+    public String toString(){
+        //need a final variable inside lambda expressions below
+        final StringBuilder result = new StringBuilder();
+        result.append("--------------------------------\n");
+        result.append("Proposal1Topic Table size: " + this.size + "/" + this.capacity + " hostID: " + this.hostID);
+        this.table.forEach((k, v) -> {
+            
+            result.append("\n" + k.toString() + ":");
+            v.forEach((Registration reg) ->{
+                result.append(" " + reg.toString());
+            });
+        });
+        result.append("\n--------------------------------");
+        return result.toString();
     }
     
 }

@@ -21,4 +21,8 @@ public class Registration implements Comparable<Registration>{
         return this.timestamp.compareTo(r.timestamp);
     }
 
+    public String toString(){
+        return "[node:" + this.node + " date: " + this.timestamp +  "]";
+    }
+
 }
