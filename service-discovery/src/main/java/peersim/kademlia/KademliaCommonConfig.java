@@ -8,9 +8,9 @@ package peersim.kademlia;
  */
 public class KademliaCommonConfig {
 
-	public static int BITS = 160; // length of Id (default is 160)
+	public static int BITS = 256; // length of Id (default is 160)
 
-	public static int K = 20; // dimension of k-buckets (default is 5)
+	public static int K = 16; // dimension of k-buckets (default is 5)
 	public static int ALPHA = 3; // number of simultaneous lookup (default is 3)
 	public static int TOPIC_TABLE_CAP = 100; //the number of topics per node we can regiter
 
