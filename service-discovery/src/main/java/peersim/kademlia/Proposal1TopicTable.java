@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.math.BigInteger;
 
 import peersim.kademlia.Topic;
-import sun.security.action.GetIntegerAction;
 import peersim.core.CommonState;
 import peersim.kademlia.Registration;
 
@@ -44,10 +43,16 @@ public class Proposal1TopicTable implements TopicTable {
         t.setHostID(this.hostID);
         Registration r = new Registration(ri);
         r.setTimestamp(CommonState.getTime());
+
+        //check if we already have this registration
+        List<Registration> regList = table.get(t);
+        if((regList != null) && (regList.contains(r))){
+            return true;
+        }
         
         //if we have space, always add the registration
         if(size < capacity){
-            System.out.println("Size lower than capacity - adding");
+            //System.out.println("Size lower than capacity - adding");
             add(r, t);
             return true;
         //table is full
