@@ -73,5 +73,8 @@ public class TopicRadiusBucket {
 		return weights;
 	}
 	
+	public void deleteLookupSent(BigInteger hash){
+		lookupSent.remove(hash);
+	}
 	
 }

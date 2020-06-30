@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Random;
 
+import peersim.core.CommonState;
+
 public class TopicRadius {
 	
 	private static final int radiusBucketsPerBit = 8;
@@ -152,6 +154,13 @@ public class TopicRadius {
 	
 	//adjust radius when ticket received
 	void adjust(long time, BigInteger targetHash, BigInteger addrHash, float inside) {
+		int bucket = getBucketIdx(addrHash);
 		
+		if(bucket>=buckets.length) {
+			return;
+		}
+		buckets[bucket].adjust(CommonState.getTime(),inside);
+		buckets[bucket].deleteLookupSent(targetHash);
 	}
+		
 }
