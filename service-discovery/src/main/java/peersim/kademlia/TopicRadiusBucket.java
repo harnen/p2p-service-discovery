@@ -26,7 +26,7 @@ public class TopicRadiusBucket {
 		lookupSent = new TreeMap<BigInteger,Long>();	
 	}
 	
-	public void adjust(long now,float inside) {
+	public void adjust(long now,double inside) {
 		update(now);
 		if(inside<=0) {
 			weights[trOutside]+=1;

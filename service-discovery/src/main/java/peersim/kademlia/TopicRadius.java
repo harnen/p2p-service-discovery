@@ -12,6 +12,7 @@ public class TopicRadius {
 	private static final int radiusBucketsPerBit = 8;
 	private static final int minPeakSize = 40;
 	private static final double maxNoAdjust = 20;
+	private static final double targetWaitTime = 10000;//TODO define waiting time in cycles
 	
 	Topic topic;
 	BigInteger topicHashPrefix;
@@ -149,11 +150,19 @@ public class TopicRadius {
 	
 	//adjust radius when ticket received
 	void adjustWithTicket(long time, BigInteger targetHash/*,Ticketref t*/) {
-		
+		int wait = 0;//TODO calculate regtime - isuetime from ticket
+		double inside = (double)wait/targetWaitTime - 0.5;
+		if(inside > 1) {
+			inside = 1;
+		}
+		if(inside < 0) {
+			inside = 0;
+		}
+		adjust(CommonState.getTime(),targetHash,targetHash,inside);
 	}
 	
 	//adjust radius when ticket received
-	void adjust(long time, BigInteger targetHash, BigInteger addrHash, float inside) {
+	void adjust(long time, BigInteger targetHash, BigInteger addrHash, double inside) {
 		int bucket = getBucketIdx(addrHash);
 		
 		if(bucket>=buckets.length) {
