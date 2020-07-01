@@ -12,7 +12,7 @@ public class TopicRadiusBucket {
 	public static final int trInside=1;
 	public static final int trNoAdjust=2;
 	public static final int trCount=3;
-	private static final int radiusTC=20*60; //time.Minute * 20
+	private static final int radiusTC=20*60*1000; //time.Minute * 20
 	private static final int respTimeout = 500; //* time.Millisecond
 
 
@@ -22,7 +22,7 @@ public class TopicRadiusBucket {
 	private TreeMap<BigInteger, Long> lookupSent;
 	
 	public TopicRadiusBucket(){
-		weights = new double[3];
+		weights = new double[trCount];
 		lookupSent = new TreeMap<BigInteger,Long>();	
 	}
 	
@@ -40,7 +40,7 @@ public class TopicRadiusBucket {
 		}
 	}
 	
-	private void update(long now) {
+	public void update(long now) {
 		if(now == lastTime) 
 			return;
 		
@@ -71,6 +71,14 @@ public class TopicRadiusBucket {
 	
 	public double[] getWeights(){
 		return weights;
+	}
+	
+	public double getWeight(int idx) {
+		return weights[idx];
+	}
+	
+	public void setWeight(int idx, double value) {
+		weights[idx]=value;
 	}
 	
 	public void deleteLookupSent(BigInteger hash){

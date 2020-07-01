@@ -2,7 +2,9 @@ package peersim.kademlia;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import peersim.core.CommonState;
@@ -12,13 +14,16 @@ public class TopicRadius {
 	private static final int radiusBucketsPerBit = 8;
 	private static final int minPeakSize = 40;
 	private static final double maxNoAdjust = 20;
-	private static final double targetWaitTime = 10000;//TODO define waiting time in cycles
+	private static final double targetWaitTime = 10*60*1000;//TODO define waiting time in cycles
 	private static final BigInteger maxRadius = new BigInteger("0xffffffffffffffff",16);
+	private static final int minSlope = 1;
+	private static final double minRightSum = 20;
+	private static final int lookupWidth = 8;
 	
 	Topic topic;
 	BigInteger topicHashPrefix;
 	BigInteger radius, minRadius;
-	TopicRadiusBucket []buckets;
+	List<TopicRadiusBucket> buckets;
 	boolean converged;        
 	int radiusLookupCnt;
 	
@@ -26,6 +31,7 @@ public class TopicRadius {
 		topic=t;
 		topicHashPrefix = new BigInteger(Arrays.copyOfRange(topic.topicID.toByteArray(), 0, 8));
 		minRadius=radius=maxRadius;
+		buckets = new ArrayList<TopicRadiusBucket>();
 	}
 	
 	
@@ -76,7 +82,7 @@ public class TopicRadius {
 		}
 		int c =0;
 		for(int i=a;i<=b;i++) {
-			if((i>buckets.length)||(buckets[i].getWeights()[TopicRadiusBucket.trNoAdjust] < maxNoAdjust)) {
+			if((i>buckets.size())||(buckets.get(i).getWeight(TopicRadiusBucket.trNoAdjust) < maxNoAdjust)) {
 				c++;
 			}
 		}
@@ -85,7 +91,7 @@ public class TopicRadius {
 		}
 		int rnd = new Random().nextInt(c);
 		for(int i=0;i<=b;i++) {
-			if((i>buckets.length)||(buckets[i].getWeights()[TopicRadiusBucket.trNoAdjust] < maxNoAdjust)) {
+			if((i>buckets.size())||(buckets.get(i).getWeight(TopicRadiusBucket.trNoAdjust) < maxNoAdjust)) {
 				if(rnd==0) {
 					return i;
 				}
@@ -97,24 +103,24 @@ public class TopicRadius {
 	}
 
 	//true if more lookups are necessary
-	boolean needMoreLookups(int a, int b, float maxValue) {
+	boolean needMoreLookups(int a, int b, double maxValue) {
 		
 		double max=0.0;
 		
 		if (a<0) {
 			a=0;
 		}
-		if(b>=buckets.length) {
-			b=buckets.length-1;
-			if(buckets[b].getValue() > max) {
-				max = buckets[b].getValue();
+		if(b>=buckets.size()) {
+			b=buckets.size()-1;
+			if(buckets.get(b).getValue() > max) {
+				max = buckets.get(b).getValue();
 			}
 		}
 		
 		if(b>=a) {
 			for(int i=a;i<=b;i++) {
-				if(buckets[i].getValue()>max) {
-					max = buckets[i].getValue();
+				if(buckets.get(i).getValue()>max) {
+					max = buckets.get(i).getValue();
 				}
 			}
 		}
@@ -124,10 +130,84 @@ public class TopicRadius {
 	
 	//radius calculator
 	private int recalcRadius() {
-		return -1;
+
+		int maxBucket = 0;
+		double maxValue = 0.0;
+		long now = CommonState.getTime();
+		double v = 0.0;
+		int radiusLookup;
+		
+		for(int i=0;i<buckets.size();i++) {
+			buckets.get(i).update(now);
+			v+=buckets.get(i).getWeight(TopicRadiusBucket.trOutside)-buckets.get(i).getWeight(TopicRadiusBucket.trInside);
+			buckets.get(i).setValue(v);
+
+		}
+		int slopeCross=-1;
+		
+		for(int i=0;i<buckets.size();i++) {
+			v=buckets.get(i).getValue();
+			if(v<i*minSlope) {
+				slopeCross=i;
+				break;
+			}
+			if(v > maxValue){
+				maxValue = v;
+				maxBucket = i + 1;
+			}
+		}
+		int minRadBucket = buckets.size();
+		double sum=0.0;
+		
+		while(minRadBucket>0&&sum<minRightSum) {
+			minRadBucket--;
+			TopicRadiusBucket b = buckets.get(minRadBucket);
+			sum+=(b.getWeight(TopicRadiusBucket.trInside)+b.getWeight(TopicRadiusBucket.trOutside));
+		}
+		minRadius=BigDecimal.valueOf(Math.pow(2,64-(double)minRadBucket/radiusBucketsPerBit)).toBigInteger();
+		
+		int lookupLeft=-1;
+		if(needMoreLookups(0,maxBucket-lookupWidth-1,maxValue)) {
+			lookupLeft=chooseLookupBucket(maxBucket-lookupWidth,maxBucket-1);
+		}
+		
+		int lookupRight=-1;
+		if(slopeCross!=maxBucket&&(minRadBucket<=maxBucket||needMoreLookups(maxBucket+lookupWidth,buckets.size()-1,maxValue))) {
+			while(buckets.size()<=maxBucket+lookupWidth) {
+				buckets.add(new TopicRadiusBucket());
+			}
+			lookupRight=chooseLookupBucket(maxBucket,maxBucket+lookupWidth-1);
+		}
+		
+		if(lookupLeft==-1) {
+			radiusLookup=lookupRight;
+		} else {
+			if(lookupRight==-1) {
+				radiusLookup=lookupLeft;
+			} else {
+				if(randUint(2)==0) {
+					radiusLookup = lookupLeft;
+				} else {
+					radiusLookup = lookupRight;
+				}
+			}
+		}
+		
+		/*if(radiusLookup==-1) {
+			converged=true;
+			int rad = maxBucket;
+			if(minRadBucket<rad) {
+				rad=minRadBucket;
+			}
+			radius=BigInteger.valueOf(0);
+			if(rad>0) {
+				radius=BigDecimal.valueOf(Math.pow(2,64-(double)rad/radiusBucketsPerBit)).toBigInteger();
+			}
+		}*/
+		return radiusLookup;
 	}
 	
-	//return lookup
+	//return lookupinfo for random target according to radius
 	LookupInfo nextTarget(boolean forceRegular) {
 		
 		if(!forceRegular) {
@@ -171,11 +251,11 @@ public class TopicRadius {
 	void adjust(long time, BigInteger targetHash, BigInteger addrHash, double inside) {
 		int bucket = getBucketIdx(addrHash);
 		
-		if(bucket>=buckets.length) {
+		if(bucket>=buckets.size()) {
 			return;
 		}
-		buckets[bucket].adjust(CommonState.getTime(),inside);
-		buckets[bucket].deleteLookupSent(targetHash);
+		buckets.get(bucket).adjust(CommonState.getTime(),inside);
+		buckets.get(bucket).deleteLookupSent(targetHash);
 	}
 	
 	private BigInteger newRandomMax(BigInteger max) {
@@ -183,6 +263,16 @@ public class TopicRadius {
 		return new BigInteger(64,rnd).mod(max);
 		
 	}
+	
+	private int randUint(int max) {
+		if(max<2) {
+			return 0;
+		}
+		Random rnd = new Random();
+		return rnd.nextInt(max);
+
+	}
+	
 	
 	private BigInteger calculatePrefix(BigInteger value) {
 		BigInteger prefix = topicHashPrefix.xor(value);
