@@ -13,6 +13,7 @@ public class TopicRadius {
 	private static final int minPeakSize = 40;
 	private static final double maxNoAdjust = 20;
 	private static final double targetWaitTime = 10000;//TODO define waiting time in cycles
+	private static final BigInteger maxRadius = new BigInteger("0xffffffffffffffff",16);
 	
 	Topic topic;
 	BigInteger topicHashPrefix;
@@ -24,7 +25,7 @@ public class TopicRadius {
 	TopicRadius(Topic t){
 		topic=t;
 		topicHashPrefix = new BigInteger(Arrays.copyOfRange(topic.topicID.toByteArray(), 0, 8));
-		minRadius=radius=new BigInteger("0xffffffffffffffff",16);
+		minRadius=radius=maxRadius;
 	}
 	
 	
@@ -50,34 +51,17 @@ public class TopicRadius {
 	
 	//return a random target corresponding to the given bucket number
 	BigInteger targetForBucket(int bucket){
-		/*	min := math.Pow(2, 64-float64(bucket+1)/radiusBucketsPerBit)
-				max := math.Pow(2, 64-float64(bucket)/radiusBucketsPerBit)
-				a := uint64(min)
-				b := randUint64n(uint64(max - min))
-				xor := a + b
-				if xor < a {
-					xor = ^uint64(0)
-				}
-				prefix := r.topicHashPrefix ^ xor
-				var target common.Hash
-				binary.BigEndian.PutUint64(target[0:8], prefix)
-				globalRandRead(target[8:])
-				return target*/
+
 		double min = Math.pow(2,64-(double)bucket+1/radiusBucketsPerBit);
 		double max = Math.pow(2, 64-(double)bucket/radiusBucketsPerBit);
 		BigInteger a = BigDecimal.valueOf(min).toBigInteger();
-		Random rnd = new Random();
-		BigInteger b = new BigInteger(64,rnd).mod( BigDecimal.valueOf(max-min).toBigInteger());
+		BigInteger b = newRandomMax(BigDecimal.valueOf(max-min).toBigInteger());
 		BigInteger xor = a.xor(b);
+		
 		if(xor.compareTo(a)==-1)
 			xor=BigInteger.valueOf(0);
-		BigInteger prefix = topicHashPrefix.xor(xor);
-		BigInteger rand = new BigInteger(64,rnd);
-		for(int i=0;i<8;i++) {
-			rand.clearBit(i);
-		}
 		
-		return prefix.xor(rand);
+		return calculatePrefix(xor);
 
 	}
 	
@@ -139,13 +123,35 @@ public class TopicRadius {
 	}
 	
 	//radius calculator
-	void recalcRadius() {
-		
+	private int recalcRadius() {
+		return -1;
 	}
 	
 	//return lookup
-	BigInteger nextTarget(boolean forceRegular) {
-		return BigInteger.valueOf(1); 
+	LookupInfo nextTarget(boolean forceRegular) {
+		
+		if(!forceRegular) {
+			int radiusLookup = recalcRadius();
+			if(radiusLookup!=-1) {
+				BigInteger target = targetForBucket(radiusLookup);
+				return new LookupInfo(target,topic,true);
+			}
+		}
+		
+		BigInteger radExt = radius.divide(BigInteger.valueOf(2));
+		
+		if(radExt.compareTo(maxRadius.subtract(radius))==1) {
+			radExt=maxRadius.subtract(radius);
+		}
+		BigInteger rnd = newRandomMax(radius).add(newRandomMax(radExt.multiply(BigInteger.valueOf(2))));
+		if(rnd.compareTo(radExt)==1) {
+			rnd = rnd.subtract(radExt);
+		} else {
+			rnd = radExt.subtract(rnd);
+		}
+		BigInteger target = topicHashPrefix.xor(rnd);
+		return new LookupInfo(target,topic,false);
+
 	}
 	
 	//adjust radius when ticket received
@@ -170,6 +176,23 @@ public class TopicRadius {
 		}
 		buckets[bucket].adjust(CommonState.getTime(),inside);
 		buckets[bucket].deleteLookupSent(targetHash);
+	}
+	
+	private BigInteger newRandomMax(BigInteger max) {
+		Random rnd = new Random();
+		return new BigInteger(64,rnd).mod(max);
+		
+	}
+	
+	private BigInteger calculatePrefix(BigInteger value) {
+		BigInteger prefix = topicHashPrefix.xor(value);
+		Random rnd = new Random();
+		BigInteger rand = new BigInteger(64,rnd);
+		for(int i=0;i<8;i++) {
+			rand.clearBit(i);
+		}
+		
+		return prefix.xor(rand);
 	}
 		
 }
