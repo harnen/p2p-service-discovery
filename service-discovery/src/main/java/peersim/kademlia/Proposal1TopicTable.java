@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.math.BigInteger;
 
 import peersim.kademlia.Topic;
-import sun.security.action.GetIntegerAction;
+import peersim.core.CommonState;
 import peersim.kademlia.Registration;
 
 
@@ -33,16 +33,26 @@ public class Proposal1TopicTable implements TopicTable {
         }else{
             table.get(t).add(r);
         }
+        this.size++;
     }
 
-    public boolean register(Registration r, Topic tRegistered){
-        //need to create a copy here. Without it - the topic class would be shared among 
+    public boolean register(Registration ri, Topic ti){
+        //need to create a copy here. Without it - the topic/registration class would be shared among 
         //all the class where it's registered
-        Topic t = new Topic(tRegistered);
+        Topic t = new Topic(ti);
         t.setHostID(this.hostID);
+        Registration r = new Registration(ri);
+        r.setTimestamp(CommonState.getTime());
+
+        //check if we already have this registration
+        List<Registration> regList = table.get(t);
+        if((regList != null) && (regList.contains(r))){
+            return true;
+        }
+        
         //if we have space, always add the registration
         if(size < capacity){
-            System.out.println("Size lower than capacity - adding");
+            //System.out.println("Size lower than capacity - adding");
             add(r, t);
             return true;
         //table is full
@@ -52,6 +62,7 @@ public class Proposal1TopicTable implements TopicTable {
                 table.get(table.lastKey()).remove(0);
                 //if a topic has no more registration - remove it
                 if(table.get(table.lastKey()).size() == 0) table.remove(table.lastKey());
+                this.size--;
                 add(r, t);
                 return true;
             }
@@ -77,11 +88,32 @@ public class Proposal1TopicTable implements TopicTable {
     }
     
     public int getSize(){
-        return this.capacity;
+        return this.size;
     }
 
     public BigInteger getHostID(){
         return this.hostID;
+    }
+
+    public void clear(){
+        this.table.clear();
+        this.size = 0;
+    }
+
+    public String toString(){
+        //need a final variable inside lambda expressions below
+        final StringBuilder result = new StringBuilder();
+        result.append("--------------------------------\n");
+        result.append("Proposal1Topic Table size: " + this.size + "/" + this.capacity + " hostID: " + this.hostID);
+        this.table.forEach((k, v) -> {
+            
+            result.append("\n" + k.toString() + ":");
+            v.forEach((Registration reg) ->{
+                result.append(" " + reg.toString());
+            });
+        });
+        result.append("\n--------------------------------");
+        return result.toString();
     }
     
 }

@@ -55,4 +55,12 @@ public class Topic implements Comparable<Topic> {
     public BigInteger getHostID(){
         return this.hostID;
     }
+
+    public String getTopic(){
+        return this.topic;
+    }
+
+    public BigInteger getTopicID(){
+        return this.topicID;
+    }
 }
