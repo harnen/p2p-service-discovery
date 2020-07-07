@@ -51,7 +51,28 @@ public class TrafficGenerator implements Control {
 		while (!n.isUp()) {
 			n = Network.get(CommonState.r.nextInt(Network.size()));
 		}
-		m.dest = ((KademliaProtocol) (n.getProtocol(pid))).nodeId;
+		m.dest = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
+
+		return m;
+	}
+
+
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a register message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	private Message generateRegistersMessage() {
+		Message m = Message.makeFindNode("Automatically Generated Traffic");
+		m.timestamp = CommonState.getTime();
+
+		// existing active destination node
+		Node n = Network.get(CommonState.r.nextInt(Network.size()));
+		while (!n.isUp()) {
+			n = Network.get(CommonState.r.nextInt(Network.size()));
+		}
+		m.dest = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
 
 		return m;
 	}

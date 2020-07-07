@@ -42,7 +42,7 @@ public class Message extends SimpleEvent {
 	public static final int MSG_STORE = 1;
 
 	/**
-	 * Message Type: FINDNODE (message regarding node find)
+	 * Message Type: INIT_FIND (command to a node to start looking for a node)
 	 */
 	public static final int MSG_INIT_FIND = 2;
 
@@ -60,6 +60,11 @@ public class Message extends SimpleEvent {
 	 * Message Type: REGISTER (register the node under a topic)
 	 */
 	public static final int MSG_REGISTER = 5;
+
+	/**
+	 * Message Type: INIT_REGISTER (start registering under a topic)
+	 */
+	public static final int MSG_INIT_REGISTER = 6;
 
 	// ______________________________________________________________________________________________
 	/**
@@ -153,6 +158,18 @@ public class Message extends SimpleEvent {
 	 */
 	public static final Message makeFindNode(Object body) {
 		return new Message(MSG_INIT_FIND, body);
+	}
+
+	// ______________________________________________________________________________________________
+	/**
+	 * Encapsulates the creation of a find node request
+	 * 
+	 * @param body
+	 *            Object
+	 * @return Message
+	 */
+	public static final Message makeRegister(Object body) {
+		return new Message(MSG_INIT_REGISTER, body);
 	}
 
 	// ______________________________________________________________________________________________
