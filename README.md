@@ -21,3 +21,5 @@
 * If we have parallel lookups we need to make sure that the paths are disjoin. 
 
 * [S-Kademlia](https://www.sciencedirect.com/science/article/abs/pii/S1389128615004168)
+
+* [Check this code](https://github.com/ethereum/go-ethereum/blob/master/p2p/discover/v5_udp.go#L280) - here's the main for the protocol, handling messages etc. 
