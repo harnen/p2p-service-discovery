@@ -62,7 +62,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	/**
 	 * find operations set
 	 */
-	private LinkedHashMap<Long, FindOperation> findOp;
+	private LinkedHashMap<Long, Operation> operations;
 
 	/**
 	 * Replicate this object by returning an identical copy.<br>
@@ -91,7 +91,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		sentMsg = new TreeMap<Long, Long>();
 
-		findOp = new LinkedHashMap<Long, FindOperation>();
+		operations = new LinkedHashMap<Long, Operation>();
 
 		tid = Configuration.getPid(prefix + "." + PAR_TRANSPORT);
 	}
@@ -172,7 +172,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		}
 
 		// get corresponding find operation (using the message field operationId)
-		FindOperation fop = this.findOp.get(m.operationId);
+		FindOperation fop = (FindOperation)	 this.operations.get(m.operationId);
 
 		if (fop != null) {
 			// save received neighbour in the closest Set of fin operation
@@ -201,7 +201,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					sendMessage(request, neighbour, myPid);
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
-					findOp.remove(fop.operationId);
+					operations.remove(fop.operationId);
 
 					if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
 						// update statistics
@@ -290,7 +290,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// create find operation and add to operations array
 		FindOperation fop = new FindOperation(m.dest, m.timestamp);
 		fop.body = m.body;
-		findOp.put(fop.operationId, fop);
+		operations.put(fop.operationId, fop);
 
 		// get the ALPHA closest node to srcNode and add to find operation
 		BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, this.node.getId());
@@ -313,23 +313,25 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	}
 
 
-	// /**
-	//  * Start a register opearation.<br>
-	//  * Find the ALPHA closest node and send register request to them.
-	//  * 
-	//  * @param m
-	//  *            Message received (contains the node to find)
-	//  * @param myPid
-	//  *            the sender Pid
-	//  */
-	// private void handleInitRegister(Message m, int myPid) {
+	/**
+	 * Start a register opearation.<br>
+	 * Find the ALPHA closest node and send register request to them.
+	 * 
+	 * @param m
+	 *            Message received (contains the node to find)
+	 * @param myPid
+	 *            the sender Pid
+	 */
+	private void handleInitRegister(Message m, int myPid) {
 
-	// 	KademliaObserver.find_op.add(1);
+	KademliaObserver.register_op.add(1);
 
-	// 	// create find operation and add to operations array
-	// 	FindOperation fop = new FindOperation(m.dest, m.timestamp);
-	// 	fop.body = m.body;
-	// 	findOp.put(fop.operationId, fop);
+	Topic t = new Topic((String) m.body);
+	Registration r = new Registration(this.node);
+
+	RegisterOperation rop = new RegisterOperation(m.timestamp, t, r);
+	rop.body = m.body;
+	operations.put(rop.operationId, rop);
 
 	// 	// get the ALPHA closest node to srcNode and add to find operation
 	// 	BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, this.nodeId);
@@ -349,7 +351,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	// 			fop.nrHops++;
 	// 		}
 	// 	}
-	// }
+	}
 
 	/**
 	 * send a message with current transport layer and starting the timeout timer (which is an event) if the message is a request
@@ -450,12 +452,12 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					// remove node from my routing table
 					this.routingTable.removeNeighbour(t.node);
 					// remove from closestSet of find operation
-					this.findOp.get(t.opID).closestSet.remove(t.node);
+					this.operations.get(t.opID).closestSet.remove(t.node);
 					// try another node
 					Message m1 = new Message();
 					m1.operationId = t.opID;
 					m1.src = this.node.getId();
-					m1.dest = this.findOp.get(t.opID).destNode;
+					m1.dest = this.operations.get(t.opID).destNode;
 					this.find(m1, myPid);
 				}
 				break;

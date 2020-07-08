@@ -3,7 +3,7 @@ package peersim.kademlia;
 import java.net.InetAddress;
 import java.math.BigInteger;
 
-public class KademliaNode {
+public class KademliaNode implements Comparable<KademliaNode>{
     private BigInteger id;
     private String addr;
     private int port;
@@ -24,5 +24,28 @@ public class KademliaNode {
 
     public int getPort(){
         return this.port;
+    }
+
+    public int compareTo(KademliaNode n){
+        if(this.id.compareTo(n.id) != 0){
+            return this.id.compareTo(n.id);
+        }
+        if(this.addr != n.addr){
+            return this.addr.compareTo(n.addr);
+        }
+
+        if(this.port == n.port){
+            return 0;
+        }
+
+        if(this.port < n.port){
+            return -1;
+        }
+
+        if(this.port > n.port){
+            return 1;
+        }
+
+        return 0;
     }
 }

@@ -17,6 +17,21 @@ public class Topic implements Comparable<Topic> {
      * All the node IDs are positive, so to make it uniform, we create only positive
      * topic IDs as well. 
     */
+
+    public Topic(String topic){
+        this.hostID = new BigInteger("0");
+        this.topic = topic;
+
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(topic.getBytes(StandardCharsets.UTF_8));
+            this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8).abs();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+    }
     public Topic(BigInteger hostID, String topic) {
         this.hostID = hostID;
         this.topic = topic;
