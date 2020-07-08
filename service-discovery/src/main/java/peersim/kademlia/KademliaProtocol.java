@@ -192,7 +192,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					Message request = new Message(Message.MSG_FIND);
 					request.operationId = m.operationId;
 					request.src = this.node.getId();
-					request.dest = m.dest;
+					request.body = m.body;
 
 					// increment hop count
 					fop.nrHops++;
@@ -233,7 +233,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleFind(Message m, int myPid) {
 		// get the ALPHA closest node to destNode
-		BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, m.src);
+		BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, m.src);
 		/*System.out.print("Including neigbours");
 		for(BigInteger n : neighbours){
 			System.out.print(", " + n);
@@ -244,7 +244,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// create a response message containing the neighbours (with the same id of the request)
 		Message response = new Message(Message.MSG_RESPONSE, neighbours);
 		response.operationId = m.operationId;
-		response.dest = m.dest;
+		response.body = m.body;
 		response.src = this.node.getId();
 		response.ackId = m.id; // set ACK number
 
@@ -288,12 +288,12 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		KademliaObserver.register_op.add(1);
 
 		// create find operation and add to operations array
-		FindOperation fop = new FindOperation(m.dest, m.timestamp);
+		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
 		fop.body = m.body;
 		operations.put(fop.operationId, fop);
 
 		// get the ALPHA closest node to srcNode and add to find operation
-		BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, this.node.getId());
+		BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
 		fop.elaborateResponse(neighbours);
 		fop.available_requests = KademliaCommonConfig.ALPHA;
 
@@ -329,14 +329,14 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	Topic t = new Topic((String) m.body);
 	Registration r = new Registration(this.node);
 
-	assert(t.topicID == m.dest);
+	assert(t.topicID == (BigInteger) m.body);
 
 	RegisterOperation rop = new RegisterOperation(m.timestamp, t, r);
 	rop.body = m.body;
 	operations.put(rop.operationId, rop);
 
 	// 	// get the ALPHA closest node to srcNode and add to find operation
-	BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, this.node.getId());
+	BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
 	rop.elaborateResponse(neighbours);
 	rop.available_requests = KademliaCommonConfig.ALPHA;
 
@@ -372,7 +372,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
 
-		System.out.println(this.node.getId() + " (" + m.messageTypetoString() + "/" + m.id + ") -> " + destId);
+		System.out.println(this.node.getId() + " (" + m + "/" + m.id + ") -> " + destId);
 
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		transport.send(src, dest, m, kademliaid);
@@ -404,7 +404,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT){
 			Message m = (Message) event;
 			//System.out.println("Node " + nodeId + " received an event: " + received.messageTypetoString() + " ID: " + received.id + " from " + received.src);
-			System.out.println(this.node.getId() + "<- (" + m.messageTypetoString() + "/" + m.id + ") " + m.src);
+			System.out.println(this.node.getId() + " <- " +  m + " " + m.src);
 		}
 
 		Message m;
@@ -459,7 +459,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					Message m1 = new Message();
 					m1.operationId = t.opID;
 					m1.src = this.node.getId();
-					m1.dest = this.operations.get(t.opID).destNode;
+					m1.body = this.operations.get(t.opID).destNode;
 					this.find(m1, myPid);
 				}
 				break;

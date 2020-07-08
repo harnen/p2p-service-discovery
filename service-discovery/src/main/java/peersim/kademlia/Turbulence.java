@@ -152,7 +152,7 @@ public class Turbulence implements Control {
 		// create auto-search message (search message with destination my own Id)
 		Message m = Message.makeFindNode("Bootstrap traffic");
 		m.timestamp = CommonState.getTime();
-		m.dest = newKad.node.getId();
+		m.body = newKad.node.getId();
 
 		// perform initialization
 		newKad.routingTable.addNeighbour(((KademliaProtocol) (start.getProtocol(kademliaid))).node.getId());
@@ -163,7 +163,7 @@ public class Turbulence implements Control {
 		// find another random node (this is to enrich the k-buckets)
 		Message m1 = Message.makeFindNode("Bootstrap traffic");
 		m1.timestamp = CommonState.getTime();
-		m1.dest = urg.generate();
+		m1.body = urg.generate();
 
 		return false;
 	}

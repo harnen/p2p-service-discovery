@@ -90,7 +90,7 @@ public class Message extends SimpleEvent {
 	/**
 	 * Recipient address of the message
 	 */
-	public BigInteger dest;
+	//public BigInteger dest;
 
 	/**
 	 * Source address of the message: has to be filled at application level
@@ -168,8 +168,8 @@ public class Message extends SimpleEvent {
 	 *            Object
 	 * @return Message
 	 */
-	public static final Message makeRegister(Object body) {
-		return new Message(MSG_INIT_REGISTER, body);
+	public static final Message makeRegister(String topic) {
+		return new Message(MSG_INIT_REGISTER, topic);
 	}
 
 	// ______________________________________________________________________________________________
@@ -186,8 +186,16 @@ public class Message extends SimpleEvent {
 
 	// ______________________________________________________________________________________________
 	public String toString() {
-		String s = "[ID=" + id + "][DEST=" + dest + "]";
-		return s + "[Type=" + messageTypetoString() + "] BODY=(...)";
+		String s = "[ID=" + id;
+		switch(this.type){
+			case MSG_FIND:
+				s += "][DEST=" + this.body + "]";
+				break;
+			default:
+				break;
+		}
+		 
+		return s + "[Type=" + messageTypetoString() + "]";
 	}
 
 	// ______________________________________________________________________________________________
@@ -195,7 +203,7 @@ public class Message extends SimpleEvent {
 		Message dolly = new Message();
 		dolly.type = this.type;
 		dolly.src = this.src;
-		dolly.dest = this.dest;
+		//dolly.dest = this.dest;
 		dolly.operationId = this.operationId;
 		dolly.body = this.body; // deep cloning?
 
