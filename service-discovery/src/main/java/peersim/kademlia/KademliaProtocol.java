@@ -329,28 +329,30 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	Topic t = new Topic((String) m.body);
 	Registration r = new Registration(this.node);
 
+	assert(t.topicID == m.dest);
+
 	RegisterOperation rop = new RegisterOperation(m.timestamp, t, r);
 	rop.body = m.body;
 	operations.put(rop.operationId, rop);
 
 	// 	// get the ALPHA closest node to srcNode and add to find operation
-	// 	BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, this.nodeId);
-	// 	fop.elaborateResponse(neighbours);
-	// 	fop.available_requests = KademliaCommonConfig.ALPHA;
+	BigInteger[] neighbours = this.routingTable.getNeighbours(m.dest, this.node.getId());
+	rop.elaborateResponse(neighbours);
+	rop.available_requests = KademliaCommonConfig.ALPHA;
 
-	// 	// set message operation id
-	// 	m.operationId = fop.operationId;
-	// 	m.type = Message.MSG_FIND;
-	// 	m.src = this.nodeId;
+	// set message operation id
+	m.operationId = rop.operationId;
+	m.type = Message.MSG_REGISTER;
+	m.src = this.node.getId();
 
-	// 	// send ALPHA messages
-	// 	for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
-	// 		BigInteger nextNode = fop.getNeighbour();
-	// 		if (nextNode != null) {
-	// 			sendMessage(m.copy(), nextNode, myPid);
-	// 			fop.nrHops++;
-	// 		}
-	// 	}
+	// send ALPHA messages
+	for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
+		BigInteger nextNode = rop.getNeighbour();
+		if (nextNode != null) {
+			sendMessage(m.copy(), nextNode, myPid);
+			rop.nrHops++;
+		}
+	}
 	}
 
 	/**
@@ -375,7 +377,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		transport.send(src, dest, m, kademliaid);
 
-		if (m.getType() == Message.MSG_FIND) { // is a request
+		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
 			Timeout t = new Timeout(destId, m.id, m.operationId);
 			long latency = transport.getLatency(src, dest);
 
