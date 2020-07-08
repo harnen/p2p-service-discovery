@@ -10,3 +10,8 @@
 [Eth crawling results](https://github.com/ethereum/discv4-dns-lists)
 
 [How the list above is created](https://geth.ethereum.org/docs/developers/dns-discovery-setup)
+
+## Notes
+
+* p2p/discover <--- use this
+* p2p/discv5 <----------- OLD, don't use
