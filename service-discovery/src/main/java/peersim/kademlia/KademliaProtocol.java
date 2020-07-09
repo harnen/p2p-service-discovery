@@ -207,20 +207,22 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				BigInteger neighbour = fop.getNeighbour();
 
 				if (neighbour != null) {
-					// create a new request to send to neighbour
+					// send a new request only if we didn't find the node already
+					if(!fop.finished){
+						Message request = new Message(Message.MSG_FIND);
+						request.operationId = m.operationId;
+						request.src = this.node.getId();
+						request.body = Util.prefixLen(fop.destNode, neighbour);
 
-					Message request = new Message(Message.MSG_FIND);
-					request.operationId = m.operationId;
-					request.src = this.node.getId();
-					request.body = Util.prefixLen(fop.destNode, neighbour);
+						fop.nrHops++;
+						
+						sendMessage(request, neighbour, myPid);
+					}
 
-					// increment hop count
-					fop.nrHops++;
-
-					// send find request
-					sendMessage(request, neighbour, myPid);
+					
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
+					System.out.println("###################################");
 					operations.remove(fop.operationId);
 					System.out.println("Removing operation " + fop.operationId);
 					System.out.println(this.node.getId() + " operations:" + Arrays.toString(operations.entrySet().toArray()));
@@ -242,7 +244,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				}
 			}
 		} else {
-			System.err.println("There has been some error in the protocol");
+			System.err.println("Can't with operation " + m.operationId);
 			System.exit(-1);
 		}
 	}
