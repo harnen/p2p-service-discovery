@@ -188,8 +188,11 @@ public class Message extends SimpleEvent {
 	public String toString() {
 		String s = "[ID=" + id;
 		switch(this.type){
-			case MSG_FIND:
+			case MSG_INIT_FIND:
 				s += "][DEST=" + this.body + "]";
+				break;
+			case MSG_FIND:
+				s += "][DIST=" + this.body + "]";
 				break;
 			default:
 				break;

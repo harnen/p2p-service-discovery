@@ -12,6 +12,7 @@ package peersim.kademlia;
 import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.TreeMap;
+import java.util.Arrays;
 
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -171,18 +172,32 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			routingTable.addNeighbour(m.src);
 		}
 
+		/*System.out.print("Received neigbours: [");
+		BigInteger[] neighbours = (BigInteger[]) m.body;
+		for(BigInteger n : neighbours){
+			System.out.print(", " + n);
+		}
+		System.out.println("]");*/
+
+		
+
 		// get corresponding find operation (using the message field operationId)
 		FindOperation fop = (FindOperation)	 this.operations.get(m.operationId);
 
 		if (fop != null) {
 			// save received neighbour in the closest Set of fin operation
 			try {
-				fop.elaborateResponse((BigInteger[]) m.body);
+				fop.elaborateResponse(neighbours);
 			} catch (Exception ex) {
 				fop.available_requests++;
 			}
+			if(Arrays.asList(neighbours).contains(fop.destNode)){
+				System.out.println("Found node" + fop.destNode);
+				fop.finished = true;
+				return;
+			}
 
-			while (fop.available_requests > 0) { // I can send a new find request
+			while ( (!fop.finished) && (fop.available_requests > 0)) { // I can send a new find request
 
 				// get an available neighbour
 				BigInteger neighbour = fop.getNeighbour();
@@ -192,7 +207,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					Message request = new Message(Message.MSG_FIND);
 					request.operationId = m.operationId;
 					request.src = this.node.getId();
-					request.body = m.body;
+					request.body = Util.prefixLen(fop.destNode, neighbour);
 
 					// increment hop count
 					fop.nrHops++;
@@ -203,13 +218,14 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					// search operation finished
 					operations.remove(fop.operationId);
 
-					if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
+					//TODO We use body for other purposes now - need to reconfigure this
+					/*if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
 						// update statistics
 						long timeInterval = (CommonState.getTime()) - (fop.timestamp);
 						KademliaObserver.timeStore.add(timeInterval);
 						KademliaObserver.hopStore.add(fop.nrHops);
 						KademliaObserver.msg_deliv.add(1);
-					}
+					}*/
 
 					return;
 
@@ -233,18 +249,18 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleFind(Message m, int myPid) {
 		// get the ALPHA closest node to destNode
-		BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, m.src);
-		/*System.out.print("Including neigbours");
+		BigInteger[] neighbours = this.routingTable.getNeighbours((int) m.body);
+		/*System.out.print("Including neigbours: [");
 		for(BigInteger n : neighbours){
 			System.out.print(", " + n);
 		}
-		System.out.println();*/
+		System.out.println("]");*/
 
 
 		// create a response message containing the neighbours (with the same id of the request)
 		Message response = new Message(Message.MSG_RESPONSE, neighbours);
 		response.operationId = m.operationId;
-		response.body = m.body;
+		//response.body = m.body;
 		response.src = this.node.getId();
 		response.ackId = m.id; // set ACK number
 
@@ -289,7 +305,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		// create find operation and add to operations array
 		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
-		fop.body = m.body;
+		fop.destNode = (BigInteger) m.body;
 		operations.put(fop.operationId, fop);
 
 		// get the ALPHA closest node to srcNode and add to find operation
@@ -306,6 +322,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
 			BigInteger nextNode = fop.getNeighbour();
 			if (nextNode != null) {
+				m.body = Util.prefixLen(nextNode, fop.destNode);
 				sendMessage(m.copy(), nextNode, myPid);
 				fop.nrHops++;
 			}

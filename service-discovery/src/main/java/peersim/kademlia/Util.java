@@ -24,13 +24,12 @@ public class Util {
 
 		String s1 = Util.put0(b1);
 		String s2 = Util.put0(b2);
-
 		int i = 0;
 		for (i = 0; i < s1.length(); i++) {
-			if (s1.charAt(i) != s2.charAt(i))
+			if (s1.charAt(i) != s2.charAt(i)){
 				return i;
+			}
 		}
-
 		return i;
 	}
 

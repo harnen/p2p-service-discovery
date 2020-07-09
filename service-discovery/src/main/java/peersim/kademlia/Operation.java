@@ -17,6 +17,8 @@ public class Operation {
 	 */
 	private static long OPERATION_ID_GENERATOR = 0;
 
+
+	public boolean finished = false;
 	/**
 	 * represent univocally the find operation
 	 */

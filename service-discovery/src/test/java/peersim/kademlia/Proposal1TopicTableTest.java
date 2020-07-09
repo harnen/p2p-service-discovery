@@ -16,6 +16,7 @@ import peersim.kademlia.UniformRandomGenerator;
 import peersim.core.CommonState;
 import peersim.config.ParsedProperties;
 import peersim.config.Configuration;
+import java.lang.Math; 
 
 
 public class Proposal1TopicTableTest{
@@ -31,7 +32,8 @@ public class Proposal1TopicTableTest{
 
     @Test
     public void capacityTopics() {
-        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger("100000000000000000000000000000000000000000000000"));
+        int v = (int) Math.pow(2, KademliaCommonConfig.BITS) - 1;
+        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger(Integer.toString(v)));
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
         tt.setCapacity(3);
 
@@ -50,7 +52,8 @@ public class Proposal1TopicTableTest{
 
     @Test
     public void capacityRegistrations() {	
-        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger("100000000000000000000000000000000000000000000000"));
+        int v = (int) Math.pow(2, KademliaCommonConfig.BITS) - 1;
+        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger(Integer.toString(v)));
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1231);
         tt.setCapacity(5);
 
@@ -67,7 +70,8 @@ public class Proposal1TopicTableTest{
 
     @Test
     public void sameRegistrations() {	
-        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger("100000000000000000000000000000000000000000000000"));
+        int v = (int) Math.pow(2, KademliaCommonConfig.BITS) - 1;
+        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger(Integer.toString(v)));
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1231);
         tt.setCapacity(3);
 
