@@ -171,15 +171,19 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		if (m.src != null) {
 			routingTable.addNeighbour(m.src);
 		}
-
-		/*System.out.print("Received neigbours: [");
+		System.out.println("Find received: " + m);
 		BigInteger[] neighbours = (BigInteger[]) m.body;
+		/*System.out.print("Received neigbours: [");
 		for(BigInteger n : neighbours){
 			System.out.print(", " + n);
 		}
 		System.out.println("]");*/
 
 		
+
+		System.out.println(this.node.getId() + "operations:" + Arrays.toString(operations.entrySet().toArray()));
+
+
 
 		// get corresponding find operation (using the message field operationId)
 		FindOperation fop = (FindOperation)	 this.operations.get(m.operationId);
@@ -197,13 +201,14 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				return;
 			}
 
-			while ( (!fop.finished) && (fop.available_requests > 0)) { // I can send a new find request
+			while ((fop.available_requests > 0)) { // I can send a new find request
 
 				// get an available neighbour
 				BigInteger neighbour = fop.getNeighbour();
 
 				if (neighbour != null) {
 					// create a new request to send to neighbour
+
 					Message request = new Message(Message.MSG_FIND);
 					request.operationId = m.operationId;
 					request.src = this.node.getId();
@@ -217,6 +222,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
 					operations.remove(fop.operationId);
+					System.out.println("Removing operation " + fop.operationId);
+					System.out.println(this.node.getId() + " operations:" + Arrays.toString(operations.entrySet().toArray()));
+
 
 					//TODO We use body for other purposes now - need to reconfigure this
 					/*if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
@@ -235,6 +243,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			}
 		} else {
 			System.err.println("There has been some error in the protocol");
+			System.exit(-1);
 		}
 	}
 
@@ -307,6 +316,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
 		fop.destNode = (BigInteger) m.body;
 		operations.put(fop.operationId, fop);
+		System.out.println(this.node.getId() + "Adding new find operation:" + Arrays.toString(operations.entrySet().toArray()));
+
 
 		// get the ALPHA closest node to srcNode and add to find operation
 		BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
@@ -327,6 +338,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				fop.nrHops++;
 			}
 		}
+		System.out.println(this.node.getId() + "end init:" + Arrays.toString(operations.entrySet().toArray()));
 	}
 
 
@@ -415,7 +427,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 *            Object
 	 */
 	public void processEvent(Node myNode, int myPid, Object event) {
-
+		//if(this.node.getId() == new BigInteger("161"))
+			System.out.println("~~~~~~~~~~~~~~~~~~" + this.node.getId() + " operations:" + Arrays.toString(operations.entrySet().toArray()));
 		// Parse message content Activate the correct event manager fot the particular event
 		this.kademliaid = myPid;
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT){
@@ -464,7 +477,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 			case Timeout.TIMEOUT: // timeout
 				Timeout t = (Timeout) event;
-				if (sentMsg.containsKey(t.msgID)) { // the response msg isn't arrived
+				if (sentMsg.containsKey(t.msgID)) { // the response msg didn't arrived
 					System.out.println("Node " + this.node.getId() + " received a timeout: " + t.msgID + " from: " + t.node);
 					// remove form sentMsg
 					sentMsg.remove(t.msgID);
@@ -476,7 +489,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					Message m1 = new Message();
 					m1.operationId = t.opID;
 					m1.src = this.node.getId();
-					m1.body = this.operations.get(t.opID).destNode;
+					m1.body = new BigInteger[0];
+					System.out.println("Will send message " + m1);
 					this.find(m1, myPid);
 				}
 				break;
