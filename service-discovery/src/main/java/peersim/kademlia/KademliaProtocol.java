@@ -179,12 +179,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		}
 		System.out.println("]");*/
 
-		
-
-		System.out.println(this.node.getId() + "operations:" + Arrays.toString(operations.entrySet().toArray()));
-
-
-
 		// get corresponding find operation (using the message field operationId)
 		FindOperation fop = (FindOperation)	 this.operations.get(m.operationId);
 
@@ -196,7 +190,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				fop.available_requests++;
 			}
 			if(Arrays.asList(neighbours).contains(fop.destNode)){
-				System.out.println("Found node" + fop.destNode);
+				System.out.println("Found node " + fop.destNode);
 				fop.finished = true;
 				return;
 			}
@@ -222,11 +216,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
-					System.out.println("###################################");
 					operations.remove(fop.operationId);
-					System.out.println("Removing operation " + fop.operationId);
-					System.out.println(this.node.getId() + " operations:" + Arrays.toString(operations.entrySet().toArray()));
-
 
 					//TODO We use body for other purposes now - need to reconfigure this
 					/*if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
@@ -318,7 +308,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
 		fop.destNode = (BigInteger) m.body;
 		operations.put(fop.operationId, fop);
-		System.out.println(this.node.getId() + "Adding new find operation:" + Arrays.toString(operations.entrySet().toArray()));
 
 
 		// get the ALPHA closest node to srcNode and add to find operation
@@ -340,7 +329,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				fop.nrHops++;
 			}
 		}
-		System.out.println(this.node.getId() + "end init:" + Arrays.toString(operations.entrySet().toArray()));
 	}
 
 
@@ -429,8 +417,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 *            Object
 	 */
 	public void processEvent(Node myNode, int myPid, Object event) {
-		//if(this.node.getId() == new BigInteger("161"))
-			System.out.println("~~~~~~~~~~~~~~~~~~" + this.node.getId() + " operations:" + Arrays.toString(operations.entrySet().toArray()));
 		// Parse message content Activate the correct event manager fot the particular event
 		this.kademliaid = myPid;
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT){
@@ -492,7 +478,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					m1.operationId = t.opID;
 					m1.src = this.node.getId();
 					m1.body = new BigInteger[0];
-					System.out.println("Will send message " + m1);
 					this.find(m1, myPid);
 				}
 				break;
