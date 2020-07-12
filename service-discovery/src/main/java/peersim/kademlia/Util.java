@@ -1,6 +1,11 @@
 package peersim.kademlia;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import com.google.common.math.BigIntegerMath; 
 
 /**
  * Some utility and mathematical function to work with BigInteger numbers and strings.
@@ -58,7 +63,7 @@ public class Util {
 	 * @return BigInteger
 	 */
 	public static final double logdistance(BigInteger a, BigInteger b) {
-		return Math.log((double)a.xor(b).doubleValue());
+		return Math.log10((double)a.xor(b).doubleValue());
 	}
 	
 	/**
@@ -78,5 +83,23 @@ public class Util {
 		}
 		return s;
 	}
+	
+	public static double log2(BigInteger x)
+	{
+		double l = Math.log10(x.divide(BigInteger.valueOf(1000000)).doubleValue())+6;
+		double n = Math.log10(x.doubleValue())/Math.log10(2);
+		System.out.println("Log "+l+" "+n);
+		//return (Math.log10(x.divide(BigInteger.valueOf(1000000)).doubleValue())+6)/Math.log10(2);
+		return n;
+	}
+	
+	public static BigInteger prefix(BigInteger address) {
+		
+		String prefix = address.toString(16).substring(0, 16);
+	
+		return new BigInteger(prefix,16);
+	}
+
+	
 
 }

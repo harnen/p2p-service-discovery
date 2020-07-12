@@ -12,6 +12,18 @@
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
   <dependencies>
+    <!-- https://mvnrepository.com/artifact/org.web3j/crypto -->
+    <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+<dependency>
+    <groupId>com.google.guava</groupId>
+    <artifactId>guava</artifactId>
+    <version>29.0-jre</version>
+</dependency>
+	  <dependency>
+	    <groupId>org.web3j</groupId>
+	    <artifactId>crypto</artifactId>
+	    <version>5.0.0</version>
+	  </dependency>
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter</artifactId>

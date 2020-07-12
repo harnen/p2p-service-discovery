@@ -47,6 +47,7 @@ public class Proposal1TopicTableTest{
 
 
     }
+    
 
     @Test
     public void capacityRegistrations() {	

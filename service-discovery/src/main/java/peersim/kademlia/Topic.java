@@ -1,6 +1,7 @@
 package peersim.kademlia;
 
 import java.math.BigInteger;
+import org.web3j.crypto.Hash;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -21,14 +22,17 @@ public class Topic implements Comparable<Topic> {
         this.hostID = hostID;
         this.topic = topic;
 
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(topic.getBytes(StandardCharsets.UTF_8));
-            this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8).abs();
-        } catch (NoSuchAlgorithmException e) {
+        //MessageDigest digest;
+        //try {
+            //digest = MessageDigest.getInstance("SHA-256");
+            //byte[] hash = digest.digest(topic.getBytes(StandardCharsets.UTF_8));
+            byte[] sha3 = Hash.sha3(topic.getBytes(StandardCharsets.UTF_8), 0, topic.getBytes(StandardCharsets.UTF_8).length);
+            //System.out.println("SHA:"+new BigInteger(sha3, 0, KademliaCommonConfig.BITS/8).abs());
+            //this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8).abs();
+            this.topicID = new BigInteger(sha3, 0, KademliaCommonConfig.BITS/8).abs();
+        /*} catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-        }
+        }*/
         
     }
 
