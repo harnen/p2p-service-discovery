@@ -63,5 +63,37 @@ public class Util {
 		}
 		return s;
 	}
+	
+	/**
+	 * calculate the log base 2 of a BigInteger value
+	 * 
+	 * @param BigInteger value
+	 * 
+	 * @return double result
+	 */
+	public static double log2(BigInteger x)
+	{
+		double l = Math.log10(x.divide(BigInteger.valueOf(1000000)).doubleValue())+6;
+		double n = Math.log10(x.doubleValue())/Math.log10(2);
+		//System.out.println("Log "+l+" "+n);
+		//return (Math.log10(x.divide(BigInteger.valueOf(1000000)).doubleValue())+6)/Math.log10(2);
+		return n;
+	}
+	
+	
+	/**
+	 * Return the 64 bit prefix of any BigInteger
+	 * 
+	 * @param BigInteger value
+	 * 
+	 * @return BigInteger result
+	 */
+	public static BigInteger prefix(BigInteger address) {
+		
+		String prefix = address.toString(16).substring(0, 16);
+	
+		return new BigInteger(prefix,16);
+	}
+
 
 }
