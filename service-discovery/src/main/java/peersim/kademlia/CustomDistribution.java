@@ -32,10 +32,13 @@ public class CustomDistribution implements peersim.core.Control {
 	 * @return boolean always false
 	 */
 	public boolean execute() {
-		BigInteger tmp;
+		
 		for (int i = 0; i < Network.size(); ++i) {
-			tmp = urg.generate();
-			((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNodeId(tmp);
+			BigInteger id;
+			id = urg.generate();
+			KademliaNode node = new KademliaNode(id, "127.0.0.1", 0);
+			
+			((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
 		}
 
 		return false;

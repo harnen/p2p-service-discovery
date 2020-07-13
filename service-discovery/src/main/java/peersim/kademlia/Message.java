@@ -42,7 +42,7 @@ public class Message extends SimpleEvent {
 	public static final int MSG_STORE = 1;
 
 	/**
-	 * Message Type: FINDNODE (message regarding node find)
+	 * Message Type: INIT_FIND (command to a node to start looking for a node)
 	 */
 	public static final int MSG_INIT_FIND = 2;
 
@@ -60,6 +60,11 @@ public class Message extends SimpleEvent {
 	 * Message Type: REGISTER (register the node under a topic)
 	 */
 	public static final int MSG_REGISTER = 5;
+
+	/**
+	 * Message Type: INIT_REGISTER (start registering under a topic)
+	 */
+	public static final int MSG_INIT_REGISTER = 6;
 
 	// ______________________________________________________________________________________________
 	/**
@@ -85,7 +90,7 @@ public class Message extends SimpleEvent {
 	/**
 	 * Recipient address of the message
 	 */
-	public BigInteger dest;
+	//public BigInteger dest;
 
 	/**
 	 * Source address of the message: has to be filled at application level
@@ -157,6 +162,18 @@ public class Message extends SimpleEvent {
 
 	// ______________________________________________________________________________________________
 	/**
+	 * Encapsulates the creation of a find node request
+	 * 
+	 * @param body
+	 *            Object
+	 * @return Message
+	 */
+	public static final Message makeRegister(String topic) {
+		return new Message(MSG_INIT_REGISTER, topic);
+	}
+
+	// ______________________________________________________________________________________________
+	/**
 	 * Encapsulates the creation of a find value request
 	 * 
 	 * @param body
@@ -169,8 +186,19 @@ public class Message extends SimpleEvent {
 
 	// ______________________________________________________________________________________________
 	public String toString() {
-		String s = "[ID=" + id + "][DEST=" + dest + "]";
-		return s + "[Type=" + messageTypetoString() + "] BODY=(...)";
+		String s = "[ID=" + id + ", OP_ID=" + operationId + ", SRC=" + src;
+		switch(this.type){
+			case MSG_INIT_FIND:
+				s += ", DEST=" + this.body + "]";
+				break;
+			case MSG_FIND:
+				s += ", DIST=" + this.body + "]";
+				break;
+			default:
+				break;
+		}
+		 
+		return s + "[Type=" + messageTypetoString() + "]";
 	}
 
 	// ______________________________________________________________________________________________
@@ -178,7 +206,7 @@ public class Message extends SimpleEvent {
 		Message dolly = new Message();
 		dolly.type = this.type;
 		dolly.src = this.src;
-		dolly.dest = this.dest;
+		//dolly.dest = this.dest;
 		dolly.operationId = this.operationId;
 		dolly.body = this.body; // deep cloning?
 

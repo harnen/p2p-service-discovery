@@ -5,11 +5,11 @@ import java.util.Date;
 
 public class Registration implements Comparable<Registration>{
 
-    private BigInteger node;
+    private KademliaNode node;
     //have to check how to use time (number of cycles in peersim)
     private long timestamp;
 
-    public Registration(BigInteger node) {
+    public Registration(KademliaNode node) {
         this.node = node;
         this.timestamp = 0;
     }

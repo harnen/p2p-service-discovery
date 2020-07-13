@@ -16,6 +16,7 @@ import peersim.kademlia.UniformRandomGenerator;
 import peersim.core.CommonState;
 import peersim.config.ParsedProperties;
 import peersim.config.Configuration;
+import java.lang.Math; 
 
 
 public class Proposal1TopicTableTest{
@@ -31,14 +32,15 @@ public class Proposal1TopicTableTest{
 
     @Test
     public void capacityTopics() {
-        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger("100000000000000000000000000000000000000000000000"));
+        int v = (int) Math.pow(2, KademliaCommonConfig.BITS) - 1;
+        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger(Integer.toString(v)));
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
         tt.setCapacity(3);
 
         for(int i = 0; i < 10; i++){
             
             Topic t = new Topic(new BigInteger("0"), "topic"+i);
-            Registration r = new Registration(urg.generate());
+            Registration r = new Registration(new KademliaNode(urg.generate(), "127.0.0.1", 0));
             //System.out.println("Adding topic:" +  t + "with registration:" + r);
             Boolean result = tt.register(r, t);
         }
@@ -51,13 +53,14 @@ public class Proposal1TopicTableTest{
 
     @Test
     public void capacityRegistrations() {	
-        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger("100000000000000000000000000000000000000000000000"));
+        int v = (int) Math.pow(2, KademliaCommonConfig.BITS) - 1;
+        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger(Integer.toString(v)));
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1231);
         tt.setCapacity(5);
 
         Topic t = new Topic(new BigInteger("0"), "topic");
         for(int i = 0; i < 10; i++){
-            Registration r = new Registration(urg.generate());
+            Registration r = new Registration(new KademliaNode(urg.generate(), "127.0.0.1", 0));
             //System.out.println("Adding topic:" +  t + "with registration:" + r);
             Boolean result1 = tt.register(r, t);
             
@@ -68,12 +71,13 @@ public class Proposal1TopicTableTest{
 
     @Test
     public void sameRegistrations() {	
-        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger("100000000000000000000000000000000000000000000000"));
+        int v = (int) Math.pow(2, KademliaCommonConfig.BITS) - 1;
+        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger(Integer.toString(v)));
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1231);
         tt.setCapacity(3);
 
         Topic t = new Topic(new BigInteger("0"), "topic");
-        Registration r = new Registration(urg.generate());
+        Registration r = new Registration(new KademliaNode(urg.generate(), "127.0.0.1", 0));
         for(int i = 0; i < 3; i++){
             //System.out.println("Adding topic:" +  t + "with registration:" + r);
             Boolean result1 = tt.register(r, t);

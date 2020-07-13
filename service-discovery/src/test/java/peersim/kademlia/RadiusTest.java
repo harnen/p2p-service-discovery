@@ -78,7 +78,7 @@ public class RadiusTest{
         	 rad.adjustWithTicket(now, addr,wait,now);
         	 System.out.println("radius "+rad.radius);
         	 System.out.println("maxradius "+TopicRadius.maxRadius);
-        	 System.out.println("Topic:"+t+" wait"+wait+"cnt"+cnt+"bcnt"+bcnt);	
+        	 System.out.println("Topic:"+t+" wait:"+wait+" cnt:"+cnt+" bcnt:"+bcnt);	
      		  if(rad.radius.compareTo(TopicRadius.maxRadius)!=0) {
     			cnt++;
     			sum += rad.radius.doubleValue();
@@ -99,7 +99,7 @@ public class RadiusTest{
     	 
     	 BigDecimal dist = new BigDecimal(prefix.xor(rad.getTopicHashPrefix()));
     	 
-    	 System.out.println("Addr "+addr+" prefix "+prefix+" "+prefix.bitCount()+" topicprefix:"+rad.getTopicHashPrefix()+" dist:"+dist+" "+i);
+    	 //System.out.println("Addr "+addr+" prefix "+prefix+" "+prefix.bitCount()+" topicprefix:"+rad.getTopicHashPrefix()+" dist:"+dist+" "+i);
 
     	 
     	 BigDecimal relDist = dist.divide(targetRad,MathContext.DECIMAL64);
@@ -108,9 +108,9 @@ public class RadiusTest{
     	 if(relTime < 0) {
     		 relTime = 0;
     	 }
-    	 System.out.println("dist "+dist+" targetRad "+targetRad+" relDist "+relDist+" reltime "+relTime);
+    	 //System.out.println("dist "+dist+" targetRad "+targetRad+" relDist "+relDist+" reltime "+relTime);
 
-    	 System.out.println("Wait time "+TopicRadius.targetWaitTime+" "+relTime+" "+TopicRadius.targetWaitTime*relTime);
+    	 //System.out.println("Wait time "+TopicRadius.targetWaitTime+" "+relTime+" "+TopicRadius.targetWaitTime*relTime);
     	 return (long)(TopicRadius.targetWaitTime * relTime);
      }
 

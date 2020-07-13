@@ -11,7 +11,10 @@ import peersim.kademlia.Operation;
  * @author Daniele Furlan, Maurizio Bonani
  * @version 1.0
  */
-public class FindOperation extends Operation{
+public class RegisterOperation extends Operation{
+
+	private Topic topic;
+	private Registration registration;
 
 
 	/**
@@ -20,9 +23,11 @@ public class FindOperation extends Operation{
 	 * @param destNode
 	 *            Id of the node to find
 	 */
-	public FindOperation(BigInteger destNode, long timestamp) {
-		super(destNode, timestamp);
+	public RegisterOperation(long timestamp, Topic t, Registration r) {
+		
+		super(t.getTopicID(), timestamp);
+
+		this.registration = r;
+		this.topic = t;
 	}
-
-
 }

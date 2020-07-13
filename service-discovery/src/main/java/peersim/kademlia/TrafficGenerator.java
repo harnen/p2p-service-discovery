@@ -7,6 +7,8 @@ import peersim.core.Network;
 import peersim.core.Node;
 import peersim.edsim.EDSimulator;
 
+import java.math.BigInteger;
+
 /**
  * This control generates random search traffic from nodes to random destination node.
  * 
@@ -24,6 +26,8 @@ public class TrafficGenerator implements Control {
 	private final static String PAR_PROT = "protocol";
 
 	private boolean first = true;
+
+	private int topicCounter = 0;
 
 	/**
 	 * MSPastry Protocol ID to act
@@ -43,15 +47,38 @@ public class TrafficGenerator implements Control {
 	 * @return Message
 	 */
 	private Message generateFindNodeMessage() {
-		Message m = Message.makeFindNode("Automatically Generated Traffic");
+		// existing active destination node
+		Node n = Network.get(CommonState.r.nextInt(Network.size()));
+		while (!n.isUp()) {
+			n = Network.get(CommonState.r.nextInt(Network.size()));
+		}
+		BigInteger dst = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
+
+		Message m = Message.makeFindNode(dst);
 		m.timestamp = CommonState.getTime();
+
+		return m;
+	}
+
+
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a register message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	private Message generateRegistersMessage() {
+		Topic t = new Topic("t" + Integer.toString(this.topicCounter++));
+		Message m = Message.makeRegister(t.getTopic());
+		m.timestamp = CommonState.getTime();
+		
 
 		// existing active destination node
 		Node n = Network.get(CommonState.r.nextInt(Network.size()));
 		while (!n.isUp()) {
 			n = Network.get(CommonState.r.nextInt(Network.size()));
 		}
-		m.dest = ((KademliaProtocol) (n.getProtocol(pid))).nodeId;
+		m.body = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
 
 		return m;
 	}

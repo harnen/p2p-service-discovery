@@ -3,6 +3,7 @@ package peersim.kademlia;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.TreeMap;
+import java.util.Map;
 
 /**
  * Gives an implementation for the routing table component of a kademlia node
@@ -46,6 +47,13 @@ public class RoutingTable implements Cloneable {
 
 		// add the node to the k-bucket
 		k_buckets.get(prefix_len).removeNeighbour(node);
+	}
+
+	// return the neighbours with a specific common prefix len
+	public BigInteger[] getNeighbours (final int dist) {
+		BigInteger[] result = new BigInteger[0];
+
+		return k_buckets.get(dist).neighbours.keySet().toArray(result);
 	}
 
 	// return the closest neighbour to a key from the correct k-bucket

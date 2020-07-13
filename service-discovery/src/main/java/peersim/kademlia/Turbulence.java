@@ -112,7 +112,7 @@ public class Turbulence implements Control {
 				Node n2 = (Node) o2;
 				KademliaProtocol p1 = (KademliaProtocol) (n1.getProtocol(kademliaid));
 				KademliaProtocol p2 = (KademliaProtocol) (n2.getProtocol(kademliaid));
-				return Util.put0(p1.nodeId).compareTo(Util.put0(p2.nodeId));
+				return Util.put0(p1.node.getId()).compareTo(Util.put0(p2.node.getId()));
 			}
 
 			// ______________________________________________________________________________________
@@ -137,7 +137,8 @@ public class Turbulence implements Control {
 
 		// set node Id
 		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
-		((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNodeId(urg.generate());
+		KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
+		((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
 
 		// sort network
 		sortNet();
@@ -151,10 +152,10 @@ public class Turbulence implements Control {
 		// create auto-search message (search message with destination my own Id)
 		Message m = Message.makeFindNode("Bootstrap traffic");
 		m.timestamp = CommonState.getTime();
-		m.dest = newKad.nodeId;
+		m.body = newKad.node.getId();
 
 		// perform initialization
-		newKad.routingTable.addNeighbour(((KademliaProtocol) (start.getProtocol(kademliaid))).nodeId);
+		newKad.routingTable.addNeighbour(((KademliaProtocol) (start.getProtocol(kademliaid))).node.getId());
 
 		// start auto-search
 		EDSimulator.add(0, m, newNode, kademliaid);
@@ -162,7 +163,7 @@ public class Turbulence implements Control {
 		// find another random node (this is to enrich the k-buckets)
 		Message m1 = Message.makeFindNode("Bootstrap traffic");
 		m1.timestamp = CommonState.getTime();
-		m1.dest = urg.generate();
+		m1.body = urg.generate();
 
 		return false;
 	}

@@ -41,12 +41,12 @@ public class TopicRadius {
 		//String prefix = 
 		double log2=0.0;
 		if(prefix!=topicHashPrefix) {
-			System.out.println("getBucketIdx not hash prefix hashprefix "+topicHashPrefix+" xor:"+prefix.xor(topicHashPrefix)+" "+prefix.xor(topicHashPrefix).longValue());
+			//System.out.println("getBucketIdx not hash prefix hashprefix "+topicHashPrefix+" xor:"+prefix.xor(topicHashPrefix)+" "+prefix.xor(topicHashPrefix).longValue());
 			log2 = Util.log2(prefix.xor(topicHashPrefix));
 		}
 		int bucket = (int)((64 - log2)* radiusBucketsPerBit);
 		int max = 64*radiusBucketsPerBit - 1;
-		System.out.println("getBucketIdx addr:"+address+" prefix:"+prefix+ " log2:"+log2+" bucket:"+bucket);
+		//System.out.println("getBucketIdx addr:"+address+" prefix:"+prefix+ " log2:"+log2+" bucket:"+bucket);
 
 		if(bucket>max) {
 			return max;
@@ -65,7 +65,7 @@ public class TopicRadius {
 		double max = Math.pow(2, 64-(double)bucket/radiusBucketsPerBit);
 		BigInteger a = BigDecimal.valueOf(min).toBigInteger();
 		BigInteger b = newRandomMax(BigDecimal.valueOf(max-min).toBigInteger());
-		System.out.println("Min "+min+" max "+max+" a "+a+" b "+b);
+		//System.out.println("Min "+min+" max "+max+" a "+a+" b "+b);
 		BigInteger xor = a.add(b);
 		
 		if(xor.compareTo(a)==-1)
@@ -149,7 +149,7 @@ public class TopicRadius {
 		for(int i=0;i<buckets.size();i++) {
 			buckets.get(i).update(now);
 			v+=buckets.get(i).getWeight(TopicRadiusBucket.trOutside)-buckets.get(i).getWeight(TopicRadiusBucket.trInside);
-			System.out.println("Ticketstore recalcRadius: v:"+v+" bucketoutside:"+buckets.get(i).getWeight(TopicRadiusBucket.trOutside)+" bucketinside:"+buckets.get(i).getWeight(TopicRadiusBucket.trInside)+" value:"+buckets.get(i).getValue());	
+			//System.out.println("Ticketstore recalcRadius: v:"+v+" bucketoutside:"+buckets.get(i).getWeight(TopicRadiusBucket.trOutside)+" bucketinside:"+buckets.get(i).getWeight(TopicRadiusBucket.trInside)+" value:"+buckets.get(i).getValue());	
 
 			buckets.get(i).setValue(v);
 
@@ -158,7 +158,7 @@ public class TopicRadius {
 		
 		for(int i=0;i<buckets.size();i++) {
 			v=buckets.get(i).getValue();
-			System.out.println("Ticketstore recalcRadius: v:"+v+" i:"+i+" maxValue:"+maxValue+" slopeCross: "+slopeCross);
+			//System.out.println("Ticketstore recalcRadius: v:"+v+" i:"+i+" maxValue:"+maxValue+" slopeCross: "+slopeCross);
 			if(v<i*minSlope) {
 				slopeCross=i;
 				break;
@@ -185,7 +185,7 @@ public class TopicRadius {
 			}
 			
 			int lookupRight=-1;
-			System.out.println("Ticketstore recalcRadius: slopeCross:"+slopeCross+" maxBucket:"+maxBucket+" minRadBucket "+minRadBucket+" needMoreLookups:"+needMoreLookups(maxBucket+lookupWidth,buckets.size()-1,maxValue));
+			//System.out.println("Ticketstore recalcRadius: slopeCross:"+slopeCross+" maxBucket:"+maxBucket+" minRadBucket "+minRadBucket+" needMoreLookups:"+needMoreLookups(maxBucket+lookupWidth,buckets.size()-1,maxValue));
 	
 			if(slopeCross!=maxBucket&&(minRadBucket<=maxBucket||needMoreLookups(maxBucket+lookupWidth,buckets.size()-1,maxValue))) {
 				while(buckets.size()<=maxBucket+lookupWidth) {
@@ -206,7 +206,7 @@ public class TopicRadius {
 					}
 				}
 			}
-			System.out.println("Ticketstore recalcRadius: maxBucket:"+maxBucket+" slopeCross:"+slopeCross+" minRadBucket:"+minRadBucket+" lookupLeft:"+lookupLeft+" lookupRight:"+lookupRight+" maxValue:"+maxValue);
+			//System.out.println("Ticketstore recalcRadius: maxBucket:"+maxBucket+" slopeCross:"+slopeCross+" minRadBucket:"+minRadBucket+" lookupLeft:"+lookupLeft+" lookupRight:"+lookupRight+" maxValue:"+maxValue);
 
 		}catch(Exception e) {};
 		
@@ -224,7 +224,7 @@ public class TopicRadius {
 				radius=BigDecimal.valueOf(Math.pow(2,64-(double)rad/radiusBucketsPerBit)).toBigInteger();
 			}
 		}
-		System.out.println("Ticketstore recalcRadius: Return radiusLookup:"+radiusLookup);
+		//System.out.println("Ticketstore recalcRadius: Return radiusLookup:"+radiusLookup);
 
 		return radiusLookup;
 	}
@@ -234,16 +234,16 @@ public class TopicRadius {
 		
 		if(!forceRegular) {
 			int radiusLookup = recalcRadius();
-			System.out.println("Radiuslookup "+radiusLookup);
+			//System.out.println("Radiuslookup "+radiusLookup);
 			if(radiusLookup!=-1) {
 				BigInteger target = targetForBucket(radiusLookup);
-				System.out.println("target "+target);
+				//System.out.println("target "+target);
 				return new LookupInfo(target,topic,true);
 			}
 		}
 		
 		BigInteger radExt = radius.divide(BigInteger.valueOf(2));
-		System.out.println("radExt "+radExt);
+		//System.out.println("radExt "+radExt);
 
 		if(radExt.compareTo(maxRadius.subtract(radius))==1) {
 			radExt=maxRadius.subtract(radius);
@@ -264,7 +264,7 @@ public class TopicRadius {
 		long wait = regTime-issueTime;//TODO calculate regtime - isuetime from ticket
 	
 		double inside = (double)wait/targetWaitTime - 0.5;
-		System.out.println("RegTime:"+regTime+" issueTime:"+issueTime+" wait:"+wait+" inside:"+inside);
+		//System.out.println("RegTime:"+regTime+" issueTime:"+issueTime+" wait:"+wait+" inside:"+inside);
 		if(inside > 1) {
 			inside = 1;
 		}
@@ -277,7 +277,7 @@ public class TopicRadius {
 	//adjust radius when ticket received
 	void adjust(long time, BigInteger targetHash, BigInteger addrHash, double inside) {
 		int bucket = getBucketIdx(addrHash);
-		System.out.println("Ticketstore adjust: adjust "+targetHash+" addr "+addrHash+" bucket "+bucket+" nbuckets "+buckets.size()+" inside "+inside);
+		//System.out.println("Ticketstore adjust: adjust "+targetHash+" addr "+addrHash+" bucket "+bucket+" nbuckets "+buckets.size()+" inside "+inside);
 
 		if(bucket>=buckets.size()) {
 			return;
@@ -304,11 +304,11 @@ public class TopicRadius {
 	
 	private BigInteger calculatePrefix(BigInteger value) {
 		BigInteger prefix = topicHashPrefix.xor(value);
-		System.out.println("Prefix "+prefix+" "+topicHashPrefix+" "+value);
+		//System.out.println("Prefix "+prefix+" "+topicHashPrefix+" "+value);
 		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 		String rand = urg.generate().toString(16);
 		//System.out.println("Rand1 "+rand.toString(16));
-		System.out.println("Rand "+prefix.toString(16).concat(rand.substring(16,rand.length())));
+		//System.out.println("Rand "+prefix.toString(16).concat(rand.substring(16,rand.length())));
 		
 		return new BigInteger(prefix.toString(16).concat(rand.substring(16,rand.length())),16);
 	}

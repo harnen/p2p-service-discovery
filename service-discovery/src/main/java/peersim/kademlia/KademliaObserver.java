@@ -39,6 +39,11 @@ public class KademliaObserver implements Control {
 	 */
 	public static IncrementalStats find_op = new IncrementalStats();
 
+	/**
+	 * keep statistic of number of register operation
+	 */
+	public static IncrementalStats register_op = new IncrementalStats();
+
 	/** Parameter of the protocol we want to observe */
 	private static final String PAR_PROT = "protocol";
 
@@ -66,25 +71,29 @@ public class KademliaObserver implements Control {
 				sz--;
 
 		String s = String.format("[time=%d]:[N=%d current nodes UP] [D=%f msg deliv] [%f min h] [%f average h] [%f max h] [%d min l] [%d msec average l] [%d max l]", CommonState.getTime(), sz, msg_deliv.getSum(), hopStore.getMin(), hopStore.getAverage(), hopStore.getMax(), (int) timeStore.getMin(), (int) timeStore.getAverage(), (int) timeStore.getMax());
-
+		String filepath = "";
 		if (CommonState.getTime() == 3600000) {
 			// create hop file
 			try {
-				File f = new File("D:/simulazioni/hopcountNEW.dat"); // " + sz + "
+				filepath  = "D:/simulazioni/hopcountNEW.dat";
+				File f = new File(filepath);
 				f.createNewFile();
 				BufferedWriter out = new BufferedWriter(new FileWriter(f, true));
 				out.write(String.valueOf(hopStore.getAverage()).replace(".", ",") + ";\n");
 				out.close();
 			} catch (IOException e) {
+				System.out.println("Couldn't open " + filepath);
 			}
 			// create latency file
 			try {
-				File f = new File("D:/simulazioni/latencyNEW.dat");
+				filepath = "D:/simulazioni/latencyNEW.dat";
+				File f = new File(filepath);
 				f.createNewFile();
 				BufferedWriter out = new BufferedWriter(new FileWriter(f, true));
 				out.write(String.valueOf(timeStore.getAverage()).replace(".", ",") + ";\n");
 				out.close();
 			} catch (IOException e) {
+				System.out.println("Couldn't open " + filepath);
 			}
 
 		}
