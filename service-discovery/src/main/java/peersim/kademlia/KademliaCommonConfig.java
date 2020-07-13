@@ -13,6 +13,7 @@ public class KademliaCommonConfig {
 	public static int K = 16; // dimension of k-buckets (default is 5)
 	public static int ALPHA = 3; // number of simultaneous lookup (default is 3)
 	public static int TOPIC_TABLE_CAP = 100; //the number of topics per node we can regiter
+	public static int MAX_REPLACEMENTS = 10; // max number of nodes kept in the replacement list for each k-bucket
 
 	/**
 	 * short information about current mspastry configuration
