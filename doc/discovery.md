@@ -18,10 +18,10 @@ Note: This is the process for Discv4 protocol. Discv5 is not used yet in the cur
 
 ### Discovery table
 
-* DEVP2P uses a Kademlia Distributed hash table with 17 buckets (257 buckets in v5???) and a bucket size of 16. Nodes in the buckets are ordered per log distance (check). If the bucket is already full, candidate nodes are stored in a so-called replacement list that stores up to 10 nodes (16 in v5 -check-).
+* DEVP2P uses a Kademlia Distributed hash table with 17 buckets and a bucket size of 16. Nodes in the buckets are ordered per last seen. If the bucket is already full, candidate nodes are stored in a so-called replacement list that stores up to 10 nodes.
 * The DHT stores node entries. Each entry contains node id and network information (IP address, etc)
 * A number of checks are performed before entering the table. TBC
-* Every 5 s?(on average), the last node of a random bucket is pinged and replaced with a random node from the respective replacement list if it fails to respond. In contrast to buckets, the replacement list is a simple FIFO queue that evicts the last entry every time a previously unknown node is added to the list. This should be checked for v5.
+* Every 10s, the last node of a random bucket is pinged and replaced with a random node from the respective replacement list if it fails to respond. In contrast to buckets, the replacement list is a simple FIFO queue that evicts the last entry every time a previously unknown node is added to the list. This should be checked for v5.
 
 
 ### Network messages 
