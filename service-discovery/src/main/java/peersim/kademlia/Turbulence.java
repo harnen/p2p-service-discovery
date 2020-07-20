@@ -69,9 +69,12 @@ public class Turbulence implements Control {
 	private double p_idle;
 	private double p_add;
 	private double p_rem;
+	
+	private long refreshTime;
 
 	// ______________________________________________________________________________________________
 	public Turbulence(String prefix) {
+		refreshTime=0;
 		this.prefix = prefix;
 		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
 		transportid = Configuration.getPid(this.prefix + "." + PAR_TRANSPORT);
@@ -185,16 +188,20 @@ public class Turbulence implements Control {
 	// ______________________________________________________________________________________________
 	public boolean execute() {
 		// throw the dice
+		if(CommonState.getTime()-refreshTime>=KademliaCommonConfig.REFRESHTIME) {
+			refreshBuckets();
+			refreshTime=CommonState.getTime();
+		}
 		double dice = CommonState.r.nextDouble();
 		if (dice < p_idle)
 			return false;
 
 		// get network size
 		int sz = Network.size();
-		for (int i = 0; i < Network.size(); i++)
+		for (int i = 0; i < Network.size(); i++) {
 			if (!Network.get(i).isUp())
 				sz--;
-
+		}
 		// perform the correct operation basing on the probability
 		if (dice < p_idle) {
 			return false; // do nothing
@@ -205,6 +212,18 @@ public class Turbulence implements Control {
 		}
 
 		return false;
+	}
+	
+	private void refreshBuckets () {
+		// for every node take 50 random node and add to k-bucket of it
+		for (int i = 0; i < Network.size(); i++) {
+			Node iNode = Network.get(i);
+			if(iNode.getFailState()==Node.OK) {
+				KademliaProtocol iKad = (KademliaProtocol) (iNode.getProtocol(kademliaid));
+				iKad.refreshBuckets();
+			}
+		}
+		
 	}
 
 } // End of class

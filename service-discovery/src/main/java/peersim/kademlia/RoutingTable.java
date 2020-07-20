@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Gives an implementation for the routing table component of a kademlia node
@@ -14,10 +15,10 @@ import java.util.Map;
 public class RoutingTable implements Cloneable {
 
 	// node ID of the node
-	public BigInteger nodeId = null;
+	protected BigInteger nodeId = null;
 
 	// k-buckets
-	public TreeMap<Integer, KBucket> k_buckets = null;
+	protected TreeMap<Integer, KBucket> k_buckets = null;
 
 	// ______________________________________________________________________________________________
 	/**
@@ -26,7 +27,7 @@ public class RoutingTable implements Cloneable {
 	public RoutingTable() {
 		k_buckets = new TreeMap<Integer, KBucket>();
 		// initialize k-bukets
-		for (int i = 0; i <= KademliaCommonConfig.BITS; i++) {
+		for (int i = 0; i <= KademliaCommonConfig.NBUCKETS; i++) {
 			k_buckets.put(i, new KBucket());
 		}
 	}
@@ -52,8 +53,8 @@ public class RoutingTable implements Cloneable {
 	// return the neighbours with a specific common prefix len
 	public BigInteger[] getNeighbours (final int dist) {
 		BigInteger[] result = new BigInteger[0];
-
-		return k_buckets.get(dist).neighbours.keySet().toArray(result);
+		return k_buckets.get(dist).neighbours.toArray(result);
+		//return k_buckets.get(dist).neighbours.keySet().toArray(result);
 	}
 
 	// return the closest neighbour to a key from the correct k-bucket
@@ -69,13 +70,16 @@ public class RoutingTable implements Cloneable {
 
 		// return the k-bucket if is full
 		if (k_buckets.get(prefix_len).neighbours.size() >= KademliaCommonConfig.K) {
-			return k_buckets.get(prefix_len).neighbours.keySet().toArray(result);
+			//return k_buckets.get(prefix_len).neighbours.keySet().toArray(result);
+			return k_buckets.get(prefix_len).neighbours.toArray(result);
+
 		}
 
 		// else get k closest node from all k-buckets
 		prefix_len = 0;
 		while (prefix_len < KademliaCommonConfig.ALPHA) {
-			neighbour_candidates.addAll(k_buckets.get(prefix_len).neighbours.keySet());
+			//neighbour_candidates.addAll(k_buckets.get(prefix_len).neighbours.keySet());
+			neighbour_candidates.addAll(k_buckets.get(prefix_len).neighbours);
 			// remove source id
 			neighbour_candidates.remove(src);
 			prefix_len++;
@@ -102,7 +106,7 @@ public class RoutingTable implements Cloneable {
 	// ______________________________________________________________________________________________
 	public Object clone() {
 		RoutingTable dolly = new RoutingTable();
-		for (int i = 0; i < KademliaCommonConfig.BITS; i++) {
+		for (int i = 0; i < KademliaCommonConfig.NBUCKETS; i++) {
 			k_buckets.put(i, new KBucket());// (KBucket) k_buckets.get(i).clone());
 		}
 		return dolly;
@@ -116,6 +120,21 @@ public class RoutingTable implements Cloneable {
 	 */
 	public String toString() {
 		return "";
+	}
+	
+	/**
+	 * Check nodes and replace buckets with valid nodes from replacement list
+	 * 
+	 */
+	public void refreshBuckets() {
+		Random rnd= new Random();
+		for(int i=0;i<KademliaCommonConfig.NBUCKETS;i++) {
+			KBucket b = k_buckets.get(rnd.nextInt(KademliaCommonConfig.NBUCKETS));
+			if(b.neighbours.size()>0) {
+				b.checkAndReplaceLast();
+				return;
+			}
+		}
 	}
 	// ______________________________________________________________________________________________
 

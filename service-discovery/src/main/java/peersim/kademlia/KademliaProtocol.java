@@ -30,6 +30,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	final String PAR_K = "K";
 	final String PAR_ALPHA = "ALPHA";
 	final String PAR_BITS = "BITS";
+	final String PAR_NBUCKETS = "NBUCKETS";
+	final String PAR_REFRESHTIME = "REFRESH";
 
 	private static final String PAR_TRANSPORT = "transport";
 	private static String prefix = null;
@@ -110,6 +112,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		KademliaCommonConfig.K = Configuration.getInt(prefix + "." + PAR_K, KademliaCommonConfig.K);
 		KademliaCommonConfig.ALPHA = Configuration.getInt(prefix + "." + PAR_ALPHA, KademliaCommonConfig.ALPHA);
 		KademliaCommonConfig.BITS = Configuration.getInt(prefix + "." + PAR_BITS, KademliaCommonConfig.BITS);
+		KademliaCommonConfig.NBUCKETS = Configuration.getInt(prefix + "." + PAR_NBUCKETS, KademliaCommonConfig.NBUCKETS);
+		KademliaCommonConfig.REFRESHTIME = Configuration.getInt(prefix + "." + PAR_REFRESHTIME, KademliaCommonConfig.REFRESHTIME);
 
 		_ALREADY_INSTALLED = true;
 	}
@@ -495,6 +499,14 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void setNode(KademliaNode node) {
 		this.node = node;
 		this.routingTable.nodeId = node.getId();
+	}
+	
+	/**
+	 * Check nodes and replace buckets with valid nodes from replacement list
+	 * 
+	 */
+	public void refreshBuckets() {
+		routingTable.refreshBuckets();
 	}
 
 }
