@@ -37,7 +37,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	private static String prefix = null;
 	private UnreliableTransport transport;
 	private int tid;
-	private int kademliaid;
+	public int kademliaid;
 
 	/**
 	 * allow to call the service initializer only once
@@ -90,7 +90,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		_init();
 
-		routingTable = new RoutingTable();
+		routingTable = new RoutingTable(this);
 
 		sentMsg = new TreeMap<Long, Long>();
 
@@ -126,7 +126,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 *            BigInteger
 	 * @return Node
 	 */
-	private Node nodeIdtoNode(BigInteger searchNodeId) {
+	public Node nodeIdtoNode(BigInteger searchNodeId) {
 		if (searchNodeId == null)
 			return null;
 
@@ -190,6 +190,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			// save received neighbour in the closest Set of fin operation
 			try {
 				fop.elaborateResponse(neighbours);
+				for(BigInteger neighbour: neighbours)
+					routingTable.addNeighbour(neighbour);
 			} catch (Exception ex) {
 				fop.available_requests++;
 			}
@@ -499,6 +501,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void setNode(KademliaNode node) {
 		this.node = node;
 		this.routingTable.nodeId = node.getId();
+	}
+	
+	public KademliaNode getNode() {
+		return this.node;
 	}
 	
 	/**
