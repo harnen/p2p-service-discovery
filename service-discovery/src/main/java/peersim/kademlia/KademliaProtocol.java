@@ -100,7 +100,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		_init();
 
-		routingTable = new RoutingTable(this);
+		routingTable = new RoutingTable();
 
 		sentMsg = new TreeMap<Long, Long>();
 
@@ -143,7 +143,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		int inf = 0;
 		int sup = Network.size() - 1;
 		int m;
-
+		
+		//System.out.println("nodeIdtoNode "+kademliaid);
+		
 		while (inf <= sup) {
 			m = (inf + sup) / 2;
 
@@ -434,6 +436,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void processEvent(Node myNode, int myPid, Object event) {
 		// Parse message content Activate the correct event manager fot the particular event
 		this.kademliaid = myPid;
+		//System.out.println("processEvent node " + myNode.getID()+" "+myPid+" at "+CommonState.getTime());
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT){
 			Message m = (Message) event;
 			//System.out.println("Node " + nodeId + " received an event: " + received.messageTypetoString() + " ID: " + received.id + " from " + received.src);
@@ -540,8 +543,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
-	public void refreshBuckets() {
-		routingTable.refreshBuckets();
+	public void refreshBuckets(int kademliaid) {
+		routingTable.refreshBuckets(kademliaid);
 	}
 
 }

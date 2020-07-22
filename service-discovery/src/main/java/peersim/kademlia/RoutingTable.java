@@ -25,18 +25,19 @@ public class RoutingTable implements Cloneable {
 	// k-buckets
 	protected TreeMap<Integer, KBucket> k_buckets = null;
 
-	protected KademliaProtocol prot;
+	//protected KademliaProtocol prot;
 	// ______________________________________________________________________________________________
 	/**
 	 * instanciates a new empty routing table with the specified size
 	 */
-	public RoutingTable(KademliaProtocol prot) {
+	public RoutingTable() {
 		k_buckets = new TreeMap<Integer, KBucket>();
 		// initialize k-bukets
+		//System.out.println("new routing table");
 		for (int i = 0; i <= KademliaCommonConfig.NBUCKETS; i++) {
-			k_buckets.put(i, new KBucket(prot));
+			k_buckets.put(i, new KBucket(this));
 		}
-		this.prot=prot;
+		//this.prot=prot;
 	}
 
 	// add a neighbour to the correct k-bucket
@@ -124,9 +125,10 @@ public class RoutingTable implements Cloneable {
 
 	// ______________________________________________________________________________________________
 	public Object clone() {
-		RoutingTable dolly = new RoutingTable(prot);
+		RoutingTable dolly = new RoutingTable();
 		for (int i = 0; i < KademliaCommonConfig.NBUCKETS; i++) {
-			k_buckets.put(i, new KBucket(prot));// (KBucket) k_buckets.get(i).clone());
+			//System.out.println("clone routing table");
+			k_buckets.put(i, new KBucket(this));// (KBucket) k_buckets.get(i).clone());
 		}
 		return dolly;
 	}
@@ -145,13 +147,13 @@ public class RoutingTable implements Cloneable {
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
-	public void refreshBuckets() {
+	public void refreshBuckets(int kademliaid) {
 		//System.out.println("Routingtable refreshBuckkets "+CommonState.getTime());
 		Random rnd= new Random();
 		for(int i=0;i<KademliaCommonConfig.NBUCKETS;i++) {
 			KBucket b = k_buckets.get(rnd.nextInt(KademliaCommonConfig.NBUCKETS));
 			if(b.neighbours.size()>0) {
-				b.checkAndReplaceLast();
+				b.checkAndReplaceLast(kademliaid);
 				return;
 			}
 		}

@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.TreeMap;
 
 import peersim.core.CommonState;
+import peersim.core.Network;
 import peersim.core.Node;
 
 /**
@@ -25,11 +26,14 @@ public class KBucket implements Cloneable {
 	//protected TreeMap<BigInteger, Long> replacements = null;
 	protected List<BigInteger> replacements;
 
-	protected KademliaProtocol prot;
+	protected RoutingTable rTable;
+	//protected KademliaProtocol prot;
 	// empty costructor
-	public KBucket(KademliaProtocol prot) {
+	public KBucket(RoutingTable rTable) {
 		//neighbours = new TreeMap<BigInteger, Long>();
-		this.prot = prot;
+		//System.out.println("New bucket "+prot.kademliaid);
+		//this.prot = prot;
+		this.rTable = rTable;
 		neighbours = new ArrayList<BigInteger>();
 		replacements = new ArrayList<BigInteger>();
 	}
@@ -74,8 +78,9 @@ public class KBucket implements Cloneable {
 	}
 
 	public Object clone() {
-		KBucket dolly = new KBucket(prot);
+		KBucket dolly = new KBucket(rTable);
 		for (BigInteger node : neighbours) {
+			//System.out.println("clone kbucket");
 			dolly.neighbours.add(new BigInteger(node.toByteArray()));
 		}
 		return dolly;
@@ -91,15 +96,21 @@ public class KBucket implements Cloneable {
 		return res + "}";
 	}
 	
-	public void checkAndReplaceLast() {
-		if (neighbours.size() == 0) 
+	public void checkAndReplaceLast(int kademliaid) {
+		if (neighbours.size() == 0||CommonState.getTime()==0) 
 			// Entry has moved, don't replace it.
 			return;
 
-		Node node = prot.nodeIdtoNode(neighbours.get(neighbours.size()-1));
+
+		//System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at  "+CommonState.getTime());
+		Node node = nodeIdtoNode(neighbours.get(neighbours.size()-1),kademliaid);
+		System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at "+CommonState.getTime());
+		KademliaProtocol remote = (KademliaProtocol) node.getProtocol(kademliaid);
+		//((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
+		remote.routingTable.sendToFront(rTable.nodeId);
 		
-		KademliaProtocol remote = (KademliaProtocol) (node.getProtocol(prot.kademliaid));
-		remote.routingTable.sendToFront(prot.getNode().getId());
+		System.out.println("checkAndReplaceLast "+remote.getNode().getId()+" at "+CommonState.getTime()+" at "+rTable.nodeId);
+
 		
 		if(node.getFailState()!=Node.OK) {
 			// Still the last entry.
@@ -111,7 +122,50 @@ public class KBucket implements Cloneable {
 				replacements.remove(n);
 			}
 
-		}		
+		}
 		
+	}
+	
+	/**
+	 * Search through the network the Node having a specific node Id, by performing binary search (we concern about the ordering
+	 * of the network).
+	 * 
+	 * @param searchNodeId
+	 *            BigInteger
+	 * @return Node
+	 */
+	private Node nodeIdtoNode(BigInteger searchNodeId,int kademliaid) {
+		if (searchNodeId == null)
+			return null;
+
+		int inf = 0;
+		int sup = Network.size() - 1;
+		int m;
+		
+		//System.out.println("nodeIdtoNode "+kademliaid);
+		
+		while (inf <= sup) {
+			m = (inf + sup) / 2;
+
+			BigInteger mId = ((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
+
+			if (mId.equals(searchNodeId))
+				return Network.get(m);
+
+			if (mId.compareTo(searchNodeId) < 0)
+				inf = m + 1;
+			else
+				sup = m - 1;
+		}
+
+		// perform a traditional search for more reliability (maybe the network is not ordered)
+		BigInteger mId;
+		for (int i = Network.size() - 1; i >= 0; i--) {
+			mId = ((KademliaProtocol) Network.get(i).getProtocol(kademliaid)).node.getId();
+			if (mId.equals(searchNodeId))
+				return Network.get(i);
+		}
+
+		return null;
 	}
 }
