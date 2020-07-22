@@ -61,12 +61,12 @@ public class RoutingTable implements Cloneable {
 			resultList.addAll(k_buckets.get(dist).neighbours);
 		}
 
-		if((dist+1) > 0 && (dist +1) < k_buckets.size()){
+		if((dist + 1) > 0 && (dist + 1) < k_buckets.size()){
 			resultList.addAll(k_buckets.get(dist + 1).neighbours);
 		}
 
-		if((dist+2) > 0 && (dist +2) < k_buckets.size()){
-			resultList.addAll(k_buckets.get(dist + 2).neighbours);
+		if((dist - 1) > 0 && (dist - 1) < k_buckets.size()){
+			resultList.addAll(k_buckets.get(dist - 1).neighbours);
 		}
 		
 		if(resultList.size() > KademliaCommonConfig.K){

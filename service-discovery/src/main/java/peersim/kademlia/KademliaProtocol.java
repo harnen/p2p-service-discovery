@@ -13,6 +13,14 @@ import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.TreeMap;
 import java.util.Arrays;
+import java.util.logging.Level;
+//logging
+import java.util.logging.Logger;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.Date;
 
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -55,6 +63,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * routing table of this pastry node
 	 */
 	public RoutingTable routingTable;
+
+	private Logger logger;
 
 
 	/**
@@ -175,7 +185,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		if (m.src != null) {
 			routingTable.addNeighbour(m.src);
 		}
-		System.out.println("Find received: " + m);
 		BigInteger[] neighbours = (BigInteger[]) m.body;
 		/*System.out.print("Received neigbours: [");
 		for(BigInteger n : neighbours){
@@ -196,7 +205,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				fop.available_requests++;
 			}
 			if(Arrays.asList(neighbours).contains(fop.destNode)){
-				System.out.println("Found node " + fop.destNode);
+				logger.warning("Found node " + fop.destNode);
 				fop.finished = true;
 				return;
 			}
@@ -397,7 +406,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
 
-		System.out.println(this.node.getId() + " (" + m + "/" + m.id + ") -> " + destId);
+		logger.log(Level.WARNING, "-> (" + m + "/" + m.id + ") " + destId);
 
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		transport.send(src, dest, m, kademliaid);
@@ -428,7 +437,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT){
 			Message m = (Message) event;
 			//System.out.println("Node " + nodeId + " received an event: " + received.messageTypetoString() + " ID: " + received.id + " from " + received.src);
-			System.out.println(this.node.getId() + " <- " +  m + " " + m.src);
+			logger.log(Level.WARNING, "<- " +  m + " " + m.src);
 		}
 
 		Message m;
@@ -472,7 +481,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			case Timeout.TIMEOUT: // timeout
 				Timeout t = (Timeout) event;
 				if (sentMsg.containsKey(t.msgID)) { // the response msg didn't arrived
-					System.out.println("Node " + this.node.getId() + " received a timeout: " + t.msgID + " from: " + t.node);
+					logger.log(Level.WARNING, " <- timeout" + t.msgID + " from: " + t.node);
 					// remove form sentMsg
 					sentMsg.remove(t.msgID);
 					// remove node from my routing table
@@ -501,6 +510,26 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void setNode(KademliaNode node) {
 		this.node = node;
 		this.routingTable.nodeId = node.getId();
+
+		logger = Logger.getLogger(node.getId().toString());
+		logger.setUseParentHandlers(false);
+		ConsoleHandler handler = new ConsoleHandler();
+		  
+      	handler.setFormatter(new SimpleFormatter() {
+        	private static final String format = "[%d][%s] %3$s %n";
+
+        	@Override
+     		public synchronized String format(LogRecord lr) {
+            	return String.format(format,
+                		CommonState.getTime(),
+                    	logger.getName(),
+                    	lr.getMessage()
+            	);
+        	}
+      	});
+      	logger.addHandler(handler);
+
+		
 	}
 	
 	public KademliaNode getNode() {
