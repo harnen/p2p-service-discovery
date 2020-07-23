@@ -37,7 +37,7 @@ public class CustomDistribution implements peersim.core.Control {
 			BigInteger id;
 			id = urg.generate();
 			KademliaNode node = new KademliaNode(id, "127.0.0.1", 0);
-			
+			node.setProtocolId(protocolID);
 			((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
 		}
 

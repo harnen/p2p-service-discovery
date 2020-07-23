@@ -103,13 +103,13 @@ public class KBucket implements Cloneable {
 
 
 		//System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at  "+CommonState.getTime());
-		Node node = nodeIdtoNode(neighbours.get(neighbours.size()-1),kademliaid);
-		System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at "+CommonState.getTime());
+		Node node = Util.nodeIdtoNode(neighbours.get(neighbours.size()-1),kademliaid);
+		//System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at "+CommonState.getTime());
 		KademliaProtocol remote = (KademliaProtocol) node.getProtocol(kademliaid);
 		//((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
 		remote.routingTable.sendToFront(rTable.nodeId);
 		
-		System.out.println("checkAndReplaceLast "+remote.getNode().getId()+" at "+CommonState.getTime()+" at "+rTable.nodeId);
+		//System.out.println("checkAndReplaceLast "+remote.getNode().getId()+" at "+CommonState.getTime()+" at "+rTable.nodeId);
 
 		
 		if(node.getFailState()!=Node.OK) {
@@ -126,46 +126,5 @@ public class KBucket implements Cloneable {
 		
 	}
 	
-	/**
-	 * Search through the network the Node having a specific node Id, by performing binary search (we concern about the ordering
-	 * of the network).
-	 * 
-	 * @param searchNodeId
-	 *            BigInteger
-	 * @return Node
-	 */
-	private Node nodeIdtoNode(BigInteger searchNodeId,int kademliaid) {
-		if (searchNodeId == null)
-			return null;
 
-		int inf = 0;
-		int sup = Network.size() - 1;
-		int m;
-		
-		//System.out.println("nodeIdtoNode "+kademliaid);
-		
-		while (inf <= sup) {
-			m = (inf + sup) / 2;
-
-			BigInteger mId = ((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
-
-			if (mId.equals(searchNodeId))
-				return Network.get(m);
-
-			if (mId.compareTo(searchNodeId) < 0)
-				inf = m + 1;
-			else
-				sup = m - 1;
-		}
-
-		// perform a traditional search for more reliability (maybe the network is not ordered)
-		BigInteger mId;
-		for (int i = Network.size() - 1; i >= 0; i--) {
-			mId = ((KademliaProtocol) Network.get(i).getProtocol(kademliaid)).node.getId();
-			if (mId.equals(searchNodeId))
-				return Network.get(i);
-		}
-
-		return null;
-	}
 }
