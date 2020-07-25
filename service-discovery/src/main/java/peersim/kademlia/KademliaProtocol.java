@@ -237,7 +237,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
 					operations.remove(fop.operationId);
-					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
+					logger.warning("available_requests == KademliaCommonConfig.ALPHA");
 					//TODO We use body for other purposes now - need to reconfigure this
 					/*if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
 						// update statistics
@@ -246,12 +246,13 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 						KademliaObserver.hopStore.add(fop.nrHops);
 						KademliaObserver.msg_deliv.add(1);
 					}*/
+					
 					node.setLookupResult(fop.getNeighboursList());
 					return;
 
 				} else { // no neighbour available but exists oustanding request to wait
 					//logger.warning("else");
-					node.setLookupResult(fop.getNeighboursList());
+					//node.setLookupResult(fop.getNeighboursList());
 					return;
 				}
 			}

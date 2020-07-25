@@ -70,6 +70,17 @@ public class KademliaObserver implements Control {
 			if (!Network.get(i).isUp())
 				sz--;
 
+		for (int i = 0; i < Network.size(); i++) {
+			if (Network.get(i).isUp()) {
+				int incoming,outgoing,buffer;
+				KademliaNode kad = ((KademliaProtocol) (Network.get(i).getProtocol(pid))).getNode();
+				incoming = kad.getIncomingConnections().size();
+				outgoing = kad.getOutgoingConnections().size();
+				buffer = kad.getLookupResult().size();
+				System.out.println("Observer node:"+kad.getId()+" incoming:"+incoming+" outgoing:"+outgoing+" buffer:"+buffer);
+			}
+		}
+			
 		String s = String.format("[time=%d]:[N=%d current nodes UP] [D=%f msg deliv] [%f min h] [%f average h] [%f max h] [%d min l] [%d msec average l] [%d max l]", CommonState.getTime(), sz, msg_deliv.getSum(), hopStore.getMin(), hopStore.getAverage(), hopStore.getMax(), (int) timeStore.getMin(), (int) timeStore.getAverage(), (int) timeStore.getMax());
 		String filepath = "";
 		if (CommonState.getTime() == 3600000) {

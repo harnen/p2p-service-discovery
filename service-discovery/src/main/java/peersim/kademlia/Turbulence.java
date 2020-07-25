@@ -184,13 +184,26 @@ public class Turbulence implements Control {
 		// remove node (set its state to DOWN)
 		remove.setFailState(Node.DOWN);
 
-		List<BigInteger> incoming = ((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getIncomingConnections();
+		//Ethclient
+		KademliaNode kadNode = ((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode();
+		List<BigInteger> incoming = kadNode.getIncomingConnections();
+		List<BigInteger> outgoing = kadNode.getOutgoingConnections();
 		for(BigInteger addr : incoming)
 		{
 			Node n = ((KademliaProtocol)(remove.getProtocol(kademliaid))).nodeIdtoNode(addr);
 			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
-			System.out.println("Kad addr"+kad.getAddr());
+			kad.deleteOutgoingConnection(addr);
+			System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
 		}
+		
+		for(BigInteger addr : outgoing)
+		{
+			Node n = ((KademliaProtocol)(remove.getProtocol(kademliaid))).nodeIdtoNode(addr);
+			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
+			kad.deleteIncomingConnection(addr);
+			System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
+		}
+		
 		return false;
 	}
 
