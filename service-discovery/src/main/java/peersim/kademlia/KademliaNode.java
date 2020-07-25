@@ -26,6 +26,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
     private Node n;
     
     private EthClient client;
+    
+    boolean requested=false;
 
     public KademliaNode(BigInteger id, String addr, int port){
         this.id = id;
@@ -76,6 +78,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     public void setLookupResult(List<BigInteger> result) {
     	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size());
     	lookupResultBuffer = result;
+    	requested=false;
     	tryNewConnections();
     			
     }
@@ -107,9 +110,13 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }
     
     public void deleteOutgoingConnection(BigInteger addr) {
-    	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection:"+outgoingConnections.size());
+    	/*System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection:"+outgoingConnections.size()+" "+addr);
+    	for(BigInteger ad : outgoingConnections)
+    	{
+        	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection:"+ad);
+    	}*/
     	outgoingConnections.remove(addr);
-    	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection2:"+outgoingConnections.size());
+    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection2:"+outgoingConnections.size()+" "+lookupResultBuffer.size());
     	tryNewConnections();
 
     }
@@ -146,7 +153,10 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	}
        	if(lookupResultBuffer.size()==0&&client!=null&&n!=null){
        		System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size());
-       		client.emptyBufferCallback(n);
+       		if(!requested) {
+       			client.emptyBufferCallback(n);
+       			requested=true;
+       		}
        	}
     }
     

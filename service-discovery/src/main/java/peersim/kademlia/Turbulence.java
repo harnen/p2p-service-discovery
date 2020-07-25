@@ -190,17 +190,17 @@ public class Turbulence implements Control {
 		List<BigInteger> outgoing = kadNode.getOutgoingConnections();
 		for(BigInteger addr : incoming)
 		{
-			Node n = ((KademliaProtocol)(remove.getProtocol(kademliaid))).nodeIdtoNode(addr);
+			Node n = Util.nodeIdtoNode(addr, kademliaid);
 			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
-			kad.deleteOutgoingConnection(addr);
+			kad.deleteOutgoingConnection(kadNode.getId());
 			System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
 		}
 		
 		for(BigInteger addr : outgoing)
 		{
-			Node n = ((KademliaProtocol)(remove.getProtocol(kademliaid))).nodeIdtoNode(addr);
+			Node n = Util.nodeIdtoNode(addr, kademliaid);
 			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
-			kad.deleteIncomingConnection(addr);
+			kad.deleteIncomingConnection(kadNode.getId());
 			System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
 		}
 		

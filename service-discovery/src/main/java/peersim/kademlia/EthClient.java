@@ -101,7 +101,7 @@ public class EthClient implements Control {
 	}
 	
 	public void emptyBufferCallback(Node n) {
-		System.out.println("Emptybuffer");
+		System.out.println("Emptybuffer:" +((KademliaProtocol)n.getProtocol(pid)).getNode().getId());
 		EDSimulator.add(0,generateFindNodeMessage(),n, pid);
 
 	}
