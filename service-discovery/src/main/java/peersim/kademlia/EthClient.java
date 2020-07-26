@@ -121,12 +121,12 @@ public class EthClient implements Control {
 				kad.getNode().setCallBack(this,Network.get(i));
 				System.out.println("Execute first called atc"+CommonState.getTime()+" "+Network.size());
 				if(Network.get(i).isUp()) {
-					for(int j=0;j<3;j++)
-					{
+					//for(int j=0;j<3;j++)
+					//{
 						Message msg = generateFindNodeMessage();
 						System.out.println("Message from"+kad.getNode().getId()+" to "+(BigInteger)msg.body);
-						EDSimulator.add(j*1000,msg, Network.get(i), pid);
-					}
+						EDSimulator.add(0,msg, Network.get(i), pid);
+					//}
 				}
 
 			}
