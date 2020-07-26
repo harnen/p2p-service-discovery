@@ -39,7 +39,7 @@ public class Discv5TopicTable implements TopicTable {
         ArrayDeque<Registration> topicQ = topicTable.get(topic);
         long waiting_time;
 
-        if (topicQ.size() == KademliaCommonConfig.ADS_PER_QUEUE) {
+        if (topicQ != null && topicQ.size() == KademliaCommonConfig.ADS_PER_QUEUE) {
             Registration r = topicQ.getFirst();
             long age = curr_time - r.getTimestamp();
             waiting_time = KademliaCommonConfig.AD_LIFE_TIME - age;
@@ -83,7 +83,13 @@ public class Discv5TopicTable implements TopicTable {
         }
 
         ArrayDeque<Registration> topicQ = this.topicTable.get(reg.getTopic());
-        topicQ.add(reg);
+        if (topicQ != null)
+            topicQ.add(reg);
+        else {
+            ArrayDeque<Registration> q = new ArrayDeque<Registration>();
+            q.add(reg);
+            this.topicTable.put(reg.getTopic(), q);
+        }
         this.allAds.add(reg);
         //TODO assertion: the tail of allAds have a smaller timestamp than reg
         return true;

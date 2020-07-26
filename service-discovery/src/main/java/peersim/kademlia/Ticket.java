@@ -17,17 +17,23 @@ public class Ticket {
     // the node that obtained the ticket
     public KademliaNode src;
 
+    // Success or failure 
+    boolean isRegistrationComplete;
+
     public Ticket(String topic, long req_time, long wait_time) {
         this.topic = topic;
         this.req_time = req_time;
         this.wait_time = wait_time;
         this.cum_wait = wait_time;
+        this.isRegistrationComplete = false;
     }
+
     public Ticket(String topic, long req_time, long wait_time, KademliaNode src) {
         this.topic = topic;
         this.req_time = req_time;
         this.wait_time = wait_time;
         this.cum_wait = wait_time;
         this.src = src;
+        this.isRegistrationComplete = false;
     }
 }

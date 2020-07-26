@@ -16,12 +16,16 @@ import peersim.core.Network;
 public class CustomDistribution implements peersim.core.Control {
 
 	private static final String PAR_PROT = "protocol";
+	private static final String DISCV5_PAR_PROT = "discv5_protocol";
 
 	private int protocolID;
+	private int discv5_protocolID;
 	private UniformRandomGenerator urg;
 
 	public CustomDistribution(String prefix) {
 		protocolID = Configuration.getPid(prefix + "." + PAR_PROT);
+		discv5_protocolID = Configuration.getPid(prefix + "." + DISCV5_PAR_PROT);
+
 		urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 	}
 
@@ -39,6 +43,7 @@ public class CustomDistribution implements peersim.core.Control {
 			KademliaNode node = new KademliaNode(id, "127.0.0.1", 0);
 			
 			((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
+			((Discv5Protocol) (Network.get(i).getProtocol(discv5_protocolID))).setNode(node, i);
 		}
 
 		return false;
