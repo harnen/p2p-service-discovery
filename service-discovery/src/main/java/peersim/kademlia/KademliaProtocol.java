@@ -237,7 +237,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
 					operations.remove(fop.operationId);
-					logger.warning("available_requests == KademliaCommonConfig.ALPHA");
+					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
 					//TODO We use body for other purposes now - need to reconfigure this
 					/*if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
 						// update statistics
@@ -327,7 +327,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		KademliaObserver.register_op.add(1);
 
-		System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
+		//System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
 		// create find operation and add to operations array
 		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
 		fop.destNode = (BigInteger) m.body;

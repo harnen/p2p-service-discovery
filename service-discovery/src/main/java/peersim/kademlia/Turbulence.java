@@ -174,7 +174,7 @@ public class Turbulence implements Control {
 	// ______________________________________________________________________________________________
 	public boolean rem() {
 		// select one random node to remove
-		System.out.println("Turbulence rm");
+		//System.out.println("Turbulence rm");
 
 		Node remove;
 		do {
@@ -193,7 +193,7 @@ public class Turbulence implements Control {
 			Node n = Util.nodeIdtoNode(addr, kademliaid);
 			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
 			kad.deleteOutgoingConnection(kadNode.getId());
-			System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
+			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
 		}
 		
 		for(BigInteger addr : outgoing)
@@ -201,7 +201,7 @@ public class Turbulence implements Control {
 			Node n = Util.nodeIdtoNode(addr, kademliaid);
 			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
 			kad.deleteIncomingConnection(kadNode.getId());
-			System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
+			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
 		}
 		
 		return false;
@@ -210,7 +210,7 @@ public class Turbulence implements Control {
 	// ______________________________________________________________________________________________
 	public boolean execute() {
 		// throw the dice
-		System.out.println("Turbulence execute");
+		//System.out.println("Turbulence execute");
 		double dice = CommonState.r.nextDouble();
 		if (dice < p_idle)
 			return false;
