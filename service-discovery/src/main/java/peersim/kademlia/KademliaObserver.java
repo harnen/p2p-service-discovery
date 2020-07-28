@@ -37,12 +37,22 @@ public class KademliaObserver implements Control {
 	/**
 	 * keep statistic of number of find operation
 	 */
-	public static IncrementalStats find_op = new IncrementalStats();
+	public static IncrementalStats find_total = new IncrementalStats();
+
+	/**
+	 * Successfull find operations
+	 */
+	public static IncrementalStats find_ok = new IncrementalStats();
 
 	/**
 	 * keep statistic of number of register operation
 	 */
-	public static IncrementalStats register_op = new IncrementalStats();
+	public static IncrementalStats register_total = new IncrementalStats();
+
+	/**
+	 * keep statistic of number of register operation
+	 */
+	public static IncrementalStats register_ok = new IncrementalStats();
 
 	/** Parameter of the protocol we want to observe */
 	private static final String PAR_PROT = "protocol";
@@ -69,46 +79,15 @@ public class KademliaObserver implements Control {
 		for (int i = 0; i < Network.size(); i++)
 			if (!Network.get(i).isUp())
 				sz--;
-
-		for (int i = 0; i < Network.size(); i++) {
-			if (Network.get(i).isUp()) {
-				int incoming,outgoing,buffer;
-				KademliaNode kad = ((KademliaProtocol) (Network.get(i).getProtocol(pid))).getNode();
-				incoming = kad.getIncomingConnections().size();
-				outgoing = kad.getOutgoingConnections().size();
-				buffer = kad.getLookupResult().size();
-				//System.out.println("Observer node:"+kad.getId()+" incoming:"+incoming+" outgoing:"+outgoing+" buffer:"+buffer);
-			}
-		}
-			
-		String s = String.format("[time=%d]:[N=%d current nodes UP] [D=%f msg deliv] [%f min h] [%f average h] [%f max h] [%d min l] [%d msec average l] [%d max l]", CommonState.getTime(), sz, msg_deliv.getSum(), hopStore.getMin(), hopStore.getAverage(), hopStore.getMax(), (int) timeStore.getMin(), (int) timeStore.getAverage(), (int) timeStore.getMax());
-		String filepath = "";
-		if (CommonState.getTime() == 3600000) {
-			// create hop file
-			try {
-				filepath  = "D:/simulazioni/hopcountNEW.dat";
-				File f = new File(filepath);
-				f.createNewFile();
-				BufferedWriter out = new BufferedWriter(new FileWriter(f, true));
-				out.write(String.valueOf(hopStore.getAverage()).replace(".", ",") + ";\n");
-				out.close();
-			} catch (IOException e) {
-				System.out.println("Couldn't open " + filepath);
-			}
-			// create latency file
-			try {
-				filepath = "D:/simulazioni/latencyNEW.dat";
-				File f = new File(filepath);
-				f.createNewFile();
-				BufferedWriter out = new BufferedWriter(new FileWriter(f, true));
-				out.write(String.valueOf(timeStore.getAverage()).replace(".", ",") + ";\n");
-				out.close();
-			} catch (IOException e) {
-				System.out.println("Couldn't open " + filepath);
-			}
-
-		}
-
+		//[%d/%d  successful find operation] [D=%f msg deliv] [%f min h] [%f average h] [%f max h] [%d min l] [%d msec average l] [%d max l]
+		String s = String.format("[time=%d]:[N=%d current nodes UP] [%d/%d find op] [%d/%d register operation]", 
+								CommonState.getTime(), 
+								sz, 
+								(int) find_ok.getSum(), 
+								(int) find_total.getSum(), 
+								(int) register_ok.getSum(), 
+								(int) register_total.getSum());
+								//msg_deliv.getSum(), hopStore.getMin(), hopStore.getAverage(), hopStore.getMax(), (int) timeStore.getMin(), (int) timeStore.getAverage(), (int) timeStore.getMax());
 		System.err.println(s);
 
 		return false;
