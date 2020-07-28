@@ -26,9 +26,7 @@ public class Topic implements Comparable<Topic> {
         try {
             digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(topic.getBytes(StandardCharsets.UTF_8));
-            // Onur: I get an error with the line below - no such constructor for BigInteger
-            //this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8).abs();
-            this.topicID = new BigInteger(hash).abs();
+            this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8).abs();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -42,9 +40,7 @@ public class Topic implements Comparable<Topic> {
         try {
             digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(topic.getBytes(StandardCharsets.UTF_8));
-            // Onur: I get an error with the line below - no such constructor for BigInteger
-            //this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8).abs();
-            this.topicID = new BigInteger(hash).abs();
+            this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8).abs();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

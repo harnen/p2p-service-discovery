@@ -29,6 +29,7 @@ import peersim.edsim.EDSimulator;
 public class Turbulence implements Control {
 
 	private static final String PAR_PROT = "protocol";
+	private static final String DISCV5_PAR_PROT = "discv5_protocol";
 	private static final String PAR_TRANSPORT = "transport";
 	private static final String PAR_INIT = "init";
 
@@ -63,6 +64,7 @@ public class Turbulence implements Control {
 
 	private String prefix;
 	private int kademliaid;
+	private int discv5id;
 	private int transportid;
 	private int maxsize;
 	private int minsize;
@@ -74,6 +76,7 @@ public class Turbulence implements Control {
 	public Turbulence(String prefix) {
 		this.prefix = prefix;
 		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
+		discv5id = Configuration.getPid(this.prefix + "." + DISCV5_PAR_PROT);
 		transportid = Configuration.getPid(this.prefix + "." + PAR_TRANSPORT);
 
 		minsize = Configuration.getInt(this.prefix + "." + PAR_MINSIZE, 1);
@@ -134,11 +137,13 @@ public class Turbulence implements Control {
 
 		// get kademlia protocol of new node
 		KademliaProtocol newKad = (KademliaProtocol) (newNode.getProtocol(kademliaid));
-
+		
 		// set node Id
 		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 		KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
+        System.out.println("TURBULENCE added new node with id: " + node.getId().toString() + " at time: " + CommonState.getTime());
 		((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
+		((Discv5Protocol) (newNode.getProtocol(discv5id))).setNode(node, newNode);
 
 		// sort network
 		sortNet();
@@ -176,6 +181,8 @@ public class Turbulence implements Control {
 			remove = Network.get(CommonState.r.nextInt(Network.size()));
 		} while ((remove == null) || (!remove.isUp()));
 
+
+        System.out.println("TURBULENCE removed node with id: " + ((KademliaProtocol) remove.getProtocol(kademliaid)).node.getId().toString() + " at time: " + CommonState.getTime());
 		// remove node (set its state to DOWN)
 		remove.setFailState(Node.DOWN);
 
@@ -185,6 +192,7 @@ public class Turbulence implements Control {
 	// ______________________________________________________________________________________________
 	public boolean execute() {
 		// throw the dice
+
 		double dice = CommonState.r.nextDouble();
 		if (dice < p_idle)
 			return false;

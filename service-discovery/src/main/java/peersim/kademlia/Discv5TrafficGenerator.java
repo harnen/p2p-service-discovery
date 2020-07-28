@@ -79,7 +79,7 @@ public class Discv5TrafficGenerator implements Control {
 		if(!first){
 			return false;
 		}
-		first = false;
+		//first = false;
 		System.out.println("Discv5 Traffic generator called");
 		Node start;
 		do {

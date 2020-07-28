@@ -11,6 +11,9 @@ public class Ticket {
     // cummulative waiting time of this node
     public long cum_wait;
 
+    // registration time (once registration is successful)
+    public long reg_time;
+
     // the topic that ticket is valid for
     public String topic; 
 
