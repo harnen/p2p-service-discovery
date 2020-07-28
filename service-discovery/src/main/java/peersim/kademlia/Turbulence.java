@@ -1,6 +1,8 @@
 package peersim.kademlia;
 
+import java.math.BigInteger;
 import java.util.Comparator;
+import java.util.List;
 
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -138,6 +140,7 @@ public class Turbulence implements Control {
 		// set node Id
 		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 		KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
+		node.setProtocolId(kademliaid);
 		((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
 
 		// sort network
@@ -171,6 +174,8 @@ public class Turbulence implements Control {
 	// ______________________________________________________________________________________________
 	public boolean rem() {
 		// select one random node to remove
+		//System.out.println("Turbulence rm");
+
 		Node remove;
 		do {
 			remove = Network.get(CommonState.r.nextInt(Network.size()));
@@ -179,12 +184,33 @@ public class Turbulence implements Control {
 		// remove node (set its state to DOWN)
 		remove.setFailState(Node.DOWN);
 
+		//Ethclient
+		KademliaNode kadNode = ((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode();
+		List<BigInteger> incoming = kadNode.getIncomingConnections();
+		List<BigInteger> outgoing = kadNode.getOutgoingConnections();
+		for(BigInteger addr : incoming)
+		{
+			Node n = Util.nodeIdtoNode(addr, kademliaid);
+			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
+			kad.deleteOutgoingConnection(kadNode.getId());
+			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
+		}
+		
+		for(BigInteger addr : outgoing)
+		{
+			Node n = Util.nodeIdtoNode(addr, kademliaid);
+			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
+			kad.deleteIncomingConnection(kadNode.getId());
+			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
+		}
+		
 		return false;
 	}
 
 	// ______________________________________________________________________________________________
 	public boolean execute() {
 		// throw the dice
+		//System.out.println("Turbulence execute");
 		double dice = CommonState.r.nextDouble();
 		if (dice < p_idle)
 			return false;

@@ -1,7 +1,9 @@
 package peersim.kademlia;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * This class represents a find operation and offer the methods needed to maintain and update the closest set.<br>
@@ -151,4 +153,15 @@ public class Operation {
 		return res;
 	}
 
+	
+	/**
+	 * get the neighbours in closest set which has not been already queried
+	 * 
+	 * @return the closest nodes set up to K
+	 */
+	public List<BigInteger> getNeighboursList() {
+		return new ArrayList<BigInteger>(closestSet.keySet());
+		//return new ArrayList<BigInteger>(closestSet.keySet()).subList(0, KademliaCommonConfig.K-1);
+	}
+	
 }

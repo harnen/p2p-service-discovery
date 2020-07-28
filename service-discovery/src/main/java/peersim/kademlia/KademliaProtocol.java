@@ -46,6 +46,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	private UnreliableTransport transport;
 	private int tid;
 	public int kademliaid;
+	
+	//private EthClient client;
 
 	/**
 	 * allow to call the service initializer only once
@@ -209,6 +211,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			if(Arrays.asList(neighbours).contains(fop.destNode)){
 				logger.warning("Found node " + fop.destNode);
 				fop.finished = true;
+				node.setLookupResult(fop.getNeighboursList());
 				return;
 			}
 
@@ -234,7 +237,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
 					operations.remove(fop.operationId);
-
+					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
 					//TODO We use body for other purposes now - need to reconfigure this
 					/*if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
 						// update statistics
@@ -243,10 +246,13 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 						KademliaObserver.hopStore.add(fop.nrHops);
 						KademliaObserver.msg_deliv.add(1);
 					}*/
-
+					
+					node.setLookupResult(fop.getNeighboursList());
 					return;
 
 				} else { // no neighbour available but exists oustanding request to wait
+					//logger.warning("else");
+					//node.setLookupResult(fop.getNeighboursList());
 					return;
 				}
 			}
@@ -321,6 +327,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		KademliaObserver.register_op.add(1);
 
+		//System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
 		// create find operation and add to operations array
 		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
 		fop.destNode = (BigInteger) m.body;
@@ -546,5 +553,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void refreshBuckets(int kademliaid) {
 		routingTable.refreshBuckets(kademliaid);
 	}
+	
+	/*public void setClient (EthClient client) {
+		this.client = client;
+	}*/
 
 }
