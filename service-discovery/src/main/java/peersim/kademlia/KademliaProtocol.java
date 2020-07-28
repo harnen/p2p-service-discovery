@@ -206,9 +206,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			} catch (Exception ex) {
 				fop.available_requests++;
 			}
-			if(Arrays.asList(neighbours).contains(fop.destNode)){
+			if(!fop.finished && Arrays.asList(neighbours).contains(fop.destNode)){
 				logger.warning("Found node " + fop.destNode);
 				fop.finished = true;
+				KademliaObserver.find_ok.add(1);
 				return;
 			}
 
@@ -319,7 +320,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleInitFind(Message m, int myPid) {
 
-		KademliaObserver.register_op.add(1);
+		KademliaObserver.find_total.add(1);
 
 		// create find operation and add to operations array
 		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
@@ -360,7 +361,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleInitRegister(Message m, int myPid) {
 
-	KademliaObserver.register_op.add(1);
+	KademliaObserver.register_total.add(1);
 
 	Topic t = new Topic((String) m.body);
 	Registration r = new Registration(this.node);

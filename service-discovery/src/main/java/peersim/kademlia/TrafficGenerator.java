@@ -90,11 +90,12 @@ public class TrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
+		//System.out.println("hello " + CommonState.getTime());
 		//first = false;
-		if(!first){
+		/*if(!first){
 			return false;
 		}
-		first = false;
+		first = false;*/
 		System.out.println("Execute called");
 		Node start;
 		do {
