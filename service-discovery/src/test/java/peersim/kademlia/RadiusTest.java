@@ -76,9 +76,9 @@ public class RadiusTest{
         	 BigInteger addr = rad.nextTarget(false).getAddress();
         	 long wait = waitFn(addr,rad,i);
         	 rad.adjustWithTicket(now, addr,wait,now);
-        	 System.out.println("radius "+rad.radius);
-        	 System.out.println("maxradius "+TopicRadius.maxRadius);
-        	 System.out.println("Topic:"+t+" wait:"+wait+" cnt:"+cnt+" bcnt:"+bcnt);	
+        	 //System.out.println("radius "+rad.radius);
+        	 //System.out.println("maxradius "+TopicRadius.maxRadius);
+        	 //System.out.println("Topic:"+t+" wait:"+wait+" cnt:"+cnt+" bcnt:"+bcnt);	
      		  if(rad.radius.compareTo(TopicRadius.maxRadius)!=0) {
     			cnt++;
     			sum += rad.radius.doubleValue();
