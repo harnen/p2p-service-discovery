@@ -77,7 +77,7 @@ public class KademliaObserver implements Control {
 				incoming = kad.getIncomingConnections().size();
 				outgoing = kad.getOutgoingConnections().size();
 				buffer = kad.getLookupResult().size();
-				System.out.println("Observer node:"+kad.getId()+" incoming:"+incoming+" outgoing:"+outgoing+" buffer:"+buffer);
+				//System.out.println("Observer node:"+kad.getId()+" incoming:"+incoming+" outgoing:"+outgoing+" buffer:"+buffer);
 			}
 		}
 			
