@@ -21,6 +21,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.Date;
+import java.util.HashMap;
 
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -46,7 +47,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	private UnreliableTransport transport;
 	private int tid;
 	public int kademliaid;
-	
+	private HashMap<BigInteger,Integer> failures;
 	//private EthClient client;
 
 	/**
@@ -99,7 +100,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public KademliaProtocol(String prefix) {
 		this.node = null; // empty nodeId
 		KademliaProtocol.prefix = prefix;
-
+		failures = new HashMap();
 		_init();
 
 		routingTable = new RoutingTable();
@@ -188,6 +189,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// add message source to my routing table
 		if (m.src != null) {
 			routingTable.addNeighbour(m.src);
+			failures.replace(m.src, 0);
 		}
 		BigInteger[] neighbours = (BigInteger[]) m.body;
 		/*System.out.print("Received neigbours: [");
@@ -195,7 +197,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			System.out.print(", " + n);
 		}
 		System.out.println("]");*/
-
 		// get corresponding find operation (using the message field operationId)
 		FindOperation fop = (FindOperation)	 this.operations.get(m.operationId);
 
@@ -492,11 +493,19 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			case Timeout.TIMEOUT: // timeout
 				Timeout t = (Timeout) event;
 				if (sentMsg.containsKey(t.msgID)) { // the response msg didn't arrived
+					int fails=0;
+					if (failures.containsKey(t.node)) { 
+			            fails = failures.get(t.node); 
+					}
+					fails++;
+					failures.replace(t.node, fails);
 					logger.log(Level.WARNING, " <- timeout" + t.msgID + " from: " + t.node);
 					// remove form sentMsg
 					sentMsg.remove(t.msgID);
 					// remove node from my routing table
-					this.routingTable.removeNeighbour(t.node);
+					if(fails >= KademliaCommonConfig.MAXFINDNODEFAILURES){
+						this.routingTable.removeNeighbour(t.node);
+					}
 					// remove from closestSet of find operation
 					this.operations.get(t.opID).closestSet.remove(t.node);
 					// try another node

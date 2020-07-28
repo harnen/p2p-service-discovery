@@ -17,6 +17,7 @@ public class KademliaCommonConfig {
 	public static int MAXREPLACEMENT = 10; //the number of nodes saved in the replacement list
 	public static int REFRESHTIME = 10*100; //periodic time used to check nodes down in k-buckets
 	public static int MAXCONNECTIONS = 50; //periodic time used to check nodes down in k-buckets
+	public static int MAXFINDNODEFAILURES = 5; //periodic time used to check nodes down in k-buckets
 
 	/**
 	 * short information about current mspastry configuration
