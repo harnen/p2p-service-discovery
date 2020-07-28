@@ -104,12 +104,12 @@ public class KBucket implements Cloneable {
 
 		//System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at  "+CommonState.getTime());
 		Node node = nodeIdtoNode(neighbours.get(neighbours.size()-1),kademliaid);
-		System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at "+CommonState.getTime());
+		//System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at "+CommonState.getTime());
 		KademliaProtocol remote = (KademliaProtocol) node.getProtocol(kademliaid);
 		//((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
 		remote.routingTable.sendToFront(rTable.nodeId);
 		
-		System.out.println("checkAndReplaceLast "+remote.getNode().getId()+" at "+CommonState.getTime()+" at "+rTable.nodeId);
+		//System.out.println("checkAndReplaceLast "+remote.getNode().getId()+" at "+CommonState.getTime()+" at "+rTable.nodeId);
 
 		
 		if(node.getFailState()!=Node.OK) {
