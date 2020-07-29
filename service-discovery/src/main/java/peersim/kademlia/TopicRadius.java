@@ -64,9 +64,9 @@ public class TopicRadius {
 		double min = Math.pow(2,64-(double)(bucket+1)/radiusBucketsPerBit);
 		double max = Math.pow(2, 64-(double)bucket/radiusBucketsPerBit);
 		BigInteger a = BigDecimal.valueOf(min).toBigInteger();
-		System.out.println("Min "+min+" max "+max);
+		//System.out.println("Min "+min+" max "+max);
 		BigInteger b = newRandomMax(BigDecimal.valueOf(max-min).toBigInteger());
-		System.out.println("Min "+min+" max "+max+" a "+a+" b "+b);
+		//System.out.println("Min "+min+" max "+max+" a "+a+" b "+b);
 		BigInteger xor = a.add(b);
 		
 		if(xor.compareTo(a)==-1)
@@ -244,7 +244,7 @@ public class TopicRadius {
 		}
 		
 		BigInteger radExt = radius.divide(BigInteger.valueOf(2));
-		System.out.println("radExt "+radExt);
+		//System.out.println("radExt "+radExt);
 
 		if(radExt.compareTo(maxRadius.subtract(radius))==1) {
 			radExt=maxRadius.subtract(radius);
@@ -265,7 +265,7 @@ public class TopicRadius {
 		long wait = regTime-issueTime;//TODO calculate regtime - isuetime from ticket
 	
 		double inside = (double)wait/targetWaitTime - 0.5;
-		System.out.println("RegTime:"+regTime+" issueTime:"+issueTime+" wait:"+wait+" inside:"+inside);
+		//System.out.println("RegTime:"+regTime+" issueTime:"+issueTime+" wait:"+wait+" inside:"+inside);
 		if(inside > 1) {
 			inside = 1;
 		}
@@ -278,7 +278,7 @@ public class TopicRadius {
 	//adjust radius when ticket received
 	void adjust(long time, BigInteger targetHash, BigInteger addrHash, double inside) {
 		int bucket = getBucketIdx(addrHash);
-		System.out.println("Ticketstore adjust: adjust "+targetHash+" addr "+addrHash+" bucket "+bucket+" nbuckets "+buckets.size()+" inside "+inside);
+		//System.out.println("Ticketstore adjust: adjust "+targetHash+" addr "+addrHash+" bucket "+bucket+" nbuckets "+buckets.size()+" inside "+inside);
 
 		if(bucket>=buckets.size()) {
 			return;
@@ -292,7 +292,7 @@ public class TopicRadius {
 			return BigInteger.valueOf(0);
 		}
 		Random rnd = new Random();
-		System.out.println("Random "+max);
+		//System.out.println("Random "+max);
 		return new BigInteger(64,rnd).mod(max);
 		
 	}
