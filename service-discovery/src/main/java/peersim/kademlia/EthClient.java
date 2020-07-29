@@ -95,13 +95,13 @@ public class EthClient implements Control {
 	}*/
 
 	public void setNodeListResult(List<BigInteger> result) {
-		System.out.println("Buffer set at "+result.size());
+		//System.out.println("Buffer set at "+result.size());
 		buffer = result;
 		
 	}
 	
 	public void emptyBufferCallback(Node n) {
-		System.out.println("Emptybuffer:" +((KademliaProtocol)n.getProtocol(pid)).getNode().getId());
+		//System.out.println("Emptybuffer:" +((KademliaProtocol)n.getProtocol(pid)).getNode().getId());
 		EDSimulator.add(0,generateFindNodeMessage(),n, pid);
 
 	}
@@ -114,17 +114,17 @@ public class EthClient implements Control {
 	public boolean execute() {
 		//first = false;
 		if(first){
-			System.out.println("Execute first called at"+CommonState.getTime()+" "+Network.size());
+			//System.out.println("Execute first called at"+CommonState.getTime()+" "+Network.size());
 			for(int i=0;i<Network.size();i++) {
 				KademliaProtocol kad = (KademliaProtocol)Network.get(i).getProtocol(pid);
 				//kad.setClient(this);
 				kad.getNode().setCallBack(this,Network.get(i));
-				System.out.println("Execute first called atc"+CommonState.getTime()+" "+Network.size());
+				//System.out.println("Execute first called atc"+CommonState.getTime()+" "+Network.size());
 				if(Network.get(i).isUp()) {
 					//for(int j=0;j<3;j++)
 					//{
 						Message msg = generateFindNodeMessage();
-						System.out.println("Message from"+kad.getNode().getId()+" to "+(BigInteger)msg.body);
+						//System.out.println("Message from"+kad.getNode().getId()+" to "+(BigInteger)msg.body);
 						EDSimulator.add(0,msg, Network.get(i), pid);
 					//}
 				}
