@@ -40,10 +40,20 @@ public class RoutingTable implements Cloneable {
 		//this.prot=prot;
 	}
 
+	public int containsNode(BigInteger id){
+		for(int i = 0; i < KademliaCommonConfig.NBUCKETS; i++){
+			for(BigInteger nodeId: k_buckets.get(i).neighbours){
+				if(nodeId.equals(id))
+					return i;
+			}
+		}
+		return -1;
+	}
+
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
-		if(node.compareTo(nodeId)==0)return;
+		if(node.compareTo(nodeId)==0) return;
 		bucket(node).addNeighbour(node);
 	}
 
@@ -58,15 +68,15 @@ public class RoutingTable implements Cloneable {
 		BigInteger[] result = new BigInteger[0];
 
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
-		if(dist > 0 && dist < k_buckets.size()){
+		if(dist >= 0 && dist < k_buckets.size()){
 			resultList.addAll(k_buckets.get(dist).neighbours);
 		}
 
-		if((dist + 1) > 0 && (dist + 1) < k_buckets.size()){
+		if((dist + 1) >= 0 && (dist + 1) < k_buckets.size()){
 			resultList.addAll(k_buckets.get(dist + 1).neighbours);
 		}
 
-		if((dist - 1) > 0 && (dist - 1) < k_buckets.size()){
+		if((dist - 1) >= 0 && (dist - 1) < k_buckets.size()){
 			resultList.addAll(k_buckets.get(dist - 1).neighbours);
 		}
 		
@@ -87,6 +97,7 @@ public class RoutingTable implements Cloneable {
 
 		// get the lenght of the longest common prefix
 		int prefix_len = Util.prefixLen(nodeId, key);
+		System.out.println("prefix_len " + prefix_len);
 
 		// return the k-bucket if is full
 		if (k_buckets.get(prefix_len).neighbours.size() >= KademliaCommonConfig.K) {
@@ -165,15 +176,15 @@ public class RoutingTable implements Cloneable {
 			bucket(node).neighbours.add(0,node);
 	}
 	
-	private KBucket bucket(BigInteger node) {
+	public KBucket bucket(BigInteger node) {
 		return bucketAtDistance(Util.prefixLen(nodeId, node));
 	}
 	
 	private KBucket bucketAtDistance(int distance) {
-		if (distance	 <= bucketMinDistance) {
+		if (distance <= bucketMinDistance) {
 			return k_buckets.get(0);
 		}
-		return k_buckets.get(distance-bucketMinDistance-1);
+		return k_buckets.get(distance - bucketMinDistance);
 	}
 	// ______________________________________________________________________________________________
 
