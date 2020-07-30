@@ -239,6 +239,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
 					operations.remove(fop.operationId);
+					if(!fop.finished){
+						logger.warning("Couldn't find node " + fop.destNode);
+					}
 					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
 					//TODO We use body for other purposes now - need to reconfigure this
 					/*if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
@@ -417,10 +420,11 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
 
-		logger.log(Level.WARNING, "-> (" + m + "/" + m.id + ") " + destId);
+		logger.info("-> (" + m + "/" + m.id + ") " + destId);
 
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		transport.send(src, dest, m, kademliaid);
+		KademliaObserver.msg_sent.add(1);
 
 		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
 			Timeout t = new Timeout(destId, m.id, m.operationId);
@@ -445,11 +449,11 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void processEvent(Node myNode, int myPid, Object event) {
 		// Parse message content Activate the correct event manager fot the particular event
 		this.kademliaid = myPid;
-		//System.out.println("processEvent node " + myNode.getID()+" "+myPid+" at "+CommonState.getTime());
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT){
 			Message m = (Message) event;
-			//System.out.println("Node " + nodeId + " received an event: " + received.messageTypetoString() + " ID: " + received.id + " from " + received.src);
-			logger.log(Level.WARNING, "<- " +  m + " " + m.src);
+			logger.info("<- " +  m + " " + m.src);
+			//don't include controller commands in stats
+			if(((SimpleEvent) event).getType() != Message.MSG_INIT_FIND) KademliaObserver.msg_deliv.add(1);
 		}
 
 		Message m;
@@ -534,14 +538,15 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		logger = Logger.getLogger(node.getId().toString());
 		logger.setUseParentHandlers(false);
 		ConsoleHandler handler = new ConsoleHandler();
+		logger.setLevel(Level.WARNING);
 		  
       	handler.setFormatter(new SimpleFormatter() {
         	private static final String format = "[%d][%s] %3$s %n";
 
         	@Override
      		public synchronized String format(LogRecord lr) {
-            	return String.format(format,
-                		CommonState.getTime(),
+				return String.format(format,
+						CommonState.getTime(),
                     	logger.getName(),
                     	lr.getMessage()
             	);

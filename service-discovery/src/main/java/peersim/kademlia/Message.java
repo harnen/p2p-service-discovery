@@ -156,7 +156,7 @@ public class Message extends SimpleEvent {
 	 *            Object
 	 * @return Message
 	 */
-	public static final Message makeFindNode(Object body) {
+	public static final Message makeInitFindNode(Object body) {
 		return new Message(MSG_INIT_FIND, body);
 	}
 

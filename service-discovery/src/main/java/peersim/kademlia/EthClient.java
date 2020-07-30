@@ -65,7 +65,7 @@ public class EthClient implements Control {
 		
 		BigInteger dst=urg.generate();
 
-		Message m = Message.makeFindNode(dst);
+		Message m = Message.makeInitFindNode(dst);
 		m.timestamp = CommonState.getTime();
 
 		return m;

@@ -54,7 +54,7 @@ public class TrafficGenerator implements Control {
 		}
 		BigInteger dst = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
 
-		Message m = Message.makeFindNode(dst);
+		Message m = Message.makeInitFindNode(dst);
 		m.timestamp = CommonState.getTime();
 
 		return m;
@@ -90,14 +90,16 @@ public class TrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
-		System.out.println("[" + CommonState.getTime() + "] Scheduling new MSG_FIND");
+		
 		Node start;
 		do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
 		} while ((start == null) || (!start.isUp()));
 
 		// send message
-		EDSimulator.add(0, generateFindNodeMessage(), start, pid);
+		Message m = generateFindNodeMessage();
+		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
+		EDSimulator.add(0, m, start, pid);
 
 		return false;
 	}

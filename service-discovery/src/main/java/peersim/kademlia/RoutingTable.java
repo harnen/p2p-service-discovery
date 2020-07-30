@@ -97,7 +97,6 @@ public class RoutingTable implements Cloneable {
 
 		// get the lenght of the longest common prefix
 		int prefix_len = Util.prefixLen(nodeId, key);
-		System.out.println("prefix_len " + prefix_len);
 
 		// return the k-bucket if is full
 		if (k_buckets.get(prefix_len).neighbours.size() >= KademliaCommonConfig.K) {
