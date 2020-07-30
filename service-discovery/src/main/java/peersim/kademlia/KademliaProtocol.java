@@ -337,7 +337,11 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 
 		// get the ALPHA closest node to srcNode and add to find operation
-		BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
+		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.prefixLen(this.node.getId(),(BigInteger) m.body));
+		for(int i=0;i<neighbours.length;i++) {
+			if(neighbours[i]==null)System.out.println("Neighbour null");
+		}
 		fop.elaborateResponse(neighbours);
 		fop.available_requests = KademliaCommonConfig.ALPHA;
 
