@@ -398,6 +398,25 @@ public String getString(String name, String def)
 // -------------------------------------------------------------------
 
 /**
+ * Checks if a given protocol name is valid, i.e., a numeric protocol identifier exists.
+ * 
+ * @param protname
+ *          the protocol name.
+ * @return true if a numeric protocol identifier exists for the protname; false otherwise.
+ */
+public boolean isValidProtocolName(String protname)
+{
+	String result = config.getProperty(protname);
+	if (result == null) {
+        return false;
+	}
+    else
+        return true;
+}
+
+// -------------------------------------------------------------------
+
+/**
  * Reads given configuration property. If not found, throws a
  * MissingParameterException. Removes trailing whitespace characters.
  * @param name
