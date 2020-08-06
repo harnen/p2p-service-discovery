@@ -66,6 +66,7 @@ public class Turbulence implements Control {
 
 	private String prefix;
 	private int kademliaid;
+	private int discv5id=-1;
 	private int transportid;
 	private int maxsize;
 	private int minsize;
