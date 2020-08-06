@@ -31,6 +31,7 @@ import peersim.edsim.EDSimulator;
 public class Turbulence implements Control {
 
 	private static final String PAR_PROT = "protocol";
+	private static final String DISCV5_PAR_PROT = "discv5_protocol";
 	private static final String PAR_TRANSPORT = "transport";
 	private static final String PAR_INIT = "init";
 
@@ -77,6 +78,9 @@ public class Turbulence implements Control {
 		this.prefix = prefix;
 		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
 		transportid = Configuration.getPid(this.prefix + "." + PAR_TRANSPORT);
+        if (Configuration.isValidProtocolName(prefix + "." + DISCV5_PAR_PROT)) {
+		    discv5id = Configuration.getPid(this.prefix + "." + DISCV5_PAR_PROT);
+        }
 
 		minsize = Configuration.getInt(this.prefix + "." + PAR_MINSIZE, 1);
 		maxsize = Configuration.getInt(this.prefix + "." + PAR_MAXSIZE, Integer.MAX_VALUE);
@@ -142,6 +146,8 @@ public class Turbulence implements Control {
 		KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
 		node.setProtocolId(kademliaid);
 		((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
+        if (discv5id != -1)
+    		((Discv5Protocol) (newNode.getProtocol(discv5id))).setNode(node, newNode);
 		System.out.println("Adding node " + node.getId());
 
 		// sort network

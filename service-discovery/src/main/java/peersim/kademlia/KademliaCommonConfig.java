@@ -18,6 +18,8 @@ public class KademliaCommonConfig {
 	public static int REFRESHTIME = 10*100; //periodic time used to check nodes down in k-buckets
 	public static int MAXCONNECTIONS = 50; //periodic time used to check nodes down in k-buckets
 	public static int MAXFINDNODEFAILURES = 5; //periodic time used to check nodes down in k-buckets
+    public static int ADS_PER_QUEUE = 10; //the number of ads per topic queue
+    public static int AD_LIFE_TIME = 1000; //life time of ads the topic table
 
 	/**
 	 * short information about current mspastry configuration
