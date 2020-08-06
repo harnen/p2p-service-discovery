@@ -109,7 +109,7 @@ public class Message extends SimpleEvent {
 	/**
 	 * Recipient address of the message
 	 */
-	//public BigInteger dest;
+	public BigInteger dest;
 
 	/**
 	 * Source address of the message: has to be filled at application level
