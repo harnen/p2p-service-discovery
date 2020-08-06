@@ -64,6 +64,7 @@ public class TopicRadius {
 		double min = Math.pow(2,64-(double)(bucket+1)/radiusBucketsPerBit);
 		double max = Math.pow(2, 64-(double)bucket/radiusBucketsPerBit);
 		BigInteger a = BigDecimal.valueOf(min).toBigInteger();
+		//System.out.println("Min "+min+" max "+max);
 		BigInteger b = newRandomMax(BigDecimal.valueOf(max-min).toBigInteger());
 		//System.out.println("Min "+min+" max "+max+" a "+a+" b "+b);
 		BigInteger xor = a.add(b);
@@ -287,7 +288,11 @@ public class TopicRadius {
 	}
 	
 	private BigInteger newRandomMax(BigInteger max) {
+		if (max.compareTo(BigInteger.valueOf(2))==-1) {
+			return BigInteger.valueOf(0);
+		}
 		Random rnd = new Random();
+		//System.out.println("Random "+max);
 		return new BigInteger(64,rnd).mod(max);
 		
 	}
