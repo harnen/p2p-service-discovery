@@ -23,7 +23,8 @@ public class RoutingTable implements Cloneable {
 	protected BigInteger nodeId = null;
 
 	// k-buckets
-	protected TreeMap<Integer, KBucket> k_buckets = null;
+	//protected TreeMap<Integer, KBucket> k_buckets = null;
+	protected KBucket k_buckets[];
 
 	//protected KademliaProtocol prot;
 	// ______________________________________________________________________________________________
@@ -31,18 +32,18 @@ public class RoutingTable implements Cloneable {
 	 * instanciates a new empty routing table with the specified size
 	 */
 	public RoutingTable() {
-		k_buckets = new TreeMap<Integer, KBucket>();
 		// initialize k-bukets
 		//System.out.println("new routing table");
-		for (int i = 0; i <= KademliaCommonConfig.NBUCKETS; i++) {
-			k_buckets.put(i, new KBucket(this));
+		k_buckets = new KBucket[KademliaCommonConfig.NBUCKETS];
+		for (int i = 0; i < k_buckets.length; i++) {
+			k_buckets[i] = new KBucket(this);
 		}
 		//this.prot=prot;
 	}
 
 	public int containsNode(BigInteger id){
 		for(int i = 0; i < KademliaCommonConfig.NBUCKETS; i++){
-			for(BigInteger nodeId: k_buckets.get(i).neighbours){
+			for(BigInteger nodeId: k_buckets[i].neighbours){
 				if(nodeId.equals(id))
 					return i;
 			}
@@ -68,16 +69,16 @@ public class RoutingTable implements Cloneable {
 		BigInteger[] result = new BigInteger[0];
 
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
-		if(dist >= 0 && dist < k_buckets.size()){
-			resultList.addAll(k_buckets.get(dist).neighbours);
+		if(dist >= 0 && dist < k_buckets.length){
+			resultList.addAll(k_buckets[dist].neighbours);
 		}
 
-		if((dist + 1) >= 0 && (dist + 1) < k_buckets.size()){
-			resultList.addAll(k_buckets.get(dist + 1).neighbours);
+		if((dist + 1) >= 0 && (dist + 1) < k_buckets.length){
+			resultList.addAll(k_buckets[dist].neighbours);
 		}
 
-		if((dist - 1) >= 0 && (dist - 1) < k_buckets.size()){
-			resultList.addAll(k_buckets.get(dist - 1).neighbours);
+		if((dist - 1) >= 0 && (dist - 1) < k_buckets.length){
+			resultList.addAll(k_buckets[dist - 1].neighbours);
 		}
 		
 		if(resultList.size() > KademliaCommonConfig.K){
@@ -96,18 +97,19 @@ public class RoutingTable implements Cloneable {
 		ArrayList<BigInteger> neighbour_candidates = new ArrayList<BigInteger>();
 
 		// get the lenght of the longest common prefix
-		int prefix_len = Util.prefixLen(nodeId, key);
-
+		//int prefix_len = Util.prefixLen(nodeId, key);
+		int distance = Util.logDistance(nodeId,key);
+		
 		// return the k-bucket if is full
-		if (k_buckets.get(prefix_len).neighbours.size() >= KademliaCommonConfig.K) {
+		//if (bucketAtDistance(distance).neighbours.size() >= KademliaCommonConfig.K) {
 			//return k_buckets.get(prefix_len).neighbours.keySet().toArray(result);
-			return k_buckets.get(prefix_len).neighbours.toArray(result);
+			return bucketAtDistance(distance).neighbours.toArray(result);
 
-		}
+		//}
 
 		// else get k closest node from all k-buckets
-		prefix_len = 0;
-		while (prefix_len < KademliaCommonConfig.ALPHA) {
+		/*distance = 0;
+		while (distance < KademliaCommonConfig.ALPHA) {
 			//neighbour_candidates.addAll(k_buckets.get(prefix_len).neighbours.keySet());
 			neighbour_candidates.addAll(k_buckets.get(prefix_len).neighbours);
 			// remove source id
@@ -130,16 +132,16 @@ public class RoutingTable implements Cloneable {
 			}
 		}
 
-		return result;
+		return result;*/
 	}
 
 	// ______________________________________________________________________________________________
 	public Object clone() {
 		RoutingTable dolly = new RoutingTable();
-		for (int i = 0; i < KademliaCommonConfig.NBUCKETS; i++) {
-			//System.out.println("clone routing table");
-			k_buckets.put(i, new KBucket(this));// (KBucket) k_buckets.get(i).clone());
+		for (int i = 0; i < k_buckets.length; i++) {
+			k_buckets[i] = new KBucket(this);
 		}
+
 		return dolly;
 	}
 
@@ -161,7 +163,7 @@ public class RoutingTable implements Cloneable {
 		//System.out.println("Routingtable refreshBuckkets "+CommonState.getTime());
 		Random rnd= new Random();
 		for(int i=0;i<KademliaCommonConfig.NBUCKETS;i++) {
-			KBucket b = k_buckets.get(rnd.nextInt(KademliaCommonConfig.NBUCKETS));
+			KBucket b = k_buckets[rnd.nextInt(KademliaCommonConfig.NBUCKETS)];
 			if(b.neighbours.size()>0) {
 				b.checkAndReplaceLast(kademliaid);
 				return;
@@ -181,9 +183,9 @@ public class RoutingTable implements Cloneable {
 	
 	private KBucket bucketAtDistance(int distance) {
 		if (distance <= bucketMinDistance) {
-			return k_buckets.get(0);
+			return k_buckets[0];
 		}
-		return k_buckets.get(distance - bucketMinDistance);
+		return k_buckets[distance - bucketMinDistance - 1];
 	}
 	// ______________________________________________________________________________________________
 

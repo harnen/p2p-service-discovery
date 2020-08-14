@@ -13,6 +13,7 @@ import peersim.core.Node;
  */
 public class Util {
 
+	
 	/**
 	 * Given two numbers, returns the length of the common prefix, i.e. how many digits (in base 2) have in common from the
 	 * leftmost side of the number
@@ -83,6 +84,33 @@ public class Util {
 		return n;
 	}
 	
+	/**
+	 * calculate the log base 2 of a BigInteger value
+	 * 
+	 * @param BigInteger value
+	 * 
+	 * @return double result
+	 */
+	public static int logDistance(BigInteger a,BigInteger b)
+	{
+		int lz = 0;
+
+		byte[] abyte = a.toByteArray();
+		byte[] bbyte = b.toByteArray();
+
+		for(int i = 0;i<abyte.length;i++)
+		{
+			byte x = (byte) (abyte[i] ^ bbyte[i]);
+			System.out.println("xor "+x+" "+abyte[i]+" "+bbyte[i]);
+			if(x==0) {
+				lz+=8;
+			} else {
+				lz += leadingZeros8(x);
+			}
+		}
+		return abyte.length*8 - lz;
+	}
+	
 	
 	/**
 	 * Return the 64 bit prefix of any BigInteger
@@ -140,6 +168,28 @@ public class Util {
 		}
 
 		return null;
+	}
+	
+	private static int leadingZeros8(byte x) {
+		
+		int[] len8tab = new int[]  {0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4,
+				5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+				6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+				6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+				7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+				7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+				7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+				7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8};
+				
+		return 8 - len8tab[x];
 	}
 
 
