@@ -90,7 +90,10 @@ public class TrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
-		
+		/*if(!first){
+			return false;
+		}
+		first = false;*/
 		Node start;
 		do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));

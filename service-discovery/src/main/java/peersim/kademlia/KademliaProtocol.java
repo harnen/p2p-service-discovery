@@ -228,8 +228,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 						Message request = new Message(Message.MSG_FIND);
 						request.operationId = m.operationId;
 						request.src = this.node.getId();
-						request.body = Util.prefixLen(fop.destNode, neighbour);
-
+						//request.body = Util.prefixLen(fop.destNode, neighbour);
+						request.body = Util.logDistance(fop.destNode, neighbour);
 						fop.nrHops++;
 						
 						sendMessage(request, neighbour, myPid);
@@ -278,12 +278,13 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleFind(Message m, int myPid) {
 		// get the ALPHA closest node to destNode
+		System.out.println("find node received at "+this.node.getId()+" distance "+m.body); 
 		BigInteger[] neighbours = this.routingTable.getNeighbours((int) m.body);
-		/*System.out.print("Including neigbours: [");
+		System.out.print("Including neigbours: [");
 		for(BigInteger n : neighbours){
-			System.out.print(", " + n);
+			System.out.println(", " + n);
 		}
-		System.out.println("]");*/
+		System.out.println("]");
 
 
 		// create a response message containing the neighbours (with the same id of the request)
@@ -332,7 +333,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		KademliaObserver.find_total.add(1);
 
-		//System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
+		System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
 		// create find operation and add to operations array
 		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
 		fop.destNode = (BigInteger) m.body;
@@ -353,7 +354,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
 			BigInteger nextNode = fop.getNeighbour();
 			if (nextNode != null) {
-				m.body = Util.prefixLen(nextNode, fop.destNode);
+				//m.body = Util.prefixLen(nextNode, fop.destNode);
+				m.body = Util.logDistance(nextNode, fop.destNode);
+				System.out.println("Send find message "+Util.logDistance(nextNode, fop.destNode));
 				sendMessage(m.copy(), nextNode, myPid);
 				fop.nrHops++;
 			}

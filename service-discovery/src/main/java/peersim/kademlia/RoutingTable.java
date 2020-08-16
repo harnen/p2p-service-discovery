@@ -54,6 +54,7 @@ public class RoutingTable implements Cloneable {
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
+		System.out.println("Bucket add node "+node+" in "+nodeId+" at bucket "+(Util.logDistance(nodeId, node) - bucketMinDistance -1));
 		if(node.compareTo(nodeId)==0) return;
 		bucket(node).addNeighbour(node);
 	}
@@ -69,7 +70,7 @@ public class RoutingTable implements Cloneable {
 		BigInteger[] result = new BigInteger[0];
 
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
-		if(dist >= 0 && dist < k_buckets.length){
+		/*if(dist >= 0 && dist < k_buckets.length){
 			resultList.addAll(k_buckets[dist].neighbours);
 		}
 
@@ -85,7 +86,11 @@ public class RoutingTable implements Cloneable {
 			return resultList.subList(0, KademliaCommonConfig.K).toArray(result);
 		}else{
 			return resultList.toArray(result);
-		}
+		}*/
+		resultList.addAll(bucketAtDistance(dist).neighbours);
+		return resultList.toArray(result);
+
+		
 	}
 
 	// return the closest neighbour to a key from the correct k-bucket
@@ -94,16 +99,19 @@ public class RoutingTable implements Cloneable {
 		BigInteger[] result = new BigInteger[KademliaCommonConfig.K];
 
 		// neighbour candidates
-		ArrayList<BigInteger> neighbour_candidates = new ArrayList<BigInteger>();
+		//ArrayList<BigInteger> neighbour_candidates = new ArrayList<BigInteger>();
 
 		// get the lenght of the longest common prefix
 		//int prefix_len = Util.prefixLen(nodeId, key);
-		int distance = Util.logDistance(nodeId,key);
+		//int distance = Util.logDistance(nodeId,key);
+		return bucket(key).neighbours.toArray(result);
+		
+		//System.out.println("Distance "+distance+" "+Util.prefixLen(nodeId, key) +" "+(256-Util.prefixLen(nodeId, key)));
 		
 		// return the k-bucket if is full
 		//if (bucketAtDistance(distance).neighbours.size() >= KademliaCommonConfig.K) {
 			//return k_buckets.get(prefix_len).neighbours.keySet().toArray(result);
-			return bucketAtDistance(distance).neighbours.toArray(result);
+			//return bucketAtDistance(distance).neighbours.toArray(result);
 
 		//}
 
@@ -178,13 +186,16 @@ public class RoutingTable implements Cloneable {
 	}
 	
 	public KBucket bucket(BigInteger node) {
-		return bucketAtDistance(Util.prefixLen(nodeId, node));
+		//return bucketAtDistance(Util.prefixLen(nodeId, node));
+		return bucketAtDistance(Util.logDistance(nodeId, node));
 	}
 	
 	private KBucket bucketAtDistance(int distance) {
 		if (distance <= bucketMinDistance) {
+			//System.out.println("bucket at distance "+distance+" "+bucketMinDistance+" "+0);
 			return k_buckets[0];
 		}
+		//System.out.println("bucket at distance "+distance+" "+(distance - bucketMinDistance - 1));
 		return k_buckets[distance - bucketMinDistance - 1];
 	}
 	// ______________________________________________________________________________________________
