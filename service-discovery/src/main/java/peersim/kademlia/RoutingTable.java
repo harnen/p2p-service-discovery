@@ -54,7 +54,7 @@ public class RoutingTable implements Cloneable {
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
-		System.out.println("Bucket add node "+node+" in "+nodeId+" at bucket "+(Util.logDistance(nodeId, node) - bucketMinDistance -1));
+		//System.out.println("Bucket add node "+node+" in "+nodeId+" at bucket "+(Util.logDistance(nodeId, node) - bucketMinDistance -1));
 		if(node.compareTo(nodeId)==0) return;
 		bucket(node).addNeighbour(node);
 	}
@@ -93,55 +93,6 @@ public class RoutingTable implements Cloneable {
 		
 	}
 
-	// return the closest neighbour to a key from the correct k-bucket
-	public BigInteger[] getNeighbours(final BigInteger key, final BigInteger src) {
-		// resulting neighbours
-		BigInteger[] result = new BigInteger[KademliaCommonConfig.K];
-
-		// neighbour candidates
-		//ArrayList<BigInteger> neighbour_candidates = new ArrayList<BigInteger>();
-
-		// get the lenght of the longest common prefix
-		//int prefix_len = Util.prefixLen(nodeId, key);
-		//int distance = Util.logDistance(nodeId,key);
-		return bucket(key).neighbours.toArray(result);
-		
-		//System.out.println("Distance "+distance+" "+Util.prefixLen(nodeId, key) +" "+(256-Util.prefixLen(nodeId, key)));
-		
-		// return the k-bucket if is full
-		//if (bucketAtDistance(distance).neighbours.size() >= KademliaCommonConfig.K) {
-			//return k_buckets.get(prefix_len).neighbours.keySet().toArray(result);
-			//return bucketAtDistance(distance).neighbours.toArray(result);
-
-		//}
-
-		// else get k closest node from all k-buckets
-		/*distance = 0;
-		while (distance < KademliaCommonConfig.ALPHA) {
-			//neighbour_candidates.addAll(k_buckets.get(prefix_len).neighbours.keySet());
-			neighbour_candidates.addAll(k_buckets.get(prefix_len).neighbours);
-			// remove source id
-			neighbour_candidates.remove(src);
-			prefix_len++;
-		}
-
-		// create a map (distance, node)
-		TreeMap<BigInteger, BigInteger> distance_map = new TreeMap<BigInteger, BigInteger>();
-
-		for (BigInteger node : neighbour_candidates) {
-			distance_map.put(Util.distance(node, key), node);
-		}
-
-		int i = 0;
-		for (BigInteger iii : distance_map.keySet()) {
-			if (i < KademliaCommonConfig.K) {
-				result[i] = distance_map.get(iii);
-				i++;
-			}
-		}
-
-		return result;*/
-	}
 
 	// ______________________________________________________________________________________________
 	public Object clone() {

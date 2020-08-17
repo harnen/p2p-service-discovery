@@ -187,11 +187,15 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void find(Message m, int myPid) {
 		// add message source to my routing table
+		
 		if (m.src != null) {
 			routingTable.addNeighbour(m.src);
 			failures.replace(m.src, 0);
 		}
 		BigInteger[] neighbours = (BigInteger[]) m.body;
+		
+		System.out.println("find node response at "+this.node.getId()+" "+neighbours.length); 
+
 		/*System.out.print("Received neigbours: [");
 		for(BigInteger n : neighbours){
 			System.out.print(", " + n);
@@ -278,13 +282,13 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleFind(Message m, int myPid) {
 		// get the ALPHA closest node to destNode
-		System.out.println("find node received at "+this.node.getId()+" distance "+m.body); 
+		System.out.println("find node received at "+this.node.getId()+" distance "+(int) m.body); 
 		BigInteger[] neighbours = this.routingTable.getNeighbours((int) m.body);
-		System.out.print("Including neigbours: [");
+		/*System.out.print("Including neigbours: [");
 		for(BigInteger n : neighbours){
 			System.out.println(", " + n);
 		}
-		System.out.println("]");
+		System.out.println("]");*/
 
 
 		// create a response message containing the neighbours (with the same id of the request)
@@ -341,7 +345,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 
 		// get the ALPHA closest node to srcNode and add to find operation
-		BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
+		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());	
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) m.body, this.node.getId()));
+
 		fop.elaborateResponse(neighbours);
 		fop.available_requests = KademliaCommonConfig.ALPHA;
 
@@ -387,7 +393,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	operations.put(rop.operationId, rop);
 
 	// 	// get the ALPHA closest node to srcNode and add to find operation
-	BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
+	//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
+	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) m.body, this.node.getId()));
 	rop.elaborateResponse(neighbours);
 	rop.available_requests = KademliaCommonConfig.ALPHA;
 

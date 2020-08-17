@@ -298,7 +298,9 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
 			
             BigInteger targetAddr = topicRadius.nextTarget(false).getAddress();
             // Lookup the target address in the routing table
-            BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+           // BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+        	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.kademliaNode.getId()));
+
             this.fop = new FindOperation(targetAddr, 0);
             this.fop.elaborateResponse(neighbours); 
             BigInteger dest = this.fop.getNeighbour();
@@ -335,7 +337,9 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
         this.routingTable = ((KademliaProtocol) (this.node.getProtocol(this.kademliaProtocolID))).routingTable;
         
         // Lookup the target address in the routing table
-        BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+        //BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+    	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.kademliaNode.getId()));
+
         //System.out.println("Neighbors: " + Arrays.toString(neighbours));
         //System.out.println("My id is: " + this.kademliaNode.getId().toString());
         //System.out.println("Target id is: " + targetAddr.toString());
