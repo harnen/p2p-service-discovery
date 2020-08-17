@@ -298,13 +298,20 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
 			
             BigInteger targetAddr = topicRadius.nextTarget(false).getAddress();
             // Lookup the target address in the routing table
-           // BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
-        	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.kademliaNode.getId()));
+            BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+        	//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.kademliaNode.getId()));
 
             this.fop = new FindOperation(targetAddr, 0);
             this.fop.elaborateResponse(neighbours); 
             BigInteger dest = this.fop.getNeighbour();
             // Schedule a ticket request message to be sent immediately
+            
+            if (dest == null) {
+            	System.out.println("Neighbors: " + Arrays.toString(neighbours));
+                System.out.println("Error: destination is null at time: " + CommonState.getTime());
+                return;
+            }
+
             Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, topic.getTopic());
             ticket_request.operationId = this.fop.operationId;
             scheduleSendMessage(ticket_request, dest, discv5id, 0); 
@@ -337,8 +344,8 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
         this.routingTable = ((KademliaProtocol) (this.node.getProtocol(this.kademliaProtocolID))).routingTable;
         
         // Lookup the target address in the routing table
-        //BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
-    	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.kademliaNode.getId()));
+        BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+    	//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.kademliaNode.getId()));
 
         //System.out.println("Neighbors: " + Arrays.toString(neighbours));
         //System.out.println("My id is: " + this.kademliaNode.getId().toString());

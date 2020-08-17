@@ -84,6 +84,53 @@ public class RoutingTable implements Cloneable {
 
 		
 	}
+	
+    // return the closest neighbour to a key from the correct k-bucket
+	public BigInteger[] getNeighbours(final BigInteger key, final BigInteger src) {
+               // resulting neighbours
+               BigInteger[] result = new BigInteger[KademliaCommonConfig.K];
+
+                // neighbour candidates
+               ArrayList<BigInteger> neighbour_candidates = new ArrayList<BigInteger>();
+
+               // get the lenght of the longest common prefix
+               int prefix_len = Util.prefixLen(nodeId, key);
+               
+               // return the k-bucket if is full
+               if (k_buckets[255-prefix_len].neighbours.size() >= KademliaCommonConfig.K) {
+                       //return k_buckets.get(prefix_len).neighbours.keySet().toArray(result);
+                       return k_buckets[255-prefix_len].neighbours.toArray(result);
+
+               }
+
+               // else get k closest node from all k-buckets
+               prefix_len = 0;
+               while (prefix_len < KademliaCommonConfig.ALPHA) {
+                       //neighbour_candidates.addAll(k_buckets.get(prefix_len).neighbours.keySet());
+                       neighbour_candidates.addAll(k_buckets[255-prefix_len].neighbours);
+                       // remove source id
+                       neighbour_candidates.remove(src);
+                       prefix_len++;
+               }
+
+               // create a map (distance, node)
+               TreeMap<BigInteger, BigInteger> distance_map = new TreeMap<BigInteger, BigInteger>();
+
+               for (BigInteger node : neighbour_candidates) {
+                       distance_map.put(Util.distance(node, key), node);
+               }
+
+               int i = 0;
+               for (BigInteger iii : distance_map.keySet()) {
+                       if (i < KademliaCommonConfig.K) {
+                               result[i] = distance_map.get(iii);
+                               i++;
+                       }
+				}
+
+               return result;
+       }
+
 
 
 	// ______________________________________________________________________________________________
