@@ -25,6 +25,10 @@ public class Proposal1TopicTable implements TopicTable {
         this.hostID = hostID;
     }
 
+    public Proposal1TopicTable(){
+        table = new TreeMap<Topic, List<Registration>>();
+    }
+
     private void add(Registration r, Topic t){
         if(!table.containsKey(t)){
             List list = new ArrayList<Registration>();
@@ -89,6 +93,10 @@ public class Proposal1TopicTable implements TopicTable {
     
     public int getSize(){
         return this.size;
+    }
+
+    public void setHostID(BigInteger id){
+        this.hostID = id;
     }
 
     public BigInteger getHostID(){

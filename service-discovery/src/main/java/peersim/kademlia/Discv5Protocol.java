@@ -162,8 +162,8 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
 		Node src = nodeIdtoNode(this.kademliaNode.getId());
 		Node dest = nodeIdtoNode(destId);
         
-        m.src = this.kademliaNode.getId();
-        m.dest = destId;     
+        m.src = this.kademliaNode;
+        m.dest = new KademliaNode(destId);     
 
         // TODO: remove the assert later
 	    assert(src == this.node);
@@ -200,8 +200,8 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
         // FIXME: find a way to do this from Discv5
 		//this.routingTable.addNeighbour(destId);
 
-        m.src = this.kademliaNode.getId();
-        m.dest = destId;     
+        m.src = this.kademliaNode;
+        m.dest = new KademliaNode(destId);     
 		Node src = nodeIdtoNode(this.kademliaNode.getId());
 		Node dest = nodeIdtoNode(destId);
 
@@ -227,8 +227,8 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
      */
     private void handleRegister(Message m, int myPid) {
 		//System.out.println("Register received: " + m);
-        Ticket ticket = (Ticket) m.body;
-        KademliaNode src = new KademliaNode(m.src, "127.0.0.1", 0); 
+		Ticket ticket = (Ticket) m.body;
+        KademliaNode src = new KademliaNode(m.src); 
         Registration reg = new Registration(src, ticket.topic); 
         boolean ret = topicTable.register(reg, null);
         if (ret == false) {
@@ -244,7 +244,7 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
 
         Message response = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
 		response.ackId = m.id; // set ACK number
-        sendMessage(response, m.src, discv5id);
+        sendMessage(response, m.src.getId(), discv5id);
     }
     /**
      *
@@ -254,13 +254,13 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
 		//System.out.println("Ticket request received: " + m);
         String topic = (String) m.body;
         // FIXME: there needs to be a better way to get kademliaNode from nodeID
-        KademliaNode src = new KademliaNode(m.src, "127.0.0.1", 0); 
+        KademliaNode src = new KademliaNode(m.src); 
         Ticket ticket = topicTable.getTicket(topic, src);
         
         Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
 		response.ackId = m.id; // set ACK number
 		response.operationId = m.operationId;
-        sendMessage(response, m.src, discv5id);
+        sendMessage(response, m.src.getId(), discv5id);
     }
 
     /**
@@ -271,10 +271,10 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
         Ticket t = (Ticket) m.body;
         Message register = new Message(Message.MSG_REGISTER, t);
 		register.ackId = m.id; // set ACK number
-        register.dest = m.src;
+        register.dest = new KademliaNode(m.src);
         register.body = m.body;
         register.operationId = m.operationId;
-        scheduleSendMessage(register, m.src, discv5id, t.wait_time);
+        scheduleSendMessage(register, m.src.getId(), discv5id, t.wait_time);
     }
     /**
      *
@@ -287,7 +287,7 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
             register.body = m.body;
-            scheduleSendMessage(register, m.src, discv5id, ticket.wait_time);
+            scheduleSendMessage(register, m.src.getId(), discv5id, ticket.wait_time);
         }
         else {
             //System.out.println("Successful Registration of topic: " + ticket.topic + " at node: " + m.src.toString());

@@ -109,12 +109,12 @@ public class Message extends SimpleEvent {
 	/**
 	 * Recipient address of the message
 	 */
-	public BigInteger dest;
+	public KademliaNode dest;
 
 	/**
 	 * Source address of the message: has to be filled at application level
 	 */
-	public BigInteger src;
+	public KademliaNode src;
 
 	/**
 	 * Available to count the number of hops the message did.
