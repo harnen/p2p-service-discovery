@@ -68,26 +68,18 @@ public class RoutingTable implements Cloneable {
 	// return the neighbours with a specific common prefix len
 	public BigInteger[] getNeighbours (final int dist) {
 		BigInteger[] result = new BigInteger[0];
-
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
-		/*if(dist >= 0 && dist < k_buckets.length){
-			resultList.addAll(k_buckets[dist].neighbours);
-		}
-
-		if((dist + 1) >= 0 && (dist + 1) < k_buckets.length){
-			resultList.addAll(k_buckets[dist].neighbours);
-		}
-
-		if((dist - 1) >= 0 && (dist - 1) < k_buckets.length){
-			resultList.addAll(k_buckets[dist - 1].neighbours);
-		}
-		
-		if(resultList.size() > KademliaCommonConfig.K){
-			return resultList.subList(0, KademliaCommonConfig.K).toArray(result);
-		}else{
-			return resultList.toArray(result);
-		}*/
 		resultList.addAll(bucketAtDistance(dist).neighbours);
+		//System.out.println("Getneighbours "+resultList.size());
+		if(resultList.size()<KademliaCommonConfig.K&&dist+1<=256) {
+			//System.out.println("Getneighbours "+resultList.size());
+			resultList.addAll(bucketAtDistance(dist+1).neighbours);
+
+		}
+		if(resultList.size()<KademliaCommonConfig.K&dist+1>=0) {
+			//System.out.println("Getneighbours "+resultList.size());
+			resultList.addAll(bucketAtDistance(dist-1).neighbours);
+		}
 		return resultList.toArray(result);
 
 		

@@ -194,7 +194,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		}
 		BigInteger[] neighbours = (BigInteger[]) m.body;
 		
-		System.out.println("find node response at "+this.node.getId()+" "+neighbours.length); 
+		//System.out.println("find node response at "+this.node.getId()+" "+neighbours.length); 
 
 		/*System.out.print("Received neigbours: [");
 		for(BigInteger n : neighbours){
@@ -282,7 +282,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleFind(Message m, int myPid) {
 		// get the ALPHA closest node to destNode
-		System.out.println("find node received at "+this.node.getId()+" distance "+(int) m.body); 
+		//System.out.println("find node received at "+this.node.getId()+" distance "+(int) m.body); 
 		BigInteger[] neighbours = this.routingTable.getNeighbours((int) m.body);
 		/*System.out.print("Including neigbours: [");
 		for(BigInteger n : neighbours){
@@ -337,7 +337,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		KademliaObserver.find_total.add(1);
 
-		System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
+		//System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
 		// create find operation and add to operations array
 		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
 		fop.destNode = (BigInteger) m.body;
@@ -362,7 +362,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			if (nextNode != null) {
 				//m.body = Util.prefixLen(nextNode, fop.destNode);
 				m.body = Util.logDistance(nextNode, fop.destNode);
-				System.out.println("Send find message "+Util.logDistance(nextNode, fop.destNode));
+				//System.out.println("Send find message "+Util.logDistance(nextNode, fop.destNode));
 				sendMessage(m.copy(), nextNode, myPid);
 				fop.nrHops++;
 			}

@@ -101,7 +101,7 @@ public class TrafficGenerator implements Control {
 
 		// send message
 		Message m = generateFindNodeMessage();
-		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
+		//System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
 		EDSimulator.add(0, m, start, pid);
 
 		return false;

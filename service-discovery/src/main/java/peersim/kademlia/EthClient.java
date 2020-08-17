@@ -63,8 +63,13 @@ public class EthClient implements Control {
 		}
 		BigInteger dst = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();*/
 		
-		BigInteger dst=urg.generate();
-
+		//BigInteger dst=urg.generate();
+		Node n = Network.get(CommonState.r.nextInt(Network.size()));
+		while (!n.isUp()) {
+			n = Network.get(CommonState.r.nextInt(Network.size()));
+		}
+		BigInteger dst = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
+		
 		Message m = Message.makeInitFindNode(dst);
 		m.timestamp = CommonState.getTime();
 
