@@ -1,5 +1,7 @@
 package peersim.kademlia;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,8 +10,11 @@ import java.io.Reader;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.Security;
+
 
 import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.io.Base64URLSafe;
 import org.apache.tuweni.devp2p.EthereumNodeRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,15 +68,19 @@ public class DnsListDistribution implements peersim.core.Control {
 	 * @return boolean always false
 	 */
 	public boolean execute() {
-		
+		Security.addProvider(new BouncyCastleProvider());
 		int i=0;
 		for (String keyStr : json.keySet()) {
 	        JSONObject json2 = json.getJSONObject(keyStr);
-			System.out.println("Record: "+ json2.getString("record")+" "+json.keySet().size());
+			System.out.println("Record: "+ json2.getString("record").substring(4)+" "+json.keySet().size());
 			
-			EthereumNodeRecord enr = EthereumNodeRecord.fromRLP(Bytes.wrap(json2.getString("record").getBytes()));
+			//EthereumNodeRecord enr = EthereumNodeRecord.fromRLP(Bytes.fromHexString(json2.getString("record")));
+			EthereumNodeRecord enr = EthereumNodeRecord.fromRLP((Base64URLSafe.decode(json2.getString("record").substring(4))));
+			System.out.println("Record: "+ ((Bytes)enr.getData().get("id")).toString());
+			System.out.println("Record: "+ enr.ip());
 
-			KademliaNode node = new KademliaNode(new BigInteger(enr.publicKey().bytesArray()), enr.ip().toString(), enr.tcp());
+			//enr.va
+			/*KademliaNode node = new KademliaNode(new BigInteger(enr.publicKey().bytesArray()), enr.ip().toString(), enr.tcp());
 			node.setProtocolId(protocolID);
 			if(i>=Network.size()) {
 				Node newNode = (Node) Network.prototype.clone();
@@ -84,7 +93,7 @@ public class DnsListDistribution implements peersim.core.Control {
 			}
 				
 			((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
-			i++;
+			i++;*/
 
 	    }
 		
