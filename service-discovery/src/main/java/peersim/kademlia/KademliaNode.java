@@ -33,11 +33,33 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.id = id;
         this.addr = addr;
         this.port = port;
-        incomingConnections=new ArrayList<BigInteger>();
-        outgoingConnections=new ArrayList<BigInteger>();
+        incomingConnections = new ArrayList<BigInteger>();
+        outgoingConnections = new ArrayList<BigInteger>();
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
-        lookupResultBuffer=new ArrayList<BigInteger>();
+        lookupResultBuffer = new ArrayList<BigInteger>();
+    }
+
+    public KademliaNode(BigInteger id){
+        this.id = id;
+        this.addr = "127.0.0.1";
+        this.port = 666;
+        incomingConnections = new ArrayList<BigInteger>();
+        outgoingConnections = new ArrayList<BigInteger>();
+        maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
+        maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
+        lookupResultBuffer = new ArrayList<BigInteger>();
+    }
+
+    public KademliaNode(KademliaNode n){
+        this.id = n.id;
+        this.addr = n.addr;
+        this.port = n.port;
+        incomingConnections = new ArrayList<BigInteger>();
+        outgoingConnections = new ArrayList<BigInteger>();
+        maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
+        maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
+        lookupResultBuffer = new ArrayList<BigInteger>();
     }
     
     public BigInteger getId(){

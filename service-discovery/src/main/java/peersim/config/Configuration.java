@@ -543,6 +543,20 @@ public static int lookupPid(String protname)
 // -------------------------------------------------------------------
 
 /**
+ * Checks if a given protocol name is valid, i.e., a numeric protocol identifier exists.
+ * 
+ * @param protname
+ *          the protocol name.
+ * @return true if a numeric protocol identifier exists for the protname; false otherwise.
+ */
+public static boolean isValidProtocolName(String protname)
+{
+	return config.isValidProtocolName(protname);
+}
+
+// -------------------------------------------------------------------
+
+/**
  * Returns the name of a protocol that has the given identifier.
  * <p>
  * Note that this is not a constant time operation in the number of

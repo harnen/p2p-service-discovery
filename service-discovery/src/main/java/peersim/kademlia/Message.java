@@ -65,6 +65,25 @@ public class Message extends SimpleEvent {
 	 * Message Type: INIT_REGISTER (start registering under a topic)
 	 */
 	public static final int MSG_INIT_REGISTER = 6;
+    /**
+	 * Message Type: TICKET_REQUEST (obtain a ticket to later register a topic)
+	 */
+	public static final int MSG_TICKET_REQUEST = 7;
+    
+    /**
+	 * Message Type: TICKET_RESPONSE (return a ticket back to the origin)
+	 */
+	public static final int MSG_TICKET_RESPONSE = 8;
+
+    /**
+	 * Message Type: TOPIC_QUERY (send a query for topics)
+	 */
+	public static final int MSG_TOPIC_QUERY = 9;
+   
+    /**
+	 * Message Type: REGISTER_RESPONSE (response to register request)
+	 */
+	public static final int MSG_REGISTER_RESPONSE = 10;
 
 	// ______________________________________________________________________________________________
 	/**
@@ -90,12 +109,12 @@ public class Message extends SimpleEvent {
 	/**
 	 * Recipient address of the message
 	 */
-	//public BigInteger dest;
+	public KademliaNode dest;
 
 	/**
 	 * Source address of the message: has to be filled at application level
 	 */
-	public BigInteger src;
+	public KademliaNode src;
 
 	/**
 	 * Available to count the number of hops the message did.
@@ -156,7 +175,7 @@ public class Message extends SimpleEvent {
 	 *            Object
 	 * @return Message
 	 */
-	public static final Message makeFindNode(Object body) {
+	public static final Message makeInitFindNode(Object body) {
 		return new Message(MSG_INIT_FIND, body);
 	}
 
@@ -228,6 +247,16 @@ public class Message extends SimpleEvent {
 				return "MSG_RESPONSE";
 			case MSG_REGISTER:
 				return "MSG_REGISTER";
+			case MSG_INIT_REGISTER: 
+				return "MSG_INIT_REGISTER";
+			case MSG_TICKET_REQUEST:
+				return "MSG_TICKET_REQUEST";
+			case MSG_TICKET_RESPONSE:
+				return "MSG_TICKET_RESPONSE";
+			case MSG_TOPIC_QUERY:
+				return "MSG_TOPIC_QUERY";
+			case MSG_REGISTER_RESPONSE:
+				return "MSG_REGISTER_RESPONSE";
 			default:
 				return "UNKNOW:" + type;
 		}

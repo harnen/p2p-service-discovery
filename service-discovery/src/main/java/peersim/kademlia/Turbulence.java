@@ -31,6 +31,7 @@ import peersim.edsim.EDSimulator;
 public class Turbulence implements Control {
 
 	private static final String PAR_PROT = "protocol";
+	private static final String DISCV5_PAR_PROT = "discv5_protocol";
 	private static final String PAR_TRANSPORT = "transport";
 	private static final String PAR_INIT = "init";
 
@@ -65,6 +66,7 @@ public class Turbulence implements Control {
 
 	private String prefix;
 	private int kademliaid;
+	private int discv5id=-1;
 	private int transportid;
 	private int maxsize;
 	private int minsize;
@@ -77,6 +79,9 @@ public class Turbulence implements Control {
 		this.prefix = prefix;
 		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
 		transportid = Configuration.getPid(this.prefix + "." + PAR_TRANSPORT);
+        if (Configuration.isValidProtocolName(prefix + "." + DISCV5_PAR_PROT)) {
+		    discv5id = Configuration.getPid(this.prefix + "." + DISCV5_PAR_PROT);
+        }
 
 		minsize = Configuration.getInt(this.prefix + "." + PAR_MINSIZE, 1);
 		maxsize = Configuration.getInt(this.prefix + "." + PAR_MAXSIZE, Integer.MAX_VALUE);
@@ -142,6 +147,8 @@ public class Turbulence implements Control {
 		KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
 		node.setProtocolId(kademliaid);
 		((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
+        if (discv5id != -1)
+    		((Discv5Protocol) (newNode.getProtocol(discv5id))).setNode(node, newNode);
 		System.out.println("Adding node " + node.getId());
 
 		// sort network
@@ -154,9 +161,8 @@ public class Turbulence implements Control {
 		} while ((start == null) || (!start.isUp()));
 
 		// create auto-search message (search message with destination my own Id)
-		Message m = Message.makeFindNode("Bootstrap traffic");
+		Message m = Message.makeInitFindNode(newKad.node.getId());
 		m.timestamp = CommonState.getTime();
-		m.body = newKad.node.getId();
 
 		// perform initialization
 		newKad.routingTable.addNeighbour(((KademliaProtocol) (start.getProtocol(kademliaid))).node.getId());
@@ -165,9 +171,8 @@ public class Turbulence implements Control {
 		EDSimulator.add(0, m, newNode, kademliaid);
 
 		// find another random node (this is to enrich the k-buckets)
-		Message m1 = Message.makeFindNode("Bootstrap traffic");
+		Message m1 = Message.makeInitFindNode(urg.generate());
 		m1.timestamp = CommonState.getTime();
-		m1.body = urg.generate();
 
 		return false;
 	}

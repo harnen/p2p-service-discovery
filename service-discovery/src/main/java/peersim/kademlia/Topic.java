@@ -78,4 +78,10 @@ public class Topic implements Comparable<Topic> {
     public BigInteger getTopicID(){
         return this.topicID;
     }
+    
+    @Override
+    public int hashCode()
+    {
+        return this.topic.hashCode();
+    }
 }

@@ -72,15 +72,15 @@ public class DnsListDistribution implements peersim.core.Control {
 		int i=0;
 		for (String keyStr : json.keySet()) {
 	        JSONObject json2 = json.getJSONObject(keyStr);
-			System.out.println("Record: "+ json2.getString("record").substring(4)+" "+json.keySet().size());
+			//System.out.println("Record: "+ json2.getString("record").substring(4)+" "+json.keySet().size());
 			
 			//EthereumNodeRecord enr = EthereumNodeRecord.fromRLP(Bytes.fromHexString(json2.getString("record")));
 			EthereumNodeRecord enr = EthereumNodeRecord.fromRLP((Base64URLSafe.decode(json2.getString("record").substring(4))));
-			System.out.println("Record: "+ ((Bytes)enr.getData().get("id")).toString());
-			System.out.println("Record: "+ enr.ip());
+			//System.out.println("Record: "+ ((Bytes)enr.getData().get("id")).toString());
+			//System.out.println("Record: "+ enr.ip());
 
 			//enr.va
-			/*KademliaNode node = new KademliaNode(new BigInteger(enr.publicKey().bytesArray()), enr.ip().toString(), enr.tcp());
+			KademliaNode node = new KademliaNode(new BigInteger(enr.publicKey().bytesArray()), enr.ip().toString(), enr.tcp());
 			node.setProtocolId(protocolID);
 			if(i>=Network.size()) {
 				Node newNode = (Node) Network.prototype.clone();
@@ -93,7 +93,7 @@ public class DnsListDistribution implements peersim.core.Control {
 			}
 				
 			((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
-			i++;*/
+			i++;
 
 	    }
 		

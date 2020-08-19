@@ -67,6 +67,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	public RoutingTable routingTable;
 
+	public Proposal1TopicTable topicTable;
+
 	private Logger logger;
 
 
@@ -103,7 +105,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		failures = new HashMap();
 		_init();
 
-		routingTable = new RoutingTable();
+		this.routingTable = new RoutingTable();
+
+		this.topicTable = new Proposal1TopicTable();
 
 		sentMsg = new TreeMap<Long, Long>();
 
@@ -188,8 +192,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	private void find(Message m, int myPid) {
 		// add message source to my routing table
 		if (m.src != null) {
-			routingTable.addNeighbour(m.src);
-			failures.replace(m.src, 0);
+			routingTable.addNeighbour(m.src.getId());
+			failures.replace(m.src.getId(), 0);
 		}
 		BigInteger[] neighbours = (BigInteger[]) m.body;
 		/*System.out.print("Received neigbours: [");
@@ -227,7 +231,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					if(!fop.finished){
 						Message request = new Message(Message.MSG_FIND);
 						request.operationId = m.operationId;
-						request.src = this.node.getId();
+						request.src = this.node;
 						request.body = Util.prefixLen(fop.destNode, neighbour);
 
 						fop.nrHops++;
@@ -239,6 +243,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
 					operations.remove(fop.operationId);
+					if(!fop.finished){
+						logger.warning("Couldn't find node " + fop.destNode);
+					}
 					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
 					//TODO We use body for other purposes now - need to reconfigure this
 					/*if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
@@ -287,11 +294,11 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		Message response = new Message(Message.MSG_RESPONSE, neighbours);
 		response.operationId = m.operationId;
 		//response.body = m.body;
-		response.src = this.node.getId();
+		response.src = this.node;
 		response.ackId = m.id; // set ACK number
 
 		// send back the neighbours to the source of the message
-		sendMessage(response, m.src, myPid);
+		sendMessage(response, m.src.getId(), myPid);
 	}
 
 
@@ -307,7 +314,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleRegister(Message m, int myPid) {
 		String topic = (String) m.body;
-		
+		/*registrar = new KademliaNode(BigInteger id, String addr, int port)
+		Registration r = new Registration(topic)
+		topicTable.register(ri, ti)*/
 		//decide whether to accept the registration
 		//get topic distance my id
 		//check if topics closer to the requested ones occupy already full space
@@ -348,7 +357,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// set message operation id
 		m.operationId = fop.operationId;
 		m.type = Message.MSG_FIND;
-		m.src = this.node.getId();
+		m.src = this.node;
 
 		// send ALPHA messages
 		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
@@ -392,7 +401,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	// set message operation id
 	m.operationId = rop.operationId;
 	m.type = Message.MSG_REGISTER;
-	m.src = this.node.getId();
+	m.src = this.node;
 
 	// send ALPHA messages
 	for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
@@ -421,10 +430,11 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
 
-		logger.log(Level.WARNING, "-> (" + m + "/" + m.id + ") " + destId);
+		logger.info("-> (" + m + "/" + m.id + ") " + destId);
 
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		transport.send(src, dest, m, kademliaid);
+		KademliaObserver.msg_sent.add(1);
 
 		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
 			Timeout t = new Timeout(destId, m.id, m.operationId);
@@ -449,11 +459,11 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void processEvent(Node myNode, int myPid, Object event) {
 		// Parse message content Activate the correct event manager fot the particular event
 		this.kademliaid = myPid;
-		//System.out.println("processEvent node " + myNode.getID()+" "+myPid+" at "+CommonState.getTime());
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT){
 			Message m = (Message) event;
-			//System.out.println("Node " + nodeId + " received an event: " + received.messageTypetoString() + " ID: " + received.id + " from " + received.src);
-			logger.log(Level.WARNING, "<- " +  m + " " + m.src);
+			logger.info("<- " +  m + " " + m.src);
+			//don't include controller commands in stats
+			if(((SimpleEvent) event).getType() != Message.MSG_INIT_FIND) KademliaObserver.msg_deliv.add(1);
 		}
 
 		Message m;
@@ -515,12 +525,11 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					// try another node
 					Message m1 = new Message();
 					m1.operationId = t.opID;
-					m1.src = this.node.getId();
+					m1.src = this.node;
 					m1.body = new BigInteger[0];
 					this.find(m1, myPid);
 				}
 				break;
-
 		}
 
 	}
@@ -534,18 +543,21 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void setNode(KademliaNode node) {
 		this.node = node;
 		this.routingTable.nodeId = node.getId();
+		this.topicTable.setHostID(node.getId());
+		
 
 		logger = Logger.getLogger(node.getId().toString());
 		logger.setUseParentHandlers(false);
 		ConsoleHandler handler = new ConsoleHandler();
+		logger.setLevel(Level.WARNING);
 		  
       	handler.setFormatter(new SimpleFormatter() {
         	private static final String format = "[%d][%s] %3$s %n";
 
         	@Override
      		public synchronized String format(LogRecord lr) {
-            	return String.format(format,
-                		CommonState.getTime(),
+				return String.format(format,
+						CommonState.getTime(),
                     	logger.getName(),
                     	lr.getMessage()
             	);

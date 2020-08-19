@@ -35,6 +35,11 @@ public class KademliaObserver implements Control {
 	public static IncrementalStats msg_deliv = new IncrementalStats();
 
 	/**
+	 * keep statistic of number of message sent
+	 */
+	public static IncrementalStats msg_sent = new IncrementalStats();
+
+	/**
 	 * keep statistic of number of find operation
 	 */
 	public static IncrementalStats find_total = new IncrementalStats();
@@ -80,13 +85,15 @@ public class KademliaObserver implements Control {
 			if (!Network.get(i).isUp())
 				sz--;
 		//[%d/%d  successful find operation] [D=%f msg deliv] [%f min h] [%f average h] [%f max h] [%d min l] [%d msec average l] [%d max l]
-		String s = String.format("[time=%d]:[N=%d current nodes UP] [%d/%d find op] [%d/%d register operation]", 
+		String s = String.format("[time=%d]:[N=%d current nodes UP] [%d/%d find (succ/all)] [%d/%d register (succ/all))] [%d/%d msg(recv/sent)]", 
 								CommonState.getTime(), 
 								sz, 
 								(int) find_ok.getSum(), 
 								(int) find_total.getSum(), 
 								(int) register_ok.getSum(), 
-								(int) register_total.getSum());
+								(int) register_total.getSum(),
+								(int) msg_deliv.getSum(),
+								(int) msg_sent.getSum());
 								//msg_deliv.getSum(), hopStore.getMin(), hopStore.getAverage(), hopStore.getMax(), (int) timeStore.getMin(), (int) timeStore.getAverage(), (int) timeStore.getMax());
 		System.err.println(s);
 
