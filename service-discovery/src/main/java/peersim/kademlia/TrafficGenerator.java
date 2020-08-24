@@ -27,7 +27,7 @@ public class TrafficGenerator implements Control {
 
 	private boolean first = true;
 
-	private int topicCounter = 0;
+	private static Integer topicCounter = 0;
 
 	/**
 	 * MSPastry Protocol ID to act
@@ -67,7 +67,7 @@ public class TrafficGenerator implements Control {
 	 * 
 	 * @return Message
 	 */
-	private Message generateRegistersMessage() {
+	private Message generateRegisterMessage() {
 		Topic t = new Topic("t" + Integer.toString(this.topicCounter++));
 		Message m = Message.makeRegister(t.getTopic());
 		m.timestamp = CommonState.getTime();
@@ -78,7 +78,9 @@ public class TrafficGenerator implements Control {
 		while (!n.isUp()) {
 			n = Network.get(CommonState.r.nextInt(Network.size()));
 		}
-		m.body = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
+		//m.body = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
+		m.body = new Topic("topic" + this.topicCounter.toString());
+		this.topicCounter++;
 
 		return m;
 	}
@@ -90,15 +92,20 @@ public class TrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
-		
+		if(!first){
+			return false;
+		}
+		first = false;
 		Node start;
 		do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
 		} while ((start == null) || (!start.isUp()));
 
 		// send message
-		Message m = generateFindNodeMessage();
-		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
+		//Message m = generateFindNodeMessage();
+		Message m = generateRegisterMessage();
+		//System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
+		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_REGISTER for " + ((Topic) m.body).getTopic());
 		EDSimulator.add(0, m, start, pid);
 
 		return false;

@@ -8,15 +8,15 @@ public class Registration implements Comparable<Registration>{
     private KademliaNode node;
     //have to check how to use time (number of cycles in peersim)
     private long timestamp;
-    private String topic;
+    private Topic topic;
 
     public Registration(KademliaNode node) {
         this.node = node;
         this.timestamp = 0;
-        this.topic = new String();
+        this.topic = new Topic();
     }
     
-public Registration(KademliaNode node, String topic) {
+public Registration(KademliaNode node, Topic topic) {
         this.node = node;
         this.topic = topic;
     }
@@ -24,7 +24,7 @@ public Registration(KademliaNode node, String topic) {
     public Registration(Registration r) {
         this.node = r.node;
         this.timestamp = r.timestamp;
-        this.topic = new String(r.topic);
+        this.topic = new Topic(r.topic);
     }
 
     // a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object.
@@ -69,7 +69,7 @@ public Registration(KademliaNode node, String topic) {
         return this.timestamp;
     }
 
-    public String getTopic() {
+    public Topic getTopic() {
         return this.topic;
     }
 

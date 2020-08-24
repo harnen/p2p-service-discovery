@@ -17,6 +17,12 @@ public class Topic implements Comparable<Topic> {
      * All the node IDs are positive, so to make it uniform, we create only positive
      * topic IDs as well. 
     */
+    
+    public Topic() {
+    	this.hostID = new BigInteger("0");
+        this.topic = "";
+        this.topicID = new BigInteger("0");
+    }
 
     public Topic(String topic){
         this.hostID = new BigInteger("0");

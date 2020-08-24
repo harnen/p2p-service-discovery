@@ -62,6 +62,10 @@ public class RoutingTable implements Cloneable {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
 		bucket(node).removeNeighbour(node);
 	}
+	
+	public BigInteger[] getNeighbours (final BigInteger dst) {
+		return getNeighbours(Util.prefixLen(nodeId, dst));
+	}
 
 	// return the neighbours with a specific common prefix len
 	public BigInteger[] getNeighbours (final int dist) {
@@ -88,7 +92,7 @@ public class RoutingTable implements Cloneable {
 	}
 
 	// return the closest neighbour to a key from the correct k-bucket
-	public BigInteger[] getNeighbours(final BigInteger key, final BigInteger src) {
+	/*public BigInteger[] getNeighbours(final BigInteger key, final BigInteger src) {
 		// resulting neighbours
 		BigInteger[] result = new BigInteger[KademliaCommonConfig.K];
 
@@ -131,7 +135,7 @@ public class RoutingTable implements Cloneable {
 		}
 
 		return result;
-	}
+	}*/
 
 	// ______________________________________________________________________________________________
 	public Object clone() {
@@ -174,6 +178,7 @@ public class RoutingTable implements Cloneable {
 		if(bucket(node).neighbours.remove(node))
 			bucket(node).neighbours.add(0,node);
 	}
+	
 	
 	public KBucket bucket(BigInteger node) {
 		return bucketAtDistance(Util.prefixLen(nodeId, node));
