@@ -25,6 +25,11 @@ public class Operation {
 	 * represent univocally the find operation
 	 */
 	public long operationId;
+	
+	/**
+	 * Type of the initial message
+	 */
+	public int type;
 
     /**
 	 * Id of the node to find
@@ -63,9 +68,10 @@ public class Operation {
 	 * @param destNode
 	 *            Id of the node to find
 	 */
-	public Operation(BigInteger dstNode, long timestamp) {
+	public Operation(BigInteger dstNode, int type, long timestamp) {
 		this.timestamp = timestamp;
 		this.destNode = dstNode;
+		this.type = type;
 
 		// set a new find id
 		operationId = OPERATION_ID_GENERATOR++;

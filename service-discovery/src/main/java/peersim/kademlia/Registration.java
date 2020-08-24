@@ -3,6 +3,8 @@ package peersim.kademlia;
 import java.math.BigInteger;
 import java.util.Date;
 
+import peersim.core.CommonState;
+
 public class Registration implements Comparable<Registration>{
 
     private KademliaNode node;
@@ -12,13 +14,14 @@ public class Registration implements Comparable<Registration>{
 
     public Registration(KademliaNode node) {
         this.node = node;
-        this.timestamp = 0;
         this.topic = new Topic();
+        this.timestamp = CommonState.getTime();
     }
     
 public Registration(KademliaNode node, Topic topic) {
         this.node = node;
         this.topic = topic;
+        this.timestamp = CommonState.getTime();
     }
 
     public Registration(Registration r) {

@@ -21,7 +21,7 @@ public class FindOperation extends Operation{
 	 *            Id of the node to find
 	 */
 	public FindOperation(BigInteger destNode, long timestamp) {
-		super(destNode, timestamp);
+		super(destNode, Message.MSG_FIND, timestamp);
 	}
 	
 

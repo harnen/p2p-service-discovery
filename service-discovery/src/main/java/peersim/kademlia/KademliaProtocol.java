@@ -203,6 +203,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		System.out.println("]");*/
 		// get corresponding find operation (using the message field operationId)
 		Operation fop = (Operation)	 this.operations.get(m.operationId);
+		
 
 		if (fop != null) {
 			// save received neighbour in the closest Set of fin operation
@@ -229,14 +230,24 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				if (neighbour != null) {
 					// send a new request only if we didn't find the node already
 					if(!fop.finished){
-						Message request = new Message(Message.MSG_FIND);
-						request.operationId = m.operationId;
-						request.src = this.node;
-						request.body = Util.prefixLen(fop.destNode, neighbour);
-
-						fop.nrHops++;
+						Message request = null;
+						if(fop.type == Message.MSG_FIND) {
+							request = new Message(Message.MSG_FIND);
+							request.operationId = m.operationId;
+							request.src = this.node;
+							request.body = Util.prefixLen(fop.destNode, neighbour);
+						}else if(fop.type == Message.MSG_REGISTER) {
+							request = new Message(Message.MSG_REGISTER);
+							request.operationId = fop.operationId;
+							request.type = Message.MSG_REGISTER;
+							request.src = this.node;
+							request.body = fop.body;
+						}
 						
-						sendMessage(request, neighbour, myPid);
+						if(request != null) {
+							fop.nrHops++;
+							sendMessage(request, neighbour, myPid);
+						}
 					}
 
 					
@@ -314,14 +325,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleRegister(Message m, int myPid) {
 		Topic t = (Topic) m.body;
-		//String topic = (String) m.body;
-		/*registrar = new KademliaNode(BigInteger id, String addr, int port)
-		Registration r = new Registration(topic)
-		topicTable.register(ri, ti)*/
-		//decide whether to accept the registration
-		//get topic distance my id
-		//check if topics closer to the requested ones occupy already full space
-		//
+		Registration r = new Registration(m.src, t);
+		this.topicTable.register(r, t);
 
 		handleFind(m, myPid, Util.prefixLen(this.node.getId(), t.getTopicID()));
 	}
@@ -465,7 +470,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		Message m;
 
 		switch (((SimpleEvent) event).getType()) {
-
 			case Message.MSG_RESPONSE:
 				m = (Message) event;
 				sentMsg.remove(m.ackId);
@@ -545,8 +549,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		logger = Logger.getLogger(node.getId().toString());
 		logger.setUseParentHandlers(false);
 		ConsoleHandler handler = new ConsoleHandler();
-		//logger.setLevel(Level.WARNING);
-		logger.setLevel(Level.ALL);
+		logger.setLevel(Level.WARNING);
+		//logger.setLevel(Level.ALL);
 		  
       	handler.setFormatter(new SimpleFormatter() {
         	private static final String format = "[%d][%s] %3$s %n";

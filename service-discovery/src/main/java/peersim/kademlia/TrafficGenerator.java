@@ -92,20 +92,20 @@ public class TrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
-		if(!first){
+		/*if(!first){
 			return false;
 		}
-		first = false;
+		first = false;*/
 		Node start;
 		do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
 		} while ((start == null) || (!start.isUp()));
 
 		// send message
-		//Message m = generateFindNodeMessage();
-		Message m = generateRegisterMessage();
-		//System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
-		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_REGISTER for " + ((Topic) m.body).getTopic());
+		Message m = generateFindNodeMessage();
+		//Message m = generateRegisterMessage();
+		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
+		//System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_REGISTER for " + ((Topic) m.body).getTopic());
 		EDSimulator.add(0, m, start, pid);
 
 		return false;

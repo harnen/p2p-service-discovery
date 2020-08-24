@@ -25,7 +25,7 @@ public class RegisterOperation extends Operation{
 	 */
 	public RegisterOperation(long timestamp, Topic t, Registration r) {
 		
-		super(t.getTopicID(), timestamp);
+		super(t.getTopicID(), Message.MSG_REGISTER, timestamp);
 
 		this.registration = r;
 		this.topic = t;

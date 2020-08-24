@@ -51,23 +51,26 @@ public class Proposal1TopicTable implements TopicTable {
         //check if we already have this registration
         List<Registration> regList = table.get(t);
         if((regList != null) && (regList.contains(r))){
+        	System.out.println("We already have topic " + t.getTopic());
             return true;
         }
         
         //if we have space, always add the registration
         if(size < capacity){
-            //System.out.println("Size lower than capacity - adding");
+            System.out.println("Size lower than capacity - adding");
             add(r, t);
             return true;
         //table is full
         }else{
             //new topic is further closer/equal distance from the hostID than the furthest one currently in table
             if(t.compareTo(table.lastKey()) >= 0){
+            	System.out.println("The topic is closer than another one - replacing");
                 table.get(table.lastKey()).remove(0);
                 //if a topic has no more registration - remove it
                 if(table.get(table.lastKey()).size() == 0) table.remove(table.lastKey());
                 this.size--;
                 add(r, t);
+                
                 return true;
             }
         }
