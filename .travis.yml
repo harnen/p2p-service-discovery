@@ -1,3 +1,4 @@
 language: java
 sudo: false
+before_script: cd service-discovery
 script: mvn clean verify
