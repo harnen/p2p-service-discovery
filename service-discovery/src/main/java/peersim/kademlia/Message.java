@@ -187,7 +187,7 @@ public class Message extends SimpleEvent {
 	 *            Object
 	 * @return Message
 	 */
-	public static final Message makeRegister(String topic) {
+	public static final Message makeRegister(Topic topic) {
 		return new Message(MSG_INIT_REGISTER, topic);
 	}
 

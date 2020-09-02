@@ -27,7 +27,7 @@ public class Discv5TopicTable implements TopicTable {
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
         	if (curr_time - r.getTimestamp() > KademliaCommonConfig.AD_LIFE_TIME) {
-            	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic());
+            	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic().getTopic());
 	            TopicRegistration r_same = topicQ.pop();
 				it.remove();
         	    //TODO assert that r_same and r are the same registrations
@@ -36,8 +36,9 @@ public class Discv5TopicTable implements TopicTable {
     }
 
     private long getWaitingTime(TopicRegistration reg, long curr_time) {
-        String topic = reg.getTopic();
-        ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
+        //System.out.println("Get Waiting time "+reg.getTopic().getTopic());
+
+        ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic().getTopic());
         long waiting_time;
 
         if (topicQ != null && topicQ.size() == KademliaCommonConfig.ADS_PER_QUEUE) {
@@ -83,20 +84,22 @@ public class Discv5TopicTable implements TopicTable {
         }
 
         reg.setTimestamp(curr_time + waiting_time); 
-        ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
+        ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic().getTopic());
         if (topicQ != null)
             topicQ.add(reg);
         else {
             ArrayDeque<TopicRegistration> q = new ArrayDeque<TopicRegistration>();
             q.add(reg);
-            this.topicTable.put(reg.getTopic(), q);
+            //System.out.println("Add topictable "+reg.getTopic().getTopic());
+            this.topicTable.put(reg.getTopic().getTopic(), q);
         }
         this.allAds.add(reg);
         //TODO assertion: the tail of allAds have a smaller timestamp than reg
         return true;
     }
 
-    public Ticket getTicket(String topic, KademliaNode node) {
+    public Ticket getTicket(Topic topic, KademliaNode node) {
+       // System.out.println("Get ticket "+topic.getTopic());
 
         TopicRegistration reg = new TopicRegistration(node, topic);
 
