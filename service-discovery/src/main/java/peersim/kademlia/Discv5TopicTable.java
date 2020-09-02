@@ -12,41 +12,42 @@ public class Discv5TopicTable implements TopicTable {
     private int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
     private int adLifeTime = KademliaCommonConfig.AD_LIFE_TIME;
 
-    private HashMap<String, ArrayDeque<Registration>> topicTable;
-    private ArrayDeque<Registration> allAds;
+    private HashMap<String, ArrayDeque<TopicRegistration>> topicTable;
+    private ArrayDeque<TopicRegistration> allAds;
     //private KademliaNode node; 
 
 
     public Discv5TopicTable() {
-        topicTable = new HashMap<String, ArrayDeque<Registration>>(); 
-        allAds = new ArrayDeque<Registration>();
+        topicTable = new HashMap<String, ArrayDeque<TopicRegistration>>(); 
+        allAds = new ArrayDeque<TopicRegistration>();
     }
 
     private void updateTopicTable(long curr_time) {
-		Iterator<Registration> it = allAds.iterator();
+		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
-    		Registration r = it.next();
+    		TopicRegistration r = it.next();
         	if (curr_time - r.getTimestamp() > KademliaCommonConfig.AD_LIFE_TIME) {
-            	ArrayDeque<Registration> topicQ = topicTable.get(r.getTopic());
-	            Registration r_same = topicQ.pop();
+            	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic().getTopic());
+	            TopicRegistration r_same = topicQ.pop();
 				it.remove();
         	    //TODO assert that r_same and r are the same registrations
 			}
 		}
     }
 
-    private long getWaitingTime(Registration reg, long curr_time) {
-        String topic = reg.getTopic();
-        ArrayDeque<Registration> topicQ = topicTable.get(topic);
+    private long getWaitingTime(TopicRegistration reg, long curr_time) {
+        //System.out.println("Get Waiting time "+reg.getTopic().getTopic());
+
+        ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic().getTopic());
         long waiting_time;
 
         if (topicQ != null && topicQ.size() == KademliaCommonConfig.ADS_PER_QUEUE) {
-            Registration r = topicQ.getFirst();
+            TopicRegistration r = topicQ.getFirst();
             long age = curr_time - r.getTimestamp();
             waiting_time = KademliaCommonConfig.AD_LIFE_TIME - age;
         }
         else if(allAds.size() == KademliaCommonConfig.TOPIC_TABLE_CAP) {
-            Registration r = allAds.getFirst();
+            TopicRegistration r = allAds.getFirst();
             long age = curr_time - r.getTimestamp();
             waiting_time = KademliaCommonConfig.AD_LIFE_TIME - age;
         }
@@ -55,9 +56,9 @@ public class Discv5TopicTable implements TopicTable {
         }
         
         if ( (topicQ != null) && (topicQ.contains(reg)) ) {
-            Iterator<Registration> it = topicQ.iterator();
+            Iterator<TopicRegistration> it = topicQ.iterator();
             while(it.hasNext()) {
-                Registration reg_existing = it.next();
+                TopicRegistration reg_existing = it.next();
                 if (reg.equals(reg_existing)) {
                     long age = curr_time - reg_existing.getTimestamp();
                     waiting_time = KademliaCommonConfig.AD_LIFE_TIME - age;
@@ -71,7 +72,7 @@ public class Discv5TopicTable implements TopicTable {
     // Ideally this method should take an instance of Ticket as argument 
     // and modify its waiting time in case of reject. I decided to 
     // use the TopicTable interface for now...
-    public boolean register(Registration reg, Topic ti){
+    public boolean register(TopicRegistration reg, Topic ti){
         long curr_time = CommonState.getTime();
         updateTopicTable(curr_time);
 
@@ -83,22 +84,24 @@ public class Discv5TopicTable implements TopicTable {
         }
 
         reg.setTimestamp(curr_time + waiting_time); 
-        ArrayDeque<Registration> topicQ = this.topicTable.get(reg.getTopic());
+        ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic().getTopic());
         if (topicQ != null)
             topicQ.add(reg);
         else {
-            ArrayDeque<Registration> q = new ArrayDeque<Registration>();
+            ArrayDeque<TopicRegistration> q = new ArrayDeque<TopicRegistration>();
             q.add(reg);
-            this.topicTable.put(reg.getTopic(), q);
+            //System.out.println("Add topictable "+reg.getTopic().getTopic());
+            this.topicTable.put(reg.getTopic().getTopic(), q);
         }
         this.allAds.add(reg);
         //TODO assertion: the tail of allAds have a smaller timestamp than reg
         return true;
     }
 
-    public Ticket getTicket(String topic, KademliaNode node) {
+    public Ticket getTicket(Topic topic, KademliaNode node) {
+       // System.out.println("Get ticket "+topic.getTopic());
 
-        Registration reg = new Registration(node, topic);
+        TopicRegistration reg = new TopicRegistration(node, topic);
 
         //update the topic table (remove expired advertisements)
         long curr_time = CommonState.getTime();
@@ -111,7 +114,7 @@ public class Discv5TopicTable implements TopicTable {
         return ticket;
     }
 
-    public Registration[] getRegistration(Topic t){
+    public TopicRegistration[] getRegistration(Topic t){
 
         return null;
     }

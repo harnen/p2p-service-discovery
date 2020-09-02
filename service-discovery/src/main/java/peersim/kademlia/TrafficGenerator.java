@@ -69,7 +69,7 @@ public class TrafficGenerator implements Control {
 	 */
 	private Message generateRegisterMessage() {
 		Topic t = new Topic("t" + Integer.toString(this.topicCounter++));
-		Message m = Message.makeRegister(t.getTopic());
+		Message m = Message.makeRegister(t);
 		m.timestamp = CommonState.getTime();
 		
 
@@ -106,6 +106,7 @@ public class TrafficGenerator implements Control {
 		//Message m = generateRegisterMessage();
 		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
 		//System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_REGISTER for " + ((Topic) m.body).getTopic());
+
 		EDSimulator.add(0, m, start, pid);
 
 		return false;

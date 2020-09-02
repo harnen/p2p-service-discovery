@@ -40,7 +40,7 @@ public class Proposal1TopicTableTest{
         for(int i = 0; i < 10; i++){
             
             Topic t = new Topic(new BigInteger("0"), "topic"+i);
-            Registration r = new Registration(new KademliaNode(urg.generate(), "127.0.0.1", 0));
+            TopicRegistration r = new TopicRegistration(new KademliaNode(urg.generate(), "127.0.0.1", 0));
             //System.out.println("Adding topic:" +  t + "with registration:" + r);
             Boolean result = tt.register(r, t);
         }
@@ -59,7 +59,7 @@ public class Proposal1TopicTableTest{
 
         Topic t = new Topic(new BigInteger("0"), "topic");
         for(int i = 0; i < 10; i++){
-            Registration r = new Registration(new KademliaNode(urg.generate(), "127.0.0.1", 0));
+            TopicRegistration r = new TopicRegistration(new KademliaNode(urg.generate(), "127.0.0.1", 0));
             //System.out.println("Adding topic:" +  t + "with registration:" + r);
             Boolean result1 = tt.register(r, t);
             
@@ -76,7 +76,7 @@ public class Proposal1TopicTableTest{
         tt.setCapacity(3);
 
         Topic t = new Topic(new BigInteger("0"), "topic");
-        Registration r = new Registration(new KademliaNode(urg.generate(), "127.0.0.1", 0));
+        TopicRegistration r = new TopicRegistration(new KademliaNode(urg.generate(), "127.0.0.1", 0));
         for(int i = 0; i < 3; i++){
             //System.out.println("Adding topic:" +  t + "with registration:" + r);
             Boolean result1 = tt.register(r, t);

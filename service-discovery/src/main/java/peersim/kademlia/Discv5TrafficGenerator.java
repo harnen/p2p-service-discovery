@@ -53,11 +53,11 @@ public class Discv5TrafficGenerator implements Control {
 	 * @return Message
 	 */
 	private Message generateRegisterMessage() {
-		String topic = new String("t" + Integer.toString(this.topicCounter++));
+		Topic topic = new Topic("t" + Integer.toString(this.topicCounter++));
 		Message m = Message.makeRegister(topic);
 		m.timestamp = CommonState.getTime();
+		//System.out.println("Topic id "+topic.topicID);
 		
-
 		// existing active destination node
 		Node n = Network.get(CommonState.r.nextInt(Network.size()));
 		while (!n.isUp()) {

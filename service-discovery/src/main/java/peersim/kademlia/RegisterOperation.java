@@ -14,7 +14,7 @@ import peersim.kademlia.Operation;
 public class RegisterOperation extends Operation{
 
 	private Topic topic;
-	private Registration registration;
+	private TopicRegistration registration;
 
 
 	/**
@@ -23,7 +23,7 @@ public class RegisterOperation extends Operation{
 	 * @param destNode
 	 *            Id of the node to find
 	 */
-	public RegisterOperation(long timestamp, Topic t, Registration r) {
+	public RegisterOperation(long timestamp, Topic t, TopicRegistration r) {
 		
 		super(t.getTopicID(), Message.MSG_REGISTER, timestamp);
 

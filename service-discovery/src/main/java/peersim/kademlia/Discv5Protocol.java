@@ -7,6 +7,9 @@ package peersim.kademlia;
 import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.TreeMap;
+
+import peersim.kademlia.Topic;
+
 import java.util.Arrays;
 
 import peersim.config.Configuration;
@@ -229,17 +232,18 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
 		//System.out.println("Register received: " + m);
 		Ticket ticket = (Ticket) m.body;
         KademliaNode src = new KademliaNode(m.src); 
-        Registration reg = new Registration(src, ticket.topic); 
+        TopicRegistration reg = new TopicRegistration(src, ticket.getTopic()); 
+        //System.out.println("Register "+ticket.getTopic().getTopic());
         boolean ret = topicTable.register(reg, null);
         if (ret == false) {
-            ticket.wait_time = reg.getTimestamp();
-			ticket.cum_wait += reg.getTimestamp();
-            ticket.isRegistrationComplete = false;
+            ticket.setWaitTime(reg.getTimestamp());
+            ticket.setCumWaitTime(reg.getTimestamp());
+            ticket.setRegistrationComplete(false);
         }
         else {
-            ticket.wait_time = 0;
-            ticket.isRegistrationComplete = true;
-            ticket.reg_time = CommonState.getTime();
+        	ticket.setWaitTime(0);
+        	ticket.setRegistrationComplete(true);
+        	ticket.setRegTime(CommonState.getTime());
         }
 
         Message response = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
@@ -252,10 +256,11 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
      */
     private void handleTicketRequest(Message m, int myPid) {
 		//System.out.println("Ticket request received: " + m);
-        String topic = (String) m.body;
+        Topic t = (Topic) m.body;
         // FIXME: there needs to be a better way to get kademliaNode from nodeID
         KademliaNode src = new KademliaNode(m.src); 
-        Ticket ticket = topicTable.getTicket(topic, src);
+        //System.out.println("TicketRequest handle "+t.getTopic());
+        Ticket ticket = topicTable.getTicket(t, src);
         
         Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
 		response.ackId = m.id; // set ACK number
@@ -274,7 +279,7 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
         register.dest = new KademliaNode(m.src);
         register.body = m.body;
         register.operationId = m.operationId;
-        scheduleSendMessage(register, m.src.getId(), discv5id, t.wait_time);
+        scheduleSendMessage(register, m.src.getId(), discv5id, t.getWaitTime());
     }
     /**
      *
@@ -282,28 +287,37 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
      */
     private void handleRegisterResponse(Message m, int myPid) {
         Ticket ticket = (Ticket) m.body;
-        if (ticket.isRegistrationComplete == false) {
-        	System.out.println("Unsuccessful Registration of topic: " + ticket.topic + " at node: " + m.src.toString() + " wait time: " + ticket.wait_time);
+        if (ticket.isRegistrationComplete() == false) {
+        	System.out.println("Unsuccessful Registration of topic: " + ticket.getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
             register.body = m.body;
-            scheduleSendMessage(register, m.src.getId(), discv5id, ticket.wait_time);
+            scheduleSendMessage(register, m.src.getId(), discv5id, ticket.getWaitTime());
         }
         else {
             //System.out.println("Successful Registration of topic: " + ticket.topic + " at node: " + m.src.toString());
             long curr_time = CommonState.getTime();
 			//System.out.println("Adjusting topic radius with time for destination: " + this.fop.destNode.toString() + " wait time: " + ticket.cum_wait);
             //this.topicRadius.adjustWithTicket(curr_time, this.fop.destNode, ticket.req_time, curr_time);
-            this.topicRadius.adjustWithTicket(curr_time, this.fop.destNode, ticket.req_time + ticket.cum_wait, ticket.req_time);
+            this.topicRadius.adjustWithTicket(curr_time, this.fop.destNode, ticket.getReqTime() + ticket.getCumWaitTime(), ticket.getRegTime());
 			
             BigInteger targetAddr = topicRadius.nextTarget(false).getAddress();
             // Lookup the target address in the routing table
-            BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+            //BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+        	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.kademliaNode.getId()));
+
             this.fop = new FindOperation(targetAddr, 0);
             this.fop.elaborateResponse(neighbours); 
             BigInteger dest = this.fop.getNeighbour();
             // Schedule a ticket request message to be sent immediately
-            Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, topic.getTopic());
+            
+            if (dest == null) {
+            	System.out.println("Neighbors: " + Arrays.toString(neighbours));
+                System.out.println("Error: destination is null at time: " + CommonState.getTime());
+                return;
+            }
+
+            Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, topic);
             ticket_request.operationId = this.fop.operationId;
             scheduleSendMessage(ticket_request, dest, discv5id, 0); 
         }
@@ -327,15 +341,19 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
             return;
         }
 
-        String t = new String((String) m.body);
-        this.topic = new Topic(this.kademliaNode.getId(), t);
-        this.topicRadius = new TopicRadius(topic);
+        Topic t = (Topic) m.body;
+        t.setHostID(this.kademliaNode.getId());
+        this.topic = t;
+
+        this.topicRadius = new TopicRadius(t);
 
         BigInteger targetAddr = topicRadius.nextTarget(false).getAddress();
         this.routingTable = ((KademliaProtocol) (this.node.getProtocol(this.kademliaProtocolID))).routingTable;
         
         // Lookup the target address in the routing table
-        BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+        //BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
+    	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.kademliaNode.getId()));
+
         //System.out.println("Neighbors: " + Arrays.toString(neighbours));
         //System.out.println("My id is: " + this.kademliaNode.getId().toString());
         //System.out.println("Target id is: " + targetAddr.toString());
@@ -351,7 +369,7 @@ public class Discv5Protocol implements Cloneable, EDProtocol {
         }
 
         // Schedule a ticket request message to be sent immediately
-        Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, topic.getTopic());
+        Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, t);
 		ticket_request.operationId = fop.operationId;
         scheduleSendMessage(ticket_request, dest, discv5id, 0); 
     }
