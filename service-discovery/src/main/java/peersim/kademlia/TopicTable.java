@@ -1,12 +1,12 @@
 package peersim.kademlia;
 
-import peersim.kademlia.Registration;
+import peersim.kademlia.TopicRegistration;
 
 
 interface TopicTable {
 
-    public boolean register(Registration r, Topic t);
-    public Registration[] getRegistration(Topic t);
+    public boolean register(TopicRegistration r, Topic t);
+    public TopicRegistration[] getRegistration(Topic t);
 
   
 }

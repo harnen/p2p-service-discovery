@@ -106,6 +106,7 @@ public class TrafficGenerator implements Control {
 		//Message m = generateRegisterMessage();
 		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
 		//System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_REGISTER for " + ((Topic) m.body).getTopic());
+
 		EDSimulator.add(0, m, start, pid);
 
 		return false;

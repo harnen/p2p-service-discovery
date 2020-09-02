@@ -290,6 +290,7 @@ private static boolean executeNext() {
 				"No destination specified (null) for event "+
 				ev);
 		}
+
 		return ctrl.execute();
 	}
 	else if (ev.node != Network.prototype && ev.node.isUp() )

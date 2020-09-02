@@ -13,6 +13,7 @@ import peersim.core.Node;
  */
 public class Util {
 
+	
 	/**
 	 * Given two numbers, returns the length of the common prefix, i.e. how many digits (in base 2) have in common from the
 	 * leftmost side of the number
@@ -76,11 +77,50 @@ public class Util {
 	 */
 	public static double log2(BigInteger x)
 	{
-		double l = Math.log10(x.divide(BigInteger.valueOf(1000000)).doubleValue())+6;
-		double n = Math.log10(x.doubleValue())/Math.log10(2);
-		//System.out.println("Log "+l+" "+n);
-		//return (Math.log10(x.divide(BigInteger.valueOf(1000000)).doubleValue())+6)/Math.log10(2);
-		return n;
+		return Math.log10(x.doubleValue())/Math.log10(2);
+	}
+	
+	/**
+	 * calculate the log base 2 of a BigInteger value
+	 * 
+	 * @param BigInteger value
+	 * 
+	 * @return double result
+	 */
+	public static int logDistance(BigInteger a,BigInteger b)
+	{
+		int lz = 0;
+		
+		byte[] abyte = a.toByteArray();
+		byte[] bbyte = b.toByteArray();
+		
+		if (abyte[0] == 0) {
+		    byte[] tmp = new byte[abyte.length - 1];
+		    System.arraycopy(abyte, 1, tmp, 0, tmp.length);
+		    abyte = tmp;
+		}
+		
+		if (bbyte[0] == 0) {
+		    byte[] tmp = new byte[bbyte.length - 1];
+		    System.arraycopy(bbyte, 1, tmp, 0, tmp.length);
+		    bbyte = tmp;
+		}
+
+
+
+		for(int i = 0;i<abyte.length;i++)
+		{
+			//System.out.println("lz "+lz);
+			byte x = (byte) (abyte[i] ^ bbyte[i]);
+			//System.out.println("xor "+Byte.toUnsignedInt(x)+" "+Byte.toUnsignedInt(abyte[i])+" "+Byte.toUnsignedInt(bbyte[i]));
+			if(x==0) {
+				lz+=8;
+			} else {
+				lz += leadingZeros8(Byte.toUnsignedInt(x));
+				break;
+			}
+		}
+		return abyte.length*8 - lz;
 	}
 	
 	
@@ -140,6 +180,28 @@ public class Util {
 		}
 
 		return null;
+	}
+	
+	private static int leadingZeros8(int x) {
+		
+		int[] len8tab = new int[]  {0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4,
+				5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+				6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+				6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+				7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+				7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+				7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+				7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+				8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8};
+				
+		return 8 - len8tab[x];
 	}
 
 

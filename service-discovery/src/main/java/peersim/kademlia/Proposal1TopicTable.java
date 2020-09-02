@@ -8,7 +8,7 @@ import java.math.BigInteger;
 
 import peersim.kademlia.Topic;
 import peersim.core.CommonState;
-import peersim.kademlia.Registration;
+import peersim.kademlia.TopicRegistration;
 
 
 public class Proposal1TopicTable implements TopicTable {
@@ -17,21 +17,21 @@ public class Proposal1TopicTable implements TopicTable {
     private int capacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
     private int size = 0;
 
-    private SortedMap<Topic, List<Registration>> table;
+    private SortedMap<Topic, List<TopicRegistration>> table;
     private BigInteger hostID;
 
     public Proposal1TopicTable(BigInteger hostID){
-        table = new TreeMap<Topic, List<Registration>>();
+        table = new TreeMap<Topic, List<TopicRegistration>>();
         this.hostID = hostID;
     }
 
     public Proposal1TopicTable(){
-        table = new TreeMap<Topic, List<Registration>>();
+        table = new TreeMap<Topic, List<TopicRegistration>>();
     }
 
-    private void add(Registration r, Topic t){
+    private void add(TopicRegistration r, Topic t){
         if(!table.containsKey(t)){
-            List list = new ArrayList<Registration>();
+            List list = new ArrayList<TopicRegistration>();
             list.add(r);
             table.put(t, list);
         }else{
@@ -40,16 +40,16 @@ public class Proposal1TopicTable implements TopicTable {
         this.size++;
     }
 
-    public boolean register(Registration ri, Topic ti){
+    public boolean register(TopicRegistration ri, Topic ti){
         //need to create a copy here. Without it - the topic/registration class would be shared among 
         //all the class where it's registered
         Topic t = new Topic(ti);
         t.setHostID(this.hostID);
-        Registration r = new Registration(ri);
+        TopicRegistration r = new TopicRegistration(ri);
         r.setTimestamp(CommonState.getTime());
 
         //check if we already have this registration
-        List<Registration> regList = table.get(t);
+        List<TopicRegistration> regList = table.get(t);
         if((regList != null) && (regList.contains(r))){
         	System.out.println("We already have topic " + t.getTopic());
             return true;
@@ -78,7 +78,7 @@ public class Proposal1TopicTable implements TopicTable {
         return false;
     }
 
-    public Registration[] getRegistration(Topic t){
+    public TopicRegistration[] getRegistration(Topic t){
         if(table.containsKey(t)){
             table.get(t).toArray();
         }
@@ -119,7 +119,7 @@ public class Proposal1TopicTable implements TopicTable {
         this.table.forEach((k, v) -> {
             
             result.append("\n" + k.toString() + ":");
-            v.forEach((Registration reg) ->{
+            v.forEach((TopicRegistration reg) ->{
                 result.append(" " + reg.toString());
             });
         });
