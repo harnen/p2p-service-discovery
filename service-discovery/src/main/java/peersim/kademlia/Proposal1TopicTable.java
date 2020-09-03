@@ -57,7 +57,7 @@ public class Proposal1TopicTable implements TopicTable {
         
         //if we have space, always add the registration
         if(size < capacity){
-            System.out.println("Size lower than capacity - adding");
+            //System.out.println(hostID + "Size lower than capacity - adding");
             add(r, t);
             return true;
         //table is full
@@ -79,11 +79,14 @@ public class Proposal1TopicTable implements TopicTable {
     }
 
     public TopicRegistration[] getRegistration(Topic t){
-        if(table.containsKey(t)){
-            table.get(t).toArray();
+    	Topic t1 = new Topic(t);
+    	t1.hostID = this.hostID;
+        if(table.containsKey(t1)){
+        	List<TopicRegistration> list = table.get(t1);
+            return (TopicRegistration[]) list.toArray(new TopicRegistration[list.size()]);
         }
         
-        return null;
+        return new TopicRegistration[0];
     }
 
     public int getCapacity(){
