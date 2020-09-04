@@ -64,47 +64,6 @@ public class TrafficGenerator implements Control {
 
 	// ______________________________________________________________________________________________
 	/**
-	 * generates a register message, by selecting randomly the destination.
-	 * 
-	 * @return Message
-	 */
-	private Message generateRegisterMessage() {
-		Topic t = new Topic("t" + Integer.toString(this.topicCounter++));
-		Message m = Message.makeRegister(t);
-		m.timestamp = CommonState.getTime();
-		
-
-		// existing active destination node
-		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
-
-		return m;
-	}
-	
-	// ______________________________________________________________________________________________
-	/**
-	 * generates a topic lookup message, by selecting randomly the destination and one of previousely registered topic.
-	 * 
-	 * @return Message
-	 */
-	private Message generateTopicLookupMessage() {
-		Topic t = new Topic("t" + Integer.toString(CommonState.r.nextInt(this.topicCounter)));
-		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
-		m.timestamp = CommonState.getTime();
-		
-
-		// existing active destination node
-		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
-		return m;
-	}
-
-	// ______________________________________________________________________________________________
-	/**
 	 * every call of this control generates and send a random find node message
 	 * 
 	 * @return boolean
