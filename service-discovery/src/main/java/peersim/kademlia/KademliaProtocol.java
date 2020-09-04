@@ -191,15 +191,22 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	protected void find(Message m, int myPid) {
 		// add message source to my routing table
-		
+		Operation fop = (Operation)	 this.operations.get(m.operationId);
 		if (m.src != null) {
 			routingTable.addNeighbour(m.src.getId());
 			failures.replace(m.src.getId(), 0);
 		}
 		BigInteger[] neighbours;
 		if(m.getType() == Message.MSG_TOPIC_QUERY_REPLY) {
-			//TODO updated stats or cache returned registrations
+			LookupOperation lop = (LookupOperation) fop;
 			logger.info("Received " + ((Message.TopicLookupBody) m.body).registrations.length  +  " registrations from" + m.src.getId());
+			
+			for(int i = 0; i < ((Message.TopicLookupBody) m.body).registrations.length; i++) {
+				TopicRegistration registration = ((Message.TopicLookupBody) m.body).registrations[i];
+				lop.addDiscovered(registration.getNode().getId());
+			}
+			
+			
 			neighbours = ((Message.TopicLookupBody) m.body).neighbours;
 		}else {
 			neighbours = (BigInteger[]) m.body;
@@ -213,7 +220,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		}
 		System.out.println("]");*/
 		// get corresponding find operation (using the message field operationId)
-		Operation fop = (Operation)	 this.operations.get(m.operationId);
+		
 		
 
 		if (fop != null) {
@@ -274,6 +281,12 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					operations.remove(fop.operationId);
 					if(!fop.finished){
 						logger.warning("Couldn't find node " + fop.destNode);
+					}
+					if(fop.type == Message.MSG_TOPIC_QUERY) {
+						LookupOperation lop = (LookupOperation) fop;
+						int found = lop.discoveredCount();
+						int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
+						System.out.println("Found " + found + " registrations our of " + all);
 					}
 					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
 					//TODO We use body for other purposes now - need to reconfigure this
@@ -377,7 +390,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		}
 	}
 	
-
 	/**
 	 * send a message with current transport layer and starting the timeout timer (which is an event) if the message is a request
 	 * 
