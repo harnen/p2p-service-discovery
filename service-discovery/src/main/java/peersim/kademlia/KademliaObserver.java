@@ -4,6 +4,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.math.BigInteger;
 
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -63,6 +69,9 @@ public class KademliaObserver implements Control {
 	 * keep statistic of number of register operation
 	 */
 	public static IncrementalStats register_ok = new IncrementalStats();
+	
+	
+	public static HashMap<String, Set<BigInteger>> registeredTopics = new HashMap<String, Set<BigInteger>>();
 
 	/** Parameter of the protocol we want to observe */
 	private static final String PAR_PROT = "protocol";
@@ -76,6 +85,24 @@ public class KademliaObserver implements Control {
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
+	}
+	
+	public static void addTopicRegistration(String topic, BigInteger registrant) {
+		
+		 if(!registeredTopics.containsKey(topic)){
+	            HashSet<BigInteger> set = new HashSet<BigInteger>();
+	            set.add(registrant);
+	            registeredTopics.put(topic, set);
+		 }else{
+	            registeredTopics.get(topic).add(registrant);
+	     }
+	}
+	
+	public static int topicRegistrationCount(String topic) {
+		if(registeredTopics.containsKey(topic)){
+			return registeredTopics.get(topic).size();
+		}
+		return 0;
 	}
 
 	/**

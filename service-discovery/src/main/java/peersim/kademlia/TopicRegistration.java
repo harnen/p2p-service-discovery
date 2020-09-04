@@ -75,5 +75,9 @@ public TopicRegistration(KademliaNode node, Topic topic) {
     public Topic getTopic() {
         return this.topic;
     }
+    
+    public KademliaNode getNode() {
+    	return this.node;
+    }
 
 }
