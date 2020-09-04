@@ -9,6 +9,10 @@ import java.util.logging.SimpleFormatter;
 
 import peersim.core.CommonState;
 import peersim.core.Node;
+import peersim.core.Network;
+import peersim.transport.UnreliableTransport;
+import peersim.edsim.EDSimulator;
+
 
 public class Discv5ProposalProtocol extends KademliaProtocol {
 
@@ -32,7 +36,39 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		return dolly;
 	}
 	
+	/**
+	 * send a message with current transport layer and starting the timeout timer (which is an event) if the message is a request
+	 * 
+	 * @param m
+	 *            the message to send
+	 * @param destId
+	 *            the Id of the destination node
+	 * @param myPid
+	 *            the sender Pid
+	 */
+	public void sendMessage(Message m, BigInteger destId, int myPid) {
+		// add destination to routing table
+		this.routingTable.addNeighbour(destId);
 
+		Node src = nodeIdtoNode(this.node.getId());
+		Node dest = nodeIdtoNode(destId);
+
+		logger.info("-> (" + m + "/" + m.id + ") " + destId);
+
+		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
+		transport.send(src, dest, m, kademliaid);
+		KademliaObserver.msg_sent.add(1);
+
+		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
+			Timeout t = new Timeout(destId, m.id, m.operationId);
+			long latency = transport.getLatency(src, dest);
+
+			// add to sent msg
+			this.sentMsg.put(m.id, m.timestamp);
+			EDSimulator.add(4 * latency, t, src, myPid); // set delay = 2*RTT
+		}
+	}
+	
 	private void handleInitTopicLookup(Message m, int myPid) {
 		KademliaObserver.lookup_total.add(1);
 		
@@ -76,10 +112,11 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	 */
 	private void handleInitRegister(Message m, int myPid) {
 
-		KademliaObserver.register_total.add(1);
-	
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(this.node, t);
+		
+		KademliaObserver.register_total.add(1);
+		KademliaObserver.addTopicRegistration(t.topic, this.node.getId());
 	
 	
 		RegisterOperation rop = new RegisterOperation(m.timestamp, t, r);
@@ -196,31 +233,8 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	 *            BigInteger
 	 */
 	public void setNode(KademliaNode node) {
-		this.node = node;
-		this.routingTable.nodeId = node.getId();
 		this.topicTable.setHostID(node.getId());
-		
-
-		logger = Logger.getLogger(node.getId().toString());
-		logger.setUseParentHandlers(false);
-		ConsoleHandler handler = new ConsoleHandler();
-		logger.setLevel(Level.WARNING);
-		//logger.setLevel(Level.ALL);
-		  
-      	handler.setFormatter(new SimpleFormatter() {
-        	private static final String format = "[%d][%s] %3$s %n";
-
-        	@Override
-     		public synchronized String format(LogRecord lr) {
-				return String.format(format,
-						CommonState.getTime(),
-                    	logger.getName(),
-                    	lr.getMessage()
-            	);
-        	}
-      	});
-      	logger.addHandler(handler);
-
+		super.setNode(node);
 		
 	}
 

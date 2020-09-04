@@ -478,9 +478,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	public void setNode(KademliaNode node) {
 		this.node = node;
-		this.routingTable.nodeId = node.getId();
-		this.topicTable.setHostID(node.getId());
-		
+		this.routingTable.nodeId = node.getId();		
 
 		logger = Logger.getLogger(node.getId().toString());
 		logger.setUseParentHandlers(false);
