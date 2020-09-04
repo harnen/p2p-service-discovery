@@ -84,7 +84,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         m.dest = new KademliaNode(destId);     
 
         // TODO: remove the assert later
-	    assert(src == this.node);
+	    //assert(src == this.node);
 
 		//System.out.println(this.kademliaNode.getId() + " (" + m + "/" + m.id + ") -> " + destId);
 
@@ -117,6 +117,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		// add destination to routing table
 		this.routingTable.addNeighbour(destId);
 
+        m.src = this.node;
+        m.dest = new KademliaNode(destId);     
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
 
@@ -169,7 +171,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
      *
      */
     private void handleTicketRequest(Message m, int myPid) {
-		//System.out.println("Ticket request received: " + m);
+		System.out.println("Ticket request received: " + m.src.getId());
         Topic t = (Topic) m.body;
         // FIXME: there needs to be a better way to get kademliaNode from nodeID
         KademliaNode src = new KademliaNode(m.src); 
@@ -187,6 +189,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
      *
      */
     private void handleTicketResponse(Message m, int myPid) {
+    	System.out.println("handleTicketResponse: " + m.src);
         Ticket t = (Ticket) m.body;
         Message register = new Message(Message.MSG_REGISTER, t);
 		register.ackId = m.id; // set ACK number

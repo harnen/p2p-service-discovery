@@ -463,8 +463,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				break;
 			
 	
-			default:
-				logger.warning("Bad message received "+((SimpleEvent) event).getType());
+		//	default:
+		//		logger.warning("Bad message received "+((SimpleEvent) event).getType());
 		}
 
 	}
