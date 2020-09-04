@@ -83,7 +83,14 @@ public class Message extends SimpleEvent {
     /**
 	 * Message Type: REGISTER_RESPONSE (response to register request)
 	 */
-	public static final int MSG_REGISTER_RESPONSE = 10;
+	public static final int MSG_REGISTER_RESPONSE = 10; 
+	
+	/**
+	 * Message Type: TOPIC_QUERY_REPLY (respond to topic queries)
+	 */
+	public static final int MSG_TOPIC_QUERY_REPLY = 11;
+
+	public static final int MSG_INIT_TOPIC_LOOKUP = 12;
 
 	// ______________________________________________________________________________________________
 	/**
@@ -255,10 +262,22 @@ public class Message extends SimpleEvent {
 				return "MSG_TICKET_RESPONSE";
 			case MSG_TOPIC_QUERY:
 				return "MSG_TOPIC_QUERY";
+			case MSG_TOPIC_QUERY_REPLY:
+				return "MSG_TOPIC_QUERY_REPLY";
 			case MSG_REGISTER_RESPONSE:
 				return "MSG_REGISTER_RESPONSE";
 			default:
 				return "UNKNOW:" + type;
+		}
+	}
+	
+	static class TopicLookupBody{
+		public final TopicRegistration [] registrations;
+		public final BigInteger[] neighbours;
+		
+		public TopicLookupBody(TopicRegistration [] registrations, BigInteger[] neighbours) {
+			this.registrations = registrations;
+			this.neighbours = neighbours;
 		}
 	}
 }

@@ -196,7 +196,14 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			routingTable.addNeighbour(m.src.getId());
 			failures.replace(m.src.getId(), 0);
 		}
-		BigInteger[] neighbours = (BigInteger[]) m.body;
+		BigInteger[] neighbours;
+		if(m.getType() == Message.MSG_TOPIC_QUERY_REPLY) {
+			//TODO updated stats or cache returned registrations
+			logger.info("Received " + ((Message.TopicLookupBody) m.body).registrations.length  +  " registrations from" + m.src.getId());
+			neighbours = ((Message.TopicLookupBody) m.body).neighbours;
+		}else {
+			neighbours = (BigInteger[]) m.body;
+		}
 		
 		//System.out.println("find node response at "+this.node.getId()+" "+neighbours.length); 
 
@@ -246,13 +253,14 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 							request.type = Message.MSG_REGISTER;
 							request.src = this.node;
 							request.body = fop.body;
+						}else if(fop.type == Message.MSG_TOPIC_QUERY) {
+							request = new Message(Message.MSG_REGISTER);
+							request.operationId = fop.operationId;
+							request.type = Message.MSG_TOPIC_QUERY;
+							request.src = this.node;
+							request.body = fop.body;
 						}
-						/*Message request = new Message(Message.MSG_FIND);
-						request.operationId = m.operationId;
-						request.src = this.node.getId();
-						//request.body = Util.prefixLen(fop.destNode, neighbour);
-						request.body = Util.logDistance(fop.destNode, neighbour);
-						fop.nrHops++;*/
+
 						
 						if(request != null) {
 							fop.nrHops++;
@@ -342,6 +350,21 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		handleFind(m, myPid, Util.prefixLen(this.node.getId(), t.getTopicID()));
 	}
+	
+	private void handleTopicQuery(Message m, int myPid) {
+		Topic t = (Topic) m.body;
+		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.prefixLen(this.node.getId(), t.getTopicID()));
+		
+		Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
+		Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
+		response.operationId = m.operationId;
+		response.src = this.node;
+		response.ackId = m.id; 
+		logger.info(this.node + " will respond with TOPIC QUERY REPLY");
+		sendMessage(response, m.src.getId(), myPid);
+		
+	}
 
 	/**
 	 * Start a find node opearation.<br>
@@ -386,6 +409,37 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			}
 		}
 	}
+	
+	private void handleInitTopicLookup(Message m, int myPid) {
+		KademliaObserver.lookup_total.add(1);
+		
+		Topic t = (Topic) m.body;
+	
+	
+		LookupOperation lop = new LookupOperation(m.timestamp, t);
+		lop.body = m.body;
+		operations.put(lop.operationId, lop);
+	
+		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
+		lop.elaborateResponse(neighbours);
+		lop.available_requests = KademliaCommonConfig.ALPHA;
+	
+		// set message operation id
+		m.operationId = lop.operationId;
+		m.type = Message.MSG_TOPIC_QUERY;
+		m.src = this.node;
+	
+		// send ALPHA messages
+		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
+			BigInteger nextNode = lop.getNeighbour();
+			if (nextNode != null) {
+				sendMessage(m.copy(), nextNode, myPid);
+				lop.nrHops++;
+			}
+		}
+		
+	}
 
 
 	/**
@@ -399,34 +453,34 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	private void handleInitRegister(Message m, int myPid) {
 
-	KademliaObserver.register_total.add(1);
-
-	Topic t = (Topic) m.body;
-	TopicRegistration r = new TopicRegistration(this.node, t);
-
-
-	RegisterOperation rop = new RegisterOperation(m.timestamp, t, r);
-	rop.body = m.body;
-	operations.put(rop.operationId, rop);
-
-	//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
-	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
-	rop.elaborateResponse(neighbours);
-	rop.available_requests = KademliaCommonConfig.ALPHA;
-
-	// set message operation id
-	m.operationId = rop.operationId;
-	m.type = Message.MSG_REGISTER;
-	m.src = this.node;
-
-	// send ALPHA messages
-	for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
-		BigInteger nextNode = rop.getNeighbour();
-		if (nextNode != null) {
-			sendMessage(m.copy(), nextNode, myPid);
-			rop.nrHops++;
+		KademliaObserver.register_total.add(1);
+	
+		Topic t = (Topic) m.body;
+		TopicRegistration r = new TopicRegistration(this.node, t);
+	
+	
+		RegisterOperation rop = new RegisterOperation(m.timestamp, t, r);
+		rop.body = m.body;
+		operations.put(rop.operationId, rop);
+	
+		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
+		rop.elaborateResponse(neighbours);
+		rop.available_requests = KademliaCommonConfig.ALPHA;
+	
+		// set message operation id
+		m.operationId = rop.operationId;
+		m.type = Message.MSG_REGISTER;
+		m.src = this.node;
+	
+		// send ALPHA messages
+		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
+			BigInteger nextNode = rop.getNeighbour();
+			if (nextNode != null) {
+				sendMessage(m.copy(), nextNode, myPid);
+				rop.nrHops++;
+			}
 		}
-	}
 	}
 
 	/**
@@ -485,6 +539,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		Message m;
 
 		switch (((SimpleEvent) event).getType()) {
+			case Message.MSG_TOPIC_QUERY_REPLY:
 			case Message.MSG_RESPONSE:
 				m = (Message) event;
 				sentMsg.remove(m.ackId);
@@ -509,6 +564,15 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			case Message.MSG_REGISTER:
 				m = (Message) event;
 				handleRegister(m, myPid);
+				break;
+				
+			case Message.MSG_TOPIC_QUERY:
+				m = (Message) event;
+				handleTopicQuery(m, myPid);
+				break;
+			case Message.MSG_INIT_TOPIC_LOOKUP:
+				m = (Message) event;
+				handleInitTopicLookup(m, myPid);
 				break;
 
 			case Message.MSG_EMPTY:
@@ -549,6 +613,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 	}
 
+
 	/**
 	 * set the current NodeId
 	 * 
@@ -564,8 +629,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		logger = Logger.getLogger(node.getId().toString());
 		logger.setUseParentHandlers(false);
 		ConsoleHandler handler = new ConsoleHandler();
-		logger.setLevel(Level.WARNING);
-		//logger.setLevel(Level.ALL);
+		//logger.setLevel(Level.WARNING);
+		logger.setLevel(Level.ALL);
 		  
       	handler.setFormatter(new SimpleFormatter() {
         	private static final String format = "[%d][%s] %3$s %n";

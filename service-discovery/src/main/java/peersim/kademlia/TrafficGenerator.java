@@ -26,6 +26,7 @@ public class TrafficGenerator implements Control {
 	private final static String PAR_PROT = "protocol";
 
 	private boolean first = true;
+	private boolean second = false;
 
 	private static Integer topicCounter = 0;
 
@@ -78,10 +79,27 @@ public class TrafficGenerator implements Control {
 		while (!n.isUp()) {
 			n = Network.get(CommonState.r.nextInt(Network.size()));
 		}
-		//m.body = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
-		m.body = new Topic("topic" + this.topicCounter.toString());
-		this.topicCounter++;
 
+		return m;
+	}
+	
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a topic lookup message, by selecting randomly the destination and one of previousely registered topic.
+	 * 
+	 * @return Message
+	 */
+	private Message generateTopicLookupMessage() {
+		Topic t = new Topic("t" + Integer.toString(CommonState.r.nextInt(this.topicCounter)));
+		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
+		m.timestamp = CommonState.getTime();
+		
+
+		// existing active destination node
+		Node n = Network.get(CommonState.r.nextInt(Network.size()));
+		while (!n.isUp()) {
+			n = Network.get(CommonState.r.nextInt(Network.size()));
+		}
 		return m;
 	}
 
@@ -112,6 +130,33 @@ public class TrafficGenerator implements Control {
 		return false;
 	}
 
+	
+	/*public boolean execute() {
+		Node start;
+		Message m = null;
+		do {
+			start = Network.get(CommonState.r.nextInt(Network.size()));
+		} while ((start == null) || (!start.isUp()));
+		
+		if(first){
+			m = generateRegisterMessage();
+			System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new Register for " + (Topic) m.body);
+			first = false;
+			second = true;
+		}else if (second) {
+			m = generateTopicLookupMessage();
+			System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new lookup for " + (Topic) m.body);
+			first = false;
+			second = false;
+		}
+		
+		if(m != null)
+			EDSimulator.add(0, m, start, pid);
+
+		
+
+		return false;
+	}*/
 	/*
 	* Used for debugging - submit a specific query
 	public boolean execute() {

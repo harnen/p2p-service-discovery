@@ -53,6 +53,11 @@ public class KademliaObserver implements Control {
 	 * keep statistic of number of register operation
 	 */
 	public static IncrementalStats register_total = new IncrementalStats();
+	
+	/**
+	 * keep statistic of number of register operation
+	 */
+	public static IncrementalStats lookup_total = new IncrementalStats();
 
 	/**
 	 * keep statistic of number of register operation
