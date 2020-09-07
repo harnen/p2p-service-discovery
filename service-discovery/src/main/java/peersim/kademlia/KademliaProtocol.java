@@ -286,7 +286,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 						LookupOperation lop = (LookupOperation) fop;
 						int found = lop.discoveredCount();
 						int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
-						System.out.println("Found " + found + " registrations our of " + all);
+						System.out.println("Found " + found + " registrations out of " + all);
 					}
 					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
 					//TODO We use body for other purposes now - need to reconfigure this
