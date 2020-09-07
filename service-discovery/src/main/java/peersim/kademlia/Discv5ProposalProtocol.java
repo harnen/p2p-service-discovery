@@ -12,6 +12,7 @@ import peersim.core.Node;
 import peersim.core.Network;
 import peersim.transport.UnreliableTransport;
 import peersim.edsim.EDSimulator;
+import peersim.kademlia.Message;
 
 
 public class Discv5ProposalProtocol extends KademliaProtocol {
@@ -205,6 +206,11 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 				m = (Message) event;
 				handleRegister(m, myPid);
 				break;
+				
+			case Message.MSG_INIT_REGISTER:
+				m = (Message) event;
+				handleInitRegister(m, myPid);
+				break;			
 				
 			case Message.MSG_TOPIC_QUERY:
 				m = (Message) event;
