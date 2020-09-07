@@ -232,7 +232,7 @@ public class Message extends SimpleEvent {
 		Message dolly = new Message();
 		dolly.type = this.type;
 		dolly.src = this.src;
-		//dolly.dest = this.dest;
+		dolly.dest = this.dest;
 		dolly.operationId = this.operationId;
 		dolly.body = this.body; // deep cloning?
 
