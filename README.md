@@ -14,9 +14,9 @@ An improved service discovery system will increase the synchronization speed bet
 
 ## Project Plan
 
-The project is organised in three main milestones of the project together with their deliverables. We represent as:
+The project is organised in three main milestones of the project together with their deliverables. We represent our progress with the following:
 * [X] Complete tasks 
-* [ ] Pending tasks
+* [ ] Pending or uncomplete tasks
 
 * Objective 1: Discv5 simulation environment
   * [X] Task 1: Selection of an appropriate simulator: Investigate the scalability of the Speer simulator (https://github.com/danalex97/Speer) which is written in Go. In case of problems, we will proceed with Peersim (http://peersim.sourceforge.net/) simulator in the rest of the tasks.
