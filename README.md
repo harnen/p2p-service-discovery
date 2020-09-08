@@ -81,7 +81,7 @@ We provide a set of configuration files in order to simulate different setups, p
 
 * ethclient.cfg: This configuration set ups a scenario where nodes behave as Ethereum clients, having a list of active connections and performing lookups to fill up the DHT table when a slot is empty in the list of connections. No discv5 is simulated in this configuration yet.
 
-* ethclientdns.cfg: Same than previous one but loading nodes from here 
+* ethclientdns.cfg: Same than previous one but loading nodes from 
 [Eth crawling results](https://github.com/ethereum/discv4-dns-lists)
 
 
