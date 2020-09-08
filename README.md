@@ -69,6 +69,22 @@ $ ./run.sh <config_file>
 
 All the config files are in `./config/` check this folder for config file descriptions. 
 
+### Configuration files
+
+We provide a set of configuration files in order to simulate different setups, placed in the `./config/` folder
+
+* simple.cfg: It performs a single Kademlia lookup with no topic registration or service discovery.
+
+* discv5ticket.cfg: This configuration sets a scenario where a set of nodes are performing topic registration and discovery using discv5 tickets mechanism described here.
+
+* discv5proposal.cfg: This configuration sets a scenario where a set of nodes are performing topic registration and discovery using our [service discovery proposition](#service-discovery-proposition) for discv5.
+
+* ethclient.cfg: This configuration set ups a scenario where nodes behave as Ethereum clients, having a list of active connections and performing lookups to fill up the DHT table when a slot is empty in the list of connections. No discv5 is simulated in this configuration yet.
+
+* ethclientdns.cfg: Same than previous one but loading nodes from here 
+[Eth crawling results](https://github.com/ethereum/discv4-dns-lists)
+
+
 ## Service Discovery Proposition
 
 This is our proposition for topic registration and service discovery in Ethereum 2.0.
