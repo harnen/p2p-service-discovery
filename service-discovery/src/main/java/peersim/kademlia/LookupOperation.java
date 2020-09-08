@@ -5,7 +5,7 @@ import java.util.HashSet;
 
 public class LookupOperation extends Operation {
 	final Topic topic;
-	private HashSet<BigInteger> discovered;
+	public HashSet<BigInteger> discovered;
 	
 	public LookupOperation(Long timestamp, Topic t) {
 		super(t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);

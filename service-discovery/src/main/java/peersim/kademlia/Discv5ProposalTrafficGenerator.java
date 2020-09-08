@@ -105,13 +105,6 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		Topic t = new Topic("t" + Integer.toString(this.topicCounter++));
 		Message m = Message.makeRegister(t);
 		m.timestamp = CommonState.getTime();
-		
-
-		// existing active destination node
-		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
 
 		return m;
 	}
@@ -126,13 +119,6 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		Topic t = new Topic(topic);
 		Message m = Message.makeRegister(t);
 		m.timestamp = CommonState.getTime();
-		
-
-		// existing active destination node
-		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
 
 		return m;
 	}
@@ -186,6 +172,18 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		
 		return node;
 	}
+	
+	public BigInteger getClosestNode(BigInteger id) {
+		BigInteger closestId = null;
+		for(int i = 0; i < Network.size(); i++) {
+			Node node = Network.get(i);
+			BigInteger nId = ((KademliaProtocol) (node.getProtocol(pid))).node.getId();
+			if(closestId == null || (Util.distance(id, closestId).compareTo(Util.distance(id, nId)) == 1)) {
+				closestId = nId;
+			}
+		}
+		return closestId;
+	}
 
 	// ______________________________________________________________________________________________
 	/**
@@ -205,6 +203,9 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		if(pendingRegistrations>0) {
 			Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>) it.next();
 			System.out.println("Topic " + pair.getKey() + " will be registered " + pair.getValue() + " times");
+			Topic t = new Topic(pair.getKey());
+			System.out.println("Topic hash: " + t.getTopicID());
+			System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
 			for(int i=0;i<pair.getValue();i++) {
 				Message m = generateRegisterMessage(pair.getKey());
 				Node start = getRandomNode();

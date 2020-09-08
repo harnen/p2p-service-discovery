@@ -287,6 +287,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 						int found = lop.discoveredCount();
 						int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
 						System.out.println("Node " + this.node.getId() + " found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+						System.out.print("On:");
+						for(BigInteger id: lop.discovered) {
+							System.out.println(id + ", ");
+						}
 						KademliaObserver.register_total.add(all);
 						KademliaObserver.register_ok.add(found);
 					}
