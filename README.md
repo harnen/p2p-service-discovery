@@ -14,22 +14,25 @@ An improved service discovery system will increase the synchronization speed bet
 
 ## Project Plan
 
-The project is organised in three main milestones of the project together with their deliverables.
+The project is organised in three main milestones of the project together with their deliverables. We represent as:
+* [X] Complete tasks 
+* [ ] Pending tasks
+
 * Objective 1: Discv5 simulation environment
-  * Task 1: Selection of an appropriate simulator: Investigate the scalability of the Speer simulator (https://github.com/danalex97/Speer) which is written in Go. In case of problems, we will proceed with Peersim (http://peersim.sourceforge.net/) simulator in the rest of the tasks.
-  * Task 2: Adding Ethereum DHT to the simulator: Implement the Ethereum’s modified version of Kademlia protocol in the chosen simulator.
-  * Task 3: Adding discv5 to the simulator: Implement the existing discovery protocol using radius estimation in the chosen simulator.
+  * [X] Task 1: Selection of an appropriate simulator: Investigate the scalability of the Speer simulator (https://github.com/danalex97/Speer) which is written in Go. In case of problems, we will proceed with Peersim (http://peersim.sourceforge.net/) simulator in the rest of the tasks.
+  * [X] Task 2: Adding Ethereum DHT to the simulator: Implement the Ethereum’s modified version of Kademlia protocol in the chosen simulator.
+  * [X] Task 3: Adding discv5 to the simulator: Implement the existing discovery protocol using radius estimation in the chosen simulator.
   * Deliverables: Discv5 network simulator, including code repository, docs and examples. Deadline: after 3 months.
 
 * Objective 2: Implementation of the proposed enhancements to discv5
-  * Task 4: New discv5 discovery: Implementation of the proposed topic registration and discovery protocol where registrar nodes make individual admission decisions on topic registration requests (based on considerations such as load, popularity of topic, and so on) in the chosen simulator.
-  * Task 5: Adding Sybil resistance to discv5: Detection of Sybil attacks by observing whether the distribution of the identifiers found during a search of a target diverges signifi- cantly from the theoretical distribution of identifiers.
-  * Task 6: Add threat model and performance analysis: Implement malicious nodes and computation of performance metrics for discovery and Sybil resistance.
+  * [X] Task 4: New discv5 discovery: Implementation of the proposed topic registration and discovery protocol where registrar nodes make individual admission decisions on topic registration requests (based on considerations such as load, popularity of topic, and so on) in the chosen simulator.
+  * [ ] Task 5: Adding Sybil resistance to discv5: Detection of Sybil attacks by observing whether the distribution of the identifiers found during a search of a target diverges signifi- cantly from the theoretical distribution of identifiers.
+  * [ ] Task 6: Add threat model and performance analysis: Implement malicious nodes and computation of performance metrics for discovery and Sybil resistance.
   * Deliverables: New Sybil-resistant service discovery implementation in the simulation environment and an initial version of the specification. Deadline: after 4 months.
   
 * Objective 3: Performance evaluation and improvement
-  * Task 7: Large-scale simulations: Run large-scale simulations in a setting with millions of nodes.
-  * Task 8: Evaluation of performance: Investigate the effectiveness of the proposed ex- tensions under heavy presence of malicious nodes and make necessary changes to optimise the performance.
+  * [ ] Task 7: Large-scale simulations: Run large-scale simulations in a setting with millions of nodes.
+  * [ ] Task 8: Evaluation of performance: Investigate the effectiveness of the proposed ex- tensions under heavy presence of malicious nodes and make necessary changes to optimise the performance.
   * Deliverables: New Sybil-resistant service discovery analysis, performance evaluation and final version of the specification. Deadline: after 6 months.
   
 
