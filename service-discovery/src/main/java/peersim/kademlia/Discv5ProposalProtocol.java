@@ -175,7 +175,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		response.operationId = m.operationId;
 		response.src = this.node;
 		response.ackId = m.id; 
-		logger.info(this.node + " will respond with TOPIC QUERY REPLY");
+		logger.warning(" responds with TOPIC_QUERY_REPLY");
 		sendMessage(response, m.src.getId(), myPid);
 		
 	}
