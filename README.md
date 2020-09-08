@@ -31,10 +31,15 @@ The project is organised in three main milestones of the project together with t
   * Task 7: Large-scale simulations: Run large-scale simulations in a setting with millions of nodes.
   * Task 8: Evaluation of performance: Investigate the effectiveness of the proposed ex- tensions under heavy presence of malicious nodes and make necessary changes to optimise the performance.
   * Deliverables: New Sybil-resistant service discovery analysis, performance evaluation and final version of the specification. Deadline: after 6 months.
+  
 
-## Prerequisites
+## Service Discovery Simulator
 
-To run the project the following software requirements are necessady:
+Our service discovery simulator for Ethereum 2.0 is based on an existing P2P simulator, [PeerSim P2P Simulator](http://peersim.sourceforge.net/). We extended PeerSim to adapt to the current DHT implementation in Ethereum and add the implementation of our  [service discovery proposition](#service-discovery-proposition), along with other ones for comparison purposes.
+
+### Build
+
+To run the project the following software requirements are necessary:
 
 * Java version 11 or higher
 * Maven
@@ -43,13 +48,11 @@ On Ubuntu run the following to install them:
 
 `sudo apt install openjdk-14 maven`
 
-## Build
-
 Run the following command to build the project:
 
 `mvn package`
 
-## Running
+### Running
   
 `./run.sh <config_file`
 
@@ -59,6 +62,8 @@ All the config files are in `./config/` check this folder for config file descri
 
 [Service discovery implementation](doc/discovery.md)
 
+
+## Service Discovery Proposition
 
 ## Resources 
 
