@@ -51,6 +51,9 @@ public class Discv5ProposalTrafficGenerator implements Control {
 
 	private Iterator<Entry<String, Integer>> it;
 	
+	private int counter = 0;
+	private int lastRegistered = 0;
+	
 	// ______________________________________________________________________________________________
 	public Discv5ProposalTrafficGenerator(String prefix) {
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
@@ -61,9 +64,9 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		pendingLookups = topicNum;
 		topicList = new HashMap();
 		
-		for(int i=0;i<topicNum;i++) {
+		for(int i=1; i <= topicNum; i++) {
 			int times=zipf.sample();
-			System.out.println("Topic "+i+" count "+times);
+			times = 4;
 			topicList.put(new String("t"+i),new Integer(times));
 		}
 		
@@ -120,8 +123,6 @@ public class Discv5ProposalTrafficGenerator implements Control {
 	 * @return Message
 	 */
 	private Message generateRegisterMessage(String topic) {
-		
-		System.out.println("New register message "+topic);
 		Topic t = new Topic(topic);
 		Message m = Message.makeRegister(t);
 		m.timestamp = CommonState.getTime();
@@ -176,6 +177,15 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		}
 		return m;
 	}
+	
+	public Node getRandomNode() {
+		Node node = null;
+		do {
+			node = Network.get(CommonState.r.nextInt(Network.size()));
+		} while ((node == null) || (!node.isUp()));
+		
+		return node;
+	}
 
 	// ______________________________________________________________________________________________
 	/**
@@ -188,29 +198,30 @@ public class Discv5ProposalTrafficGenerator implements Control {
 			return false;
 		}
 		first = false;*/
-	
-		Node start;
 		
-		do {
-			start = Network.get(CommonState.r.nextInt(Network.size()));
-		} while ((start == null) || (!start.isUp()));
 		
-		System.out.println("Pending "+pendingRegistrations+" "+pendingLookups);
+		
+		//System.out.println("Pending registration: " + pendingRegistrations + " lookups: " + pendingLookups);
 		if(pendingRegistrations>0) {
 			Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>) it.next();
+			System.out.println("Topic " + pair.getKey() + " will be registered " + pair.getValue() + " times");
 			for(int i=0;i<pair.getValue();i++) {
-				System.out.println("Topic "+pair.getKey()+" "+i);
 				Message m = generateRegisterMessage(pair.getKey());
+				Node start = getRandomNode();
 				if(m != null)
 					EDSimulator.add(0, m, start, pid);
 			}
 			pendingRegistrations--;
-		} else if(pendingLookups>0) {
+			this.lastRegistered = counter;
+		} else if((pendingLookups > 0) && (counter > (this.lastRegistered + 50)) ) {
 			Message m = generateTopicLookupMessage(new String("t"+pendingLookups));
+			Node start = getRandomNode();
 			if(m != null)
 				EDSimulator.add(0, m, start, pid);
 			pendingLookups--;
 		}
+		
+		this.counter++;
 		
 		return false;
 	}

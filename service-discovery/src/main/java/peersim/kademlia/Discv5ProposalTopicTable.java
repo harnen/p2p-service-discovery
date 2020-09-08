@@ -51,7 +51,7 @@ public class Discv5ProposalTopicTable implements TopicTable {
         //check if we already have this registration
         List<TopicRegistration> regList = table.get(t);
         if((regList != null) && (regList.contains(r))){
-        	System.out.println("We already have topic " + t.getTopic());
+        	//System.out.println("We already have topic " + t.getTopic());
             return true;
         }
         

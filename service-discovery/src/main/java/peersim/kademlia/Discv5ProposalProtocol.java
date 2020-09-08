@@ -116,7 +116,6 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(this.node, t);
 		
-		KademliaObserver.register_total.add(1);
 		KademliaObserver.addTopicRegistration(t.topic, this.node.getId());
 	
 	

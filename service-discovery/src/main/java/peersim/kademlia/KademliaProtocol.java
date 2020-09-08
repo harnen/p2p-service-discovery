@@ -279,14 +279,16 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
 					operations.remove(fop.operationId);
-					if(!fop.finished){
+					if(!fop.finished && fop.type == Message.MSG_FIND){
 						logger.warning("Couldn't find node " + fop.destNode);
 					}
 					if(fop.type == Message.MSG_TOPIC_QUERY) {
 						LookupOperation lop = (LookupOperation) fop;
 						int found = lop.discoveredCount();
 						int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
-						System.out.println("Found " + found + " registrations out of " + all);
+						System.out.println("Node " + this.node.getId() + " found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+						KademliaObserver.register_total.add(all);
+						KademliaObserver.register_ok.add(found);
 					}
 					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
 					//TODO We use body for other purposes now - need to reconfigure this
@@ -483,8 +485,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		logger = Logger.getLogger(node.getId().toString());
 		logger.setUseParentHandlers(false);
 		ConsoleHandler handler = new ConsoleHandler();
-		//logger.setLevel(Level.WARNING);
-		logger.setLevel(Level.ALL);
+		logger.setLevel(Level.WARNING);
+		//logger.setLevel(Level.ALL);
 		  
       	handler.setFormatter(new SimpleFormatter() {
         	private static final String format = "[%d][%s] %3$s %n";
