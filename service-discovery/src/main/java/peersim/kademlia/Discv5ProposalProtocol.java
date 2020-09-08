@@ -158,7 +158,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(m.src, t);
 		if(this.topicTable.register(r, t)) {
-			System.out.println(t.topic + " registered on " + this.node.getId());
+			System.out.println(t.topic + " registered on " + this.node.getId() + " by " + m.src.getId());
 		}
 
 		handleFind(m, myPid, Util.logDistance(t.getTopicID(), this.node.getId()));
