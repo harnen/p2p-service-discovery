@@ -46,15 +46,23 @@ To run the project the following software requirements are necessary:
 
 On Ubuntu run the following to install them:
 
-`sudo apt install openjdk-14 maven`
+```shell
+$ sudo apt install openjdk-14 maven
+```
 
 Run the following command to build the project:
 
-`mvn package`
+```shell
+$ git clone https://github.com/harnen/p2p-service-discovery.git
+$ cd service-discovery
+$ mvn package
+```
 
 ### Running
   
-`./run.sh <config_file`
+```shell
+$ ./run.sh <config_file>
+```
 
 All the config files are in `./config/` check this folder for config file descriptions. 
 
