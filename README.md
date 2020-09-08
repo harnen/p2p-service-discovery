@@ -35,7 +35,7 @@ The project is organised in three main milestones of the project together with t
 
 ## Service Discovery Simulator
 
-Our service discovery simulator for Ethereum 2.0 is based on an existing P2P simulator, [PeerSim P2P Simulator](http://peersim.sourceforge.net/). We extended PeerSim to adapt to the current DHT implementation in Ethereum and add the implementation of our  [service discovery proposition](#service-discovery-proposition), along with other ones for comparison purposes.
+Our service discovery simulator for Ethereum 2.0, included in this repository, is based on an existing P2P simulator, [PeerSim P2P Simulator](http://peersim.sourceforge.net/). We extended PeerSim to adapt to the current Ethereum DHT implementation and we added the implementation of our  [service discovery proposition](#service-discovery-proposition), along with other ones for comparison purposes.
 
 ### Build
 
@@ -66,12 +66,39 @@ $ ./run.sh <config_file>
 
 All the config files are in `./config/` check this folder for config file descriptions. 
 
-[Proposition1](doc/proposition1.md)
-
-[Service discovery implementation](doc/discovery.md)
-
-
 ## Service Discovery Proposition
+
+This is our proposition for topic registration and service discovery in Ethereum 2.0.
+
+### Terms
+
+* A 'topic' is an identifier for a service provided by a node.
+* An 'advertiser' is a node providing a service that wants to be found.
+* An 'ad' is the registration of an advertiser for a topic on another node.
+* An 'advertisement medium' is a node on which an ad is stored.
+* A 'searcher' is a node looking for ads for a topic.
+
+### Ad Storage 
+
+### Ad registration
+
+The registrant tries to register on every node during its random walk towards `H(t)` and let the nodes on the path decide whether to accept it or not.
+
+The decision could be taken based on the node's distance from H(t) (the closer, the higher chance of accepting) and the current number of registration among all the topics (the more registrations, the lower chance of accepting). It would create a balanced system where, if there are not many registrations in the system, nodes would accept any registration, but when the traffic is increasing, each node would start to specialize in topics close to its own ID.
+
+If the registrant finds that it doesn't have incoming connection, it can repeat the process using alternative paths (or repeat on the same one if the registration decision is made nondeterministic).
+
+The register message can be attached to `FINDNODE` message. The registrant tries to perform the regular DHT node lookup towards H(t). At te same time, it would try to register on every node it queries.
+
+### Service Lookup
+
+### Open aspects
+
+* Should nodes involved in a topic also keep information about other nodes in the topic? So that if you find one, you should be able to find others?
+* Should we have some replication? Or only rely on registrations performed during the random walk?
+* Should we use multiple hash functions (or different salt)? If we use different hash functions, we'd have different H(t) for the same topic. It i) provide necessary redundancy (if the node close to H(t) is down, we don't loose all the information) ii) we could easily perform parallel lookups (similar to alpha, but here, it would go to different instead of the same H(t)
+* Spamming more registration shouldn't result in more state created on different nodes - this is necessary to prevent spamming attacks.
+
 
 ## Resources 
 
@@ -91,3 +118,7 @@ All the config files are in `./config/` check this folder for config file descri
 * [S-Kademlia](https://www.sciencedirect.com/science/article/abs/pii/S1389128615004168)
 
 * [Check this code](https://github.com/ethereum/go-ethereum/blob/master/p2p/discover/v5_udp.go#L280) - here's the main for the protocol, handling messages etc. How a look the lookupWorker and lookupDistances
+
+## Other
+
+[Service discovery implementation](doc/discovery.md)
