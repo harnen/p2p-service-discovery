@@ -161,14 +161,14 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 			System.out.println(t.topic + " registered on " + this.node.getId());
 		}
 
-		handleFind(m, myPid, Util.prefixLen(this.node.getId(), t.getTopicID()));
+		handleFind(m, myPid, Util.logDistance(t.getTopicID(), this.node.getId()));
 	}
 
 	
 	private void handleTopicQuery(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
-		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.prefixLen(this.node.getId(), t.getTopicID()));
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 		
 		Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
 		Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
