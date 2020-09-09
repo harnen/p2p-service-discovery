@@ -23,15 +23,8 @@ import peersim.kademlia.KademliaNode;
 
 public class Discv5TicketProtocol extends KademliaProtocol {
 
-    public FindOperation fop;
-
-    /* 
-     * The topic currently being advertised
-     */
-    private Topic topic;
-	
     /**
-	 * routing table of this pastry node
+	 * Topic table of this node
 	 */
     private Discv5TopicTable topicTable;
 
@@ -163,17 +156,42 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
         Message response = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
 		response.ackId = m.id; // set ACK number
+        response.operationId = m.operationId;
         sendMessage(response, m.src.getId(), myPid);
     }
+	
+	/**
+	 * Process a topic query message.<br>
+	 * The body should contain a topic. Return a response message containing
+     * the registrations for the topic and the neighbors close to the topic.
+	 * 
+	 * @param m
+	 *            Message received (contains the node to find)
+	 * @param myPid
+	 *            the sender Pid
+	 */
+    private void handleTopicQuery(Message m, int myPid) {
+		Topic t = (Topic) m.body;
+		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.prefixLen(this.node.getId(), t.getTopicID()));
+		
+		Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
+		Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
+		response.operationId = m.operationId;
+		response.src = this.node;
+		response.ackId = m.id; 
+		logger.warning(" responds with TOPIC_QUERY_REPLY");
+		sendMessage(response, m.src.getId(), myPid);
     
+    }
     /**
-     *
+     * Process a ticket request
      *
      */
     private void handleTicketRequest(Message m, int myPid) {
+        //FIXME add logs
 		System.out.println("Ticket request received: " + m.src.getId());
         Topic t = (Topic) m.body;
-        // FIXME: there needs to be a better way to get kademliaNode from nodeID
         KademliaNode src = new KademliaNode(m.src); 
         //System.out.println("TicketRequest handle "+t.getTopic());
         Ticket ticket = topicTable.getTicket(t, src);
@@ -191,6 +209,11 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     private void handleTicketResponse(Message m, int myPid) {
     	System.out.println("handleTicketResponse: " + m.src);
         Ticket t = (Ticket) m.body;
+        if (t.getWaitTime() == KademliaCommonConfig.AD_LIFE_TIME) 
+        {
+            System.out.println("Register converged");
+            return;
+        }
         Message register = new Message(Message.MSG_REGISTER, t);
 		register.ackId = m.id; // set ACK number
         register.dest = new KademliaNode(m.src);
@@ -198,12 +221,20 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         register.operationId = m.operationId;
         scheduleSendMessage(register, m.src.getId(), myPid, t.getWaitTime());
     }
-    /**
-     *
-     *
-     */
+
+	/**
+	 * Process a register response message.<br>
+	 * The body should contain a ticket, which indicates whether registration is 
+     * complete. In case it is not, schedule sending a new register request
+	 * 
+	 * @param m
+	 *            Message received (contains the node to find)
+	 * @param myPid
+	 *            the sender Pid
+	 */
     private void handleRegisterResponse(Message m, int myPid) {
         Ticket ticket = (Ticket) m.body;
+        Topic topic = ticket.getTopic();
         if (ticket.isRegistrationComplete() == false) {
         	System.out.println("Unsuccessful Registration of topic: " + ticket.getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
@@ -213,19 +244,22 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         }
         else {
             //System.out.println("Successful Registration of topic: " + ticket.topic + " at node: " + m.src.toString());
+		    KademliaObserver.register_ok.add(1);
             long curr_time = CommonState.getTime();
 			//System.out.println("Adjusting topic radius with time for destination: " + this.fop.destNode.toString() + " wait time: " + ticket.cum_wait);
-            //this.topicRadius.adjustWithTicket(curr_time, this.fop.destNode, ticket.req_time, curr_time);
-            this.topicRadius.adjustWithTicket(curr_time, this.fop.destNode, ticket.getReqTime() + ticket.getCumWaitTime(), ticket.getRegTime());
+            RegisterOperation rop = (RegisterOperation) this.operations.get(m.operationId);
+            this.topicRadius.adjustWithTicket(curr_time, rop.destNode, ticket.getReqTime() + ticket.getCumWaitTime(), ticket.getReqTime());
 			
             BigInteger targetAddr = topicRadius.nextTarget(false).getAddress();
             // Lookup the target address in the routing table
             //BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
         	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.node.getId()));
+        
+            rop.destNode = targetAddr;
+            rop.setTimestamp(curr_time);
+            rop.elaborateResponse(neighbours); 
+            BigInteger dest = rop.getNeighbour();
 
-            this.fop = new FindOperation(targetAddr, 0);
-            this.fop.elaborateResponse(neighbours); 
-            BigInteger dest = this.fop.getNeighbour();
             // Schedule a ticket request message to be sent immediately
             
             if (dest == null) {
@@ -233,9 +267,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
                 System.out.println("Error: destination is null at time: " + CommonState.getTime());
                 return;
             }
+            System.out.println("Next target address: " + dest);
 
             Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, topic);
-            ticket_request.operationId = this.fop.operationId;
+            ticket_request.operationId = rop.operationId;
             scheduleSendMessage(ticket_request, dest, myPid, 0); 
         }
     }
@@ -253,41 +288,76 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 */
     private void handleInitRegisterTopic(Message m, int myPid) {
         
-        if (this.fop != null) {
-            // there is already a registration operation going on at this node
-            return;
-        }
-
         Topic t = (Topic) m.body;
         t.setHostID(this.node.getId());
-        this.topic = t;
+		
+        KademliaObserver.addTopicRegistration(t.getTopic(), this.node.getId());
 
         this.topicRadius = new TopicRadius(t);
 
         BigInteger targetAddr = topicRadius.nextTarget(false).getAddress();
         
         // Lookup the target address in the routing table
-        //BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
     	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.node.getId()));
 
         //System.out.println("Neighbors: " + Arrays.toString(neighbours));
         //System.out.println("My id is: " + this.kademliaNode.getId().toString());
         //System.out.println("Target id is: " + targetAddr.toString());
 
-        this.fop = new FindOperation(targetAddr, 0);
-        this.fop.elaborateResponse(neighbours); 
-        BigInteger dest = this.fop.getNeighbour();
+        RegisterOperation rop = new RegisterOperation(m.timestamp, t, targetAddr);
+		operations.put(rop.operationId, rop);
+        System.out.println("Register OperationId is put:" + rop.operationId);
+        rop.elaborateResponse(neighbours); 
 
-        if (dest == null) {
-        	System.out.println("Neighbors: " + Arrays.toString(neighbours));
-            System.out.println("Error: destination is null at time: " + CommonState.getTime());
-            return;
-        }
+		// send ALPHA messages
+		for (int i = 0; i < 1 /*KademliaCommonConfig.ALPHA*/; i++) {
+			BigInteger nextNode = rop.getNeighbour();
+			if (nextNode != null) {
+                Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, t);
+		        ticket_request.operationId = rop.operationId;
+                scheduleSendMessage(ticket_request, nextNode, myPid, 0); 
+				// rop.nrHops++; FIXME: what is the point of this?
+			}
+		}
+    }
+	
+    /**
+	 * Start a topic query opearation.<br>
+	 * 
+	 * @param m
+	 *            Message received (contains the node to find)
+	 * @param myPid
+	 *            the sender Pid
+	 */
+    
+    private void handleInitTopicLookup(Message m, int myPid) {
+		KademliaObserver.lookup_total.add(1);
 
-        // Schedule a ticket request message to be sent immediately
-        Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, t);
-		ticket_request.operationId = fop.operationId;
-        scheduleSendMessage(ticket_request, dest, myPid, 0); 
+		Topic t = (Topic) m.body;
+		
+        LookupOperation lop = new LookupOperation(m.timestamp, t);
+		lop.body = m.body;
+		operations.put(lop.operationId, lop);
+        System.out.println("Lookup OperationId is put:" + lop.operationId);
+	
+		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
+		lop.elaborateResponse(neighbours);
+		lop.available_requests = KademliaCommonConfig.ALPHA;
+	
+		// set message operation id
+		m.operationId = lop.operationId;
+		m.type = Message.MSG_TOPIC_QUERY;
+		m.src = this.node;
+	
+		// send ALPHA messages
+		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
+			BigInteger nextNode = lop.getNeighbour();
+			if (nextNode != null) {
+				sendMessage(m.copy(), nextNode, myPid);
+				lop.nrHops++;
+			}
+		}
     }
     
 	/**
@@ -309,6 +379,12 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		
         switch (((SimpleEvent) event).getType()) {
 
+			case Message.MSG_TOPIC_QUERY_REPLY:
+				m = (Message) event;
+				sentMsg.remove(m.ackId);
+				find(m, myPid);
+				break;
+
             case Message.MSG_REGISTER:
                 m = (Message) event;
                 handleRegister(m, myPid);
@@ -322,8 +398,13 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
             case Message.MSG_TOPIC_QUERY:
                 m = (Message) event;
-                //handleTopicQuery(m, myPid);
+                handleTopicQuery(m, myPid);
                 break;
+			
+            case Message.MSG_INIT_TOPIC_LOOKUP:
+				m = (Message) event;
+				handleInitTopicLookup(m, myPid);
+				break;
 
             case Message.MSG_INIT_REGISTER:
                 m = (Message) event;

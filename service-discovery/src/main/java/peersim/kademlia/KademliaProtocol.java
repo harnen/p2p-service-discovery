@@ -279,6 +279,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
 					operations.remove(fop.operationId);
+                    System.out.println("OperationId is removed:" + fop.operationId);
 					if(!fop.finished && fop.type == Message.MSG_FIND){
 						logger.warning("Couldn't find node " + fop.destNode);
 					}
