@@ -84,6 +84,9 @@ We provide a set of configuration files in order to simulate different setups, p
 * ethclientdns.cfg: Same than previous one but loading nodes from 
 [Eth crawling results](https://github.com/ethereum/discv4-dns-lists)
 
+### Gathering statistics
+
+TBC
 
 ## Service Discovery Proposition
 
@@ -118,6 +121,9 @@ The register message can be attached to `FINDNODE` message. The registrant tries
 * Should we use multiple hash functions (or different salt)? If we use different hash functions, we'd have different H(t) for the same topic. It i) provide necessary redundancy (if the node close to H(t) is down, we don't loose all the information) ii) we could easily perform parallel lookups (similar to alpha, but here, it would go to different instead of the same H(t)
 * Spamming more registration shouldn't result in more state created on different nodes - this is necessary to prevent spamming attacks.
 
+### Simulation results
+
+TBC
 
 ## Resources 
 
