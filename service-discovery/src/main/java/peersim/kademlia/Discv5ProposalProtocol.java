@@ -158,7 +158,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(m.src, t);
 		if(this.topicTable.register(r, t)) {
-			System.out.println(t.topic + " registered on " + this.node.getId() + " by " + m.src.getId());
+			logger.info(t.topic + " registered on " + this.node.getId() + " by " + m.src.getId());
 		}
 
 		handleFind(m, myPid, Util.logDistance(t.getTopicID(), this.node.getId()));
@@ -175,7 +175,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		response.operationId = m.operationId;
 		response.src = this.node;
 		response.ackId = m.id; 
-		logger.warning(" responds with TOPIC_QUERY_REPLY");
+		logger.info(" responds with TOPIC_QUERY_REPLY");
 		sendMessage(response, m.src.getId(), myPid);
 		
 	}

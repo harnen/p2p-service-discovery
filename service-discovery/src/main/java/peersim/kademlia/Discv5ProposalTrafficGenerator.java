@@ -62,11 +62,10 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		zipf = new ZipfDistribution(topicNum,exp);
 		pendingRegistrations = topicNum;
 		pendingLookups = topicNum;
-		topicList = new HashMap();
+		topicList = new HashMap<String,Integer>();
 		
 		for(int i=1; i <= topicNum; i++) {
 			int times=zipf.sample();
-			times = 4;
 			topicList.put(new String("t"+i),new Integer(times));
 		}
 		
@@ -150,7 +149,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
 	 * @return Message
 	 */
 	private Message generateTopicLookupMessage(String topic) {
-		System.out.println("New lookup message "+topic);
+		//System.out.println("New lookup message "+topic);
 
 		Topic t = new Topic(topic);
 		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
