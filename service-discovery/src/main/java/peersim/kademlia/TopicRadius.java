@@ -263,6 +263,7 @@ public class TopicRadius {
 	//adjust radius when ticket received based on waiting time and target waiting time
 	void adjustWithTicket(long time, BigInteger targetHash,long regTime, long issueTime/*,Ticketref t*/) {
 		long wait = regTime-issueTime;//TODO calculate regtime - isuetime from ticket
+        //System.out.println("adjustWithTicket wait time: " + wait);
 	
 		double inside = (double)wait/targetWaitTime - 0.5;
 		//System.out.println("RegTime:"+regTime+" issueTime:"+issueTime+" wait:"+wait+" inside:"+inside);

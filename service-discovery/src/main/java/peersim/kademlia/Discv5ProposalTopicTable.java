@@ -11,7 +11,7 @@ import peersim.core.CommonState;
 import peersim.kademlia.TopicRegistration;
 
 
-public class Proposal1TopicTable implements TopicTable {
+public class Discv5ProposalTopicTable implements TopicTable {
 
 
     private int capacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
@@ -20,12 +20,12 @@ public class Proposal1TopicTable implements TopicTable {
     private SortedMap<Topic, List<TopicRegistration>> table;
     private BigInteger hostID;
 
-    public Proposal1TopicTable(BigInteger hostID){
+    public Discv5ProposalTopicTable(BigInteger hostID){
         table = new TreeMap<Topic, List<TopicRegistration>>();
         this.hostID = hostID;
     }
 
-    public Proposal1TopicTable(){
+    public Discv5ProposalTopicTable(){
         table = new TreeMap<Topic, List<TopicRegistration>>();
     }
 
@@ -51,7 +51,7 @@ public class Proposal1TopicTable implements TopicTable {
         //check if we already have this registration
         List<TopicRegistration> regList = table.get(t);
         if((regList != null) && (regList.contains(r))){
-        	System.out.println("We already have topic " + t.getTopic());
+        	//System.out.println("We already have topic " + t.getTopic());
             return true;
         }
         

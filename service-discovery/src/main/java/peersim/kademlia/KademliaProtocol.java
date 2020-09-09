@@ -43,44 +43,44 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	final String PAR_REFRESHTIME = "REFRESH";
 
 	private static final String PAR_TRANSPORT = "transport";
-	private static String prefix = null;
-	private UnreliableTransport transport;
-	private int tid;
-	public int kademliaid;
-	private HashMap<BigInteger,Integer> failures;
+	protected static String prefix = null;
+	protected UnreliableTransport transport;
+	protected int tid;
+	protected int kademliaid;
+	protected HashMap<BigInteger,Integer> failures;
 	//private EthClient client;
 
 	/**
 	 * allow to call the service initializer only once
 	 */
-	private static boolean _ALREADY_INSTALLED = false;
+	protected static boolean _ALREADY_INSTALLED = false;
 
 	/**
 	 * nodeId of this pastry node
 	 */
 	//public BigInteger nodeId;
 
-	public KademliaNode node;
+	protected KademliaNode node;
 
 	/**
 	 * routing table of this pastry node
 	 */
-	public RoutingTable routingTable;
+	protected RoutingTable routingTable;
 
-	public Proposal1TopicTable topicTable;
+	protected Discv5ProposalTopicTable topicTable;
 
-	private Logger logger;
+	protected Logger logger;
 
 
 	/**
 	 * trace message sent for timeout purpose
 	 */
-	private TreeMap<Long, Long> sentMsg;
+	protected TreeMap<Long, Long> sentMsg;
 
 	/**
 	 * find operations set
 	 */
-	private LinkedHashMap<Long, Operation> operations;
+	protected LinkedHashMap<Long, Operation> operations;
 
 	/**
 	 * Replicate this object by returning an identical copy.<br>
@@ -107,7 +107,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		this.routingTable = new RoutingTable();
 
-		this.topicTable = new Proposal1TopicTable();
+		this.topicTable = new Discv5ProposalTopicTable();
 
 		sentMsg = new TreeMap<Long, Long>();
 
@@ -189,7 +189,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void find(Message m, int myPid) {
+	protected void find(Message m, int myPid) {
 		// add message source to my routing table
 		Operation fop = (Operation)	 this.operations.get(m.operationId);
 		if (m.src != null) {
@@ -279,14 +279,21 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 					// search operation finished
 					operations.remove(fop.operationId);
-					if(!fop.finished){
+                    //System.out.println("OperationId is removed:" + fop.operationId);
+					if(!fop.finished && fop.type == Message.MSG_FIND){
 						logger.warning("Couldn't find node " + fop.destNode);
 					}
 					if(fop.type == Message.MSG_TOPIC_QUERY) {
 						LookupOperation lop = (LookupOperation) fop;
 						int found = lop.discoveredCount();
 						int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
-						System.out.println("Found " + found + " registrations our of " + all);
+						logger.warning("found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+						logger.info("On:");
+						for(BigInteger id: lop.discovered) {
+							logger.info(id + ", ");
+						}
+						KademliaObserver.register_total.add(all);
+						KademliaObserver.register_ok.add(found);
 					}
 					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
 					//TODO We use body for other purposes now - need to reconfigure this
@@ -322,7 +329,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void handleFind(Message m, int myPid, int dist) {
+	protected void handleFind(Message m, int myPid, int dist) {
 		// get the ALPHA closest node to destNode
 		BigInteger[] neighbours = this.routingTable.getNeighbours(dist);
 		//System.out.println("find node received at "+this.node.getId()+" distance "+(int) m.body); 
@@ -346,39 +353,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	}
 
 
-		/**
-	 * Response to a register request.<br>
-	 * Tries to register the requesting node under the
-	 * specified topic
-	 * 
-	 * @param m
-	 *            Message
-	 * @param myPid
-	 *            the sender Pid
-	 */
-	private void handleRegister(Message m, int myPid) {
-		Topic t = (Topic) m.body;
-		TopicRegistration r = new TopicRegistration(m.src, t);
-		this.topicTable.register(r, t);
-
-		handleFind(m, myPid, Util.prefixLen(this.node.getId(), t.getTopicID()));
-	}
-	
-	private void handleTopicQuery(Message m, int myPid) {
-		Topic t = (Topic) m.body;
-		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
-		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.prefixLen(this.node.getId(), t.getTopicID()));
-		
-		Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
-		Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
-		response.operationId = m.operationId;
-		response.src = this.node;
-		response.ackId = m.id; 
-		logger.info(this.node + " will respond with TOPIC QUERY REPLY");
-		sendMessage(response, m.src.getId(), myPid);
-		
-	}
-
 	/**
 	 * Start a find node opearation.<br>
 	 * Find the ALPHA closest node and send find request to them.
@@ -388,7 +362,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void handleInitFind(Message m, int myPid) {
+	protected void handleInitFind(Message m, int myPid) {
 
 		KademliaObserver.find_total.add(1);
 
@@ -423,80 +397,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		}
 	}
 	
-	private void handleInitTopicLookup(Message m, int myPid) {
-		KademliaObserver.lookup_total.add(1);
-		
-		Topic t = (Topic) m.body;
-	
-	
-		LookupOperation lop = new LookupOperation(m.timestamp, t);
-		lop.body = m.body;
-		operations.put(lop.operationId, lop);
-	
-		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
-		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
-		lop.elaborateResponse(neighbours);
-		lop.available_requests = KademliaCommonConfig.ALPHA;
-	
-		// set message operation id
-		m.operationId = lop.operationId;
-		m.type = Message.MSG_TOPIC_QUERY;
-		m.src = this.node;
-	
-		// send ALPHA messages
-		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
-			BigInteger nextNode = lop.getNeighbour();
-			if (nextNode != null) {
-				sendMessage(m.copy(), nextNode, myPid);
-				lop.nrHops++;
-			}
-		}
-		
-	}
-
-
-	/**
-	 * Start a register opearation.<br>
-	 * Find the ALPHA closest node and send register request to them.
-	 * 
-	 * @param m
-	 *            Message received (contains the node to find)
-	 * @param myPid
-	 *            the sender Pid
-	 */
-	private void handleInitRegister(Message m, int myPid) {
-
-		Topic t = (Topic) m.body;
-		TopicRegistration r = new TopicRegistration(this.node, t);
-		
-		KademliaObserver.register_total.add(1);
-		KademliaObserver.addTopicRegistration(t.topic, this.node.getId());
-	
-	
-		RegisterOperation rop = new RegisterOperation(m.timestamp, t, r);
-		rop.body = m.body;
-		operations.put(rop.operationId, rop);
-	
-		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
-		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
-		rop.elaborateResponse(neighbours);
-		rop.available_requests = KademliaCommonConfig.ALPHA;
-	
-		// set message operation id
-		m.operationId = rop.operationId;
-		m.type = Message.MSG_REGISTER;
-		m.src = this.node;
-	
-		// send ALPHA messages
-		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
-			BigInteger nextNode = rop.getNeighbour();
-			if (nextNode != null) {
-				sendMessage(m.copy(), nextNode, myPid);
-				rop.nrHops++;
-			}
-		}
-	}
-
 	/**
 	 * send a message with current transport layer and starting the timeout timer (which is an event) if the message is a request
 	 * 
@@ -553,7 +453,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		Message m;
 
 		switch (((SimpleEvent) event).getType()) {
-			case Message.MSG_TOPIC_QUERY_REPLY:
 			case Message.MSG_RESPONSE:
 				m = (Message) event;
 				sentMsg.remove(m.ackId);
@@ -570,59 +469,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				handleFind(m, myPid, (int) m.body);
 				break;
 			
-			case Message.MSG_INIT_REGISTER:
-				m = (Message) event;
-				handleInitRegister(m, myPid);
-				break;
-			
-			case Message.MSG_REGISTER:
-				m = (Message) event;
-				handleRegister(m, myPid);
-				break;
-				
-			case Message.MSG_TOPIC_QUERY:
-				m = (Message) event;
-				handleTopicQuery(m, myPid);
-				break;
-			case Message.MSG_INIT_TOPIC_LOOKUP:
-				m = (Message) event;
-				handleInitTopicLookup(m, myPid);
-				break;
-
-			case Message.MSG_EMPTY:
-				// TO DO
-				break;
-
-			case Message.MSG_STORE:
-				// TO DO
-				break;
-
-			case Timeout.TIMEOUT: // timeout
-				Timeout t = (Timeout) event;
-				if (sentMsg.containsKey(t.msgID)) { // the response msg didn't arrived
-					int fails=0;
-					if (failures.containsKey(t.node)) { 
-			            fails = failures.get(t.node); 
-					}
-					fails++;
-					failures.replace(t.node, fails);
-					logger.log(Level.WARNING, " <- timeout" + t.msgID + " from: " + t.node);
-					// remove form sentMsg
-					sentMsg.remove(t.msgID);
-					// remove node from my routing table
-					if(fails >= KademliaCommonConfig.MAXFINDNODEFAILURES){
-						this.routingTable.removeNeighbour(t.node);
-					}
-					// remove from closestSet of find operation
-					this.operations.get(t.opID).closestSet.remove(t.node);
-					// try another node
-					Message m1 = new Message();
-					m1.operationId = t.opID;
-					m1.src = this.node;
-					m1.body = new BigInteger[0];
-					this.find(m1, myPid);
-				}
-				break;
+	
+		//	default:
+		//		logger.warning("Bad message received "+((SimpleEvent) event).getType());
 		}
 
 	}
@@ -636,15 +485,13 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	public void setNode(KademliaNode node) {
 		this.node = node;
-		this.routingTable.nodeId = node.getId();
-		this.topicTable.setHostID(node.getId());
-		
+		this.routingTable.nodeId = node.getId();		
 
 		logger = Logger.getLogger(node.getId().toString());
 		logger.setUseParentHandlers(false);
 		ConsoleHandler handler = new ConsoleHandler();
-		//logger.setLevel(Level.WARNING);
-		logger.setLevel(Level.ALL);
+		logger.setLevel(Level.WARNING);
+		//logger.setLevel(Level.ALL);
 		  
       	handler.setFormatter(new SimpleFormatter() {
         	private static final String format = "[%d][%s] %3$s %n";
