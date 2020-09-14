@@ -67,7 +67,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	protected RoutingTable routingTable;
 
-	protected Discv5ProposalTopicTable topicTable;
+	//protected Discv5ProposalTopicTable topicTable;
 
 	protected Logger logger;
 
@@ -107,7 +107,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		this.routingTable = new RoutingTable();
 
-		this.topicTable = new Discv5ProposalTopicTable();
 
 		sentMsg = new TreeMap<Long, Long>();
 
@@ -446,7 +445,11 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			Message m = (Message) event;
 			logger.info("<- " +  m + " " + m.src);
 			//don't include controller commands in stats
-			if(((SimpleEvent) event).getType() != Message.MSG_INIT_FIND) KademliaObserver.msg_deliv.add(1);
+			if(m.getType() != Message.MSG_INIT_FIND && 
+				m.getType() != Message.MSG_INIT_TOPIC_LOOKUP &&
+				m.getType() != Message.MSG_INIT_REGISTER) {
+					KademliaObserver.registerMsgReceived(this.node.getId(), m);
+			}
 		}
 
 		Message m;

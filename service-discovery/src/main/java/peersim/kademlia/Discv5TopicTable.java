@@ -125,4 +125,8 @@ public class Discv5TopicTable implements TopicTable {
 
         return (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);
     }
+    //TODO
+    public String dumpRegistrations() {
+    	return "";
+    }
 }

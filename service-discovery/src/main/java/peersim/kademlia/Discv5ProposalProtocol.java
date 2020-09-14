@@ -58,7 +58,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		transport.send(src, dest, m, kademliaid);
-		KademliaObserver.msg_sent.add(1);
+		//KademliaObserver.msg_sent.add(1);
 
 		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
 			Timeout t = new Timeout(destId, m.id, m.operationId);
@@ -68,6 +68,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 			this.sentMsg.put(m.id, m.timestamp);
 			EDSimulator.add(4 * latency, t, src, myPid); // set delay = 2*RTT
 		}
+		//KademliaObserver.reportMsg(m, true);
 	}
 	
 	private void handleInitTopicLookup(Message m, int myPid) {
@@ -193,32 +194,29 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	public void processEvent(Node myNode, int myPid, Object event) {
 		// Parse message content Activate the correct event manager fot the particular event
 		super.processEvent(myNode, myPid, event);
-
-		Message m;
+		if(((SimpleEvent) event).getType() == Timeout.TIMEOUT) return;
+		Message m = (Message) event;
+		m.dest = this.node;
+		KademliaObserver.reportMsg(m, false);
 
 		switch (((SimpleEvent) event).getType()) {
 			case Message.MSG_TOPIC_QUERY_REPLY:
-				m = (Message) event;
 				sentMsg.remove(m.ackId);
 				find(m, myPid);
 				break;
 			
 			case Message.MSG_REGISTER:
-				m = (Message) event;
 				handleRegister(m, myPid);
 				break;
 				
 			case Message.MSG_INIT_REGISTER:
-				m = (Message) event;
 				handleInitRegister(m, myPid);
 				break;			
 				
 			case Message.MSG_TOPIC_QUERY:
-				m = (Message) event;
 				handleTopicQuery(m, myPid);
 				break;
 			case Message.MSG_INIT_TOPIC_LOOKUP:
-				m = (Message) event;
 				handleInitTopicLookup(m, myPid);
 				break;
 	
