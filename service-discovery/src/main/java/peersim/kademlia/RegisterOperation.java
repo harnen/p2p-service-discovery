@@ -30,4 +30,13 @@ public class RegisterOperation extends Operation{
 		this.registration = r;
 		this.topic = t;
 	}
+    
+    public RegisterOperation(long timestamp, Topic t, BigInteger targetAddr) {
+        super(targetAddr, Message.MSG_REGISTER, timestamp);
+        this.topic = t;
+    }
+    
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
 }

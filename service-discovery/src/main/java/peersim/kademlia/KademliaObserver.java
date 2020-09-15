@@ -15,6 +15,7 @@ import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
+import peersim.core.Node;
 import peersim.util.IncrementalStats;
 
 /**
@@ -38,7 +39,7 @@ public class KademliaObserver implements Control {
 	/**
 	 * keep statistic of number of message delivered
 	 */
-	public static IncrementalStats msg_deliv = new IncrementalStats();
+	private static IncrementalStats msg_deliv = new IncrementalStats();
 
 	/**
 	 * keep statistic of number of message sent
@@ -72,9 +73,15 @@ public class KademliaObserver implements Control {
 	
 	
 	public static HashMap<String, Set<BigInteger>> registeredTopics = new HashMap<String, Set<BigInteger>>();
+	
+	private static HashMap<BigInteger, Integer> nodeMsgReceived = new HashMap<BigInteger, Integer>();
+	
+	private static HashMap<BigInteger, Integer> nodeTopicStored = new HashMap<BigInteger, Integer>();
 
 	/** Parameter of the protocol we want to observe */
 	private static final String PAR_PROT = "protocol";
+	
+	private static FileWriter msgWriter; 
 
 	/** Protocol id */
 	private int pid;
@@ -85,10 +92,15 @@ public class KademliaObserver implements Control {
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
+		try {
+			msgWriter = new FileWriter("messages.csv");
+			msgWriter.write("id,type,src,dst,topic,sent/received\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void addTopicRegistration(String topic, BigInteger registrant) {
-		
 		 if(!registeredTopics.containsKey(topic)){
 	            HashSet<BigInteger> set = new HashSet<BigInteger>();
 	            set.add(registrant);
@@ -96,6 +108,7 @@ public class KademliaObserver implements Control {
 		 }else{
 	            registeredTopics.get(topic).add(registrant);
 	     }
+		 
 	}
 	
 	public static int topicRegistrationCount(String topic) {
@@ -104,6 +117,42 @@ public class KademliaObserver implements Control {
 		}
 		return 0;
 	}
+	
+	public static void registerMsgReceived(BigInteger id, Message m) {
+		if(!nodeMsgReceived.containsKey(id)) {
+			nodeMsgReceived.put(id, 1);
+		}else {
+			nodeMsgReceived.put(id, nodeMsgReceived.get(id) + 1);
+		}
+		msg_deliv.add(1);
+	}
+	
+	public static void reportMsg(Message m, boolean sent) {
+		try {
+			String result = "";
+			if(m.src == null) return; //ignore init messages
+			result += m.id + "," + m.getType() +"," + m.src.getId() + "," + m.dest.getId() + ",";
+			if(m.getType() == Message.MSG_REGISTER ||
+			   m.getType() == Message.MSG_TOPIC_QUERY) {
+				result += ((Topic) m.body).topic +"," ;
+			}else {
+				result += ",";
+			}
+			if(sent) {
+				result += "sent\n";
+			}
+			else {
+				result += "received\n";
+			}
+			msgWriter.write(result);
+			msgWriter.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 
 	/**
 	 * print the statistical snapshot of the current situation
@@ -128,6 +177,71 @@ public class KademliaObserver implements Control {
 								(int) msg_sent.getSum());
 								//msg_deliv.getSum(), hopStore.getMin(), hopStore.getAverage(), hopStore.getMax(), (int) timeStore.getMin(), (int) timeStore.getAverage(), (int) timeStore.getMax());
 		System.err.println(s);
+		
+		try {
+			FileWriter writer = new FileWriter(CommonState.getTime() +  "_stats.py");
+			boolean first = true;
+			writer.write("topics = [");
+			for(String topic: registeredTopics.keySet()) {
+				if(first){
+					writer.write("\'" + topic + "\'" + ": " + registeredTopics.get(topic).size());
+					first = false;
+				}else {
+					writer.write(", \'" + topic + "\'" + ": " + registeredTopics.get(topic).size());
+				}
+				
+			}
+			writer.write("]\n");
+			//////////////////////////////////////////////////////////////////////////////////
+			first=true;
+			writer.write("msgReceived = [");
+			for(BigInteger node: nodeMsgReceived.keySet()) {
+				if(first) {
+					writer.write("\'" + node + "\'" + ": " + nodeMsgReceived.get(node));
+					first = false;
+				}else {
+					writer.write(", \'" + node + "\'" + ": " + nodeMsgReceived.get(node));
+				}
+			}
+			writer.write("]\n");
+			
+			first=true;
+			writer.write("nodeTopicStored = [");
+			for(BigInteger node: nodeTopicStored.keySet()) {
+				if(first) {
+					writer.write("\'" + node + "\'" + ": " + nodeTopicStored.get(node));
+					first = false;
+				}else {
+					writer.write(", \'" + node + "\'" + ": " + nodeTopicStored.get(node));
+				}
+			}
+			writer.write("]\n");
+			writer.close();
+			
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+		try {
+			FileWriter writer = new FileWriter(CommonState.getTime() +  "_registrations.csv");
+			writer.write("host,topic,registrant\n");
+			for(int i = 0; i < Network.size(); i++) {
+				Node node = Network.get(i);
+				String registrations = ((Discv5ProposalProtocol) (node.getProtocol(pid))).topicTable.dumpRegistrations();
+				writer.write(registrations);
+			}
+			writer.close();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+		
+		
+		
+		
+		
+		
+		
 
 		return false;
 	}

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 
-import peersim.kademlia.Proposal1TopicTable;
+import peersim.kademlia.Discv5ProposalTopicTable;
 import peersim.kademlia.UniformRandomGenerator;
 import peersim.core.CommonState;
 import peersim.config.ParsedProperties;
@@ -33,7 +33,7 @@ public class Proposal1TopicTableTest{
     @Test
     public void capacityTopics() {
         int v = (int) Math.pow(2, KademliaCommonConfig.BITS) - 1;
-        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger(Integer.toString(v)));
+        Discv5ProposalTopicTable tt = new Discv5ProposalTopicTable(new BigInteger(Integer.toString(v)));
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
         tt.setCapacity(3);
 
@@ -53,7 +53,7 @@ public class Proposal1TopicTableTest{
     @Test
     public void capacityRegistrations() {	
         int v = (int) Math.pow(2, KademliaCommonConfig.BITS) - 1;
-        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger(Integer.toString(v)));
+        Discv5ProposalTopicTable tt = new Discv5ProposalTopicTable(new BigInteger(Integer.toString(v)));
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1231);
         tt.setCapacity(5);
 
@@ -71,7 +71,7 @@ public class Proposal1TopicTableTest{
     @Test
     public void sameRegistrations() {	
         int v = (int) Math.pow(2, KademliaCommonConfig.BITS) - 1;
-        Proposal1TopicTable tt = new Proposal1TopicTable(new BigInteger(Integer.toString(v)));
+        Discv5ProposalTopicTable tt = new Discv5ProposalTopicTable(new BigInteger(Integer.toString(v)));
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1231);
         tt.setCapacity(3);
 
