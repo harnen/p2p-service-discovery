@@ -16,17 +16,17 @@ import peersim.core.Network;
 public class CustomDistribution implements peersim.core.Control {
 
 	private static final String PAR_PROT = "protocol";
-	private static final String DISCV5_PAR_PROT = "discv5_protocol";
+	//private static final String DISCV5_PAR_PROT = "discv5_protocol";
 
 	private int protocolID;
-	private int discv5_protocolID=-1;
+	//private int discv5_protocolID=-1;
 	private UniformRandomGenerator urg;
 
 	public CustomDistribution(String prefix) {
 		protocolID = Configuration.getPid(prefix + "." + PAR_PROT);
-        if (Configuration.isValidProtocolName(prefix + "." + DISCV5_PAR_PROT)) {
+        /*if (Configuration.isValidProtocolName(prefix + "." + DISCV5_PAR_PROT)) {
 		    discv5_protocolID = Configuration.getPid(prefix + "." + DISCV5_PAR_PROT);
-        }
+        }*/
 
 		urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 	}
@@ -46,8 +46,8 @@ public class CustomDistribution implements peersim.core.Control {
             node.setProtocolId(protocolID);
 			
 			((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
-            if (discv5_protocolID != -1)
-    			((Discv5Protocol) (Network.get(i).getProtocol(discv5_protocolID))).setNode(node, Network.get(i));
+            //if (discv5_protocolID != -1)
+    		//	((Discv5TicketProtocol) (Network.get(i).getProtocol(discv5_protocolID))).setNode(node, Network.get(i));
 		}
 
 		return false;

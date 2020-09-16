@@ -5,7 +5,8 @@ public class Ticket {
     // waiting time assigned when ticket was created
 	private long wait_time;
 
-    // absolute time of REGTOPIC request
+    // absolute time of REGTOPIC request (issue time of ticket)
+    // FIXME rename this issue time
     private long req_time;
 
     // cummulative waiting time of this node
@@ -57,7 +58,7 @@ public class Ticket {
     }
     
     public long getRegTime() {
-    	return wait_time;
+    	return reg_time;
     }
     
     public void setRegTime(long reg_time) {
@@ -65,7 +66,7 @@ public class Ticket {
     }
     
     public long getReqTime() {
-    	return wait_time;
+    	return req_time;
     }
     
     public void setReqTime(long req_time) {
@@ -73,11 +74,11 @@ public class Ticket {
     }
     
     public long getCumWaitTime() {
-    	return wait_time;
+    	return cum_wait;
     }
     
     public void setCumWaitTime(long cum_wait) {
-    	this.cum_wait = cum_wait;
+    	this.cum_wait += cum_wait;
     }
     
     public void setRegistrationComplete(boolean complete) {

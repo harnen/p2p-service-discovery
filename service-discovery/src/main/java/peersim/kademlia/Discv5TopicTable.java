@@ -57,13 +57,16 @@ public class Discv5TopicTable implements TopicTable {
         
         if ( (topicQ != null) && (topicQ.contains(reg)) ) {
             Iterator<TopicRegistration> it = topicQ.iterator();
+            System.out.println("Ad already registered by this node");
+            waiting_time = KademliaCommonConfig.AD_LIFE_TIME;
+            /*
             while(it.hasNext()) {
                 TopicRegistration reg_existing = it.next();
                 if (reg.equals(reg_existing)) {
                     long age = curr_time - reg_existing.getTimestamp();
                     waiting_time = KademliaCommonConfig.AD_LIFE_TIME - age;
                 }
-            }
+            }*/
         }
 
         return waiting_time;
@@ -83,7 +86,7 @@ public class Discv5TopicTable implements TopicTable {
             return false;
         }
 
-        reg.setTimestamp(curr_time + waiting_time); 
+        reg.setTimestamp(curr_time); 
         ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic().getTopic());
         if (topicQ != null)
             topicQ.add(reg);
@@ -115,7 +118,15 @@ public class Discv5TopicTable implements TopicTable {
     }
 
     public TopicRegistration[] getRegistration(Topic t){
+        ArrayDeque<TopicRegistration> topicQ = topicTable.get(t.getTopic());
 
-        return null;
+        if (topicQ == null)
+            return new TopicRegistration[0];
+
+        return (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);
+    }
+    //TODO
+    public String dumpRegistrations() {
+    	return "";
     }
 }

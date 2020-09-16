@@ -64,47 +64,6 @@ public class TrafficGenerator implements Control {
 
 	// ______________________________________________________________________________________________
 	/**
-	 * generates a register message, by selecting randomly the destination.
-	 * 
-	 * @return Message
-	 */
-	private Message generateRegisterMessage() {
-		Topic t = new Topic("t" + Integer.toString(this.topicCounter++));
-		Message m = Message.makeRegister(t);
-		m.timestamp = CommonState.getTime();
-		
-
-		// existing active destination node
-		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
-
-		return m;
-	}
-	
-	// ______________________________________________________________________________________________
-	/**
-	 * generates a topic lookup message, by selecting randomly the destination and one of previousely registered topic.
-	 * 
-	 * @return Message
-	 */
-	private Message generateTopicLookupMessage() {
-		Topic t = new Topic("t" + Integer.toString(CommonState.r.nextInt(this.topicCounter)));
-		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
-		m.timestamp = CommonState.getTime();
-		
-
-		// existing active destination node
-		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
-		return m;
-	}
-
-	// ______________________________________________________________________________________________
-	/**
 	 * every call of this control generates and send a random find node message
 	 * 
 	 * @return boolean
@@ -120,10 +79,10 @@ public class TrafficGenerator implements Control {
 		} while ((start == null) || (!start.isUp()));
 
 		// send message
-		//Message m = generateFindNodeMessage();
-		Message m = generateRegisterMessage();
-		//System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
-		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_REGISTER for " + ((Topic) m.body).getTopic());
+		Message m = generateFindNodeMessage();
+		//Message m = generateRegisterMessage();
+		System.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_FIND for " + (BigInteger) m.body);
+		//sSystem.out.println(">>>[" + CommonState.getTime() + "] Scheduling new MSG_REGISTER for " + ((Topic) m.body).getTopic());
 
 		EDSimulator.add(0, m, start, pid);
 
