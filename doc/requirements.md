@@ -10,7 +10,7 @@ Note that a single malicious participant can produce multiple fake (Sybil) ident
 
 ## Requirements
 
-* No single registrant gets eclipse when advertising its services (topics). Aka no registrants can be globally denied registrations
+* No single registrant gets eclipsed when advertising its services (topics). Aka no registrants can be globally denied registrations
 
 * No single registrar
 
@@ -20,3 +20,4 @@ Note that a single malicious participant can produce multiple fake (Sybil) ident
 
 * All the registrants within the same topic have the same chance of being discovered. 
 * The number of total registrations per topic is proportional to the popularity of the topic (the number of registrants).
+* Load balance - no node registrar receives significantly more traffic than other (other normal circumstances). 
