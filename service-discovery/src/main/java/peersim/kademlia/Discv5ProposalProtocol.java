@@ -67,13 +67,45 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
 			BigInteger nextNode = lop.getNeighbour();
 			if (nextNode != null) {
-				super.sendMessage(m.copy(), nextNode, myPid);
+				sendMessage(m.copy(), nextNode, myPid);
 				lop.nrHops++;
 			}
 		}
 		
 	}
 
+	/**
+	 * send a message with current transport layer and starting the timeout timer (which is an event) if the message is a request
+	 * 
+	 * @param m
+	 *            the message to send
+	 * @param destId
+	 *            the Id of the destination node
+	 * @param myPid
+	 *            the sender Pid
+	 */
+	public void sendMessage(Message m, BigInteger destId, int myPid) {
+		// add destination to routing table
+		this.routingTable.addNeighbour(destId);
+		
+		Node src = nodeIdtoNode(this.node.getId());
+		Node dest = nodeIdtoNode(destId);
+
+		logger.info("-> (" + m + "/" + m.id + ") " + destId);
+
+		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
+		transport.send(src, dest, m, kademliaid);
+		KademliaObserver.msg_sent.add(1);
+
+		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
+			Timeout t = new Timeout(destId, m.id, m.operationId);
+			long latency = transport.getLatency(src, dest);
+
+			// add to sent msg
+			this.sentMsg.put(m.id, m.timestamp);
+			EDSimulator.add(4 * latency, t, src, myPid); // set delay = 2*RTT
+		}
+	}
 
 	/**
 	 * Start a register opearation.<br>
@@ -121,7 +153,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 				System.err.println("Sending to " + nextNode);
 			}
 			if (nextNode != null) {
-				super.sendMessage(m.copy(), nextNode, myPid);
+				sendMessage(m.copy(), nextNode, myPid);
 				rop.nrHops++;
 			}else {
 				System.err.println("Returned neighbor is NUll !");
@@ -163,7 +195,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		response.src = this.node;
 		response.ackId = m.id; 
 		logger.info(" responds with TOPIC_QUERY_REPLY");
-		super.sendMessage(response, m.src.getId(), myPid);
+		sendMessage(response, m.src.getId(), myPid);
 		
 	}
 	

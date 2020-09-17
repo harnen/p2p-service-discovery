@@ -436,16 +436,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// add destination to routing table
 		this.routingTable.addNeighbour(destId);
 		
-		if(this.node.getId().equals(new BigInteger("41451122193209463269138102959011734520441946334568951533613015137286654629815"))/*&&
-				destId.equals(new BigInteger("40862205785573556484345699940675782616474837643749669542647170998174355758346"))*/) {
-			
-			if(m.type == Message.MSG_REGISTER) {
-				Topic t = (Topic) m.body;
-				System.err.println("For topic " + t.topic);
-				System.err.println(this.node.getId() + " send " + m.messageTypetoString() + " to " + destId + " for topic " + t.topic);
-			}
-		}
-
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
 
@@ -455,7 +445,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		transport.send(src, dest, m, kademliaid);
 		KademliaObserver.msg_sent.add(1);
 
-		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
+		if (m.getType() == Message.MSG_FIND) { // is a request
 			Timeout t = new Timeout(destId, m.id, m.operationId);
 			long latency = transport.getLatency(src, dest);
 
