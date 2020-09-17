@@ -64,7 +64,7 @@ public class Discv5ProposalTopicTable implements TopicTable {
         }else{
             //new topic is further closer/equal distance from the hostID than the furthest one currently in table
             if(t.compareTo(table.lastKey()) >= 0){
-            	System.out.println("The topic is closer than another one - replacing");
+            	//System.out.println("The topic is closer than another one - replacing");
                 table.get(table.lastKey()).remove(0);
                 //if a topic has no more registration - remove it
                 if(table.get(table.lastKey()).size() == 0) table.remove(table.lastKey());
