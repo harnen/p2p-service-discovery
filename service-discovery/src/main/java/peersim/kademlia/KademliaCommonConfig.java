@@ -13,7 +13,7 @@ public class KademliaCommonConfig {
 	public static int NBUCKETS = 256;
 	public static int K = 16; // dimension of k-buckets (default is 5)
 	public static int ALPHA = 3; // number of simultaneous lookup (default is 3)
-	public static int TOPIC_TABLE_CAP = 100; //the number of topics per node we can regiter
+	public static int TOPIC_TABLE_CAP = 10000; //the number of topics per node we can regiter
 	public static int MAXREPLACEMENT = 10; //the number of nodes saved in the replacement list
 	public static int REFRESHTIME = 10*100; //periodic time used to check nodes down in k-buckets
 	public static int MAXCONNECTIONS = 50; //periodic time used to check nodes down in k-buckets

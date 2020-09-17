@@ -66,8 +66,10 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		
 		for(int i=1; i <= topicNum; i++) {
 			int times=zipf.sample();
-			topicList.put(new String("t"+i),new Integer(times));
+			//topicList.put(new String("t"+i),new Integer(times));
+			topicList.put(new String("t"+i),new Integer(i));
 		}
+		//topicList.put(new String("t"+1),new Integer(20));
 		
 		it = topicList.entrySet().iterator();
 
@@ -196,32 +198,36 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		}
 		first = false;*/
 		
-		
-		
-		//System.out.println("Pending registration: " + pendingRegistrations + " lookups: " + pendingLookups);
-		if(pendingRegistrations>0) {
+
+		if(it.hasNext()) {
 			Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>) it.next();
-			System.out.println("Topic " + pair.getKey() + " will be registered " + pair.getValue() + " times");
+			int regNum = pair.getValue();
+			int queryNum = pair.getValue() * 100;
+			System.out.println("Topic " + pair.getKey() + " will be registered " + regNum + " times and queried " + queryNum + " times.");
+			
 			Topic t = new Topic(pair.getKey());
 			System.out.println("Topic hash: " + t.getTopicID());
 			System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
-			for(int i=0;i<pair.getValue();i++) {
+			for(int i=0; i < pair.getValue(); i++) {
 				Message m = generateRegisterMessage(pair.getKey());
 				Node start = getRandomNode();
+				BigInteger nId = ((KademliaProtocol) (start.getProtocol(pid))).node.getId();
+				if(t.topic.equals("t51") &&
+						nId.equals(new BigInteger("41451122193209463269138102959011734520441946334568951533613015137286654629815"))){					
+					System.err.println("Node " + nId + " will register for t51");
+				}
 				if(m != null)
 					EDSimulator.add(0, m, start, pid);
 			}
-			pendingRegistrations--;
-			this.lastRegistered = counter;
-		} else if((pendingLookups > 0) && (counter > (this.lastRegistered + 50)) ) {
-			Message m = generateTopicLookupMessage(new String("t"+pendingLookups));
-			Node start = getRandomNode();
-			if(m != null)
-				EDSimulator.add(0, m, start, pid);
-			pendingLookups--;
+			
+			for(int i=0;i < queryNum; i++) {
+				Message m = generateTopicLookupMessage(new String(pair.getKey()));
+				Node start = getRandomNode();
+				if(m != null)
+					EDSimulator.add(200000, m, start, pid);
+			}
 		}
-		
-		this.counter++;
+
 		
 		return false;
 	}
