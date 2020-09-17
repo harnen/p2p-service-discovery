@@ -33,7 +33,6 @@ public class Discv5ProposalTrafficGenerator implements Control {
 
 	private static Integer topicCounter = 0;
 
-	private ZipfDistribution zipf;
 	/**
 	 * MSPastry Protocol ID to act
 	 */
@@ -53,7 +52,6 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		topicList = new HashMap<String,Integer>();
 		
 		for(int i=1; i <= topicNum; i++) {
-			int times=zipf.sample();
 			//topicList.put(new String("t"+i),new Integer(times));
 			topicList.put(new String("t"+i),new Integer(i));
 		}

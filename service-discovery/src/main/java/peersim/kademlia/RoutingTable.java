@@ -85,6 +85,20 @@ public class RoutingTable implements Cloneable {
 
 		
 	}
+	
+	public BigInteger[] getKClosestNeighbours (final int k) {
+		BigInteger[] result = new BigInteger[k];
+		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
+		int dist=0;
+		while(resultList.size()<k&&dist<256) {
+			resultList.addAll(bucketAtDistance(dist).neighbours);
+			dist++;
+		}
+		
+		return resultList.toArray(result);
+
+	}
+
 
 
 	// ______________________________________________________________________________________________

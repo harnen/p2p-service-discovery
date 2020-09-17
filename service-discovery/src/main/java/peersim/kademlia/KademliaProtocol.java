@@ -307,6 +307,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 						LookupOperation lop = (LookupOperation) fop;
 						int found = lop.discoveredCount();
 						int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
+						logger.warning("Found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
 						if(found != all) { 
 							logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
 							HashSet<BigInteger> tmp = new HashSet<BigInteger>(KademliaObserver.registeredTopics.get(lop.topic.topic));

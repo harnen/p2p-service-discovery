@@ -51,6 +51,10 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	
 		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
+		
+		if(neighbours.length<KademliaCommonConfig.K)
+			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K);
+		
 		lop.elaborateResponse(neighbours);
 		lop.available_requests = KademliaCommonConfig.ALPHA;
 	
@@ -98,6 +102,10 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	
 		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
+		
+		if(neighbours.length<KademliaCommonConfig.K)
+			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K);
+		
 		rop.elaborateResponse(neighbours);
 		rop.available_requests = KademliaCommonConfig.ALPHA;
 	
