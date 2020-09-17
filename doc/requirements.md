@@ -21,3 +21,11 @@ Note that a single malicious participant can produce multiple fake (Sybil) ident
 * All the registrants within the same topic have the same chance of being discovered. 
 * The number of total registrations per topic is proportional to the popularity of the topic (the number of registrants).
 * Load balance - no node registrar receives significantly more traffic than other (other normal circumstances). 
+
+
+### Unclear
+
+* Do we have to discover all the nodes? Also for the most popular topic (i.e., Ethereum mainnet). 
+* Fairness within topic? Across topic? Or only within topic?
+* Size of the network?
+
