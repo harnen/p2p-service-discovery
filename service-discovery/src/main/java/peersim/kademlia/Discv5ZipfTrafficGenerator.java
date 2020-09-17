@@ -21,15 +21,19 @@ import org.apache.commons.math3.distribution.ZipfDistribution;
  */
 
 // ______________________________________________________________________________________________
-public class Discv5ProposalTrafficGenerator implements Control {
+public class Discv5ZipfTrafficGenerator implements Control {
 
 	// ______________________________________________________________________________________________
 	/**
 	 * MSPastry Protocol to act
 	 */
 	private final static String PAR_PROT = "protocol";
+	private final static String PAR_ZIPF = "zipf";
 	private final static String PAR_TOPICNUM = "topicnum";
 	private final static String PAR_FREQ = "maxfreq";
+
+	private boolean first = true;
+	private boolean second = false;
 
 	private static Integer topicCounter = 0;
 
@@ -38,18 +42,26 @@ public class Discv5ProposalTrafficGenerator implements Control {
 	 * MSPastry Protocol ID to act
 	 */
 	private final int pid,topicNum;
-		
+	
+	private final double exp;
+	
+	private int pendingRegistrations,pendingLookups,topicCount;
 	
 	private Map<String,Integer> topicList;
 
 	private Iterator<Entry<String, Integer>> it;
-
+	
+	private int counter = 0;
+	private int lastRegistered = 0;
 	
 	// ______________________________________________________________________________________________
-	public Discv5ProposalTrafficGenerator(String prefix) {
+	public Discv5ZipfTrafficGenerator(String prefix) {
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
+		exp = Configuration.getDouble(prefix + "." + PAR_ZIPF);
 		topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
-
+		zipf = new ZipfDistribution(topicNum,exp);
+		pendingRegistrations = topicNum;
+		pendingLookups = topicNum;
 		topicList = new HashMap<String,Integer>();
 		
 		for(int i=1; i <= topicNum; i++) {
@@ -63,7 +75,41 @@ public class Discv5ProposalTrafficGenerator implements Control {
 
 	}
 
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a random find node message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	private Message generateFindNodeMessage() {
+		// existing active destination node
+		Node n = Network.get(CommonState.r.nextInt(Network.size()));
+		while (!n.isUp()) {
+			n = Network.get(CommonState.r.nextInt(Network.size()));
+		}
+		BigInteger dst = ((KademliaProtocol) (n.getProtocol(pid))).node.getId();
 
+		Message m = Message.makeInitFindNode(dst);
+		m.timestamp = CommonState.getTime();
+
+		return m;
+	}
+
+
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a register message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	private Message generateRegisterMessage() {
+		Topic t = new Topic("t" + Integer.toString(this.topicCounter++));
+		Message m = Message.makeRegister(t);
+		m.timestamp = CommonState.getTime();
+
+		return m;
+	}
+	
 	// ______________________________________________________________________________________________
 	/**
 	 * generates a register message, by selecting randomly the destination.
@@ -78,6 +124,25 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		return m;
 	}
 	
+	
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a topic lookup message, by selecting randomly the destination and one of previousely registered topic.
+	 * 
+	 * @return Message
+	 */
+	private Message generateTopicLookupMessage() {
+		Topic t = new Topic("t" + Integer.toString(CommonState.r.nextInt(this.topicCounter)));
+		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
+		m.timestamp = CommonState.getTime();
+
+		// existing active destination node
+		Node n = Network.get(CommonState.r.nextInt(Network.size()));
+		while (!n.isUp()) {
+			n = Network.get(CommonState.r.nextInt(Network.size()));
+		}
+		return m;
+	}
 	
 	// ______________________________________________________________________________________________
 	/**
@@ -128,44 +193,40 @@ public class Discv5ProposalTrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
-		/*if(!first){
-			return false;
-		}
-		first = false;*/
-		
 
-		if(it.hasNext()) {
+
+		
+		if(pendingRegistrations>0) {
 			Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>) it.next();
-			int regNum = pair.getValue();
-			int queryNum = pair.getValue() * 100;
-			System.out.println("Topic " + pair.getKey() + " will be registered " + regNum + " times and queried " + queryNum + " times.");
-			
+			System.out.println("Topic " + pair.getKey() + " will be registered " + pair.getValue() + " times");
 			Topic t = new Topic(pair.getKey());
 			System.out.println("Topic hash: " + t.getTopicID());
 			System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
-			for(int i=0; i < pair.getValue(); i++) {
+			for(int i=0;i<pair.getValue();i++) {
 				Message m = generateRegisterMessage(pair.getKey());
 				Node start = getRandomNode();
-				BigInteger nId = ((KademliaProtocol) (start.getProtocol(pid))).node.getId();
-				if(t.topic.equals("t51") &&
-						nId.equals(new BigInteger("41451122193209463269138102959011734520441946334568951533613015137286654629815"))){					
-					System.err.println("Node " + nId + " will register for t51");
-				}
 				if(m != null)
 					EDSimulator.add(0, m, start, pid);
 			}
-			
-			for(int i=0;i < queryNum; i++) {
-				Message m = generateTopicLookupMessage(new String(pair.getKey()));
-				Node start = getRandomNode();
-				if(m != null)
-					EDSimulator.add(200000, m, start, pid);
-			}
+			pendingRegistrations--;
+			this.lastRegistered = counter;
+		} else if((pendingLookups > 0) && (counter > (this.lastRegistered + 50)) ) {
+			Message m = generateTopicLookupMessage(new String("t"+pendingLookups));
+			Node start = getRandomNode();
+			if(m != null)
+				EDSimulator.add(0, m, start, pid);
+			pendingLookups--;
 		}
-
+		
+		this.counter++;
 		
 		return false;
+		
 	}
+		
+
+	
+
 
 	// ______________________________________________________________________________________________
 
