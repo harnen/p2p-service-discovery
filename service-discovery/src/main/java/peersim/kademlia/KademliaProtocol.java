@@ -20,8 +20,12 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
+import com.sun.tools.sjavac.Log;
+
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -189,6 +193,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 *            the sender Pid
 	 */
 	protected void find(Message m, int myPid) {
+		
 		// add message source to my routing table
 		Operation fop = (Operation)	 this.operations.get(m.operationId);
 		if (m.src != null) {
@@ -210,6 +215,22 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		}else {
 			neighbours = (BigInteger[]) m.body;
 		}
+		
+		
+		/*if(this.node.getId().equals(new BigInteger("19745047102682313528711879736590176702726478189629936250926893727724068161114")) &&
+				m.src.getId().equals(new BigInteger("40862205785573556484345699940675782616474837643749669542647170998174355758346"))) {
+			if(m.getType() == Message.MSG_TOPIC_QUERY_REPLY &&
+					((Message.TopicLookupBody) m.body).registrations.length > 0 &&
+					((Message.TopicLookupBody) m.body).registrations[0].getTopic().topic.equals("t51")) {
+				LookupOperation lop = (LookupOperation) fop;
+				String topic = ((Message.TopicLookupBody) m.body).registrations[0].getTopic().topic;
+				System.err.println(this.node.getId() + " received " + m.messageTypetoString() + " from " + m.src.getId() + " for " + topic + " length " + ((Message.TopicLookupBody) m.body).registrations.length);
+				for(int i = 0; i < ((Message.TopicLookupBody) m.body).registrations.length; i++) {
+					TopicRegistration registration = ((Message.TopicLookupBody) m.body).registrations[i];
+					System.err.println(registration.getNode().getId());
+				}
+			}
+		}*/
 		
 		//System.out.println("find node response at "+this.node.getId()+" "+neighbours.length); 
 
@@ -286,10 +307,16 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 						LookupOperation lop = (LookupOperation) fop;
 						int found = lop.discoveredCount();
 						int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
-						logger.warning("found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
-						logger.info("On:");
-						for(BigInteger id: lop.discovered) {
-							logger.info(id + ", ");
+						logger.warning("Found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+						if(found != all) { 
+							logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+							HashSet<BigInteger> tmp = new HashSet<BigInteger>(KademliaObserver.registeredTopics.get(lop.topic.topic));
+							tmp.removeAll(lop.discovered);
+							logger.warning("Missing nodes:");
+							for(BigInteger id: tmp) {
+								logger.warning(id + ", ");
+							}
+							System.exit(-1);
 						}
 						KademliaObserver.register_total.add(all);
 						KademliaObserver.register_ok.add(found);
@@ -408,7 +435,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void sendMessage(Message m, BigInteger destId, int myPid) {
 		// add destination to routing table
 		this.routingTable.addNeighbour(destId);
-
+		
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
 
@@ -418,7 +445,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		transport.send(src, dest, m, kademliaid);
 		KademliaObserver.msg_sent.add(1);
 
-		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
+		if (m.getType() == Message.MSG_FIND) { // is a request
 			Timeout t = new Timeout(destId, m.id, m.operationId);
 			long latency = transport.getLatency(src, dest);
 

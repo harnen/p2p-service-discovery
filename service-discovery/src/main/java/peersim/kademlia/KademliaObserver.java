@@ -227,8 +227,11 @@ public class KademliaObserver implements Control {
 			writer.write("host,topic,registrant\n");
 			for(int i = 0; i < Network.size(); i++) {
 				Node node = Network.get(i);
-				String registrations = ((Discv5ProposalProtocol) (node.getProtocol(pid))).topicTable.dumpRegistrations();
-				writer.write(registrations);
+				KademliaProtocol kad = (KademliaProtocol)node.getProtocol(pid);
+				if(kad instanceof Discv5ProposalProtocol) {
+					String registrations = ((Discv5ProposalProtocol) kad).topicTable.dumpRegistrations();
+					writer.write(registrations);
+				}
 			}
 			writer.close();
 		} catch (IOException e) {
