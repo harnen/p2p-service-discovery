@@ -10,9 +10,7 @@ Note that a single malicious participant can produce multiple fake (Sybil) ident
 
 ## Requirements
 
-* No single registrant gets eclipsed when advertising its services (topics). Aka no registrants can be globally denied registrations
-
-* No single registrar
+* No single registrant gets eclipsed when advertising its services (topics). Aka no registrants can be globally denied registrations.
 
 * User querying for certain topic discover the majority (all?) registrants within a bounded amount of time.
 
