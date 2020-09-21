@@ -40,6 +40,10 @@ The project is organised in three main milestones of the project together with t
 
 [Requirements](doc/requirements.md)
 
+## Security Analysis
+
+[Security](doc/security.md)
+
 ## Service Discovery Simulator
 
 Our service discovery simulator for Ethereum 2.0, included in this repository, is based on an existing P2P simulator, [PeerSim P2P Simulator](http://peersim.sourceforge.net/). We extended PeerSim to adapt to the current Ethereum DHT implementation and we added the implementation of our  [service discovery proposition](#service-discovery-proposition), along with other ones for comparison purposes.
