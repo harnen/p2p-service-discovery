@@ -35,6 +35,10 @@ The project is organised in three main milestones of the project together with t
   * [ ] Task 8: Evaluation of performance: Investigate the effectiveness of the proposed ex- tensions under heavy presence of malicious nodes and make necessary changes to optimise the performance.
   * Deliverables: New Sybil-resistant service discovery analysis, performance evaluation and final version of the specification. Deadline: 30th November 2020.
   
+  
+## Service Discovery Requirements
+
+[Requirements](doc/requirements.md)
 
 ## Service Discovery Simulator
 
