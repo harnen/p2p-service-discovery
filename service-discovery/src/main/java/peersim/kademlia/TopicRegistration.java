@@ -18,10 +18,16 @@ public class TopicRegistration implements Comparable<TopicRegistration>{
         this.timestamp = CommonState.getTime();
     }
     
-public TopicRegistration(KademliaNode node, Topic topic) {
+    public TopicRegistration(KademliaNode node, Topic topic) {
         this.node = node;
         this.topic = topic;
         this.timestamp = CommonState.getTime();
+    }
+    
+    public TopicRegistration(KademliaNode node, Topic topic, long curr_time) {
+        this.node = node;
+        this.topic = topic;
+        this.timestamp = curr_time;
     }
 
     public TopicRegistration(TopicRegistration r) {

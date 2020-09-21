@@ -1,6 +1,6 @@
 package peersim.kademlia;
 
-public class Ticket {
+public class Ticket implements Comparable<Ticket> {
 
     // waiting time assigned when ticket was created
 	private long wait_time;
@@ -24,22 +24,38 @@ public class Ticket {
     // Success or failure 
     private boolean isRegistrationComplete;
 
-    public Ticket(Topic topic, long req_time, long wait_time) {
-        this.topic = topic;
-        this.req_time = req_time;
-        this.wait_time = wait_time;
-        this.cum_wait = wait_time;
-        this.isRegistrationComplete = false;
-    }
+    // rtt delay from source (advertiser) to destination (advertisement medium)
+    private long rtt_delay;
 
-    public Ticket(Topic topic, long req_time, long wait_time, KademliaNode src) {
+    // Message that registered the ticket
+    Message m;
+
+    public Ticket(Topic topic, long req_time, long wait_time, KademliaNode src, long delay) {
         this.topic = topic;
         this.req_time = req_time;
         this.wait_time = wait_time;
         this.cum_wait = wait_time;
         this.src = src;
         this.isRegistrationComplete = false;
+        this.rtt_delay = delay;
     }
+
+    public void setMsg(Message m) {
+        this.m = m;
+    }
+
+    public Message getMsg() {
+        return this.m;
+    }
+
+    public KademliaNode getSrc() {
+        return this.src;
+    }
+
+    public void updateWaitingTime(long delay) {
+        this.wait_time = delay;
+        this.cum_wait += delay;
+    } 
     
     public Topic getTopic() {
     	return topic;
@@ -47,6 +63,14 @@ public class Ticket {
     
     public void setTopic() {
     	this.topic = topic;
+    }
+
+    public void setRTT(long delay) {
+        this.rtt_delay = delay;
+    }
+
+    public long getRTT() {
+        return this.rtt_delay;
     }
     
     public long getWaitTime() {
@@ -88,5 +112,35 @@ public class Ticket {
     public boolean isRegistrationComplete() {
     	return isRegistrationComplete;
     }
+
+    @Override
+    public int compareTo(Ticket other) {
+        int result = (int) (this.getCumWaitTime() - other.getCumWaitTime());
+        result = -1*result; 
+
+        return result;
+    }
+
     
+    @Override
+    public boolean equals(Object o) { 
+
+        // If the object is compared with itself then return true   
+        if (o == this) { 
+            return true; 
+        } 
+  
+        /* Check if o is an instance of Complex or not 
+          "null instanceof [type]" also returns false */
+        if (!(o instanceof Ticket)) { 
+            return false; 
+        } 
+          
+        // typecast o to Complex so that we can compare data members  
+        Ticket r = (Ticket) o; 
+          
+        if(this.src == r.src) return true;
+        return false;
+    } 
+
 }

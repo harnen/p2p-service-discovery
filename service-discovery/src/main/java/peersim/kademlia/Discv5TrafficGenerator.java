@@ -45,6 +45,20 @@ public class Discv5TrafficGenerator implements Control {
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
 
 	}
+	
+    // ______________________________________________________________________________________________
+	/**
+	 * generates a register message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+    private Message generateTopicLookupMessage() {
+		Topic t = new Topic("t" + Integer.toString(CommonState.r.nextInt(this.topicCounter)));
+		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
+		m.timestamp = CommonState.getTime();
+		
+		return m;
+    }
 
 	// ______________________________________________________________________________________________
 	/**
@@ -58,13 +72,6 @@ public class Discv5TrafficGenerator implements Control {
 		m.timestamp = CommonState.getTime();
 		//System.out.println("Topic id "+topic.topicID);
 		
-		// existing active destination node
-		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
-		//m.dest = ((Discv5Protocol) (n.getProtocol(pid))).node.getId();
-
 		return m;
 	}
 
@@ -86,8 +93,14 @@ public class Discv5TrafficGenerator implements Control {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
 		} while ((start == null) || (!start.isUp()));
 
-		// send message
+		// send register message
 		EDSimulator.add(0, generateRegisterMessage(), start, pid);
+		
+		// send topic lookup message
+        do {
+			start = Network.get(CommonState.r.nextInt(Network.size()));
+		} while ((start == null) || (!start.isUp()));
+        EDSimulator.add(1, generateTopicLookupMessage(), start, pid);
 
 		return false;
 	}

@@ -14,7 +14,12 @@ public class Timeout extends SimpleEvent {
 	 * Message Type: PING (used to verify that a node is still alive)
 	 */
 	public static final int TIMEOUT = 100;
-
+	
+    /**
+	 * Message Type: Time waiting for new tickets have expired (used by ticket-based topic table to choose the next advert to register among the submitted tickets for a topic)
+	 */
+	public static final int TICKET_TIMEOUT = 101;
+	
 	/**
 	 * The node wich failed to response
 	 */
@@ -30,6 +35,11 @@ public class Timeout extends SimpleEvent {
 	 */
 	public long opID;
 
+    /**
+     * The topic for which a ticket has been expired
+     */
+    public Topic topic;
+
 	// ______________________________________________________________________________________________
 	/**
 	 * Creates an empty message by using default values (message type = MSG_LOOKUP and <code>new String("")</code> value for the
@@ -41,4 +51,14 @@ public class Timeout extends SimpleEvent {
 		this.msgID = msgID;
 		this.opID = opID;
 	}
+	
+    /**
+	 * Creates an empty message by using default values (message type = MSG_LOOKUP and <code>new String("")</code> value for the
+	 * body of the message)
+	 */
+    public Timeout(Topic topic) {
+        super(TICKET_TIMEOUT);
+        this.topic = topic;
+
+    }
 }

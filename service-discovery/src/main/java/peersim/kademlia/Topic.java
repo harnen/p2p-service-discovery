@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 public class Topic implements Comparable<Topic> {
     // ID of the node storing the topic - this is used to enable sorted collections,
     // priority queues etc.
+    // FIXME: do we need this hostID attribute in Topic - the TopicRegistration has that
     protected BigInteger hostID;
     protected BigInteger topicID;
     protected String topic;
