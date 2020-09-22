@@ -135,11 +135,16 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         Ticket [] tickets = this.topicTable.makeRegisterDecisionForTopic(topic, curr_time);
         
         for (Ticket ticket : tickets) {
-            Message response  = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
             Message m = ticket.getMsg();
-            response.ackId = m.id;
-            response.operationId = m.operationId;
-            sendMessage(response, ticket.getSrc().getId(), myPid);
+            if (ticket.isRegistrationComplete())
+                handleFind(m, myPid, Util.logDistance(ticket.getTopic().getTopicID(), this.node.getId()));
+            else {
+                Message response  = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
+                response.ackId = m.id;
+                response.operationId = m.operationId;
+                sendMessage(response, ticket.getSrc().getId(), myPid);
+            }
+            
         }
     }
     /**
@@ -147,28 +152,9 @@ public class Discv5TicketProtocol extends KademliaProtocol {
      *
      */
     private void handleRegister(Message m, int myPid) {
-		//System.out.println("Register received: " + m);
 		Ticket ticket = (Ticket) m.body;
-        //TopicRegistration reg = new TopicRegistration(src, ticket.getTopic()); 
-        //System.out.println("Register "+ticket.getTopic().getTopic());
         topicTable.register_ticket(ticket, m);
-        /*
-        if (ret == false) {
-            ticket.setWaitTime(reg.getTimestamp());
-            ticket.setCumWaitTime(reg.getTimestamp());
-            ticket.setRegistrationComplete(false);
-        }
-        else {
-        	ticket.setWaitTime(0);
-        	ticket.setRegistrationComplete(true);
-        	ticket.setRegTime(CommonState.getTime());
-        }
-
-        Message response = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
-		response.ackId = m.id; // set ACK number
-        response.operationId = m.operationId;
-        sendMessage(response, m.src.getId(), myPid);
-        */
+		
     }
 	
 	/**
@@ -191,7 +177,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		response.operationId = m.operationId;
 		response.src = this.node;
 		response.ackId = m.id; 
-		logger.warning(" responds with TOPIC_QUERY_REPLY");
+		logger.info(" responds with TOPIC_QUERY_REPLY");
 		sendMessage(response, m.src.getId(), myPid);
     
     }
@@ -262,35 +248,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
         }
         else {
-            //System.out.println("Successful Registration of topic: " + ticket.topic + " at node: " + m.src.toString());
-		    KademliaObserver.register_ok.add(1);
-            long curr_time = CommonState.getTime();
-			//System.out.println("Adjusting topic radius with time for destination: " + this.fop.destNode.toString() + " wait time: " + ticket.cum_wait);
-            RegisterOperation rop = (RegisterOperation) this.operations.get(m.operationId);
-            this.topicRadius.adjustWithTicket(curr_time, rop.destNode, ticket.getReqTime() + ticket.getCumWaitTime(), ticket.getReqTime());
-			
-            BigInteger targetAddr = topicRadius.nextTarget(false).getAddress();
-            // Lookup the target address in the routing table
-            //BigInteger [] neighbours = this.routingTable.getNeighbours(targetAddr, this.kademliaNode.getId());
-        	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.node.getId()));
-        
-            rop.destNode = targetAddr;
-            rop.setTimestamp(curr_time);
-            rop.elaborateResponse(neighbours); 
-            BigInteger dest = rop.getNeighbour();
-
-            // Schedule a ticket request message to be sent immediately
-            
-            if (dest == null) {
-            	System.out.println("Neighbors: " + Arrays.toString(neighbours));
-                System.out.println("Error: destination is null at time: " + CommonState.getTime());
-                return;
-            }
-            System.out.println("Next target address: " + dest);
-
-            Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, topic);
-            ticket_request.operationId = rop.operationId;
-            scheduleSendMessage(ticket_request, dest, myPid, 0); 
+            System.out.println("This should not happen!");
         }
     }
 
@@ -312,30 +270,35 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		
         KademliaObserver.addTopicRegistration(t.getTopic(), this.node.getId());
 
-        this.topicRadius = new TopicRadius(t);
-
-        BigInteger targetAddr = topicRadius.nextTarget(false).getAddress();
-        
         // Lookup the target address in the routing table
-    	BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(targetAddr, this.node.getId()));
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
 
         //System.out.println("Neighbors: " + Arrays.toString(neighbours));
         //System.out.println("My id is: " + this.kademliaNode.getId().toString());
         //System.out.println("Target id is: " + targetAddr.toString());
 
-        RegisterOperation rop = new RegisterOperation(m.timestamp, t, targetAddr);
-		operations.put(rop.operationId, rop);
-        System.out.println("Register OperationId is put:" + rop.operationId);
-        rop.elaborateResponse(neighbours); 
+        TicketOperation top = new TicketOperation(m.timestamp, t);
+		top.body = m.body;
+		operations.put(top.operationId, top);
+        top.elaborateResponse(neighbours); 
+		top.available_requests = KademliaCommonConfig.ALPHA;
+		
+        // set message operation id
+		m.operationId = top.operationId;
+		m.type = Message.MSG_TICKET_REQUEST;
+		m.src = this.node;
 
 		// send ALPHA messages
-		for (int i = 0; i < 1 /*KademliaCommonConfig.ALPHA*/; i++) {
-			BigInteger nextNode = rop.getNeighbour();
+		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
+			BigInteger nextNode = top.getNeighbour();
 			if (nextNode != null) {
-                Message ticket_request = new Message(Message.MSG_TICKET_REQUEST, t);
-		        ticket_request.operationId = rop.operationId;
+                Message ticket_request = m.copy();
                 scheduleSendMessage(ticket_request, nextNode, myPid, 0); 
-				// rop.nrHops++; FIXME: what is the point of this?
+				top.nrHops++; //FIXME: what is the point of this?
+			}
+			else {
+				System.err.println("Returned neighbor is NUll !");
+				//System.exit(-1);
 			}
 		}
     }
@@ -357,7 +320,6 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         LookupOperation lop = new LookupOperation(m.timestamp, t);
 		lop.body = m.body;
 		operations.put(lop.operationId, lop);
-        System.out.println("Lookup OperationId is put:" + lop.operationId);
 	
 		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));

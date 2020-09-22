@@ -287,6 +287,13 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 							request.src = this.node;
 							request.body = fop.body;
 						}
+						else if(fop.type == Message.MSG_TICKET_REQUEST) {
+							request = new Message(Message.MSG_TICKET_REQUEST);
+							request.operationId = fop.operationId;
+							request.type = Message.MSG_TICKET_REQUEST;
+							request.src = this.node;
+							request.body = fop.body;
+						}
 
 						
 						if(request != null) {
