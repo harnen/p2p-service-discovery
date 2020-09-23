@@ -14,7 +14,7 @@ import peersim.kademlia.Operation;
 public class RegisterOperation extends Operation{
 
 	private Topic topic;
-	private TopicRegistration registration;
+	private TopicRegistration registration; //FIXME: is this variable used?
 
 
 	/**

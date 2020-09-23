@@ -55,6 +55,7 @@ public class Ticket implements Comparable<Ticket> {
     public void updateWaitingTime(long delay) {
         this.wait_time = delay;
         this.cum_wait += delay;
+        this.cum_wait += this.rtt_delay + KademliaCommonConfig.ONE_UNIT_OF_TIME;
     } 
     
     public Topic getTopic() {
@@ -130,7 +131,7 @@ public class Ticket implements Comparable<Ticket> {
             return true; 
         } 
   
-        /* Check if o is an instance of Complex or not 
+        /* Check if o is an instance of Ticket or not 
           "null instanceof [type]" also returns false */
         if (!(o instanceof Ticket)) { 
             return false; 

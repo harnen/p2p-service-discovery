@@ -63,6 +63,7 @@ public class Topic implements Comparable<Topic> {
 
     public int compareTo(Topic t){
         assert this.hostID == t.hostID : "Comparing topics with different hostID";
+
         return Util.distance(this.hostID, this.topicID).compareTo(Util.distance(t.hostID, t.topicID));
     }
 
@@ -90,5 +91,27 @@ public class Topic implements Comparable<Topic> {
     public int hashCode()
     {
         return this.topic.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) { 
+        // If the object is compared with itself then return true   
+        if (o == this) { 
+            return true; 
+        } 
+        
+        /* Check if o is an instance of Topic or not 
+          "null instanceof [type]" also returns false */
+        if (!(o instanceof Topic)) { 
+            return false; 
+        } 
+        
+        // typecast o to Complex so that we can compare data members  
+        Topic r = (Topic) o; 
+         
+        if ((this.hostID == r.hostID) && (this.getTopic() == r.getTopic()))
+            return true;
+
+        return false;
     }
 }

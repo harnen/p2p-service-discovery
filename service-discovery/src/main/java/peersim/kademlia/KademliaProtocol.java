@@ -203,7 +203,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		BigInteger[] neighbours;
 		if(m.getType() == Message.MSG_TOPIC_QUERY_REPLY) {
 			LookupOperation lop = (LookupOperation) fop;
-			logger.info("Received " + ((Message.TopicLookupBody) m.body).registrations.length  +  " registrations from" + m.src.getId());
+			//logger.warning("Received " + ((Message.TopicLookupBody) m.body).registrations.length  +  " registrations from " + m.src.getId() + " for topic: " + lop.topic.getTopic() );
 			
 			for(int i = 0; i < ((Message.TopicLookupBody) m.body).registrations.length; i++) {
 				TopicRegistration registration = ((Message.TopicLookupBody) m.body).registrations[i];
@@ -343,12 +343,13 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 				} else { // no neighbour available but exists oustanding request to wait
 					//logger.warning("else");
+                    //System.out.println("Neighbor: " + neighbour + " available requests: " + fop.available_requests + " out of " + KademliaCommonConfig.ALPHA);
 					//node.setLookupResult(fop.getNeighboursList());
 					return;
 				}
 			}
 		} else {
-			System.err.println("Can't with operation " + m.operationId);
+			System.err.println("Can't find operation " + m.operationId);
 			System.exit(-1);
 		}
 	}

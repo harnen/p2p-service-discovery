@@ -89,6 +89,8 @@ public class KademliaObserver implements Control {
 	/** Prefix to be printed in output */
 	private String prefix;
 
+    private static KademliaProtocol kadProtocol;
+
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
@@ -128,32 +130,60 @@ public class KademliaObserver implements Control {
 	}
 	
 	public static void reportMsg(Message m, boolean sent) {
-		try {
-			String result = "";
-			if(m.src == null) return; //ignore init messages
-			result += m.id + "," + m.getType() +"," + m.src.getId() + "," + m.dest.getId() + ",";
-			if(m.getType() == Message.MSG_REGISTER ||
-			   m.getType() == Message.MSG_TOPIC_QUERY) {
-				result += ((Topic) m.body).topic +"," ;
-			}else {
-				result += ",";
-			}
-			if(sent) {
-				result += "sent\n";
-			}
-			else {
-				result += "received\n";
-			}
-			msgWriter.write(result);
-			msgWriter.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
-	
 
+        if (kadProtocol instanceof Discv5ProposalProtocol) {
+		    try {
+			    String result = "";
+    			if(m.src == null) return; //ignore init messages
+	    		result += m.id + "," + m.getType() +"," + m.src.getId() + "," + m.dest.getId() + ",";
+		    	if(m.getType() == Message.MSG_REGISTER ||
+			       m.getType() == Message.MSG_TOPIC_QUERY) {
+				    result += ((Topic) m.body).topic +"," ;
+    			}else {
+	    			result += ",";
+    			}
+    			if(sent) {
+	    			result += "sent\n";
+		    	}
+			    else {
+				    result += "received\n";
+    			}
+	    		msgWriter.write(result);
+		    	msgWriter.flush();
+    		} catch (IOException e) {
+	    		// TODO Auto-generated catch block
+		    	e.printStackTrace();
+		    }
+		
+	    }else if (kadProtocol instanceof Discv5TicketProtocol) {
+		    try {
+			    String result = "";
+    			if(m.src == null) return; //ignore init messages
+	    		result += m.id + "," + m.getType() +"," + m.src.getId() + "," + m.dest.getId() + ",";
+		    	if(m.getType() == Message.MSG_TOPIC_QUERY) {
+				    result += ((Topic) m.body).topic +"," ;
+                }
+                else if(m.getType() == Message.MSG_REGISTER) {
+                    result += ((Ticket) m.body).getTopic() + ",";
+    			}else {
+	    			result += ",";
+    			}
+    			if(sent) {
+	    			result += "sent\n";
+		    	}
+			    else {
+				    result += "received\n";
+    			}
+	    		msgWriter.write(result);
+		    	msgWriter.flush();
+    		} catch (IOException e) {
+	    		// TODO Auto-generated catch block
+		    	e.printStackTrace();
+		    }
+
+        }
+	
+    }
 	/**
 	 * print the statistical snapshot of the current situation
 	 * 
@@ -227,9 +257,13 @@ public class KademliaObserver implements Control {
 			writer.write("host,topic,registrant\n");
 			for(int i = 0; i < Network.size(); i++) {
 				Node node = Network.get(i);
-				KademliaProtocol kad = (KademliaProtocol)node.getProtocol(pid);
-				if(kad instanceof Discv5ProposalProtocol) {
-					String registrations = ((Discv5ProposalProtocol) kad).topicTable.dumpRegistrations();
+				kadProtocol = (KademliaProtocol)node.getProtocol(pid);
+				if(kadProtocol instanceof Discv5ProposalProtocol) {
+					String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
+					writer.write(registrations);
+				}
+				if(kadProtocol instanceof Discv5TicketProtocol) {
+					String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
 					writer.write(registrations);
 				}
 			}
