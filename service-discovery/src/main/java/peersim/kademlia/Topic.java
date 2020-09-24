@@ -108,9 +108,15 @@ public class Topic implements Comparable<Topic> {
         
         // typecast o to Complex so that we can compare data members  
         Topic r = (Topic) o; 
-         
-        if ((this.hostID == r.hostID) && (this.getTopic() == r.getTopic()))
-            return true;
+        
+        //if ((this.hostID == r.hostID) && (this.getTopic() == r.getTopic()))
+        if(this.hostID==null) {
+        	if(this.getTopic().equals(r.getTopic()))
+        		return true;
+        } else {
+        	if ((this.hostID.compareTo(r.hostID) == 0) && (this.getTopic().equals(r.getTopic())))
+        			return true;
+        }
 
         return false;
     }

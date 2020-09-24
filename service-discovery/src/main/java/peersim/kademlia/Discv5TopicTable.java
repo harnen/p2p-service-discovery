@@ -106,8 +106,8 @@ public class Discv5TopicTable { // implements TopicTable {
     
     public void register_ticket(Ticket ticket, Message m) {
         Topic ti = ticket.getTopic();
-        Topic topic = new Topic(ti);
-        topic.setHostID(this.hostID);
+        Topic topic = new Topic(ti.topic);
+        //topic.setHostID(this.hostID);
 
         ticket.setMsg(m);
         ArrayList<Ticket> ticketList = competingTickets.get(topic);
@@ -135,8 +135,8 @@ public class Discv5TopicTable { // implements TopicTable {
     }
     
     public Ticket [] makeRegisterDecisionForTopic(Topic ti, long curr_time) {   
-        Topic topic = new Topic(ti);
-        topic.setHostID(this.hostID);
+        Topic topic = new Topic(ti.topic);
+        //topic.setHostID(this.hostID);
         
         ArrayList<Ticket> ticketList = competingTickets.get(topic);
         if (ticketList == null) {
@@ -211,8 +211,8 @@ public class Discv5TopicTable { // implements TopicTable {
     }
 
     public Ticket getTicket(Topic t, KademliaNode advertiser, long rtt_delay, long curr_time) {
-        Topic topic = new Topic(t);
-        topic.setHostID(this.hostID);
+        Topic topic = new Topic(t.topic);
+        //topic.setHostID(this.hostID);
         // System.out.println("Get ticket "+topic.getTopic());
         TopicRegistration reg = new TopicRegistration(advertiser, topic, curr_time);
 
@@ -242,8 +242,8 @@ public class Discv5TopicTable { // implements TopicTable {
     }
 
     public TopicRegistration[] getRegistration(Topic t){
-        Topic topic = new Topic(t);
-        topic.setHostID(this.hostID);
+        Topic topic = new Topic(t.topic);
+        //topic.setHostID(this.hostID);
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
 
         if (topicQ == null) {
