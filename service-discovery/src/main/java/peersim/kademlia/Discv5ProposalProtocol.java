@@ -42,91 +42,94 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	}
 	
 	
-protected void handleTopicQueryReply(Message m, int myPid) {
+	protected void handleTopicQueryReply(Message m, int myPid) {
 		
 		LookupOperation lop = (LookupOperation) this.operations.get(m.operationId);
 		if (m.src != null) {
 			routingTable.addNeighbour(m.src.getId());
 			failures.replace(m.src.getId(), 0);
 		}
+		
+		if (lop == null) {
+			return;
+		}
+		System.out.println("Handle topic query reply");
 		BigInteger[] neighbours;
+		
+		System.out.println("Received " + ((Message.TopicLookupBody) m.body).registrations.length + " registrations");
+		System.out.println("Total count " + lop.discoveredCount());
+		System.out.println("Remaining requests " + lop.available_requests);
+		
 		for(int i = 0; i < ((Message.TopicLookupBody) m.body).registrations.length; i++) {
 			TopicRegistration registration = ((Message.TopicLookupBody) m.body).registrations[i];
 			lop.addDiscovered(registration.getNode().getId());
 		}
-			
-			
+		
 		neighbours = ((Message.TopicLookupBody) m.body).neighbours;
 				
+		// save received neighbour in the closest Set of fin operation
+		try {
+			lop.elaborateResponse(neighbours);
+			for(BigInteger neighbour: neighbours)
+				routingTable.addNeighbour(neighbour);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		lop.available_requests++;
+		if(!lop.finished && Arrays.asList(neighbours).contains(lop.destNode)){
+			logger.warning("Found node " + lop.destNode);
+			lop.finished = true;
+			node.setLookupResult(lop.getNeighboursList());
+			KademliaObserver.find_ok.add(1);
+			return;
+		}
 
-		if (lop != null) {
-			// save received neighbour in the closest Set of fin operation
-			try {
-				lop.elaborateResponse(neighbours);
-				for(BigInteger neighbour: neighbours)
-					routingTable.addNeighbour(neighbour);
-			} catch (Exception ex) {
-				lop.available_requests++;
-			}
-			if(!lop.finished && Arrays.asList(neighbours).contains(lop.destNode)){
-				logger.warning("Found node " + lop.destNode);
-				lop.finished = true;
+		while ((lop.available_requests > 0)) { // I can send a new find request
+			// get an available neighbour
+			BigInteger neighbour = lop.getNeighbour();
+
+			if (neighbour != null && lop.discoveredCount() < KademliaCommonConfig.TOPIC_PEER_LIMIT) {
+				// send a new request only if we didn't find the node already
+				if(!lop.finished){
+					Message request = new Message(Message.MSG_REGISTER);
+					request.operationId = lop.operationId;
+					request.type = Message.MSG_TOPIC_QUERY;
+					request.src = this.node;
+					request.body = lop.body;
+
+					if(request != null) {
+						lop.nrHops++;
+						sendMessage(request, neighbour, myPid);
+					}
+				}
+
+					
+			} else if (lop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
+				// search operation finished
+				operations.remove(lop.operationId);
+					
+				int found = lop.discoveredCount();
+				int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
+				System.out.println("Found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+				if(found != all) { 
+					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+					HashSet<BigInteger> tmp = new HashSet<BigInteger>(KademliaObserver.registeredTopics.get(lop.topic.topic));
+					tmp.removeAll(lop.discovered);
+					logger.warning("Missing nodes:");
+					for(BigInteger id: tmp) {
+						logger.warning(id + ", ");
+					}
+					System.exit(-1);
+				}
+				KademliaObserver.register_total.add(all);
+				KademliaObserver.register_ok.add(found);
+									
 				node.setLookupResult(lop.getNeighboursList());
-				KademliaObserver.find_ok.add(1);
+				return;
+			} else { // no neighbour available but exists oustanding request to wait
 				return;
 			}
-
-			while ((lop.available_requests > 0)) { // I can send a new find request
-
-				// get an available neighbour
-				BigInteger neighbour = lop.getNeighbour();
-
-				if (neighbour != null && lop.discoveredCount() < KademliaCommonConfig.TOPIC_PEER_LIMIT) {
-					// send a new request only if we didn't find the node already
-					if(!lop.finished){
-						Message request = new Message(Message.MSG_REGISTER);
-						request.operationId = lop.operationId;
-						request.type = Message.MSG_TOPIC_QUERY;
-						request.src = this.node;
-						request.body = lop.body;
-
-						if(request != null) {
-							lop.nrHops++;
-							sendMessage(request, neighbour, myPid);
-						}
-					}
-
-					
-				} else if (lop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
-					// search operation finished
-					operations.remove(lop.operationId);
-					
-					int found = lop.discoveredCount();
-					int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
-					logger.warning("Found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
-					if(found != all) { 
-						logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
-						HashSet<BigInteger> tmp = new HashSet<BigInteger>(KademliaObserver.registeredTopics.get(lop.topic.topic));
-						tmp.removeAll(lop.discovered);
-						logger.warning("Missing nodes:");
-						for(BigInteger id: tmp) {
-							logger.warning(id + ", ");
-						}
-						System.exit(-1);
-					}
-					KademliaObserver.register_total.add(all);
-					KademliaObserver.register_ok.add(found);
-									
-					node.setLookupResult(lop.getNeighboursList());
-					return;
-				} else { // no neighbour available but exists oustanding request to wait
-					return;
-				}
-			}
-		
-		} else {
-			System.err.println("Can't find operation " + m.operationId);
-			System.exit(-1);
 		}
 	}
 	
