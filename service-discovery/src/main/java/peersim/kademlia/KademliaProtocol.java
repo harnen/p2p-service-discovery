@@ -35,6 +35,7 @@ import peersim.edsim.EDProtocol;
 import peersim.edsim.EDSimulator;
 import peersim.transport.UnreliableTransport;
 import peersim.kademlia.KademliaNode;
+import peersim.kademlia.Timeout;
 
 //__________________________________________________________________________________________________
 public class KademliaProtocol implements Cloneable, EDProtocol {
@@ -280,12 +281,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 							request.type = Message.MSG_REGISTER;
 							request.src = this.node;
 							request.body = fop.body;
-						}else if(fop.type == Message.MSG_TOPIC_QUERY) {
-							request = new Message(Message.MSG_REGISTER);
-							request.operationId = fop.operationId;
-							request.type = Message.MSG_TOPIC_QUERY;
-							request.src = this.node;
-							request.body = fop.body;
 						}
 						else if(fop.type == Message.MSG_TICKET_REQUEST) {
 							request = new Message(Message.MSG_TICKET_REQUEST);
@@ -328,15 +323,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 						KademliaObserver.register_total.add(all);
 						KademliaObserver.register_ok.add(found);
 					}
-					//logger.warning("available_requests == KademliaCommonConfig.ALPHA");
-					//TODO We use body for other purposes now - need to reconfigure this
-					/*if (fop.body.equals("Automatically Generated Traffic") && fop.closestSet.containsKey(fop.destNode)) {
-						// update statistics
-						long timeInterval = (CommonState.getTime()) - (fop.timestamp);
-						KademliaObserver.timeStore.add(timeInterval);
-						KademliaObserver.hopStore.add(fop.nrHops);
-						KademliaObserver.msg_deliv.add(1);
-					}*/
 					
 					node.setLookupResult(fop.getNeighboursList());
 					return;
