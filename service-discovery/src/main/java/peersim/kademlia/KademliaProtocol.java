@@ -34,7 +34,9 @@ import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 import peersim.edsim.EDSimulator;
 import peersim.transport.UnreliableTransport;
+import peersim.kademlia.KademliaCommonConfig;
 import peersim.kademlia.KademliaNode;
+import peersim.kademlia.RoutingTable;
 
 //__________________________________________________________________________________________________
 public class KademliaProtocol implements Cloneable, EDProtocol {
@@ -109,7 +111,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		failures = new HashMap();
 		_init();
 
-		this.routingTable = new RoutingTable();
+		this.routingTable = new RoutingTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,KademliaCommonConfig.MAXREPLACEMENT);
 
 
 		sentMsg = new TreeMap<Long, Long>();
@@ -212,35 +214,13 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			
 			
 			neighbours = ((Message.TopicLookupBody) m.body).neighbours;
+			//System.out.println("topic query response received at "+this.node.getId()+" from "+m.src.getId()+" with "+neighbours.length+" neighbours");
+
 		}else {
 			neighbours = (BigInteger[]) m.body;
-		}
-		
-		
-		/*if(this.node.getId().equals(new BigInteger("19745047102682313528711879736590176702726478189629936250926893727724068161114")) &&
-				m.src.getId().equals(new BigInteger("40862205785573556484345699940675782616474837643749669542647170998174355758346"))) {
-			if(m.getType() == Message.MSG_TOPIC_QUERY_REPLY &&
-					((Message.TopicLookupBody) m.body).registrations.length > 0 &&
-					((Message.TopicLookupBody) m.body).registrations[0].getTopic().topic.equals("t51")) {
-				LookupOperation lop = (LookupOperation) fop;
-				String topic = ((Message.TopicLookupBody) m.body).registrations[0].getTopic().topic;
-				System.err.println(this.node.getId() + " received " + m.messageTypetoString() + " from " + m.src.getId() + " for " + topic + " length " + ((Message.TopicLookupBody) m.body).registrations.length);
-				for(int i = 0; i < ((Message.TopicLookupBody) m.body).registrations.length; i++) {
-					TopicRegistration registration = ((Message.TopicLookupBody) m.body).registrations[i];
-					System.err.println(registration.getNode().getId());
-				}
-			}
-		}*/
-		
-		//System.out.println("find node response at "+this.node.getId()+" "+neighbours.length); 
+			//System.out.println("Find response received at "+this.node.getId()+" from "+m.src.getId()+" with "+neighbours.length+" neighbours "+m.getType());
 
-		/*System.out.print("Received neigbours: [");
-		for(BigInteger n : neighbours){
-			System.out.print(", " + n);
 		}
-		System.out.println("]");*/
-		// get corresponding find operation (using the message field operationId)
-		
 		
 
 		if (fop != null) {
@@ -399,7 +379,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	protected void handleInitFind(Message m, int myPid) {
 		KademliaObserver.find_total.add(1);
 
-		//System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
+		System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
 		// create find operation and add to operations array
 		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
 		fop.destNode = (BigInteger) m.body;

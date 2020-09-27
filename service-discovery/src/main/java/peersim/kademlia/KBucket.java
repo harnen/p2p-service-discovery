@@ -27,29 +27,39 @@ public class KBucket implements Cloneable {
 	protected List<BigInteger> replacements;
 
 	protected RoutingTable rTable;
+	
+	protected int k,maxReplacements;
 	//protected KademliaProtocol prot;
 	// empty costructor
-	public KBucket(RoutingTable rTable) {
+	public KBucket(RoutingTable rTable,int k, int maxReplacements) {
 		//neighbours = new TreeMap<BigInteger, Long>();
 		//System.out.println("New bucket "+prot.kademliaid);
 		//this.prot = prot;
+		this.k=k;
+		this.maxReplacements=maxReplacements;
 		this.rTable = rTable;
 		neighbours = new ArrayList<BigInteger>();
 		replacements = new ArrayList<BigInteger>();
 	}
 
+	public int occupancy()
+	{
+		return neighbours.size();
+	}
 	// add a neighbour to this k-bucket
-	public void addNeighbour(BigInteger node) {
+	public boolean addNeighbour(BigInteger node) {
 		//long time = CommonState.getTime();
 		for(BigInteger n : neighbours) {
-			if(n.compareTo(node)==0)return;
+			if(n.compareTo(node)==0)return false;
 		}
-		if (neighbours.size() < KademliaCommonConfig.K) { // k-bucket isn't full
+		if (neighbours.size() < k) { // k-bucket isn't full
 			//neighbours.put(node, time); // add neighbour to the tail of the list
 			neighbours.add(node);
 			removeReplacement(node);
+			return true;
 		} else {
 			addReplacement(node);
+			return false;
 		}
 	}
 
@@ -62,7 +72,7 @@ public class KBucket implements Cloneable {
 		}
 		replacements.add(0,node);
 
-		if (replacements.size() > KademliaCommonConfig.MAXREPLACEMENT) { // k-bucket isn't full
+		if (replacements.size() > maxReplacements) { // k-bucket isn't full
 			//replacements.put(node, time); // add neighbour to the tail of the list
 			replacements.remove(replacements.size()-1);
 		} 
@@ -78,7 +88,7 @@ public class KBucket implements Cloneable {
 	}
 
 	public Object clone() {
-		KBucket dolly = new KBucket(rTable);
+		KBucket dolly = new KBucket(rTable,k,maxReplacements);
 		for (BigInteger node : neighbours) {
 			//System.out.println("clone kbucket");
 			dolly.neighbours.add(new BigInteger(node.toByteArray()));
