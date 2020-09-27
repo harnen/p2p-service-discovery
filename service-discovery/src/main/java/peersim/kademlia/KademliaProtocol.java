@@ -181,6 +181,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		return null;
 	}
+	
 
 	/**
 	 * Perform the required operation upon receiving a message in response to a ROUTE message.<br>
@@ -193,150 +194,66 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	protected void find(Message m, int myPid) {
+	protected void handleResponse(Message m, int myPid) {
 		
 		// add message source to my routing table
-		Operation fop = (Operation)	 this.operations.get(m.operationId);
-		if (m.src != null) {
-			routingTable.addNeighbour(m.src.getId());
-			failures.replace(m.src.getId(), 0);
-		}
-		BigInteger[] neighbours;
-		if(m.getType() == Message.MSG_TOPIC_QUERY_REPLY) {
-			LookupOperation lop = (LookupOperation) fop;
-			//logger.warning("Received " + ((Message.TopicLookupBody) m.body).registrations.length  +  " registrations from " + m.src.getId() + " for topic: " + lop.topic.getTopic() );
-			
-			for(int i = 0; i < ((Message.TopicLookupBody) m.body).registrations.length; i++) {
-				TopicRegistration registration = ((Message.TopicLookupBody) m.body).registrations[i];
-				lop.addDiscovered(registration.getNode().getId());
-			}
-			
-			
-			neighbours = ((Message.TopicLookupBody) m.body).neighbours;
-		}else {
-			neighbours = (BigInteger[]) m.body;
+		Operation op = (Operation)	 this.operations.get(m.operationId);
+		if (op == null) {
+			return;
 		}
 		
+		BigInteger[] neighbours = (BigInteger[]) m.body;
+		op.elaborateResponse(neighbours);
+		for(BigInteger neighbour: neighbours)
+			routingTable.addNeighbour(neighbour);
 		
-		/*if(this.node.getId().equals(new BigInteger("19745047102682313528711879736590176702726478189629936250926893727724068161114")) &&
-				m.src.getId().equals(new BigInteger("40862205785573556484345699940675782616474837643749669542647170998174355758346"))) {
-			if(m.getType() == Message.MSG_TOPIC_QUERY_REPLY &&
-					((Message.TopicLookupBody) m.body).registrations.length > 0 &&
-					((Message.TopicLookupBody) m.body).registrations[0].getTopic().topic.equals("t51")) {
-				LookupOperation lop = (LookupOperation) fop;
-				String topic = ((Message.TopicLookupBody) m.body).registrations[0].getTopic().topic;
-				System.err.println(this.node.getId() + " received " + m.messageTypetoString() + " from " + m.src.getId() + " for " + topic + " length " + ((Message.TopicLookupBody) m.body).registrations.length);
-				for(int i = 0; i < ((Message.TopicLookupBody) m.body).registrations.length; i++) {
-					TopicRegistration registration = ((Message.TopicLookupBody) m.body).registrations[i];
-					System.err.println(registration.getNode().getId());
+		op.available_requests++;
+		
+		
+		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
+			logger.warning("Found node " + op.destNode);
+			op.finished = true;
+			node.setLookupResult(op.getNeighboursList());
+			KademliaObserver.find_ok.add(1);
+			return;
+		}
+
+		while ((op.available_requests > 0)) { // I can send a new find request
+			BigInteger neighbour = op.getNeighbour();
+
+			if (neighbour != null && !op.finished) {
+				// send a new request only if we didn't find the node already
+				Message request = null;
+				if(op.type == Message.MSG_FIND) {
+					request = new Message(Message.MSG_FIND);
+					request.body = Util.prefixLen(op.destNode, neighbour);
+				}else if(op.type == Message.MSG_REGISTER) {
+					request = new Message(Message.MSG_REGISTER);
+					request.body = op.body;
+				}else if(op.type == Message.MSG_TICKET_REQUEST) {
+					request = new Message(Message.MSG_TICKET_REQUEST);
+					request.body = op.body;
 				}
-			}
-		}*/
-		
-		//System.out.println("find node response at "+this.node.getId()+" "+neighbours.length); 
+						
+				if(request != null) {
+					op.nrHops++;
+					request.operationId = m.operationId;
+					request.src = this.node;
+					sendMessage(request, neighbour, myPid);
+				}
+							
+			} else if (op.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
+				operations.remove(op.operationId);
+				if(!op.finished && op.type == Message.MSG_FIND){
+					logger.warning("Couldn't find node " + op.destNode);
+				}
+					
+				node.setLookupResult(op.getNeighboursList());
+				return;
 
-		/*System.out.print("Received neigbours: [");
-		for(BigInteger n : neighbours){
-			System.out.print(", " + n);
-		}
-		System.out.println("]");*/
-		// get corresponding find operation (using the message field operationId)
-		
-		
-
-		if (fop != null) {
-			// save received neighbour in the closest Set of fin operation
-			try {
-				fop.elaborateResponse(neighbours);
-				for(BigInteger neighbour: neighbours)
-					routingTable.addNeighbour(neighbour);
-			} catch (Exception ex) {
-				fop.available_requests++;
-			}
-			if(!fop.finished && Arrays.asList(neighbours).contains(fop.destNode)){
-				logger.warning("Found node " + fop.destNode);
-				fop.finished = true;
-				node.setLookupResult(fop.getNeighboursList());
-				KademliaObserver.find_ok.add(1);
+			} else { // no neighbour available but exists outstanding request to wait for
 				return;
 			}
-
-			while ((fop.available_requests > 0)) { // I can send a new find request
-
-				// get an available neighbour
-				BigInteger neighbour = fop.getNeighbour();
-
-				if (neighbour != null) {
-					// send a new request only if we didn't find the node already
-					if(!fop.finished){
-						Message request = null;
-						if(fop.type == Message.MSG_FIND) {
-							request = new Message(Message.MSG_FIND);
-							request.operationId = m.operationId;
-							request.src = this.node;
-							request.body = Util.prefixLen(fop.destNode, neighbour);
-						}else if(fop.type == Message.MSG_REGISTER) {
-							request = new Message(Message.MSG_REGISTER);
-							request.operationId = fop.operationId;
-							request.type = Message.MSG_REGISTER;
-							request.src = this.node;
-							request.body = fop.body;
-						}
-						else if(fop.type == Message.MSG_TICKET_REQUEST) {
-							request = new Message(Message.MSG_TICKET_REQUEST);
-							request.operationId = fop.operationId;
-							request.type = Message.MSG_TICKET_REQUEST;
-							request.src = this.node;
-							request.body = fop.body;
-						}
-
-						
-						if(request != null) {
-							fop.nrHops++;
-							sendMessage(request, neighbour, myPid);
-						}
-					}
-
-					
-				} else if (fop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
-					// search operation finished
-					operations.remove(fop.operationId);
-                    //System.out.println("OperationId is removed:" + fop.operationId);
-					if(!fop.finished && fop.type == Message.MSG_FIND){
-						logger.warning("Couldn't find node " + fop.destNode);
-					}
-					if(fop.type == Message.MSG_TOPIC_QUERY) {
-						LookupOperation lop = (LookupOperation) fop;
-						int found = lop.discoveredCount();
-						int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
-						logger.warning("Found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
-						if(found != all) { 
-							logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
-							HashSet<BigInteger> tmp = new HashSet<BigInteger>(KademliaObserver.registeredTopics.get(lop.topic.topic));
-							tmp.removeAll(lop.discovered);
-							logger.warning("Missing nodes:");
-							for(BigInteger id: tmp) {
-								logger.warning(id + ", ");
-							}
-							System.exit(-1);
-						}
-						KademliaObserver.register_total.add(all);
-						KademliaObserver.register_ok.add(found);
-					}
-					
-					node.setLookupResult(fop.getNeighboursList());
-					return;
-
-				} else { // no neighbour available but exists oustanding request to wait
-					//logger.warning("else");
-                    //System.out.println("Neighbor: " + neighbour + " available requests: " + fop.available_requests + " out of " + KademliaCommonConfig.ALPHA);
-					//node.setLookupResult(fop.getNeighboursList());
-					return;
-				}
-			}
-		} else {
-			System.err.println("Can't find operation " + m.operationId);
-			System.exit(-1);
 		}
 	}
 
@@ -479,7 +396,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			case Message.MSG_RESPONSE:
 				m = (Message) event;
 				sentMsg.remove(m.ackId);
-				find(m, myPid);
+				handleResponse(m, myPid);
 				break;
 
 			case Message.MSG_INIT_FIND:

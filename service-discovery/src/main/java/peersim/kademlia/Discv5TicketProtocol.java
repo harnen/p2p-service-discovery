@@ -386,7 +386,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			case Message.MSG_TOPIC_QUERY_REPLY:
 				m = (Message) event;
 				sentMsg.remove(m.ackId);
-				find(m, myPid);
+				handleResponse(m, myPid);
 				break;
 
             case Message.MSG_REGISTER:
