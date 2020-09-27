@@ -261,7 +261,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
         }
         else {
-            //System.out.println("This should not happen!");
+            System.out.println("Registration succesful!");
         	ticketTable.get(ticket.getTopic().topicID).removeNeighbour( m.src.getId());
         }
     }
@@ -397,7 +397,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	protected void find(Message m, int myPid) {
+	protected void handleResponse(Message m, int myPid) {
 		if(m.getType() == Message.MSG_RESPONSE) {
 			BigInteger[] neighbours = (BigInteger[]) m.body;
 			System.out.println("Find response received at "+this.node.getId()+" from "+m.src.getId()+" with "+neighbours.length+" neighbours");
@@ -408,49 +408,49 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		    		table.addNeighbour(neighbour);
 			}
 		}
-		super.find(m, myPid);
+		super.handleResponse(m, myPid);
 	}
 	
-	   public void sendTicketRequest(BigInteger dest,Topic t,int myPid) {
-	    	
-	        TicketOperation top = new TicketOperation(CommonState.getTime(), t);
-	 		top.body = t;
-	 		operations.put(top.operationId, top);
-	         
-	         // Lookup the target address in the routing table
-	 		BigInteger[] neighbours = new BigInteger[] {dest};
-	 		
-	         if(neighbours.length<KademliaCommonConfig.K)
-	 			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K);
+   public void sendTicketRequest(BigInteger dest,Topic t,int myPid) {
+    	
+        TicketOperation top = new TicketOperation(CommonState.getTime(), t);
+ 		top.body = t;
+ 		operations.put(top.operationId, top);
+         
+         // Lookup the target address in the routing table
+ 		BigInteger[] neighbours = new BigInteger[] {dest};
+ 		
+         if(neighbours.length<KademliaCommonConfig.K)
+ 			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K);
 
-	        top.elaborateResponse(neighbours); 
-	 		top.available_requests = KademliaCommonConfig.ALPHA;
-	 		
-	 		Message m = new Message(Message.MSG_TICKET_REQUEST, t);
-			m.timestamp = CommonState.getTime();
-	         // set message operation id
-	 		m.operationId = top.operationId;
-	 		m.src = this.node;
-	 		
-	 		System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
-	 		sendMessage(m,top.getNeighbour(),myPid);
+        top.elaborateResponse(neighbours); 
+ 		top.available_requests = KademliaCommonConfig.ALPHA;
+ 		
+ 		Message m = new Message(Message.MSG_TICKET_REQUEST, t);
+		m.timestamp = CommonState.getTime();
+         // set message operation id
+ 		m.operationId = top.operationId;
+ 		m.src = this.node;
+ 		
+ 		System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
+ 		sendMessage(m,top.getNeighbour(),myPid);
 
-	 		// send ALPHA messages
-	 		/*for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
-	 			BigInteger nextNode = top.getNeighbour();
-	 			if (nextNode != null) {
-	                 Message ticket_request = m.copy();
-	                 sendMessage(ticket_request,nextNode,myPid);
-	                 //scheduleSendMessage(ticket_request, nextNode, myPid, 0); 
-	 				top.nrHops++;
-	 			}
-	 			else {
-	 				System.err.println("In register Returned neighbor is NUll !");
-	 				//System.exit(-1);
-	 			}
-	 		}*/
-	   }
-    
+ 		// send ALPHA messages
+ 		/*for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
+ 			BigInteger nextNode = top.getNeighbour();
+ 			if (nextNode != null) {
+                 Message ticket_request = m.copy();
+                 sendMessage(ticket_request,nextNode,myPid);
+                 //scheduleSendMessage(ticket_request, nextNode, myPid, 0); 
+ 				top.nrHops++;
+ 			}
+ 			else {
+ 				System.err.println("In register Returned neighbor is NUll !");
+ 				//System.exit(-1);
+ 			}
+ 		}*/
+   }
+
 	/**
 	 * manage the peersim receiving of the events
 	 * 
@@ -479,7 +479,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			case Message.MSG_TOPIC_QUERY_REPLY:
 				m = (Message) event;
 				sentMsg.remove(m.ackId);
-				find(m, myPid);
+				handleResponse(m, myPid);
 				break;
 
             case Message.MSG_REGISTER:

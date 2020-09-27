@@ -49,3 +49,13 @@ http://java-ml.sourceforge.net/api/0.1.4/net/sf/javaml/featureselection/scoring/
 * Scenario 2: Simulation with variable number of nodes discarding other advertisers registrations in the local table and advertising only herself.
 * Scenario 3: Simulation with variable number of nodes creating n  fake ids close to a topic hash.
 * Scenario 4: Scenario 3 with Kullback-leibler divergence mechanism.
+
+
+# Attack Scenarios
+
+## Attacks as registrar
+* Region hijacking query attack - an attacker creates multiple identities close to the target topic hash, accepts registrations, but rejects topic query. Succeeds if: users cannot discover peers for the topic being attacked.
+
+## Attacks as registrant
+* Target registrar spam attack - an attacker creates multiple registrations (potentially with Sybil identities) for a topic close (or equal) to the id of the targeted registrar. Succeeds if: the registrar does not accept registrations for other topics (being further away from the registrar hash)
+* Target topic spam attack - an attacker creates multiple registrations (potentially with Sybil identities) for a specific topic. The attacker hope to reduce or completely flush legitimate registrations for this topic. Succeeds if: users cannot discover peers for the topic being attacked.

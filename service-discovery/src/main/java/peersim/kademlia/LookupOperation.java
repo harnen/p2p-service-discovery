@@ -20,5 +20,4 @@ public class LookupOperation extends Operation {
 	public int discoveredCount() {
 		return discovered.size();
 	}
-
 }
