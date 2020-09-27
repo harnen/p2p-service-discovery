@@ -221,25 +221,27 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		while ((op.available_requests > 0)) { // I can send a new find request
 			BigInteger neighbour = op.getNeighbour();
 
-			if (neighbour != null && !op.finished) {
-				// send a new request only if we didn't find the node already
-				Message request = null;
-				if(op.type == Message.MSG_FIND) {
-					request = new Message(Message.MSG_FIND);
-					request.body = Util.prefixLen(op.destNode, neighbour);
-				}else if(op.type == Message.MSG_REGISTER) {
-					request = new Message(Message.MSG_REGISTER);
-					request.body = op.body;
-				}else if(op.type == Message.MSG_TICKET_REQUEST) {
-					request = new Message(Message.MSG_TICKET_REQUEST);
-					request.body = op.body;
-				}
-						
-				if(request != null) {
-					op.nrHops++;
-					request.operationId = m.operationId;
-					request.src = this.node;
-					sendMessage(request, neighbour, myPid);
+			if (neighbour != null ) {
+				if(!op.finished) {
+					// send a new request only if we didn't find the node already
+					Message request = null;
+					if(op.type == Message.MSG_FIND) {
+						request = new Message(Message.MSG_FIND);
+						request.body = Util.prefixLen(op.destNode, neighbour);
+					}else if(op.type == Message.MSG_REGISTER) {
+						request = new Message(Message.MSG_REGISTER);
+						request.body = op.body;
+					}else if(op.type == Message.MSG_TICKET_REQUEST) {
+						request = new Message(Message.MSG_TICKET_REQUEST);
+						request.body = op.body;
+					}
+							
+					if(request != null) {
+						op.nrHops++;
+						request.operationId = m.operationId;
+						request.src = this.node;
+						sendMessage(request, neighbour, myPid);
+					}
 				}
 							
 			} else if (op.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
