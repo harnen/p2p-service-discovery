@@ -260,15 +260,15 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
         if (ticket.isRegistrationComplete() == false) {
-        	//System.out.println("Unsuccessful Registration of topic: " + ticket.getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
+        	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
             register.body = m.body;
             scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
         }
         else {
-            //System.out.println("Registration succesful at node "+m.src.getId());
-        	ticketTable.get(ticket.getTopic().topicID).removeNeighbour( m.src.getId());
+            logger.warning("Registration succesful for topic "+ticket.getTopic().getTopic()+" at node "+m.src.getId());
+        	ticketTable.get(ticket.getTopic().topicID).removeNeighbour(m.src.getId());
         }
     }
     
@@ -294,8 +294,9 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		
 		int found = lop.discoveredCount();
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);		
+
 		if(!lop.finished && found >= Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT)) {
-			System.out.println("Found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+			//System.out.println("Found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
 			lop.finished = true;
 		}
 		
@@ -328,7 +329,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 					for(BigInteger id: tmp) {
 						logger.warning(id + ", ");
 					}
-					System.exit(-1);
+					//System.exit(-1);
+				} else {
+					logger.warning("Found " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+
 				}
 				KademliaObserver.register_total.add(all);
 				KademliaObserver.register_ok.add(found);
@@ -405,7 +409,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
         
         if(!ticketTable.containsKey(t.getTopicID())) {
-        	TicketTable rou = new TicketTable(KademliaCommonConfig.BITS,3,0,this,t,myPid);
+        	TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
         	rou.setNodeId(t.getTopicID());
         	ticketTable.put(t.getTopicID(),rou);
         }
@@ -462,10 +466,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
 		Topic t = (Topic) m.body;
     	
-		//System.out.println("Send topic lookup to distance "+Util.logDistance(t.getTopicID(), this.getNode().getId())+" for topic "+t.getTopicID());
+		System.out.println("Send topic lookup to distance "+Util.logDistance(t.getTopicID(), this.getNode().getId())+" for topic "+t.getTopic());
 
         if(!searchTable.containsKey(t.getTopicID())) {
-        	SearchTable rou = new SearchTable(KademliaCommonConfig.BITS,KademliaCommonConfig.K,0,this,t,myPid);
+        	SearchTable rou = new SearchTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,10,this,t,myPid);
         	rou.setNodeId(t.getTopicID());
         	searchTable.put(t.getTopicID(),rou);
         	

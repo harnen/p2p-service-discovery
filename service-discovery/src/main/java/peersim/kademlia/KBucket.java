@@ -106,6 +106,15 @@ public class KBucket implements Cloneable {
 		return res + "}";
 	}
 	
+	public void replace() {
+		if(replacements.size()>0&&neighbours.size() < k) {
+			Random rand = new Random();
+			BigInteger n = replacements.get(rand.nextInt(replacements.size()));
+			neighbours.add(n);
+			replacements.remove(n);
+		}
+	}
+	
 	public void checkAndReplaceLast(int kademliaid) {
 		if (neighbours.size() == 0||CommonState.getTime()==0) 
 			// Entry has moved, don't replace it.

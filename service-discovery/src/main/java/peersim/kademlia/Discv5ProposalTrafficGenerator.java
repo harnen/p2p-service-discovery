@@ -153,8 +153,9 @@ public class Discv5ProposalTrafficGenerator implements Control {
 			for(int i=0;i < queryNum; i++) {
 				Message m = generateTopicLookupMessage(new String(pair.getKey()));
 				Node start = getRandomNode();
+				int time = 200000 + i * 1000;
 				if(m != null)
-					EDSimulator.add(200000, m, start, pid);
+					EDSimulator.add(time, m, start, pid);
 			}
 		}
 

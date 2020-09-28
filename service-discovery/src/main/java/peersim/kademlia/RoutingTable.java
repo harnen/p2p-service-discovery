@@ -77,7 +77,7 @@ public class RoutingTable implements Cloneable {
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
 		resultList.addAll(bucketAtDistance(dist).neighbours);
 		//System.out.println("Getneighbours "+resultList.size());
-		/*if(resultList.size()<k&&dist+1<=256) {
+		if(resultList.size()<k&&dist+1<=256) {
 			//System.out.println("Getneighbours "+resultList.size());
 			resultList.addAll(bucketAtDistance(dist+1).neighbours);
 
@@ -85,7 +85,7 @@ public class RoutingTable implements Cloneable {
 		if(resultList.size()<k&dist+1>=0) {
 			//System.out.println("Getneighbours "+resultList.size());
 			resultList.addAll(bucketAtDistance(dist-1).neighbours);
-		}*/
+		}
 		return resultList.toArray(result);
 
 		
