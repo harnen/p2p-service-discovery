@@ -133,13 +133,13 @@ public class RoutingTable implements Cloneable {
 	public void refreshBuckets(int kademliaid) {
 		//System.out.println("Routingtable refreshBuckkets "+CommonState.getTime());
 		Random rnd= new Random();
-		for(int i=0;i<nBuckets;i++) {
-			KBucket b = k_buckets[rnd.nextInt(nBuckets)];
-			if(b.neighbours.size()>0) {
-				b.checkAndReplaceLast(kademliaid);
-				return;
-			}
+		//for(int i=0;i<nBuckets;i++) {
+		KBucket b = k_buckets[rnd.nextInt(nBuckets)];
+		if(b.neighbours.size()>0) {
+			b.checkAndReplaceLast(kademliaid);
+			return;
 		}
+		//}
 	}
 	
 	public void sendToFront(BigInteger node)

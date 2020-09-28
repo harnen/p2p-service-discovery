@@ -141,7 +141,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
 			Topic t = new Topic(pair.getKey());
 			System.out.println("Topic hash: " + t.getTopicID());
 			System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
-			for(int i=0; i < pair.getValue(); i++) {
+			for(int i=0; i < regNum; i++) {
 				Message m = generateRegisterMessage(pair.getKey());
 				Node start = getRandomNode();
 				BigInteger nId = ((KademliaProtocol) (start.getProtocol(pid))).node.getId();
@@ -150,12 +150,12 @@ public class Discv5ProposalTrafficGenerator implements Control {
 					EDSimulator.add(0, m, start, pid);
 			}
 			
-			/*for(int i=0;i < queryNum; i++) {
+			for(int i=0;i < queryNum; i++) {
 				Message m = generateTopicLookupMessage(new String(pair.getKey()));
 				Node start = getRandomNode();
 				if(m != null)
 					EDSimulator.add(200000, m, start, pid);
-			}*/
+			}
 		}
 
 		
