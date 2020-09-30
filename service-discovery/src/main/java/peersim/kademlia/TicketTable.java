@@ -72,7 +72,7 @@ public class TicketTable extends RoutingTable {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
 		pendingTickets.remove(node);
 		bucket(node).removeNeighbour(node);
-		System.out.println("Bucket remove "+bucket(node).occupancy());
+		//System.out.println("Bucket remove "+bucket(node).occupancy());
 		
 	}	
 	/**
@@ -86,7 +86,7 @@ public class TicketTable extends RoutingTable {
 	public void refreshBuckets(int kademliaid) {
 		Random rnd= new Random();
 		//for(int i=0;i<nBuckets;i++) {
-		System.out.println(CommonState.getTime()+" Routingtable refreshBuckkets of node "+this.nodeId+" at bucket "+rnd.nextInt(nBuckets)+" "+k_buckets[rnd.nextInt(nBuckets)].occupancy());
+		//System.out.println(CommonState.getTime()+" Routingtable refreshBuckkets of node "+this.nodeId+" at bucket "+rnd.nextInt(nBuckets)+" "+k_buckets[rnd.nextInt(nBuckets)].occupancy());
 
 		KBucket b = k_buckets[rnd.nextInt(nBuckets)];
 		if(b.neighbours.size()<k)

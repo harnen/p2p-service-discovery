@@ -238,6 +238,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 
 	
 	private void handleTopicQuery(Message m, int myPid) {
+		
 		Topic t = (Topic) m.body;
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
@@ -293,6 +294,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 			case Message.MSG_TOPIC_QUERY:
 				handleTopicQuery(m, myPid);
 				break;
+				
 			case Message.MSG_INIT_TOPIC_LOOKUP:
 				handleInitTopicLookup(m, myPid);
 				break;

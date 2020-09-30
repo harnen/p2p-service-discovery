@@ -191,6 +191,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 		
+		System.out.println("Topic query received at node "+this.node.getId()+" "+registrations.length+" "+neighbours.length);
+
 		Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
 		Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
 		response.operationId = m.operationId;
@@ -260,14 +262,14 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
         if (ticket.isRegistrationComplete() == false) {
-        	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
+        	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopicID() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
             register.body = m.body;
             scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
         }
         else {
-            logger.warning("Registration succesful for topic "+ticket.getTopic().getTopic()+" at node "+m.src.getId());
+           // logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
         	ticketTable.get(ticket.getTopic().topicID).removeNeighbour(m.src.getId());
         }
     }
@@ -279,7 +281,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		}
 		BigInteger[] neighbours = ((Message.TopicLookupBody) m.body).neighbours;
 		TopicRegistration[]  registrations = ((Message.TopicLookupBody) m.body).registrations;
-		//System.out.println("Topic query reply with " + registrations.length+ " replies");
+		System.out.println("Topic query reply with " + registrations.length+ " replies");
 
 		lop.elaborateResponse(neighbours);
 		for(BigInteger neighbour: neighbours)

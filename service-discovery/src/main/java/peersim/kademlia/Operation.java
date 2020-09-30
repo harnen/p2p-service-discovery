@@ -141,29 +141,25 @@ public class Operation {
 		BigInteger res = null;
 		for (BigInteger n : closestSet.keySet()) {
 			if (n != null && closestSet.get(n) == false) {
-				closestSet.remove(n);
-				closestSet.put(n, true);
-				return n;
-			
-				/*if (res == null) {
-					System.out.println("Res = "+n);
+				if (res == null) {
+					//System.out.println("Res = "+n);
 					res = n;
 				} else if (Util.distance(n, destNode).compareTo(Util.distance(res, destNode)) < 0) {
 					res = n;
-					System.out.println("Res = "+n);
-				}*/
-			} /*else {
+					//System.out.println("Res = "+n);
+				}
+			} else {
 				//System.out.println("Res = "+n+" alreaady queried");
 
-			}*/
+			}
 		}
 
-		/* Has been found a valid neighbour
+		// Has been found a valid neighbour
 		if (res != null) {
 			closestSet.remove(res);
 			closestSet.put(res, true);
 			available_requests--; // decrease available request
-		}*/
+		}
 
 		return res;
 	}
