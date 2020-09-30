@@ -189,9 +189,12 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
 		
+		//System.out.println("Neighbours to "+t.getTopicID()+" "+neighbours.length);
 		if(neighbours.length<KademliaCommonConfig.K)
 			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K);
 		
+		//System.out.println("Neighbours to "+t.getTopicID()+" "+neighbours.length);
+
 		rop.elaborateResponse(neighbours);
 		rop.available_requests = KademliaCommonConfig.ALPHA;
 	
