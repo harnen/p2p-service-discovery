@@ -190,7 +190,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
 		
 		//System.out.println("Neighbours to "+t.getTopicID()+" "+neighbours.length);
-		if(neighbours.length<KademliaCommonConfig.K)
+		if(neighbours.length==0)
 			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K);
 		
 		//System.out.println("Neighbours to "+t.getTopicID()+" "+neighbours.length);
@@ -205,13 +205,15 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		// send ALPHA messages
 		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
 			BigInteger nextNode = rop.getNeighbour();
+			//System.out.println("Nextnode "+nextNode);
 			if (nextNode != null) {
 				sendMessage(m.copy(), nextNode, myPid);
 				rop.nrHops++;
-			}else {
+			}
+			/*}else {
 				System.err.println("Returned neighbor is NUll !");
 				System.exit(-1);
-			}
+			}*/
 		}
 	}
 	
