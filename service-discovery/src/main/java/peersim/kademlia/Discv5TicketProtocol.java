@@ -191,7 +191,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 		
-		System.out.println("Topic query received at node "+this.node.getId()+" "+registrations.length+" "+neighbours.length);
+		//System.out.println("Topic query received at node "+this.node.getId()+" "+registrations.length+" "+neighbours.length);
 
 		Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
 		Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
@@ -281,7 +281,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		}
 		BigInteger[] neighbours = ((Message.TopicLookupBody) m.body).neighbours;
 		TopicRegistration[]  registrations = ((Message.TopicLookupBody) m.body).registrations;
-		System.out.println("Topic query reply with " + registrations.length+ " replies");
+		//System.out.println("Topic query reply with " + registrations.length+ " replies");
 
 		lop.elaborateResponse(neighbours);
 		for(BigInteger neighbour: neighbours)
@@ -468,7 +468,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
 		Topic t = (Topic) m.body;
     	
-		System.out.println("Send topic lookup to distance "+Util.logDistance(t.getTopicID(), this.getNode().getId())+" for topic "+t.getTopic());
+		System.out.println("Send topic lookup for topic "+t.getTopic());
 
         if(!searchTable.containsKey(t.getTopicID())) {
         	SearchTable rou = new SearchTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,10,this,t,myPid);
