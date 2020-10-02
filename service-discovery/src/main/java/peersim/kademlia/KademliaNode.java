@@ -25,10 +25,12 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     private Node n;
     
-    private EthClient client;
+    private Discv5ZipfTrafficGenerator client;
     
     boolean requested=false;
 
+    Topic t;
+    
     public KademliaNode(BigInteger id, String addr, int port){
         this.id = id;
         this.addr = addr;
@@ -155,9 +157,10 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	this.protocolId = id;
     }
     
-    public void setCallBack(EthClient client, Node n) {
+    public void setCallBack(Discv5ZipfTrafficGenerator client, Node n,Topic t) {
     	this.client = client;
     	this.n = n;
+    	this.t = t;
     }
     
     private void tryNewConnections() {
@@ -176,7 +179,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
        	if(lookupResultBuffer.size()==0&&client!=null&&n!=null){
        		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size());
        		if(!requested) {
-       			client.emptyBufferCallback(n);
+       			if(client!=null&&n!=null&&t!=null)client.emptyBufferCallback(n,t);
        			requested=true;
        		}
        	}

@@ -39,6 +39,7 @@ public class TopicRegistration implements Comparable<TopicRegistration>{
     // a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object.
 
     public int compareTo(TopicRegistration r){
+    	//System.out.println("Topic registration compare");
         return this.node.compareTo(r.node);
         /*if (this.timestamp < r.timestamp) return -1;
         if (this.timestamp == r.timestamp) return 0;
@@ -47,7 +48,7 @@ public class TopicRegistration implements Comparable<TopicRegistration>{
 
     @Override
     public boolean equals(Object o) { 
-  
+    	//System.out.println("Topic registration equals");
         // If the object is compared with itself then return true   
         if (o == this) { 
             return true; 
@@ -62,7 +63,7 @@ public class TopicRegistration implements Comparable<TopicRegistration>{
         // typecast o to Complex so that we can compare data members  
         TopicRegistration r = (TopicRegistration) o; 
           
-        if(this.node == r.node) return true;
+        if(this.node.getId().compareTo(r.node.getId()) == 0) return true;
         return false;
     } 
 

@@ -96,7 +96,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 				if(!lop.finished) { 
 					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
 					HashSet<BigInteger> tmp = new HashSet<BigInteger>(KademliaObserver.registeredTopics.get(lop.topic.topic));
-					tmp.removeAll(lop.discovered);
+					tmp.removeAll(lop.getDiscovered());
 					/*logger.warning("Missing nodes:");
 					for(BigInteger id: tmp) {
 						logger.warning(id + ", ");

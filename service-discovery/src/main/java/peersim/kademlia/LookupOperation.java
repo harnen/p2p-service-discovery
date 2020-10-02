@@ -1,11 +1,13 @@
 package peersim.kademlia;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class LookupOperation extends Operation {
 	final Topic topic;
-	public HashSet<BigInteger> discovered;
+	private HashSet<BigInteger> discovered;
 	
 	public LookupOperation(Long timestamp, Topic t) {
 		super(t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
@@ -15,6 +17,15 @@ public class LookupOperation extends Operation {
 	
 	public void addDiscovered(BigInteger id) {
 		discovered.add(id);
+	}
+	
+	public HashSet<BigInteger> getDiscovered(){
+		return discovered;
+	}
+	
+	public List<BigInteger> getDiscoveredArray()
+	{
+		return new ArrayList<BigInteger>(discovered);
 	}
 	
 	public int discoveredCount() {

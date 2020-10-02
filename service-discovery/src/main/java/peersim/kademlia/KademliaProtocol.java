@@ -126,7 +126,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * This procedure is called only once and allow to inizialize the internal state of KademliaProtocol. Every node shares the
 	 * same configuration, so it is sufficient to call this routine once.
 	 */
-	private void _init() {
+	protected void _init() {
 		// execute once
 		if (_ALREADY_INSTALLED)
 			return;
@@ -214,7 +214,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
 			logger.warning("Found node " + op.destNode);
 			op.finished = true;
-			node.setLookupResult(op.getNeighboursList());
+			//node.setLookupResult(op.getNeighboursList());
 			KademliaObserver.find_ok.add(1);
 			return;
 		}
@@ -252,7 +252,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					//logger.warning("Couldn't find node " + op.destNode);
 				}
 					
-				node.setLookupResult(op.getNeighboursList());
+				//node.setLookupResult(op.getNeighboursList());
 				return;
 
 			} else { // no neighbour available but exists outstanding request to wait for

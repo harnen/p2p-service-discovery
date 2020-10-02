@@ -79,6 +79,12 @@ public class Discv5TopicTable { // implements TopicTable {
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
         long waiting_time;
         
+        /*if(topicQ!=null) {
+        for(Iterator<TopicRegistration> itr = topicQ.iterator();itr.hasNext();)  {
+        	TopicRegistration t = itr.next();
+            System.out.println(t.getTopic().getTopic()+" "+t.getNode().getId());
+         }
+        }*/
         // check if the advertisement already registered before
         if ( (topicQ != null) && (topicQ.contains(reg)) ) {
             //Iterator<TopicRegistration> it = topicQ.iterator();

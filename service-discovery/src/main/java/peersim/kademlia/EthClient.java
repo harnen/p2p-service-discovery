@@ -123,7 +123,7 @@ public class EthClient implements Control {
 			for(int i=0;i<Network.size();i++) {
 				KademliaProtocol kad = (KademliaProtocol)Network.get(i).getProtocol(pid);
 				//kad.setClient(this);
-				kad.getNode().setCallBack(this,Network.get(i));
+				//kad.getNode().setCallBack(this,Network.get(i));
 				//System.out.println("Execute first called atc"+CommonState.getTime()+" "+Network.size());
 				if(Network.get(i).isUp()) {
 					//for(int j=0;j<3;j++)
