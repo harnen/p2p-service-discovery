@@ -29,14 +29,12 @@ The project is organised in three main milestones of the project together with t
   * [X] Task 5: Adding Sybil resistance to discv5: Detection of Sybil attacks by evaluating different evaluating differenct attack vectors and proposing countermeasures.
   * [X] Task 6: Large-scale simulations: Run large-scale simulations in a setting with hundred of thousands of nodes.
   Deadline: 30th September 2020.
+  * Deliverables: Service discovery implementation in the simulation environment and an initial version of the specification.
   
 * Objective 3: Performance evaluation and improvement
   * [ ] Task 7: Add threat model and performance analysis: Implement malicious nodes and computation of performance metrics for discovery and Sybil resistance.
-  * Deliverables: New Sybil-resistant service discovery implementation in the simulation environment and an initial version of the specification.
-  
   * [ ] Task 8: Evaluation of performance: Investigate the effectiveness of the proposed extensions under heavy presence of malicious nodes and make necessary changes to optimise the performance.
-  * Deliverables: New Sybil-resistant service discovery analysis, performance evaluation and final version of the specification. Deadline: 30th November 2020.
-  
+  * Deliverables: Analysis and performance evaluation of service discovery in the presence of malicious actors and final specification of the protocol. Deadline: 30th November 2020.
   
 ## Service Discovery Requirements
 
