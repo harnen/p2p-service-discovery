@@ -77,12 +77,12 @@ public class RoutingTable implements Cloneable {
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
 		resultList.addAll(bucketAtDistance(dist).neighbours);
 		//System.out.println("Getneighbours "+resultList.size());
-		if(resultList.size()<k&&dist+1<=256) {
+		if(resultList.size()<k && (dist+1)<=256) {
 			//System.out.println("Getneighbours "+resultList.size());
 			resultList.addAll(bucketAtDistance(dist+1).neighbours);
 
 		}
-		if(resultList.size()<k&dist+1>=0) {
+		if(resultList.size()<k& (dist-1)>=0) {
 			//System.out.println("Getneighbours "+resultList.size());
 			resultList.addAll(bucketAtDistance(dist-1).neighbours);
 		}
@@ -91,10 +91,9 @@ public class RoutingTable implements Cloneable {
 		
 	}
 	
-	public BigInteger[] getKClosestNeighbours (final int k) {
+	public BigInteger[] getKClosestNeighbours (final int k, int dist) {
 		BigInteger[] result = new BigInteger[k];
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
-		int dist=0;
 		while(resultList.size()<k && dist<KademliaCommonConfig.BITS) {
 			resultList.addAll(bucketAtDistance(dist).neighbours);
 			dist++;

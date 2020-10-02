@@ -157,7 +157,7 @@ public class Operation {
 		if (res != null) {
 			closestSet.remove(res);
 			closestSet.put(res, true);
-			available_requests--; // decrease available request
+			//available_requests--; // decrease available request
 		}
 
 		return res;
