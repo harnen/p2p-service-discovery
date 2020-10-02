@@ -510,7 +510,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
 		
         //if(neighbours.length<KademliaCommonConfig.K)
-		BigInteger[] neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K);
+		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
+		BigInteger[] neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K, distToTopic);
 		lop.elaborateResponse(neighbours);
 		lop.available_requests = KademliaCommonConfig.ALPHA;
 	
