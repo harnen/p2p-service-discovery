@@ -272,14 +272,6 @@ public class KademliaObserver implements Control {
 
 			e.printStackTrace();
 		}
-		
-		
-		
-		
-		
-		
-		
-
 		return false;
 	}
 }

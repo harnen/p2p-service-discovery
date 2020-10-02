@@ -94,7 +94,6 @@ public class Operation {
 
 		// add to closestSet
 		for (BigInteger n : neighbours) {
-
 			if (n != null) {
 				if (!closestSet.containsKey(n)) {
 					if (closestSet.size() < KademliaCommonConfig.K) { // add directly
