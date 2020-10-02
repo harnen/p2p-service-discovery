@@ -44,6 +44,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 */
     private HashMap<BigInteger,SearchTable> searchTable;
     
+	final String PAR_BITS = "BITS";
+	final String PAR_ADS_PER_QUEUE = "ADS_PER_QUEUE";
+	final String PAR_AD_LIFE_TIME = "AD_LIFE_TIME";
+	
 	/**
 	 * Replicate this object by returning an identical copy.<br>
 	 * It is called by the initializer and do not fill any particular field.
@@ -67,6 +71,22 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         ticketTable = new HashMap<BigInteger,TicketTable>();
         searchTable = new HashMap<BigInteger,SearchTable>();
     }
+	
+	/**
+	 * This procedure is called only once and allow to inizialize the internal state of KademliaProtocol. Every node shares the
+	 * same configuration, so it is sufficient to call this routine once.
+	 */
+	protected void _init() {
+		// execute once
+		if (_ALREADY_INSTALLED)
+			return;
+
+		KademliaCommonConfig.TOPIC_TABLE_CAP = Configuration.getInt(prefix + "." + PAR_NBUCKETS, KademliaCommonConfig.TOPIC_TABLE_CAP);
+		KademliaCommonConfig.ADS_PER_QUEUE = Configuration.getInt(prefix + "." + PAR_ADS_PER_QUEUE, KademliaCommonConfig.ADS_PER_QUEUE);
+		KademliaCommonConfig.AD_LIFE_TIME = Configuration.getInt(prefix + "." + PAR_AD_LIFE_TIME, KademliaCommonConfig.AD_LIFE_TIME);
+
+		super._init();
+	}
 
 
 	/**
@@ -243,7 +263,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         }
     	//System.out.println("handleTicketResponse from " + m.src.getId()+" waiting time "+t.getWaitTime()+" "+this.node.getId());
 
-  
+    	//System.out.println("handleTicketResponse from " + m.src.getId()+" waiting time "+t.getWaitTime()+" "+this.node.getId());
+
         ticketTable.get(t.getTopic().getTopicID()).addTicket(m,t);
         //scheduleSendMessage(register, m.src.getId(), myPid, t.getWaitTime());
     }
@@ -269,7 +290,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
         }
         else {
-           // logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
+            logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
         	ticketTable.get(ticket.getTopic().topicID).removeNeighbour(m.src.getId());
         }
     }
@@ -284,8 +305,11 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		//System.out.println("Topic query reply with " + registrations.length+ " replies");
 
 		lop.elaborateResponse(neighbours);
-		for(BigInteger neighbour: neighbours)
+		for(BigInteger neighbour: neighbours) {
 			routingTable.addNeighbour(neighbour);
+			for(SearchTable st : searchTable.values())
+				st.addNeighbour(neighbour);
+		}
 
 		if(registrations.length==0) searchTable.get(lop.topic.getTopicID()).removeNeighbour(m.src.getId());
 		lop.available_requests++;
@@ -326,7 +350,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				if(!lop.finished) { 
 					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
 					HashSet<BigInteger> tmp = new HashSet<BigInteger>(KademliaObserver.registeredTopics.get(lop.topic.topic));
-					tmp.removeAll(lop.discovered);
+					tmp.removeAll(lop.getDiscovered());
 					logger.warning("Missing nodes:");
 					for(BigInteger id: tmp) {
 						logger.warning(id + ", ");
@@ -339,7 +363,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				KademliaObserver.register_total.add(all);
 				KademliaObserver.register_ok.add(found);
 									
-				node.setLookupResult(lop.getNeighboursList());
+				//node.setLookupResult(lop.getNeighboursList());
+				node.setLookupResult(lop.getDiscoveredArray());
 				return;
 			} else { // no neighbour available but exists oustanding request to wait
 				return;
@@ -510,7 +535,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
 		
         //if(neighbours.length<KademliaCommonConfig.K)
-		BigInteger[] neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K);
+		BigInteger[] neighbours = this.searchTable.get(t.getTopicID()).getNeighbours(CommonState.r.nextInt(KademliaCommonConfig.BITS));
+		
+		if(neighbours.length==0)neighbours = this.searchTable.get(t.getTopicID()).getKClosestNeighbours(KademliaCommonConfig.K);
+		
 		lop.elaborateResponse(neighbours);
 		lop.available_requests = KademliaCommonConfig.ALPHA;
 	
@@ -704,9 +732,11 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 * 
 	 */
 	public void refreshBuckets(int kademliaid) {
-		//System.out.println("Refresh");
+		//System.out.print(topicTable.dumpRegistrations());
 		for(TicketTable ttable : ticketTable.values())
 			ttable.refreshBuckets(kademliaid);
+		for(SearchTable stable : searchTable.values())
+			stable.refreshBuckets(kademliaid);
 		routingTable.refreshBuckets(kademliaid);
 	}
 

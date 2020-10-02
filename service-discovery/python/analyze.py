@@ -18,13 +18,13 @@ def analyzeRegistrations(df):
     print(df)
 
     fig, ax = plt.subplots()
-    df['host'].value_counts().plot(ax=ax, kind='bar', xticks=[], title="Registrations by host", width=1)
+    df['host'].value_counts().plot(ax=ax, kind='bar', xticks=[], title="Registrations by advertisement medium", width=1)
 
     fig, ax = plt.subplots()
     df['topic'].value_counts().plot(ax=ax, kind='bar', title="Registerations by topic")
 
     fig, ax = plt.subplots()
-    df['registrant'].value_counts().plot(ax=ax, kind='bar', xticks=[], title="Registrations by registrant", width=1)
+    df['registrant'].value_counts().plot(ax=ax, kind='bar', xticks=[], title="Registrations by advertiser", width=1)
 
     #plt.show()
 

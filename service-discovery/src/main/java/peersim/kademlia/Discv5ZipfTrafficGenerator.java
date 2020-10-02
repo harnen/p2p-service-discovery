@@ -9,9 +9,12 @@ import peersim.edsim.EDSimulator;
 
 import java.math.BigInteger;
 import java.util.Map;
-import java.util.Map.Entry;	
+import java.util.Map.Entry;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+
 import org.apache.commons.math3.distribution.ZipfDistribution; 
 /**
  * This control generates random search traffic from nodes to random destination node.
@@ -47,9 +50,9 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	
 	private int pendingRegistrations,pendingLookups,topicCount;
 	
-	private Map<String,Integer> topicList;
+	//private Map<String,Integer> topicList;
 
-	private Iterator<Entry<String, Integer>> it;
+	//private Iterator<Entry<String, Integer>> it;
 	
 	private int counter = 0;
 	private int lastRegistered = 0;
@@ -62,7 +65,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 		zipf = new ZipfDistribution(topicNum,exp);
 		pendingRegistrations = topicNum;
 		pendingLookups = topicNum;
-		topicList = new HashMap<String,Integer>();
+		/*topicList = new HashMap<String,Integer>();
 		
 		for(int i=1; i <= topicNum; i++) {
 			int times=zipf.sample();
@@ -71,7 +74,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 		}
 		//topicList.put(new String("t"+1),new Integer(20));
 		
-		it = topicList.entrySet().iterator();
+		it = topicList.entrySet().iterator();*/
 
 	}
 
@@ -96,19 +99,6 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	}
 
 
-	// ______________________________________________________________________________________________
-	/**
-	 * generates a register message, by selecting randomly the destination.
-	 * 
-	 * @return Message
-	 */
-	private Message generateRegisterMessage() {
-		Topic t = new Topic("t" + Integer.toString(this.topicCounter++));
-		Message m = Message.makeRegister(t);
-		m.timestamp = CommonState.getTime();
-
-		return m;
-	}
 	
 	// ______________________________________________________________________________________________
 	/**
@@ -125,24 +115,12 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	}
 	
 	
-	// ______________________________________________________________________________________________
-	/**
-	 * generates a topic lookup message, by selecting randomly the destination and one of previousely registered topic.
-	 * 
-	 * @return Message
-	 */
-	private Message generateTopicLookupMessage() {
-		Topic t = new Topic("t" + Integer.toString(CommonState.r.nextInt(this.topicCounter)));
-		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
-		m.timestamp = CommonState.getTime();
+	public void emptyBufferCallback(Node n, Topic t) {
+		//System.out.println("Emptybuffer:" +((KademliaProtocol)n.getProtocol(pid)).getNode().getId());
+		EDSimulator.add(0,generateTopicLookupMessage(t.getTopic()),n, pid);
 
-		// existing active destination node
-		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
-		return m;
 	}
+	
 	
 	// ______________________________________________________________________________________________
 	/**
@@ -157,23 +135,10 @@ public class Discv5ZipfTrafficGenerator implements Control {
 		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
 		m.timestamp = CommonState.getTime();
 
-		// existing active destination node
-		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
 		return m;
 	}
 	
-	public Node getRandomNode() {
-		Node node = null;
-		do {
-			node = Network.get(CommonState.r.nextInt(Network.size()));
-		} while ((node == null) || (!node.isUp()));
-		
-		return node;
-	}
-	
+
 	public BigInteger getClosestNode(BigInteger id) {
 		BigInteger closestId = null;
 		for(int i = 0; i < Network.size(); i++) {
@@ -194,31 +159,45 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	 */
 	public boolean execute() {
 
+		HashMap<String,Integer> n = new HashMap<String,Integer>();
+		if(first) {
+			for(int i = 0;i<Network.size();i++) 
+			{
 
-		
-		if(pendingRegistrations>0) {
-			Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>) it.next();
-			System.out.println("Topic " + pair.getKey() + " will be registered " + pair.getValue() + " times");
-			Topic t = new Topic(pair.getKey());
-			System.out.println("Topic hash: " + t.getTopicID());
-			System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
-			for(int i=0;i<pair.getValue();i++) {
-				Message m = generateRegisterMessage(pair.getKey());
-				Node start = getRandomNode();
-				if(m != null)
+				String topic = new String("t"+zipf.sample());
+				Topic t = new Topic(topic);
+				Integer value = n.get(topic);
+				if(value==null)
+					n.put(topic, 1);
+				else {
+					int val = value.intValue()+1;
+					n.put(topic,val);
+				}
+				System.out.println("Topic " + topic + " will be registered ");
+				System.out.println("Topic hash: " + t.getTopicID());
+				System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
+				Message m = generateRegisterMessage(t.getTopic());
+				Node start = Network.get(i);
+				
+				Discv5TicketProtocol prot = (Discv5TicketProtocol)start.getProtocol(pid);
+				//kad.setClient(this);
+				prot.getNode().setCallBack(this,start,t);
+				
+				Message lookupMessage = generateTopicLookupMessage(t.getTopic());
+
+				if(m != null) {
 					EDSimulator.add(0, m, start, pid);
+					EDSimulator.add(20000+10000*i, lookupMessage, start, pid);
+
+				}
+				
 			}
-			pendingRegistrations--;
-			this.lastRegistered = counter;
-		} else if((pendingLookups > 0) && (counter > (this.lastRegistered + 50)) ) {
-			Message m = generateTopicLookupMessage(new String("t"+pendingLookups));
-			Node start = getRandomNode();
-			if(m != null)
-				EDSimulator.add(0, m, start, pid);
-			pendingLookups--;
+			
+			for (Map.Entry<String, Integer> i :n.entrySet()) 
+				System.out.println("Topic "+i.getKey()+" "+i.getValue()+" times");
+			first=false;
 		}
 		
-		this.counter++;
 		
 		return false;
 		
