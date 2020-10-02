@@ -535,10 +535,25 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
 		
         //if(neighbours.length<KademliaCommonConfig.K)
-		BigInteger[] neighbours = this.searchTable.get(t.getTopicID()).getNeighbours(CommonState.r.nextInt(KademliaCommonConfig.BITS));
+		BigInteger[] neighbours = new BigInteger[0];
+		int tried=0;
+		//System.out.println("Neighbours for distance "+neighbours.length);
+
+		while(neighbours.length==0&&tried<KademliaCommonConfig.NBUCKETS) {
+			int distance = CommonState.r.nextInt(KademliaCommonConfig.NBUCKETS);
+			neighbours = this.searchTable.get(t.getTopicID()).getNeighbours(distance);
+			//System.out.println("Neighbours for distance "+distance+" "+neighbours.length);
+			tried++;
+		}
 		
-		if(neighbours.length==0)neighbours = this.searchTable.get(t.getTopicID()).getKClosestNeighbours(KademliaCommonConfig.K);
 		
+		if(neighbours.length<KademliaCommonConfig.ALPHA) {
+			int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
+			neighbours = this.searchTable.get(t.getTopicID()).getKClosestNeighbours(KademliaCommonConfig.K, distToTopic);;
+			
+		}
+		
+	
 		lop.elaborateResponse(neighbours);
 		lop.available_requests = KademliaCommonConfig.ALPHA;
 	
@@ -547,6 +562,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		m.type = Message.MSG_TOPIC_QUERY;
 		m.src = this.node;
 	
+		System.out.println("Neighbours for lookup "+neighbours.length);
 		// send ALPHA messages
 		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
 			BigInteger nextNode = lop.getNeighbour();

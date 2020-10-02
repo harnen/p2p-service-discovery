@@ -196,7 +196,7 @@ public class KademliaObserver implements Control {
 			if (!Network.get(i).isUp())
 				sz--;
 		//[%d/%d  successful find operation] [D=%f msg deliv] [%f min h] [%f average h] [%f max h] [%d min l] [%d msec average l] [%d max l]
-		String s = String.format("[time=%d]:[N=%d current nodes UP] [%d/%d find (succ/all)] [%d/%d register (succ/all))] [%d/%d msg(recv/sent)]", 
+		String s = String.format("[time=%d]:[N=%d current nodes UP] [%d/%d find (succ/all)] [%d/%d query (succ/all))] [%d/%d msg(recv/sent)]", 
 								CommonState.getTime(), 
 								sz, 
 								(int) find_ok.getSum(), 
@@ -272,14 +272,6 @@ public class KademliaObserver implements Control {
 
 			e.printStackTrace();
 		}
-		
-		
-		
-		
-		
-		
-		
-
 		return false;
 	}
 }
