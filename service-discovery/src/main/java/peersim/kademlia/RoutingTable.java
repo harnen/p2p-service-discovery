@@ -2,12 +2,14 @@ package peersim.kademlia;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.TreeMap;
 
 import peersim.core.CommonState;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Gives an implementation for the routing table component of a kademlia node
@@ -139,6 +141,14 @@ public class RoutingTable implements Cloneable {
 			return;
 		}
 		//}
+	}
+	
+	public Set<BigInteger> getAllNeighbours(){
+		Set<BigInteger> allNeighbours = new HashSet<BigInteger>();
+		for(KBucket b: k_buckets) {
+			allNeighbours.addAll(b.neighbours);
+		}
+		return allNeighbours;
 	}
 	
 	public void sendToFront(BigInteger node)
