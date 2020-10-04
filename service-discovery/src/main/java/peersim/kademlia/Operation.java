@@ -5,6 +5,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.view.Viewer;
+
+import peersim.config.Configuration;
+import peersim.core.CommonState;
+import peersim.core.Network;
+import peersim.core.Node;
+
 /**
  * This class represents a find operation and offer the methods needed to maintain and update the closest set.<br>
  * It also maintains the number of parallel requsts that can has a maximum of ALPHA.
@@ -61,6 +70,8 @@ public class Operation {
 	 * or not
 	 */
 	protected HashMap<BigInteger, Boolean> closestSet;
+	
+	protected ArrayList<BigInteger> returned;
 
 	/**
 	 * defaul constructor
@@ -81,6 +92,8 @@ public class Operation {
 
 		// initialize closestSet
 		closestSet = new HashMap<BigInteger, Boolean>();
+		
+		returned = new ArrayList<BigInteger>();
 	}
 
 	/**
@@ -157,8 +170,10 @@ public class Operation {
 		if (res != null) {
 			closestSet.remove(res);
 			closestSet.put(res, true);
-			//available_requests--; // decrease available request
+			returned.add(res);
+			available_requests--; // decrease available request
 		}
+		
 
 		return res;
 	}
@@ -172,6 +187,38 @@ public class Operation {
 	public List<BigInteger> getNeighboursList() {
 		return new ArrayList<BigInteger>(closestSet.keySet());
 		//return new ArrayList<BigInteger>(closestSet.keySet()).subList(0, KademliaCommonConfig.K-1);
+	}
+	
+	
+	public void visualize() {
+		Graph graph = new SingleGraph("Operation");
+		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
+		BigInteger max = urg.getMaxID();
+		int kademliaid = Configuration.getPid("init.2statebuilder" + ".protocol");
+		
+		for(int i = 0; i < Network.size(); i++) {
+			Node node = Network.get(i); 
+			KademliaProtocol prot = (KademliaProtocol) (node.getProtocol(kademliaid));
+			BigInteger id = prot.node.getId();
+			double ratio = id.doubleValue()/ max.doubleValue() * 360;
+			System.out.println("ID: " + id + " div: " + ratio);
+			double alpha = Math.toRadians(ratio);
+			double x = Math.cos(alpha);
+			double y = Math.sin(alpha);
+
+			org.graphstream.graph.Node gnode = graph.addNode(id.toString());
+		    gnode.setAttribute("x", x);
+		    gnode.setAttribute("y", y);
+		    if(returned.contains(id)) {
+		    	gnode.setAttribute("ui.style", "fill-color: rgb(255,0,0); size: 20px, 20px;");
+		    }else {
+		    	gnode.setAttribute("ui.style", "fill-color: rgba(0,100,255, 50); size: 8px, 8px;");
+		    }
+		}
+		System.setProperty("org.graphstream.ui", "swing"); 
+		Viewer viewer = graph.display();
+		viewer.disableAutoLayout();
+		
 	}
 	
 }
