@@ -74,7 +74,6 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		while ((lop.available_requests > 0)) { // I can send a new find request
 			// get an available neighbour
 			BigInteger neighbour = lop.getNeighbour();
-			
 			if (neighbour != null) {
 				if(!lop.finished) {
 					// send a new request only if we didn't find the node already
@@ -131,9 +130,6 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
 		BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
 		
-		if(this.node.getId().equals(new BigInteger("4627641067993032113262153819650859918860057109891391735156172050017110513000")) ) {
-			System.out.println("Neighbours " + neighbours.length);
-		}
 		
 		if(neighbours.length<KademliaCommonConfig.ALPHA)
 			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);

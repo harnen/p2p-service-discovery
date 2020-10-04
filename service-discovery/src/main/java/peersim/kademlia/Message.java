@@ -274,7 +274,7 @@ public class Message extends SimpleEvent {
 	static class TopicLookupBody{
 		public final TopicRegistration [] registrations;
 		public final BigInteger[] neighbours;
-		
+
 		public TopicLookupBody(TopicRegistration [] registrations, BigInteger[] neighbours) {
 			this.registrations = registrations;
 			this.neighbours = neighbours;
