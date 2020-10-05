@@ -44,6 +44,8 @@ public class Operation {
 	 * Id of the node to find
 	 */
 	public BigInteger destNode;
+	
+	public BigInteger srcNode;
 
 	/**
 	 * Body of the original find message
@@ -79,10 +81,11 @@ public class Operation {
 	 * @param destNode
 	 *            Id of the node to find
 	 */
-	public Operation(BigInteger dstNode, int type, long timestamp) {
+	public Operation(BigInteger srcNode, BigInteger dstNode, int type, long timestamp) {
 		this.timestamp = timestamp;
 		this.destNode = dstNode;
 		this.type = type;
+		this.srcNode = srcNode;
 
 		// set a new find id
 		operationId = OPERATION_ID_GENERATOR++;
@@ -201,7 +204,6 @@ public class Operation {
 			KademliaProtocol prot = (KademliaProtocol) (node.getProtocol(kademliaid));
 			BigInteger id = prot.node.getId();
 			double ratio = id.doubleValue()/ max.doubleValue() * 360;
-			System.out.println("ID: " + id + " div: " + ratio);
 			double alpha = Math.toRadians(ratio);
 			double x = Math.cos(alpha);
 			double y = Math.sin(alpha);
@@ -211,10 +213,28 @@ public class Operation {
 		    gnode.setAttribute("y", y);
 		    if(returned.contains(id)) {
 		    	gnode.setAttribute("ui.style", "fill-color: rgb(255,0,0); size: 20px, 20px;");
+		    	gnode.setAttribute("label", String.valueOf(returned.indexOf(id)));
+		    }else if(id.equals(srcNode)){
+		    	gnode.setAttribute("ui.style", "fill-color: rgb(0,0,255); size: 20px, 20px;");
 		    }else {
 		    	gnode.setAttribute("ui.style", "fill-color: rgba(0,100,255, 50); size: 8px, 8px;");
 		    }
+		    
+		    
+
 		}
+		org.graphstream.graph.Node dst = graph.getNode(destNode.toString());
+		if(dst == null) {
+			dst = graph.addNode(destNode.toString());
+			double ratio = destNode.doubleValue()/ max.doubleValue() * 360;
+			double alpha = Math.toRadians(ratio);
+			double x = Math.cos(alpha);
+			double y = Math.sin(alpha);
+			dst.setAttribute("x", x);
+			dst.setAttribute("y", y);
+		}
+		dst.setAttribute("ui.style", "fill-color: rgb(0,255,0); size: 20px, 20px;");
+	 
 		System.setProperty("org.graphstream.ui", "swing"); 
 		Viewer viewer = graph.display();
 		viewer.disableAutoLayout();

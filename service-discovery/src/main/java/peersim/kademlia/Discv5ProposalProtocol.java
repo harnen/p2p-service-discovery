@@ -118,7 +118,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		Topic t = (Topic) m.body;
 	
 	
-		LookupOperation lop = new LookupOperation(m.timestamp, t);
+		LookupOperation lop = new LookupOperation(this.node.getId(), m.timestamp, t);
 		lop.body = m.body;
 		operations.put(lop.operationId, lop);
 	
@@ -199,7 +199,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		TopicRegistration r = new TopicRegistration(this.node, t);
 		KademliaObserver.addTopicRegistration(t.topic, this.node.getId());
 	
-		RegisterOperation rop = new RegisterOperation(m.timestamp, t, r);
+		RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
 		rop.body = m.body;
 		operations.put(rop.operationId, rop);
 		

@@ -20,8 +20,8 @@ public class FindOperation extends Operation{
 	 * @param destNode
 	 *            Id of the node to find
 	 */
-	public FindOperation(BigInteger destNode, long timestamp) {
-		super(destNode, Message.MSG_FIND, timestamp);
+	public FindOperation(BigInteger srcNode, BigInteger destNode, long timestamp) {
+		super(srcNode, destNode, Message.MSG_FIND, timestamp);
 	}
 	
 

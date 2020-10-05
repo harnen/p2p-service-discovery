@@ -308,7 +308,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		//System.out.println("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
 		// create find operation and add to operations array
-		FindOperation fop = new FindOperation((BigInteger)m.body, m.timestamp);
+		FindOperation fop = new FindOperation(this.node.getId(), (BigInteger)m.body, m.timestamp);
 		fop.destNode = (BigInteger) m.body;
 		operations.put(fop.operationId, fop);
 
@@ -437,8 +437,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		logger = Logger.getLogger(node.getId().toString());
 		logger.setUseParentHandlers(false);
 		ConsoleHandler handler = new ConsoleHandler();
-		//logger.setLevel(Level.WARNING);
-		logger.setLevel(Level.ALL);
+		logger.setLevel(Level.WARNING);
+		//logger.setLevel(Level.ALL);
 		  
       	handler.setFormatter(new SimpleFormatter() {
         	private static final String format = "[%d][%s] %3$s %n";
