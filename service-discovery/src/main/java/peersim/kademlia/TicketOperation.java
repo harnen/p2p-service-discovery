@@ -20,8 +20,8 @@ public class TicketOperation extends Operation{
 	 *            Id of the node to find
 	 */
     
-    public TicketOperation(long timestamp, Topic t) {
-        super(t.getTopicID(), Message.MSG_TICKET_REQUEST, timestamp);
+    public TicketOperation(BigInteger srcNode, long timestamp, Topic t) {
+        super(srcNode, t.getTopicID(), Message.MSG_TICKET_REQUEST, timestamp);
         this.topic = t;
     }
     
