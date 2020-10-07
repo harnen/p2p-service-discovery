@@ -47,6 +47,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	final String PAR_ALPHA = "ALPHA";
 	final String PAR_BITS = "BITS";
 	final String PAR_NBUCKETS = "NBUCKETS";
+	final String OTHER_PAR_PROT = "otherProtocol";
+	final String PAR_PROT = "protocol";
 	final String PAR_REFRESHTIME = "REFRESH";
 
 	private static final String PAR_TRANSPORT = "transport";
@@ -54,6 +56,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	protected UnreliableTransport transport;
 	protected int tid;
 	protected int kademliaid;
+    protected int otherProtocolId;
 	protected HashMap<BigInteger,Integer> failures;
 	//private EthClient client;
 
@@ -110,6 +113,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		this.node = null; // empty nodeId
 		KademliaProtocol.prefix = prefix;
 		failures = new HashMap();
+        otherProtocolId = Configuration.getPid(prefix + "." + OTHER_PAR_PROT);
+        kademliaid = Configuration.getPid(prefix + "." + PAR_PROT);
 		_init();
 
 		this.routingTable = new RoutingTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,KademliaCommonConfig.MAXREPLACEMENT);
@@ -161,8 +166,11 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		
 		while (inf <= sup) {
 			m = (inf + sup) / 2;
-
-			BigInteger mId = ((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
+            BigInteger mId;
+            if (Network.get(m).getProtocol(kademliaid) != null)
+    			mId = ((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
+            else
+    			mId = ((KademliaProtocol) Network.get(m).getProtocol(otherProtocolId)).node.getId();
 
 			if (mId.equals(searchNodeId))
 				return Network.get(m);
@@ -176,7 +184,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// perform a traditional search for more reliability (maybe the network is not ordered)
 		BigInteger mId;
 		for (int i = Network.size() - 1; i >= 0; i--) {
-			mId = ((KademliaProtocol) Network.get(i).getProtocol(kademliaid)).node.getId();
+            if (Network.get(i).getProtocol(kademliaid) != null)
+    			mId = ((KademliaProtocol) Network.get(i).getProtocol(kademliaid)).node.getId();
+            else
+    			mId = ((KademliaProtocol) Network.get(i).getProtocol(otherProtocolId)).node.getId();
 			if (mId.equals(searchNodeId))
 				return Network.get(i);
 		}
@@ -350,14 +361,19 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public void sendMessage(Message m, BigInteger destId, int myPid) {
 		// add destination to routing table
 		this.routingTable.addNeighbour(destId);
-		
+	    int destpid;
+
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
+
+        destpid = kademliaid;
+        if (dest.getProtocol(kademliaid) == null)
+            destpid = otherProtocolId;
 
 		logger.info("-> (" + m + "/" + m.id + ") " + destId);
 
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
-		transport.send(src, dest, m, kademliaid);
+		transport.send(src, dest, m, destpid);
 		KademliaObserver.msg_sent.add(1);
 
 		if (m.getType() == Message.MSG_FIND) { // is a request
@@ -382,7 +398,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	public void processEvent(Node myNode, int myPid, Object event) {
 		// Parse message content Activate the correct event manager fot the particular event
-		this.kademliaid = myPid;
+		//this.kademliaid = myPid;
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT && ((SimpleEvent) event).getType() != Timeout.TICKET_TIMEOUT){
 			Message m = (Message) event;
 			if(m.src != null)
@@ -465,8 +481,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
-	public void refreshBuckets(int kademliaid) {
-		routingTable.refreshBuckets(kademliaid);
+	public void refreshBuckets(int kademliaid, int otherProtocolId) {
+		routingTable.refreshBuckets(kademliaid, otherProtocolId);
 	}
 	
 	/*public void setClient (EthClient client) {

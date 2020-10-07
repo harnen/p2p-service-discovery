@@ -41,6 +41,15 @@ public static final String PAR_PROT = "protocol";
  */
 public Protocol getProtocol(int i);
 
+
+/**
+ * Sets the <code>i</code>-th protocol in this node. If <code>i</code> 
+ * is not a valid protocol id
+ * (negative or larger than or equal to the number of protocols), then it throws
+ * IndexOutOfBoundsException.
+ */
+public void setProtocol(int i, Protocol p);
+
 /**
  * Returns the number of protocols included in this node.
  */

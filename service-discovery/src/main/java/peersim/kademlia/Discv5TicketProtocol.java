@@ -102,9 +102,14 @@ public class Discv5TicketProtocol extends KademliaProtocol {
      *            the delay to wait before sending           
 	 */
 	public void scheduleSendMessage(Message m, BigInteger destId, int myPid, long delay) {
+	    int destpid;
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
         
+        destpid = kademliaid;
+        if (dest.getProtocol(kademliaid) == null)
+            destpid = otherProtocolId;
+
         m.src = this.node;
         m.dest = new KademliaNode(destId);     
 		
@@ -117,7 +122,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
         long network_delay = transport.getLatency(src, dest);
-        EDSimulator.add(network_delay+delay, m, dest, myPid); 
+        EDSimulator.add(network_delay+delay, m, dest, destpid); 
 
 		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)|| (m.getType() == Message.MSG_TICKET_REQUEST) ) { 
 			Timeout t = new Timeout(destId, m.id, m.operationId);
@@ -142,16 +147,21 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	public void sendMessage(Message m, BigInteger destId, int myPid) {
 		// add destination to routing table
 		this.routingTable.addNeighbour(destId);
+	    int destpid;
 
         m.src = this.node;
         m.dest = new KademliaNode(destId);     
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
 
+        destpid = kademliaid;
+        if (dest.getProtocol(kademliaid) == null)
+            destpid = otherProtocolId;
+
 		logger.info("-> (" + m + "/" + m.id + ") " + destId);
 
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
-		transport.send(src, dest, m, kademliaid);
+		transport.send(src, dest, m, destpid);
 		KademliaObserver.msg_sent.add(1);
 
 		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)|| (m.getType() == Message.MSG_TICKET_REQUEST) ) { 
@@ -786,13 +796,13 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
-	public void refreshBuckets(int kademliaid) {
+	public void refreshBuckets(int kademliaid, int otherProtocolId) {
 		//System.out.print(topicTable.dumpRegistrations());
 		for(TicketTable ttable : ticketTable.values())
-			ttable.refreshBuckets(kademliaid);
+			ttable.refreshBuckets(kademliaid, otherProtocolId);
 		for(SearchTable stable : searchTable.values())
-			stable.refreshBuckets(kademliaid);
-		routingTable.refreshBuckets(kademliaid);
+			stable.refreshBuckets(kademliaid, otherProtocolId);
+		routingTable.refreshBuckets(kademliaid, otherProtocolId);
 	}
 
 }
