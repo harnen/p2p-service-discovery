@@ -3,4 +3,4 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-java -Xmx5000m -cp lib/djep-1.0.0.jar:lib/jep-2.3.0.jar:target/service-discovery-1.0-SNAPSHOT.jar -ea peersim.Simulator $1
+java -Xmx5000m -cp lib/djep-1.0.0.jar:lib/jep-2.3.0.jar:target/service-discovery-1.0-SNAPSHOT.jar:lib/gs-core-2.0.jar:lib/pherd-1.0.jar:lib/mbox2-1.0.jar:lib/gs-ui-swing-2.0.jar -ea peersim.Simulator $1

@@ -574,7 +574,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     	
     	KademliaObserver.lookup_total.add(1);
 		
-		LookupOperation lop = new LookupOperation(m.timestamp, t);
+        LookupOperation lop = new LookupOperation(this.node.getId(), m.timestamp, t);
 		operations.put(lop.operationId, lop);
 
 		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
@@ -656,7 +656,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	
    public void sendTicketRequest(BigInteger dest,Topic t,int myPid) {
     	
-        TicketOperation top = new TicketOperation(CommonState.getTime(), t);
+        TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
  		top.body = t;
  		operations.put(top.operationId, top);
          
