@@ -336,10 +336,16 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		
 		while ((lop.available_requests > 0)) { // I can send a new find request
 			// get an available neighbour
+			//System.out.println("Topic query reply with " + registrations.length+ " replies");
+
 			BigInteger[] neighs = new BigInteger[0];
 			int distance = CommonState.r.nextInt(KademliaCommonConfig.NBUCKETS);
-			while((lop.isUsed(distance)||neighbours.length==0)&&lop.getUsed().size()<KademliaCommonConfig.NBUCKETS) {
+			int tries=0;
+			while((neighbours.length==0)&&(tries<KademliaCommonConfig.NBUCKETS)) {
+				//System.out.println("Topic query reply with " + registrations.length+ " replies");
 				distance = CommonState.r.nextInt(KademliaCommonConfig.NBUCKETS);
+				tries++;
+				if(lop.isUsed(distance))continue;
 				neighs = this.searchTable.get(lop.topic.getTopicID()).getNeighbours(distance);
 			}
 			lop.addUsed(distance);
@@ -590,10 +596,13 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	
 		while(tried<KademliaCommonConfig.NBUCKETS&&sent<KademliaCommonConfig.ALPHA) {
 			int distance = CommonState.r.nextInt(KademliaCommonConfig.NBUCKETS);
-			//sSystem.out.println("Distance "+distance);
-			while((lop.isUsed(distance)||neighbours.length==0)&&lop.getUsed().size()<KademliaCommonConfig.NBUCKETS) {
+			//System.out.println("Distance "+distance);
+			int tries=0;
+			while((neighbours.length==0)&&(tries<KademliaCommonConfig.NBUCKETS)) {
 				//System.out.println("Distance "+distance);
 				distance = CommonState.r.nextInt(KademliaCommonConfig.NBUCKETS);
+				tries++;
+				if(lop.isUsed(distance))continue;
 				//System.out.println("Distance "+distance);
 				neighbours = this.searchTable.get(t.getTopicID()).getNeighbours(distance);
 				//System.out.println("Distance "+distance+" "+neighbours.length);
