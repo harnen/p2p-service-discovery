@@ -80,7 +80,7 @@ public class Turbulence implements Control {
 	public Turbulence(String prefix) {
 		this.prefix = prefix;
 		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
-		evilProtocolId = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT);
+		evilProtocolId = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT, -1);
 		transportid = Configuration.getPid(this.prefix + "." + PAR_TRANSPORT);
         /*if (Configuration.isValidProtocolName(prefix + "." + DISCV5_PAR_PROT)) {
 		    discv5id = Configuration.getPid(this.prefix + "." + DISCV5_PAR_PROT);

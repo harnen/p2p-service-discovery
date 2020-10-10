@@ -96,7 +96,7 @@ public class KademliaObserver implements Control {
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
-		evil_pid = Configuration.getPid(prefix + "." + EVIL_PAR_PROT);
+		evil_pid = Configuration.getPid(prefix + "." + EVIL_PAR_PROT, -1);
 		try {
 			msgWriter = new FileWriter("messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");

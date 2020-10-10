@@ -113,8 +113,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		this.node = null; // empty nodeId
 		KademliaProtocol.prefix = prefix;
 		failures = new HashMap();
-        otherProtocolId = Configuration.getPid(prefix + "." + OTHER_PAR_PROT);
-        kademliaid = Configuration.getPid(prefix + "." + PAR_PROT);
+        kademliaid = Configuration.getPid(prefix + "." + PAR_PROT, -1);
+        // For configurations with secondary protocol
+        otherProtocolId = Configuration.getPid(prefix + "." + OTHER_PAR_PROT, -1);
 		_init();
 
 		this.routingTable = new RoutingTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,KademliaCommonConfig.MAXREPLACEMENT);
@@ -398,7 +399,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	public void processEvent(Node myNode, int myPid, Object event) {
 		// Parse message content Activate the correct event manager fot the particular event
-		//this.kademliaid = myPid;
+        if (this.kademliaid == -1)
+    		this.kademliaid = myPid;
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT && ((SimpleEvent) event).getType() != Timeout.TICKET_TIMEOUT){
 			Message m = (Message) event;
 			if(m.src != null)

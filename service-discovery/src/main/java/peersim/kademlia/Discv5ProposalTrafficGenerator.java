@@ -48,7 +48,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
 	// ______________________________________________________________________________________________
 	public Discv5ProposalTrafficGenerator(String prefix) {
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
-		evil_pid = Configuration.getPid(prefix + "." + EVIL_PAR_PROT);
+		evil_pid = Configuration.getPid(prefix + "." + EVIL_PAR_PROT, -1);
 		topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
 
 		topicList = new HashMap<String,Integer>();

@@ -39,7 +39,7 @@ public class RefreshBuckets implements Control {
 	public RefreshBuckets(String prefix) {
 		this.prefix = prefix;
 		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
-        evilKademliaid = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT);
+        evilKademliaid = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT, -1);
 		//System.out.println("Refresh "+kademliaid);
 		//System.err.println(String.format("Turbolence: [p_idle=%f] [p_add=%f] [(min,max)=(%d,%d)]", p_idle, p_add, maxsize, minsize));
 	}

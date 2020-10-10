@@ -39,7 +39,7 @@ public class StateBuilder implements peersim.core.Control {
 	public StateBuilder(String prefix) {
 		this.prefix = prefix;
 		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
-		evilKademliaid = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT);
+		evilKademliaid = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT, -1);
 		transportid = Configuration.getPid(this.prefix + "." + PAR_TRANSPORT);
 	}
 
