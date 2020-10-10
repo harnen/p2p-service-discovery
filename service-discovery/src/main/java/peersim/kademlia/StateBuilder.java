@@ -1,10 +1,14 @@
 package peersim.kademlia;
 
 import java.math.BigInteger;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import org.graphstream.graph.*;
+import org.graphstream.graph.implementations.*;
+import org.graphstream.ui.view.Viewer;
 
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -56,9 +60,40 @@ public class StateBuilder implements peersim.core.Control {
 
 
 	
+	/*public void visualize() {
+		Graph graph = new SingleGraph("Tutorial 1");
+		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
+		BigInteger max = urg.getMaxID();
+		System.out.println("MAX: " + max);
+		
+		for(int i = 0; i < Network.size(); i++) {
+			Node node = Network.get(i); 
+			KademliaProtocol prot = (KademliaProtocol) (node.getProtocol(kademliaid));
+			BigInteger id = prot.node.getId();
+			double ratio = id.doubleValue()/ max.doubleValue() * 360;
+			System.out.println("ID: " + id + " div: " + ratio);
+			double alpha = Math.toRadians(ratio);
+			double x = Math.cos(alpha);
+			double y = Math.sin(alpha);
+
+			org.graphstream.graph.Node gnode = graph.addNode(id.toString());
+		    gnode.setAttribute("x", x);
+		    gnode.setAttribute("y", y);
+		    gnode.setAttribute("ui.style", "fill-color: rgba(0,100,255, 50); size: 10px, 10px;");
+		    if((i %10) == 0) {
+		    	gnode.setAttribute("ui.style", "fill-color: rgb(255,0,0); size: 20px, 20px;");
+		    }
+		}
+		System.setProperty("org.graphstream.ui", "swing"); 
+		Viewer viewer = graph.display();
+		viewer.disableAutoLayout();
+		//System.exit(0);		
+		//
+	}*/
+
+	
 	// ______________________________________________________________________________________________
 	public boolean execute() {
-
 		// Sort the network by nodeId (Ascending)
 		Network.sort(new Comparator<Node>() {
 
@@ -135,8 +170,6 @@ public class StateBuilder implements peersim.core.Control {
 	
 	
 	private boolean isNetworkConnected() {
-		
-	
 		ArrayList<Set<BigInteger>> groups = new ArrayList<Set<BigInteger>>(); 
 	
 		for(int i = 0; i < Network.size(); i++) {

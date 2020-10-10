@@ -23,16 +23,16 @@ public class RegisterOperation extends Operation{
 	 * @param destNode
 	 *            Id of the node to find
 	 */
-	public RegisterOperation(long timestamp, Topic t, TopicRegistration r) {
+	public RegisterOperation(BigInteger srcNode, long timestamp, Topic t, TopicRegistration r) {
 		
-		super(t.getTopicID(), Message.MSG_REGISTER, timestamp);
+		super(srcNode, t.getTopicID(), Message.MSG_REGISTER, timestamp);
 
 		this.registration = r;
 		this.topic = t;
 	}
     
-    public RegisterOperation(long timestamp, Topic t, BigInteger targetAddr) {
-        super(targetAddr, Message.MSG_REGISTER, timestamp);
+    public RegisterOperation(BigInteger srcNode, long timestamp, Topic t, BigInteger targetAddr) {
+        super(srcNode, targetAddr, Message.MSG_REGISTER, timestamp);
         this.topic = t;
     }
     

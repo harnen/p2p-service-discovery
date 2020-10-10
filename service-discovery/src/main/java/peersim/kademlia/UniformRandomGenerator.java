@@ -65,6 +65,16 @@ public final class UniformRandomGenerator {
 	public UniformRandomGenerator(int aBits, long aSeed) {
 		this(aBits, new Random(aSeed));
 	}
+	
+	
+	public BigInteger getMaxID() {
+		BigInteger max = this.generate();
+		for(int i = 0; i < bits; i++) {
+			max = max.setBit(i);
+		}
+		return max;
+		
+	}
 
 	// ______________________________________________________________________________________________
 	/**

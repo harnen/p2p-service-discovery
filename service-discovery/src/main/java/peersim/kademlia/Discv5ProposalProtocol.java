@@ -43,20 +43,10 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		
 		BigInteger[] neighbours = ((Message.TopicLookupBody) m.body).neighbours;
 		TopicRegistration[] registrations = ((Message.TopicLookupBody) m.body).registrations;
-		//System.out.println("available requests before: " + lop.available_requests);
 		lop.elaborateResponse(neighbours);
 		for(BigInteger neighbour: neighbours)
 			routingTable.addNeighbour(neighbour);
 		
-		/*if(this.node.getId().equals(new BigInteger("4627641067993032113262153819650859918860057109891391735156172050017110513000")) 
-				&& lop.topic.topic.equals("t98")) {*/
-		/*if(false) {
-			System.out.println("Received " + registrations.length + " registrations from " + m.src.getId() + " for " + lop.topic.topic);
-			for(TopicRegistration r: registrations) {
-				System.out.println("\t" + r.getNode().getId());
-			}
-			System.out.println("available requests: " + lop.available_requests);
-		}*/
 
 		for(TopicRegistration r: registrations) {
 			lop.addDiscovered(r.getNode().getId());
@@ -85,14 +75,17 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	
 					if(request != null) {
 						lop.nrHops++;
-						lop.available_requests--;
 						sendMessage(request, neighbour, myPid);
 					}
+				}else {
+					//getNeighbour decreases available_requests, but we didn't send a message
+					lop.available_requests++;
 				}
 					
 			} else if (lop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 				// search operation finished
 				operations.remove(lop.operationId);
+				//lop.visualize(); uncomment if you want to see visualization of the operation
 				if(!lop.finished) { 
 					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
 					HashSet<BigInteger> tmp = new HashSet<BigInteger>(KademliaObserver.registeredTopics.get(lop.topic.topic));
@@ -123,7 +116,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		Topic t = (Topic) m.body;
 	
 	
-		LookupOperation lop = new LookupOperation(m.timestamp, t);
+		LookupOperation lop = new LookupOperation(this.node.getId(), m.timestamp, t);
 		lop.body = m.body;
 		operations.put(lop.operationId, lop);
 	
@@ -200,22 +193,15 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		TopicRegistration r = new TopicRegistration(this.node, t);
 		KademliaObserver.addTopicRegistration(t.topic, this.node.getId());
 	
-		RegisterOperation rop = new RegisterOperation(m.timestamp, t, r);
+		RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
 		rop.body = m.body;
 		operations.put(rop.operationId, rop);
 		
 		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
 		BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
 		
-		//System.out.println(this.node.getId() + " neighbours to "+t.getTopicID()+" "+neighbours.length);
 		if(neighbours.length < KademliaCommonConfig.ALPHA)
 			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
-		
-		//System.out.println("Neighbours to "+t.getTopicID()+" "+neighbours.length);
-		
-		/*for(BigInteger n: neighbours) {
-			System.out.println("\tNeighbour: " + n);
-		}*/
 
 		rop.elaborateResponse(neighbours);
 		rop.available_requests = KademliaCommonConfig.ALPHA;

@@ -10,8 +10,8 @@ public class LookupOperation extends Operation {
 	private HashSet<BigInteger> discovered;
 	private HashSet<Integer> used;
 	
-	public LookupOperation(Long timestamp, Topic t) {
-		super(t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
+	public LookupOperation(BigInteger srcNode, Long timestamp, Topic t) {
+		super(srcNode, t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
 		this.topic = t;
 		discovered = new HashSet<BigInteger>();
 		used = new HashSet<Integer>();
