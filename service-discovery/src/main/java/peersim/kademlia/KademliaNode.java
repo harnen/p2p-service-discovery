@@ -140,6 +140,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	{
         	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection:"+ad);
     	}*/
+
     	outgoingConnections.remove(addr);
     	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection2:"+outgoingConnections.size()+" "+lookupResultBuffer.size());
     	tryNewConnections();
