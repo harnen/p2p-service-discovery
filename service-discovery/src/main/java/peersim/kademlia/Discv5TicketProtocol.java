@@ -305,7 +305,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		Message.TopicLookupBody lookupBody = (Message.TopicLookupBody) m.body;
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[]  registrations = lookupBody.registrations;
-		System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.availableRequests());
+		//System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.availableRequests());
 
 		lop.elaborateResponse(neighbours);
 		for(BigInteger neighbour: neighbours) {
@@ -316,7 +316,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			for(TicketTable tt : ticketTable.values())
 				tt.addNeighbour(neighbour);
 		}
-		
+	
+		lop.decreaseRequests();	
 		for(TopicRegistration r: registrations) {
 			lop.addDiscovered(r.getNode().getId());
 		}
@@ -625,7 +626,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			if(neighbours.length!=0) {
 				sendMessage(m.copy(), neighbours[CommonState.r.nextInt(neighbours.length)], myPid);
 				lop.increaseRequests();
-				System.out.println("Send topic lookup id "+lop.operationId+" "+lop.availableRequests());
+				//System.out.println("Send topic lookup id "+lop.operationId+" "+lop.availableRequests());
 				sent++;
 			}
 	
