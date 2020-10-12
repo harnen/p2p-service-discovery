@@ -9,13 +9,14 @@ public class LookupOperation extends Operation {
 	final Topic topic;
 	private HashSet<BigInteger> discovered;
 	private HashSet<Integer> used;
+	private int sentRequests;
 	
 	public LookupOperation(BigInteger srcNode, Long timestamp, Topic t) {
 		super(srcNode, t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
 		this.topic = t;
 		discovered = new HashSet<BigInteger>();
 		used = new HashSet<Integer>();
-
+		sentRequests=0;
 	}
 	
 	public void addDiscovered(BigInteger id) {
@@ -46,4 +47,13 @@ public class LookupOperation extends Operation {
 	public HashSet<Integer> getUsed(){
 		return used;
 	} 
+	
+	public void increaseRequests()
+	{
+		sentRequests++;
+	}
+	
+	public int availableRequests() {
+		return sentRequests;
+	}
 }

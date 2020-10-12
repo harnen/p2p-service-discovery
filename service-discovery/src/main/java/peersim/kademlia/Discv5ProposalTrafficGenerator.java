@@ -134,7 +134,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
 
 		if(it.hasNext()) {
 			Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>) it.next();
-			int regNum = pair.getValue() * 1;
+			int regNum = pair.getValue() * 100;
 			int queryNum = pair.getValue() * 1;
 			System.out.println("Topic " + pair.getKey() + " will be registered " + regNum + " times and queried " + queryNum + " times.");
 			
