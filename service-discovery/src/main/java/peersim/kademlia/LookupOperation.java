@@ -52,6 +52,11 @@ public class LookupOperation extends Operation {
 	{
 		sentRequests++;
 	}
+
+	public void decreaseRequests()
+	{
+		sentRequests--;
+	}
 	
 	public int availableRequests() {
 		return sentRequests;
