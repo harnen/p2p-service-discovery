@@ -1,40 +1,54 @@
+#!/usr/bin/python3
+
 import pandas as pd
 import matplotlib
 from matplotlib import pyplot as plt
+import sys
 
-def analyzeMessages(df):
-    print(df)
+def analyzeMessages(dirs):
+    
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    fig, ax = plt.subplots()
-    df['dst'].value_counts().plot(ax=ax, kind='bar', xticks=[], title="Message received by node", width=1)
-    fig, ax = plt.subplots()
-    df['type'].value_counts().plot(ax=ax, kind='bar', title="Message types", width=1)
-    fig, ax = plt.subplots()
-    df['src'].value_counts().plot(ax=ax, kind='bar', xticks=[], title="Message sent by node", width=1)
+    fig, ax1 = plt.subplots()
+    fig, ax2 = plt.subplots()
+    fig, ax3 = plt.subplots()
+    for log_dir in dirs:
+        print(log_dir)
+        df = pd.read_csv(log_dir + '/messages.csv')
+
+        df['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label=log_dir)
+    
+        df['type'].value_counts().plot(ax=ax2, kind='bar', title="Message types", width=1)
+    
+        df['src'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message sent by node", label=log_dir)
+    ax1.legend()
+    ax3.legend()
+    #plt.show()
+
+def analyzeRegistrations(dirs):
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    fig, ax1 = plt.subplots()
+    fig, ax2 = plt.subplots()
+    fig, ax3 = plt.subplots()
+
+    for log_dir in dirs:
+        print(log_dir)
+        df = pd.read_csv(log_dir + '/3500000_registrations.csv')
+        df['host'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Registrations by advertisement medium", label=log_dir)
+
+        df['topic'].value_counts().plot(ax=ax2, kind='bar', title="Registerations by topic", label=log_dir)
+
+        df['registrant'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Registrations by advertiser")
+    ax1.legend()
+    ax3.legend()
 
     #plt.show()
 
-def analyzeRegistrations(df):
-    print(df)
+if (len(sys.argv) < 2):
+    print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
+    exit(1)
 
-    fig, ax = plt.subplots()
-    df['host'].value_counts().plot(ax=ax, kind='bar', xticks=[], title="Registrations by advertisement medium", width=1)
-
-    fig, ax = plt.subplots()
-    df['topic'].value_counts().plot(ax=ax, kind='bar', title="Registerations by topic")
-
-    fig, ax = plt.subplots()
-    df['registrant'].value_counts().plot(ax=ax, kind='bar', xticks=[], title="Registrations by advertiser", width=1)
-
-    #plt.show()
-
-df_messages = pd.read_csv("../messages.csv")
-analyzeMessages(df_messages)
-
-#input()
-
-df_registrations = pd.read_csv("../300000_registrations.csv")
-analyzeRegistrations(df_registrations)
+print('Will read logs from', sys.argv[1:])
+analyzeMessages(sys.argv[1:])
+analyzeRegistrations(sys.argv[1:])
 
 plt.show()
-
