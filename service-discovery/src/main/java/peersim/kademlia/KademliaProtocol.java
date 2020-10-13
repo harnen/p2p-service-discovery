@@ -254,6 +254,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 						op.available_requests--;
 						request.operationId = m.operationId;
 						request.src = this.node;
+						request.dest = new KademliaNode(neighbour);
 						sendMessage(request, neighbour, myPid);
 					}
 				}
@@ -299,6 +300,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		response.operationId = m.operationId;
 		//response.body = m.body;
 		response.src = this.node;
+		response.dest = m.src; 
 		response.ackId = m.id; // set ACK number
 
 		// send back the neighbours to the source of the message
@@ -342,6 +344,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			if (nextNode != null) {
 				//m.body = Util.prefixLen(nextNode, fop.destNode);
 				m.body = Util.logDistance(nextNode, fop.destNode);
+				m.dest = new KademliaNode(nextNode);
 				//System.out.println("Send find message "+Util.logDistance(nextNode, fop.destNode));
 				sendMessage(m.copy(), nextNode, myPid);
 				fop.nrHops++;
@@ -363,9 +366,16 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// add destination to routing table
 		this.routingTable.addNeighbour(destId);
 	    int destpid;
+	    /*System.out.println("M:" + m);
+		System.out.println("m.src:" + m.src);
+		System.out.println("m.dest:" + m.dest);*/
+	    assert m.src != null;
+	    assert m.dest != null;
+	    
 
 		Node src = nodeIdtoNode(this.node.getId());
 		Node dest = nodeIdtoNode(destId);
+		
 
         destpid = kademliaid;
         if (dest.getProtocol(kademliaid) == null)
@@ -377,7 +387,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		transport.send(src, dest, m, destpid);
 		KademliaObserver.msg_sent.add(1);
 
-		if (m.getType() == Message.MSG_FIND) { // is a request
+		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
 			Timeout t = new Timeout(destId, m.id, m.operationId);
 			long latency = transport.getLatency(src, dest);
 
@@ -411,7 +421,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			if(m.getType() != Message.MSG_INIT_FIND && 
 				m.getType() != Message.MSG_INIT_TOPIC_LOOKUP &&
 				m.getType() != Message.MSG_INIT_REGISTER) {
-					KademliaObserver.registerMsgReceived(this.node.getId(), m);
+					KademliaObserver.reportMsg(m, false);
+					//;//KademliaObserver.registerMsgReceived(this.node.getId(), m);
 			}
 		}
 
