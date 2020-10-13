@@ -67,7 +67,7 @@ public class SearchTable extends RoutingTable {
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
-	public void refreshBuckets(int kademliaid) {
+	public void refreshBuckets(int kademliaid, int otherProtocolId) {
 		//System.out.println("Refresh bucket");
 		//System.out.println("Routingtable refreshBuckkets "+CommonState.getTime());
 		Random rnd= new Random();
@@ -76,7 +76,7 @@ public class SearchTable extends RoutingTable {
 		if(b.neighbours.size()<k)
 			protocol.sendLookup(t, myPid);
 		if(b.neighbours.size()>0) {
-			b.checkAndReplaceLast(kademliaid);
+			b.checkAndReplaceLast(kademliaid, otherProtocolId);
 			return;
 		}
 	}

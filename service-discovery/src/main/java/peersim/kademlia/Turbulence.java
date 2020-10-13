@@ -31,6 +31,7 @@ import peersim.edsim.EDSimulator;
 public class Turbulence implements Control {
 
 	private static final String PAR_PROT = "protocol";
+	private static final String EVIL_PAR_PROT = "evilProtocol";
 	//private static final String DISCV5_PAR_PROT = "discv5_protocol";
 	private static final String PAR_TRANSPORT = "transport";
 	private static final String PAR_INIT = "init";
@@ -66,6 +67,7 @@ public class Turbulence implements Control {
 
 	private String prefix;
 	private int kademliaid;
+    private int evilProtocolId;
 	//private int discv5id=-1;
 	private int transportid;
 	private int maxsize;
@@ -78,6 +80,7 @@ public class Turbulence implements Control {
 	public Turbulence(String prefix) {
 		this.prefix = prefix;
 		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
+		evilProtocolId = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT, -1);
 		transportid = Configuration.getPid(this.prefix + "." + PAR_TRANSPORT);
         /*if (Configuration.isValidProtocolName(prefix + "." + DISCV5_PAR_PROT)) {
 		    discv5id = Configuration.getPid(this.prefix + "." + DISCV5_PAR_PROT);
@@ -197,7 +200,7 @@ public class Turbulence implements Control {
 		List<BigInteger> outgoing = kadNode.getOutgoingConnections();
 		for(BigInteger addr : incoming)
 		{
-			Node n = Util.nodeIdtoNode(addr, kademliaid);
+			Node n = Util.nodeIdtoNode(addr, kademliaid, evilProtocolId);
 			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
 			kad.deleteOutgoingConnection(kadNode.getId());
 			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
@@ -205,7 +208,7 @@ public class Turbulence implements Control {
 		
 		for(BigInteger addr : outgoing)
 		{
-			Node n = Util.nodeIdtoNode(addr, kademliaid);
+			Node n = Util.nodeIdtoNode(addr, kademliaid, evilProtocolId);
 			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
 			kad.deleteIncomingConnection(kadNode.getId());
 			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());

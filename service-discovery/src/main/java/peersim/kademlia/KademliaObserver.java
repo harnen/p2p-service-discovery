@@ -80,11 +80,13 @@ public class KademliaObserver implements Control {
 
 	/** Parameter of the protocol we want to observe */
 	private static final String PAR_PROT = "protocol";
+	private static final String EVIL_PAR_PROT = "evilProtocol";
 	
 	private static FileWriter msgWriter; 
 
 	/** Protocol id */
 	private int pid;
+	private int evil_pid;
 
 	/** Prefix to be printed in output */
 	private String prefix;
@@ -94,6 +96,7 @@ public class KademliaObserver implements Control {
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
+		evil_pid = Configuration.getPid(prefix + "." + EVIL_PAR_PROT, -1);
 		try {
 			msgWriter = new FileWriter("messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");
@@ -257,7 +260,11 @@ public class KademliaObserver implements Control {
 			writer.write("host,topic,registrant\n");
 			for(int i = 0; i < Network.size(); i++) {
 				Node node = Network.get(i);
-				kadProtocol = (KademliaProtocol)node.getProtocol(pid);
+                if (node.getProtocol(pid) != null)
+    				kadProtocol = (KademliaProtocol)node.getProtocol(pid);
+                else 
+    				kadProtocol = (KademliaProtocol)node.getProtocol(evil_pid);
+
 				if(kadProtocol instanceof Discv5ProposalProtocol) {
 					String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
 					writer.write(registrations);

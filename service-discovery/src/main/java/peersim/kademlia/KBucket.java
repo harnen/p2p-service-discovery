@@ -115,7 +115,7 @@ public class KBucket implements Cloneable {
 		}
 	}
 	
-	public void checkAndReplaceLast(int kademliaid) {
+	public void checkAndReplaceLast(int kademliaid, int otherProtocolId) {
 		if (neighbours.size() == 0||CommonState.getTime()==0) 
 			// Entry has moved, don't replace it.
 			return;
@@ -123,9 +123,14 @@ public class KBucket implements Cloneable {
 
 		//System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at  "+CommonState.getTime());
 
-		Node node = Util.nodeIdtoNode(neighbours.get(neighbours.size()-1),kademliaid);
+		Node node = Util.nodeIdtoNode(neighbours.get(neighbours.size()-1),kademliaid, otherProtocolId);
 		//System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at "+CommonState.getTime());
-		KademliaProtocol remote = (KademliaProtocol) node.getProtocol(kademliaid);
+        KademliaProtocol remote;
+        if (node.getProtocol(kademliaid) != null)
+    		remote = (KademliaProtocol) node.getProtocol(kademliaid);
+        else
+    		remote = (KademliaProtocol) node.getProtocol(otherProtocolId);
+
 		//((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
 		remote.routingTable.sendToFront(rTable.nodeId);
 		

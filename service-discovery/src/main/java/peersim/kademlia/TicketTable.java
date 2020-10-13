@@ -83,7 +83,7 @@ public class TicketTable extends RoutingTable {
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
-	public void refreshBuckets(int kademliaid) {
+	public void refreshBuckets(int kademliaid, int otherProtocolId) {
 		Random rnd= new Random();
 		//for(int i=0;i<nBuckets;i++) {
 		//System.out.println(CommonState.getTime()+" Routingtable refreshBuckkets of node "+this.nodeId+" at bucket "+rnd.nextInt(nBuckets)+" "+k_buckets[rnd.nextInt(nBuckets)].occupancy());
@@ -92,7 +92,7 @@ public class TicketTable extends RoutingTable {
 		if(b.neighbours.size()<k)
 			protocol.sendLookup(t, myPid);
 		if(b.neighbours.size()>0) 
-			b.checkAndReplaceLast(kademliaid);
+			b.checkAndReplaceLast(kademliaid, otherProtocolId);
 			//return;
 
 	}

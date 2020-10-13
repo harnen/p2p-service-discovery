@@ -28,6 +28,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
 	 * MSPastry Protocol to act
 	 */
 	private final static String PAR_PROT = "protocol";
+	private final static String EVIL_PAR_PROT = "evilProtocol";
 	private final static String PAR_TOPICNUM = "topicnum";
 	private final static String PAR_FREQ = "maxfreq";
 
@@ -36,7 +37,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
 	/**
 	 * MSPastry Protocol ID to act
 	 */
-	private final int pid,topicNum;
+	private final int pid,evil_pid,topicNum;
 		
 	
 	private Map<String,Integer> topicList;
@@ -47,6 +48,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
 	// ______________________________________________________________________________________________
 	public Discv5ProposalTrafficGenerator(String prefix) {
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
+		evil_pid = Configuration.getPid(prefix + "." + EVIL_PAR_PROT, -1);
 		topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
 
 		topicList = new HashMap<String,Integer>();
@@ -111,7 +113,11 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		BigInteger closestId = null;
 		for(int i = 0; i < Network.size(); i++) {
 			Node node = Network.get(i);
-			BigInteger nId = ((KademliaProtocol) (node.getProtocol(pid))).node.getId();
+            BigInteger nId;
+            if (node.getProtocol(pid) != null)
+    			nId = ((KademliaProtocol) (node.getProtocol(pid))).node.getId();
+            else
+    			nId = ((KademliaProtocol) (node.getProtocol(evil_pid))).node.getId();
 			if(closestId == null || (Util.distance(id, closestId).compareTo(Util.distance(id, nId)) == 1)) {
 				closestId = nId;
 			}
@@ -144,21 +150,35 @@ public class Discv5ProposalTrafficGenerator implements Control {
 			for(int i=0; i < regNum; i++) {
 				Message m = generateRegisterMessage(pair.getKey());
 				Node start = getRandomNode();
-				BigInteger nId = ((KademliaProtocol) (start.getProtocol(pid))).node.getId();
+                BigInteger nId;
+                int prot;
+                if (start.getProtocol(pid) != null) {
+	    		    nId = ((KademliaProtocol) (start.getProtocol(pid))).node.getId();
+                    prot = pid;
+                }
+                else {
+	    		    nId = ((KademliaProtocol) (start.getProtocol(evil_pid))).node.getId();
+                    prot = evil_pid;
+                }
 
 				if(m != null)
-					EDSimulator.add(0, m, start, pid);
+					EDSimulator.add(0, m, start, prot);
 			}
 			
 			for(int i=0;i < queryNum; i++) {
 				Message m = generateTopicLookupMessage(new String(pair.getKey()));
 				Node start = getRandomNode();
+                int prot;
+                if (start.getProtocol(pid) != null) 
+                    prot = pid;
+                else
+                    prot = evil_pid;
+
 				int time = 200000 + i * 10;
 				if(m != null)
-					EDSimulator.add(time, m, start, pid);
+					EDSimulator.add(time, m, start, prot);
 			}
 		}
-
 		
 		return false;
 	}

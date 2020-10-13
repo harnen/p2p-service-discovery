@@ -148,6 +148,9 @@ public boolean isUp() { return failstate==OK; }
 // -----------------------------------------------------------------
 
 public Protocol getProtocol(int i) { return protocol[i]; }
+// -----------------------------------------------------------------
+
+public void setProtocol(int i, Protocol p) { protocol[i] = p; }
 
 //------------------------------------------------------------------
 
