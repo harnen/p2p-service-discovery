@@ -37,7 +37,7 @@ def analyzeRegistrations(dirs):
 
         df['topic'].value_counts().plot(ax=ax2, kind='bar', title="Registerations by topic", label=log_dir)
 
-        df['registrant'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Registrations by advertiser")
+        df['registrant'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Registrations by advertiser", label=log_dir)
     ax1.legend()
     ax3.legend()
 
