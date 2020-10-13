@@ -98,7 +98,7 @@ public class KademliaObserver implements Control {
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
 		evil_pid = Configuration.getPid(prefix + "." + EVIL_PAR_PROT, -1);
 		try {
-			msgWriter = new FileWriter("messages.csv");
+			msgWriter = new FileWriter("./logs/messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -123,14 +123,14 @@ public class KademliaObserver implements Control {
 		return 0;
 	}
 	
-	public static void registerMsgReceived(BigInteger id, Message m) {
+	/*public static void registerMsgReceived(BigInteger id, Message m) {
 		if(!nodeMsgReceived.containsKey(id)) {
 			nodeMsgReceived.put(id, 1);
 		}else {
 			nodeMsgReceived.put(id, nodeMsgReceived.get(id) + 1);
 		}
 		msg_deliv.add(1);
-	}
+	}*/
 	
 	public static void reportMsg(Message m, boolean sent) {
 
@@ -138,6 +138,7 @@ public class KademliaObserver implements Control {
 		    try {
 			    String result = "";
     			if(m.src == null) return; //ignore init messages
+    			
 	    		result += m.id + "," + m.getType() +"," + m.src.getId() + "," + m.dest.getId() + ",";
 		    	if(m.getType() == Message.MSG_REGISTER ||
 			       m.getType() == Message.MSG_TOPIC_QUERY) {
@@ -184,8 +185,7 @@ public class KademliaObserver implements Control {
 		    	e.printStackTrace();
 		    }
 
-        }
-	
+        }	
     }
 	/**
 	 * print the statistical snapshot of the current situation
@@ -194,7 +194,7 @@ public class KademliaObserver implements Control {
 	 */
 	public boolean execute() {
 		// get the real network size
-		int sz = Network.size();
+		/*int sz = Network.size();
 		for (int i = 0; i < Network.size(); i++)
 			if (!Network.get(i).isUp())
 				sz--;
@@ -254,9 +254,10 @@ public class KademliaObserver implements Control {
 		} catch (IOException e) {
 
 			e.printStackTrace();
-		}
+		}*/
+		
 		try {
-			FileWriter writer = new FileWriter(CommonState.getTime() +  "_registrations.csv");
+			FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
 			writer.write("host,topic,registrant\n");
 			for(int i = 0; i < Network.size(); i++) {
 				Node node = Network.get(i);

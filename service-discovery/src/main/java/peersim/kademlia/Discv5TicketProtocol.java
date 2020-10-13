@@ -734,7 +734,6 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         if (s instanceof Message) {
 	        m = (Message) event;
             m.dest = this.node;
-	    	KademliaObserver.reportMsg((Message) s, false);
         }
 		
         switch (((SimpleEvent) event).getType()) {
