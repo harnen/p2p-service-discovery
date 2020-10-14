@@ -574,7 +574,6 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     		EDSimulator.add(0, message, nodeIdtoNode(this.node.getId()), myPid);
         } else {
         	sendTopicLookup(m,t,myPid);
-
         }
   
  

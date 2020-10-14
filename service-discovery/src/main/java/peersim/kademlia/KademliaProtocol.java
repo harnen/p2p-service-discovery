@@ -222,7 +222,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		for(BigInteger neighbour: neighbours)
 			routingTable.addNeighbour(neighbour);
 		
-		
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
 			logger.warning("Found node " + op.destNode);
 			op.finished = true;
@@ -251,7 +250,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 							
 					if(request != null) {
 						op.nrHops++;
-						op.available_requests--;
 						request.operationId = m.operationId;
 						request.src = this.node;
 						request.dest = new KademliaNode(neighbour);
@@ -261,6 +259,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 							
 			} else if (op.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 				operations.remove(op.operationId);
+				KademliaObserver.reportOperation(op);
 				if(!op.finished && op.type == Message.MSG_FIND){
 					//logger.warning("Couldn't find node " + op.destNode);
 				}

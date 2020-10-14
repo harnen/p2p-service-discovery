@@ -50,8 +50,10 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
 		evil_pid = Configuration.getPid(prefix + "." + EVIL_PAR_PROT, -1);
 		topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
+		//topicNum = 1;
 
 		topicList = new HashMap<String,Integer>();
+		
 		
 		for(int i=1; i <= topicNum; i++) {
 			//topicList.put(new String("t"+i),new Integer(times));
@@ -60,6 +62,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		//topicList.put(new String("t"+1),new Integer(10));
 		
 		it = topicList.entrySet().iterator();
+		
 
 	}
 
@@ -140,8 +143,8 @@ public class Discv5ProposalTrafficGenerator implements Control {
 
 		if(it.hasNext()) {
 			Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>) it.next();
-			int regNum = pair.getValue() * 100;
-			int queryNum = pair.getValue() * 1;
+			int regNum = pair.getValue() * 1;
+			int queryNum = pair.getValue() * 100;
 			System.out.println("Topic " + pair.getKey() + " will be registered " + regNum + " times and queried " + queryNum + " times.");
 			
 			Topic t = new Topic(pair.getKey());

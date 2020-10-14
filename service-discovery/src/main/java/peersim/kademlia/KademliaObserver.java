@@ -82,7 +82,8 @@ public class KademliaObserver implements Control {
 	private static final String PAR_PROT = "protocol";
 	private static final String EVIL_PAR_PROT = "evilProtocol";
 	
-	private static FileWriter msgWriter; 
+	private static FileWriter msgWriter;
+	private static FileWriter opWriter; 
 
 	/** Protocol id */
 	private int pid;
@@ -100,6 +101,8 @@ public class KademliaObserver implements Control {
 		try {
 			msgWriter = new FileWriter("./logs/messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");
+			opWriter = new FileWriter("./logs/operations.csv");
+			opWriter.write("id,type,src,dst,hops\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -123,14 +126,18 @@ public class KademliaObserver implements Control {
 		return 0;
 	}
 	
-	/*public static void registerMsgReceived(BigInteger id, Message m) {
-		if(!nodeMsgReceived.containsKey(id)) {
-			nodeMsgReceived.put(id, 1);
-		}else {
-			nodeMsgReceived.put(id, nodeMsgReceived.get(id) + 1);
-		}
-		msg_deliv.add(1);
-	}*/
+	public static void reportOperation(Operation op) {
+		try {
+		    String result = "";		
+		    String type = "";
+    		result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
+	    	opWriter.write(result);
+	    	opWriter.flush();
+		} catch (IOException e) {
+	    	e.printStackTrace();
+	    }
+		
+	}
 	
 	public static void reportMsg(Message m, boolean sent) {
 
@@ -193,69 +200,6 @@ public class KademliaObserver implements Control {
 	 * @return boolean always false
 	 */
 	public boolean execute() {
-		// get the real network size
-		/*int sz = Network.size();
-		for (int i = 0; i < Network.size(); i++)
-			if (!Network.get(i).isUp())
-				sz--;
-		//[%d/%d  successful find operation] [D=%f msg deliv] [%f min h] [%f average h] [%f max h] [%d min l] [%d msec average l] [%d max l]
-		String s = String.format("[time=%d]:[N=%d current nodes UP] [%d/%d find (succ/all)] [%d/%d query (succ/all))] [%d/%d msg(recv/sent)]", 
-								CommonState.getTime(), 
-								sz, 
-								(int) find_ok.getSum(), 
-								(int) find_total.getSum(), 
-								(int) register_ok.getSum(), 
-								(int) register_total.getSum(),
-								(int) msg_deliv.getSum(),
-								(int) msg_sent.getSum());
-								//msg_deliv.getSum(), hopStore.getMin(), hopStore.getAverage(), hopStore.getMax(), (int) timeStore.getMin(), (int) timeStore.getAverage(), (int) timeStore.getMax());
-		System.err.println(s);
-		
-		try {
-			FileWriter writer = new FileWriter(CommonState.getTime() +  "_stats.py");
-			boolean first = true;
-			writer.write("topics = [");
-			for(String topic: registeredTopics.keySet()) {
-				if(first){
-					writer.write("\'" + topic + "\'" + ": " + registeredTopics.get(topic).size());
-					first = false;
-				}else {
-					writer.write(", \'" + topic + "\'" + ": " + registeredTopics.get(topic).size());
-				}
-				
-			}
-			writer.write("]\n");
-			//////////////////////////////////////////////////////////////////////////////////
-			first=true;
-			writer.write("msgReceived = [");
-			for(BigInteger node: nodeMsgReceived.keySet()) {
-				if(first) {
-					writer.write("\'" + node + "\'" + ": " + nodeMsgReceived.get(node));
-					first = false;
-				}else {
-					writer.write(", \'" + node + "\'" + ": " + nodeMsgReceived.get(node));
-				}
-			}
-			writer.write("]\n");
-			
-			first=true;
-			writer.write("nodeTopicStored = [");
-			for(BigInteger node: nodeTopicStored.keySet()) {
-				if(first) {
-					writer.write("\'" + node + "\'" + ": " + nodeTopicStored.get(node));
-					first = false;
-				}else {
-					writer.write(", \'" + node + "\'" + ": " + nodeTopicStored.get(node));
-				}
-			}
-			writer.write("]\n");
-			writer.close();
-			
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}*/
-		
 		try {
 			FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
 			writer.write("host,topic,registrant\n");
