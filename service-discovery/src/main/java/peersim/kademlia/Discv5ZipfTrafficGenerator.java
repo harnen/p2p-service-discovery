@@ -186,7 +186,9 @@ public class Discv5ZipfTrafficGenerator implements Control {
 				Message lookupMessage = generateTopicLookupMessage(t.getTopic());
 
 				if(m != null) {
-					int time = CommonState.r.nextInt(900000);
+					//int time = CommonState.r.nextInt(900000);
+					int time = 0;
+					System.out.println("Topic " + topic + " will be registered by "+prot.getNode().getId()+" at "+time);
 					EDSimulator.add(time, m, start, pid);
 					EDSimulator.add(time+20000, lookupMessage, start, pid);
 

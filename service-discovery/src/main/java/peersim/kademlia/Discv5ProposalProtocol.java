@@ -101,7 +101,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 				KademliaObserver.register_total.add(all);
 				KademliaObserver.register_ok.add(found);
 									
-				node.setLookupResult(lop.getNeighboursList());
+				node.setLookupResult(lop.getDiscoveredArray());
 				return;
 			} else { // no neighbour available but exists oustanding request to wait
 				return;
@@ -116,7 +116,8 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		
 		Topic t = (Topic) m.body;
 	
-	
+		System.out.println("Send topic lookup for topic "+t.getTopic());
+
 		LookupOperation lop = new LookupOperation(this.node.getId(), m.timestamp, t);
 		lop.body = m.body;
 		operations.put(lop.operationId, lop);
@@ -162,6 +163,8 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	private void handleInitRegister(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(this.node, t);
+    	System.out.println("Sending topic registration for topic "+t.getTopic());
+
 		KademliaObserver.addTopicRegistration(t.topic, this.node.getId());
 	
 		RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
