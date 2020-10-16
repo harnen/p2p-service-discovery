@@ -35,6 +35,7 @@ def analyzeRegistrations(dirs):
         print(df['host'].value_counts())
         df['host'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Registrations by advertisement medium", label=log_dir)
         ax2.bar(df['topic'].value_counts().index, df['topic'].value_counts(), label=log_dir) 
+        ax2.set_title("Global registration count by topic")
         df['registrant'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Registrations by advertiser", label=log_dir)
     ax1.legend()
     ax2.legend()
@@ -65,8 +66,8 @@ if (len(sys.argv) < 2):
     exit(1)
 
 print('Will read logs from', sys.argv[1:])
-#analyzeMessages(sys.argv[1:])
-#analyzeRegistrations(sys.argv[1:])
+analyzeMessages(sys.argv[1:])
+analyzeRegistrations(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 
 plt.show()
