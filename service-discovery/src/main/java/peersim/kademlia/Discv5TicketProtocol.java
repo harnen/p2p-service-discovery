@@ -268,7 +268,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         Ticket t = (Ticket) m.body;
         if (t.getWaitTime() == -1) 
         {   
-            System.out.println("Attempted to re-register topic on the same node");
+            logger.warning("Attempted to re-register topic on the same node");
+            ticketTable.get(t.getTopic().getTopicID()).removeNeighbour(m.src.getId());
             return;
         }
     	//System.out.println("handleTicketResponse from " + m.src.getId()+" waiting time "+t.getWaitTime()+" "+this.node.getId());
@@ -348,6 +349,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		
 		while ((lop.available_requests > 0)) { // I can send a new find request
 			// get an available neighbour
+			//System.out.println("Topic query reply "+lop.available_requests);
 			BigInteger neighbour = lop.getNeighbour();
 			if (neighbour != null) {
 				if(!lop.finished) {
@@ -538,7 +540,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     	Topic t = (Topic) m.body;
         //t.setHostID(this.node.getId());
 		
-    	System.out.println("Sending topic registration for topic "+t.getTopic());
+    	//System.out.println("Sending topic registration for topic "+t.getTopic());
     	
         KademliaObserver.addTopicRegistration(t.getTopic(), this.node.getId());
 
@@ -635,7 +637,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		KademliaObserver.lookup_total.add(1);
 		
 		//Topic t = (Topic) m.body;
-		System.out.println("Send topic lookup for topic "+t.getTopic());
+		//System.out.println("Send topic lookup for topic "+t.getTopic());
 
 		LookupTicketOperation lop = new LookupTicketOperation(this.node.getId(), this.searchTable.get(t.getTopicID()), m.timestamp, t);
 		lop.body = m.body;
@@ -742,7 +744,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	protected void handleResponse(Message m, int myPid) {
 		if(m.getType() == Message.MSG_RESPONSE) {
 			BigInteger[] neighbours = (BigInteger[]) m.body;
-			//System.out.println("Find response received at "+this.node.getId()+" from "+m.src.getId()+" with "+neighbours.length+" neighbours");
+			//if(neighbours.length!=0)logger.warning("Find response received at "+this.node.getId()+" from "+m.src.getId()+" with "+neighbours.length+" neighbours");
 			for(SearchTable table : searchTable.values())
 	    		table.addNeighbour(neighbours);
 			

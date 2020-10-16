@@ -276,7 +276,7 @@ private static boolean executeNext() {
 		" leaving "+heap.size()+" unprocessed events in the queue");
 		return true;
 	}
-	
+	//System.out.println("Current time: " + time);
 	CommonState.setTime(time);
 	int pid = ev.pid;
 	if (ev.node == null)

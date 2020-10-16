@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import peersim.core.CommonState;
 
@@ -21,6 +22,8 @@ public class TicketTable extends RoutingTable {
     
     private int myPid;
     
+    Logger logger;
+    
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid) {
 		
 		super(nBuckets, k, maxReplacements);
@@ -34,19 +37,28 @@ public class TicketTable extends RoutingTable {
 		this.nodeId = t.getTopicID();
 		
 		this.myPid = myPid;
+		
+		logger = Logger.getLogger(protocol.getNode().getId().toString());
+		
 		// TODO Auto-generated constructor stub
 	}
 	
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger[] nodes) {
+		logger.warning("Pending tickets "+pendingTickets.size());
 		for(BigInteger node : nodes) {
-			//System.out.println("Add node "+node+" to bucket "+Util.logDistance(node, nodeId));
+			//System.out.println("Add node "+node+" to "+protocol.getNode().getId());
 			if(!pendingTickets.contains(node)) {
 				if(super.addNeighbour(node)) {
 					pendingTickets.add(node);
 					//pendingTickets.put(node, null);
+					logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
 					protocol.sendTicketRequest(node,t,myPid);
+				} else {
+					logger.warning("Node "+node+" already in "+protocol.getNode().getId());
 				}
+			} else {
+				logger.warning("Node not added "+node+" to "+protocol.getNode().getId() +" pending tickets");
 			}
 		}
 	}
@@ -70,8 +82,11 @@ public class TicketTable extends RoutingTable {
 	// remove a neighbour from the correct k-bucket
 	public void removeNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
+		logger.warning("Pending ticket remove "+node);
 		pendingTickets.remove(node);
 		bucket(node).removeNeighbour(node);
+		logger.warning("Node "+node+" removed at "+protocol.getNode().getId());
+
 		//System.out.println("Bucket remove "+bucket(node).occupancy());
 		
 	}	
@@ -85,10 +100,13 @@ public class TicketTable extends RoutingTable {
 	 */
 	public void refreshBuckets(int kademliaid, int otherProtocolId) {
 		Random rnd= new Random();
-		//for(int i=0;i<nBuckets;i++) {
-		//System.out.println(CommonState.getTime()+" Routingtable refreshBuckkets of node "+this.nodeId+" at bucket "+rnd.nextInt(nBuckets)+" "+k_buckets[rnd.nextInt(nBuckets)].occupancy());
+		/*for(int i=0;i<nBuckets;i++) {
+			logger.warning("Ticket table "+k_buckets[i].occupancy());
+		}*/
+		int i = rnd.nextInt(nBuckets);
+		//logger.warning("Tickettable refreshBuckkets of node "+this.nodeId+" at bucket "+i+" "+k_buckets[i].occupancy());
 
-		KBucket b = k_buckets[rnd.nextInt(nBuckets)];
+		KBucket b = k_buckets[i];
 		if(b.neighbours.size()<k)
 			protocol.sendLookup(t, myPid);
 		if(b.neighbours.size()>0) 

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Logger;
 import java.util.Collections;
 import java.math.BigInteger;
 
@@ -27,6 +28,7 @@ public class Discv5TopicTable { // implements TopicTable {
     // All topic advertisements ordered by registration
     private ArrayDeque<TopicRegistration> allAds;
 
+    private Logger logger;
 
     public Discv5TopicTable() {
         topicTable = new HashMap<Topic, ArrayDeque<TopicRegistration>>(); 
@@ -37,6 +39,8 @@ public class Discv5TopicTable { // implements TopicTable {
 
     public void setHostID(BigInteger id){
         this.hostID = id;
+		logger = Logger.getLogger(id.toString());
+
     }
 
     public void setAdLifeTime(int duration) {
@@ -88,7 +92,7 @@ public class Discv5TopicTable { // implements TopicTable {
         // check if the advertisement already registered before
         if ( (topicQ != null) && (topicQ.contains(reg)) ) {
             //Iterator<TopicRegistration> it = topicQ.iterator();
-            System.out.println("Ad already registered by this node");
+            logger.warning("Ad already registered by this node");
             return -1;
         }
 
@@ -164,7 +168,7 @@ public class Discv5TopicTable { // implements TopicTable {
 
         Ticket bestTicket = bestTickets.get(topic);
         if (bestTickets == null) {
-            System.out.println("This should not happen: bestTicket is null");
+        	logger.warning("This should not happen: bestTicket is null");
         }
 
         /*if (!ticketList.contains(bestTicket)) {
@@ -181,7 +185,7 @@ public class Discv5TopicTable { // implements TopicTable {
             reg.setTimestamp(curr_time);
             long waiting_time = getWaitingTime(reg, curr_time);
             if (waiting_time == -1) {
-                System.out.println("already registered advert");
+                logger.warning("already registered advert");
                 ticket.setRegistrationComplete(false);
                 ticket.setWaitTime(waiting_time);
             }
@@ -256,7 +260,7 @@ public class Discv5TopicTable { // implements TopicTable {
             //TODO remove the check below: 
     	    for(Topic ti: topicTable.keySet()) {
                 if (ti.getTopic() == topic.getTopic()) {
-                    System.out.println("Error in topic table lookup !");
+                    logger.warning("Error in topic table lookup !");
                     String result = "Unable to find identical topics: ";
                     result += topic.toString();
                     result += "\n";

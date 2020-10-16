@@ -41,6 +41,7 @@ public class LookupTicketOperation extends LookupOperation {
 			sTable.removeNeighbour(res);
 		
 		}
+		available_requests--;
 		return res;
 	}
 	
