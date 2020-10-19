@@ -543,7 +543,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     	Topic t = (Topic) m.body;
         //t.setHostID(this.node.getId());
 		
-    	//System.out.println("Sending topic registration for topic "+t.getTopic());
+    	logger.warning("Sending topic registration for topic "+t.getTopic());
     	
         KademliaObserver.addTopicRegistration(t.getTopic(), this.node.getId());
 
@@ -552,9 +552,16 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         	TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
         	rou.setNodeId(t.getTopicID());
         	ticketTable.put(t.getTopicID(),rou);
+        	
+        	for(int i = 0; i<= KademliaCommonConfig.NBUCKETS;i++) {
+        		BigInteger[] neighbours = routingTable.getNeighbours(i);
+        		//if(neighbours.length!=0)logger.warning("Bucket at distance "+i+" with "+neighbours.length+" nodes");
+        		//else logger.warning("Bucket at distance "+i+" empty");
+        		rou.addNeighbour(neighbours);
+        	}
         }
         
-        sendLookup(t,myPid);
+        //sendLookup(t,myPid);
   }
 	
     /**
@@ -606,7 +613,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
 		Topic t = (Topic) m.body;
     	
-		//System.out.println("Send topic lookup for topic "+t.getTopic());
+		logger.warning("Send topic lookup for topic "+t.getTopic());
 
         if(!searchTable.containsKey(t.getTopicID())) {
         	SearchTable rou = new SearchTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,10,this,t,myPid);
@@ -631,7 +638,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		message.timestamp = CommonState.getTime();
 		
 		EDSimulator.add(0, message, nodeIdtoNode(this.node.getId()), myPid);
-		//System.out.println("Send init lookup to distance "+Util.logDistance(t.getTopicID(), this.getNode().getId())+" for topic "+t.getTopicID());
+		System.out.println("Send init lookup to distance "+Util.logDistance(t.getTopicID(), this.getNode().getId())+" for topic "+t.getTopicID());
   
     }
     

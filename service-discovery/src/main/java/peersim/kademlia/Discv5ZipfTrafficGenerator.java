@@ -176,7 +176,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 				System.out.println("Topic " + topic + " will be registered ");
 				System.out.println("Topic hash: " + t.getTopicID());
 				System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
-				Message m = generateRegisterMessage(t.getTopic());
+				Message registerMessage = generateRegisterMessage(t.getTopic());
 				Node start = Network.get(i);
 				
 				KademliaProtocol prot = (KademliaProtocol)start.getProtocol(pid);
@@ -185,11 +185,11 @@ public class Discv5ZipfTrafficGenerator implements Control {
 				
 				Message lookupMessage = generateTopicLookupMessage(t.getTopic());
 
-				if(m != null) {
+				if(registerMessage != null) {
 					//int time = CommonState.r.nextInt(900000);
 					int time = 0;
 					System.out.println("Topic " + topic + " will be registered by "+prot.getNode().getId()+" at "+time);
-					EDSimulator.add(time, m, start, pid);
+					EDSimulator.add(time, registerMessage, start, pid);
 					EDSimulator.add(time+20000, lookupMessage, start, pid);
 
 				}

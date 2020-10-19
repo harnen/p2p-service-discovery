@@ -239,7 +239,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					Message request = null;
 					if(op.type == Message.MSG_FIND) {
 						request = new Message(Message.MSG_FIND);
-						request.body = Util.prefixLen(op.destNode, neighbour);
+						//request.body = Util.prefixLen(op.destNode, neighbour);
+						//System.out.println("Request body distance "+Util.prefixLen(op.destNode, neighbour)+" "+Util.logDistance(op.destNode, neighbour));
+						request.body = Util.logDistance(op.destNode, neighbour);
 					}else if(op.type == Message.MSG_REGISTER) {
 						request = new Message(Message.MSG_REGISTER);
 						request.body = op.body;

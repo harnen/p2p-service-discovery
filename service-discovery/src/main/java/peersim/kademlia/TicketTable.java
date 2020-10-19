@@ -107,11 +107,16 @@ public class TicketTable extends RoutingTable {
 		//logger.warning("Tickettable refreshBuckkets of node "+this.nodeId+" at bucket "+i+" "+k_buckets[i].occupancy());
 
 		KBucket b = k_buckets[i];
-		if(b.neighbours.size()<k)
-			protocol.sendLookup(t, myPid);
+		//if(b.neighbours.size()<k)
+		while(b.neighbours.size()<k&&b.replacements.size()>0)
+			b.replace();
+			//protocol.sendLookup(t, myPid);
 		if(b.neighbours.size()>0) 
 			b.checkAndReplaceLast(kademliaid, otherProtocolId);
 			//return;
+		
+		//if(b.replacements.size()==0)
+		//	protocol.sendLookup(t, myPid);
 
 	}
 	

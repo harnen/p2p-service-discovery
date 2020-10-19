@@ -73,11 +73,12 @@ public class SearchTable extends RoutingTable {
 		Random rnd= new Random();
 		//for(int i=0;i<nBuckets;i++) {
 		KBucket b = k_buckets[rnd.nextInt(nBuckets)];
-		if(b.neighbours.size()<k)
-			protocol.sendLookup(t, myPid);
+		while(b.neighbours.size()<k&&b.replacements.size()>0)
+			//protocol.sendLookup(t, myPid);
+			b.replace();
 		if(b.neighbours.size()>0) {
 			b.checkAndReplaceLast(kademliaid, otherProtocolId);
-			return;
+			//return;
 		}
 	}
 	

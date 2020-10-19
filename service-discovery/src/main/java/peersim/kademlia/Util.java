@@ -35,7 +35,7 @@ public class Util {
 			}
 		}
 		return i;
-	}
+	}	
 
 	/**
 	 * return the distance between two number wich is defined as (a XOR b)
