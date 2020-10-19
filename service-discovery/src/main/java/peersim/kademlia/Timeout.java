@@ -20,6 +20,8 @@ public class Timeout extends SimpleEvent {
 	 */
 	public static final int TICKET_TIMEOUT = 101;
 	
+	
+	public static final int REG_TIMEOUT = 102;
 	/**
 	 * The node wich failed to response
 	 */
@@ -39,6 +41,9 @@ public class Timeout extends SimpleEvent {
      * The topic for which a ticket has been expired
      */
     public Topic topic;
+    
+    
+    public BigInteger nodeSrc; 
 
 	// ______________________________________________________________________________________________
 	/**
@@ -61,4 +66,11 @@ public class Timeout extends SimpleEvent {
         this.topic = topic;
 
     }
+    
+    
+    public Timeout(Topic topic, BigInteger nodeSrc) {
+    	super(REG_TIMEOUT);
+    	this.topic = topic;
+    	this.nodeSrc = nodeSrc;
+	}
 }

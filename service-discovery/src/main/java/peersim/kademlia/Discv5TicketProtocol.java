@@ -302,7 +302,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         }
         else {
             logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
-        	ticketTable.get(ticket.getTopic().topicID).removeNeighbour(m.src.getId());
+            
+            Timeout timeout = new Timeout(ticket.getTopic(),m.src.getId());
+            EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, nodeIdtoNode(this.node.getId()), myPid);
+            
         }
     }
     
@@ -864,6 +867,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
                 makeRegisterDecision(t, myPid);
                 break;
 
+            case Timeout.REG_TIMEOUT:
+            	logger.warning("Remove ticket table "+((Timeout)event).nodeSrc);
+            	ticketTable.get(((Timeout)event).topic.topicID).removeNeighbour(((Timeout)event).nodeSrc);
+            	break;
 
 			/*case Timeout.TIMEOUT: // timeout
 				Timeout t = (Timeout) event;

@@ -45,21 +45,21 @@ public class TicketTable extends RoutingTable {
 	
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger[] nodes) {
-		logger.warning("Pending tickets "+pendingTickets.size());
+		//logger.warning("Pending tickets "+pendingTickets.size());
 		for(BigInteger node : nodes) {
 			//System.out.println("Add node "+node+" to "+protocol.getNode().getId());
 			if(!pendingTickets.contains(node)) {
 				if(super.addNeighbour(node)) {
 					pendingTickets.add(node);
 					//pendingTickets.put(node, null);
-					logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
+					//logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
 					protocol.sendTicketRequest(node,t,myPid);
 				} else {
-					logger.warning("Node "+node+" already in "+protocol.getNode().getId());
+					//logger.warning("Node "+node+" already in "+protocol.getNode().getId());
 				}
-			} else {
+			} /*else {
 				logger.warning("Node not added "+node+" to "+protocol.getNode().getId() +" pending tickets");
-			}
+			}*/
 		}
 	}
 
@@ -82,10 +82,10 @@ public class TicketTable extends RoutingTable {
 	// remove a neighbour from the correct k-bucket
 	public void removeNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
-		logger.warning("Pending ticket remove "+node);
+		//logger.warning("Pending ticket remove "+node);
 		pendingTickets.remove(node);
 		bucket(node).removeNeighbour(node);
-		logger.warning("Node "+node+" removed at "+protocol.getNode().getId());
+		//logger.warning("Node "+node+" removed at "+protocol.getNode().getId());
 
 		//System.out.println("Bucket remove "+bucket(node).occupancy());
 		

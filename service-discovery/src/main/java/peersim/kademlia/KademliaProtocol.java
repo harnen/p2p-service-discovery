@@ -410,7 +410,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// Parse message content Activate the correct event manager fot the particular event
         if (this.kademliaid == -1)
     		this.kademliaid = myPid;
-		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT && ((SimpleEvent) event).getType() != Timeout.TICKET_TIMEOUT){
+		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT && ((SimpleEvent) event).getType() != Timeout.TICKET_TIMEOUT
+				&& ((SimpleEvent) event).getType() != Timeout.REG_TIMEOUT){
 			Message m = (Message) event;
 			if(m.src != null)
 				logger.info("<- " +  m + " " + m.src.getId());
