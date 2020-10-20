@@ -22,6 +22,9 @@ public class KademliaCommonConfig {
     public static int AD_LIFE_TIME = 250000; //life time of ads the topic table
     public static int ONE_UNIT_OF_TIME = 1; // smallest time value
     public static int TOPIC_PEER_LIMIT = 20; //how many high quality nodes do we want to find for each topic; after this number we stop
+
+    // Attack Types:
+    public static String ATTACK_TYPE_TOPIC_SPAM = "TopicSpam";
     //TODO show the distribution of nodes discovered (do everyone discover the same? Or different?)
     
     

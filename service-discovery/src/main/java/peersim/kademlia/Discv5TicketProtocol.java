@@ -37,7 +37,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     /**
 	 * Table to keep track of topic registrations
 	 */
-    private HashMap<BigInteger,TicketTable> ticketTable;
+    protected HashMap<BigInteger,TicketTable> ticketTable;
     
     /**
 	 * Table to search for topics
@@ -102,13 +102,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
      *            the delay to wait before sending           
 	 */
 	public void scheduleSendMessage(Message m, BigInteger destId, int myPid, long delay) {
-	    int destpid;
-		Node src = nodeIdtoNode(this.node.getId());
-		Node dest = nodeIdtoNode(destId);
+		Node src = Util.nodeIdtoNode(this.node.getId());
+		Node dest = Util.nodeIdtoNode(destId);
         
-        destpid = kademliaid;
-        if (dest.getProtocol(kademliaid) == null)
-            destpid = otherProtocolId;
+        int destpid = dest.getKademliaProtocol().getProtocolID();
 
         m.src = this.node;
         m.dest = new KademliaNode(destId);     
@@ -147,16 +144,13 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	public void sendMessage(Message m, BigInteger destId, int myPid) {
 		// add destination to routing table
 		this.routingTable.addNeighbour(destId);
-	    int destpid;
 
         m.src = this.node;
         m.dest = new KademliaNode(destId);     
-		Node src = nodeIdtoNode(this.node.getId());
-		Node dest = nodeIdtoNode(destId);
+		Node src = Util.nodeIdtoNode(this.node.getId());
+		Node dest = Util.nodeIdtoNode(destId);
 
-        destpid = kademliaid;
-        if (dest.getProtocol(kademliaid) == null)
-            destpid = otherProtocolId;
+        int destpid = dest.getKademliaProtocol().getProtocolID();
 
 		logger.info("-> (" + m + "/" + m.id + ") " + destId);
 
@@ -245,13 +239,13 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         KademliaNode advertiser = new KademliaNode(m.src); 
         //System.out.println("TicketRequest handle "+topic.getTopic());
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
-        long rtt_delay = 2*transport.getLatency(nodeIdtoNode(m.src.getId()), nodeIdtoNode(m.dest.getId()));
+        long rtt_delay = 2*transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
         Ticket ticket = topicTable.getTicket(topic, advertiser, rtt_delay, curr_time);
 
         // Setup a timeout event for the registration decision
         if (ticket.getWaitTime() >= 0) {
             Timeout timeout = new Timeout(topic);
-            EDSimulator.add(rtt_delay + ticket.getWaitTime() + KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, nodeIdtoNode(this.node.getId()), myPid);
+            EDSimulator.add(rtt_delay + ticket.getWaitTime() + KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
         }
         // Send a response message with a ticket back to advertiser
         Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
@@ -290,7 +284,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-    private void handleRegisterResponse(Message m, int myPid) {
+    protected void handleRegisterResponse(Message m, int myPid) {
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
         if (ticket.isRegistrationComplete() == false) {
@@ -304,7 +298,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
             
             Timeout timeout = new Timeout(ticket.getTopic(),m.src.getId());
-            EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, nodeIdtoNode(this.node.getId()), myPid);
+            EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
             
         }
     }
@@ -624,7 +618,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         	Message message = Message.makeInitFindNode(t.getTopicID());
     		message.timestamp = CommonState.getTime();
     		
-    		EDSimulator.add(0, message, nodeIdtoNode(this.node.getId()), myPid);
+    		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);
         } else {
         	sendTopicLookup(m,t,myPid);
         }
@@ -637,7 +631,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		Message message = Message.makeInitFindNode(t.getTopicID());
 		message.timestamp = CommonState.getTime();
 		
-		EDSimulator.add(0, message, nodeIdtoNode(this.node.getId()), myPid);
+		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);
 		System.out.println("Send init lookup to distance "+Util.logDistance(t.getTopicID(), this.getNode().getId())+" for topic "+t.getTopicID());
   
     }
@@ -909,13 +903,13 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
-	public void refreshBuckets(int kademliaid, int otherProtocolId) {
+	public void refreshBuckets() {
 		//System.out.print(topicTable.dumpRegistrations());
 		for(TicketTable ttable : ticketTable.values())
-			ttable.refreshBuckets(kademliaid, otherProtocolId);
+			ttable.refreshBuckets();
 		for(SearchTable stable : searchTable.values())
-			stable.refreshBuckets(kademliaid, otherProtocolId);
-		routingTable.refreshBuckets(kademliaid, otherProtocolId);
+			stable.refreshBuckets();
+		routingTable.refreshBuckets();
 	}
 
 }

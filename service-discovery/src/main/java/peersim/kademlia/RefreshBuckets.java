@@ -28,18 +28,12 @@ import peersim.edsim.EDSimulator;
 
 public class RefreshBuckets implements Control {
 
-	private int kademliaid;
-	private int evilKademliaid;
-	private static final String PAR_PROT = "protocol";
-	private static final String EVIL_PAR_PROT = "evilProtocol";
 	private String prefix;
 
 
 	// ______________________________________________________________________________________________
 	public RefreshBuckets(String prefix) {
 		this.prefix = prefix;
-		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
-        evilKademliaid = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT, -1);
 		//System.out.println("Refresh "+kademliaid);
 		//System.err.println(String.format("Turbolence: [p_idle=%f] [p_add=%f] [(min,max)=(%d,%d)]", p_idle, p_add, maxsize, minsize));
 	}
@@ -53,13 +47,8 @@ public class RefreshBuckets implements Control {
 		for (int i = 0; i < Network.size(); i++) {
 			Node iNode = Network.get(i);
 			if(iNode.getFailState()==Node.OK) {
-                KademliaProtocol iKad;
-                if (iNode.getProtocol(kademliaid) != null)
-				    iKad = (KademliaProtocol) (iNode.getProtocol(kademliaid));
-                else
-				    iKad = (KademliaProtocol) (iNode.getProtocol(evilKademliaid));
-
-				iKad.refreshBuckets(kademliaid, evilKademliaid);
+                KademliaProtocol iKad = iNode.getKademliaProtocol();
+				iKad.refreshBuckets();
 			}
 		}
 

@@ -147,7 +147,7 @@ public class Util {
 	 *            BigInteger
 	 * @return Node
 	 */
-	public static Node nodeIdtoNode(BigInteger searchNodeId,int kademliaid, int otherProtocolId) {
+	public static Node nodeIdtoNode(BigInteger searchNodeId) {
 		if (searchNodeId == null)
 			return null;
 
@@ -159,12 +159,9 @@ public class Util {
 		
 		while (inf <= sup) {
 			m = (inf + sup) / 2;
+            Node n = Network.get(m);
             
-            BigInteger mId;
-            if (Network.get(m).getProtocol(kademliaid) != null)
-    			mId = ((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
-            else
-    			mId = ((KademliaProtocol) Network.get(m).getProtocol(otherProtocolId)).node.getId();
+            BigInteger mId = n.getKademliaProtocol().node.getId();
 
 			if (mId.equals(searchNodeId))
 				return Network.get(m);
@@ -176,13 +173,12 @@ public class Util {
 		}
 
 		// perform a traditional search for more reliability (maybe the network is not ordered)
-		BigInteger mId;
 		for (int i = Network.size() - 1; i >= 0; i--) {
-            if (Network.get(i).getProtocol(kademliaid) != null)
-    			mId = ((KademliaProtocol) Network.get(i).getProtocol(kademliaid)).node.getId();
-            else
-    			mId = ((KademliaProtocol) Network.get(i).getProtocol(otherProtocolId)).node.getId();
-			if (mId.equals(searchNodeId))
+            Node n = Network.get(i);
+		    
+            BigInteger mId = n.getKademliaProtocol().node.getId();
+			
+            if (mId.equals(searchNodeId))
 				return Network.get(i);
 		}
 

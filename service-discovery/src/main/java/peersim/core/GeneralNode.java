@@ -19,6 +19,7 @@
 package peersim.core;
 
 import peersim.config.*;
+import peersim.kademlia.KademliaProtocol;
 
 /**
 * This is the default {@link Node} class that is used to compose the
@@ -56,6 +57,11 @@ protected int failstate = Fallible.OK;
 * clone must be able to set it.
 */
 private long ID;
+
+/**
+ *  The KademliaProtocol instance that this node is running.
+ */
+private KademliaProtocol kadProtocol;
 
 // ================ constructor and initialization =================
 // =================================================================
@@ -164,6 +170,14 @@ public int getIndex() { return index; }
 
 public void setIndex(int index) { this.index = index; }
 	
+//------------------------------------------------------------------
+
+public KademliaProtocol getKademliaProtocol() {return this.kadProtocol; }
+
+//------------------------------------------------------------------
+
+public void setKademliaProtocol(KademliaProtocol proto) {this.kadProtocol = proto; }
+
 //------------------------------------------------------------------
 
 /**

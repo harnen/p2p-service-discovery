@@ -17,6 +17,7 @@
  */
 
 package peersim.core;
+import peersim.kademlia.KademliaProtocol;
 
 /**
  * Class that represents one node with a network address. An {@link Network} is
@@ -88,5 +89,19 @@ public long getID();
  * <code>throws</code> clause. 
  */
 public Object clone();
+
+/**
+ * Returns the Kademlia Protocol used by the node.
+ * This is useful when nodes use different types of Kademlia Protocols and
+ * saves the caller from determining which protocol ID to use for 
+ * each node.
+ */
+public KademliaProtocol getKademliaProtocol();
+
+/**
+ * Sets the Kademlia Protocol used by the node.
+ * This is useful when nodes use different types of Kademlia Protocols.
+ */
+public void setKademliaProtocol(KademliaProtocol proto);
 
 }

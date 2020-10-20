@@ -14,8 +14,6 @@ public class KademliaNode implements Comparable<KademliaNode>{
     private String addr;
     private int port;
     
-    private int protocolId;
-    private int otherProtocolId;
     private int maxIncomingConnections;
     private int maxOutgoingConnections;
 
@@ -64,7 +62,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
         lookupResultBuffer = new ArrayList<BigInteger>();
     }
-    
+
     public BigInteger getId(){
         return this.id;
     }
@@ -155,14 +153,6 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	return outgoingConnections;
     }
     
-    public void setProtocolId(int id) {
-    	this.protocolId = id;
-    }
-
-    public void setOtherProtocolId(int id) {
-        this.otherProtocolId = id;
-    }
-    
     public void setCallBack(Discv5ZipfTrafficGenerator client, Node n,Topic t) {
     	this.client = client;
     	this.n = n;
@@ -192,8 +182,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }
     
     private boolean startConnection(BigInteger addr) {
-    	Node n = Util.nodeIdtoNode(addr, protocolId, otherProtocolId);
-    	return(n.isUp()&&((KademliaProtocol)n.getProtocol(protocolId)).getNode().addIncomingConnection(id));
-    		
+    	Node n = Util.nodeIdtoNode(addr);
+    	return(n.isUp()&&(n.getKademliaProtocol().getNode().addIncomingConnection(id)));
     }
 }

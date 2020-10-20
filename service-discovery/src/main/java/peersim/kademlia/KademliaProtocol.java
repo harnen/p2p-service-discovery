@@ -47,8 +47,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	final String PAR_ALPHA = "ALPHA";
 	final String PAR_BITS = "BITS";
 	final String PAR_NBUCKETS = "NBUCKETS";
-	final String OTHER_PAR_PROT = "otherProtocol";
-	final String PAR_PROT = "protocol";
 	final String PAR_REFRESHTIME = "REFRESH";
 
 	private static final String PAR_TRANSPORT = "transport";
@@ -56,8 +54,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	protected UnreliableTransport transport;
 	protected int tid;
 	protected int kademliaid;
-    protected int otherProtocolId;
 	protected HashMap<BigInteger,Integer> failures;
+    protected boolean is_evil = false;
 	//private EthClient client;
 
 	/**
@@ -113,9 +111,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		this.node = null; // empty nodeId
 		KademliaProtocol.prefix = prefix;
 		failures = new HashMap();
-        kademliaid = Configuration.getPid(prefix + "." + PAR_PROT, -1);
-        // For configurations with secondary protocol
-        otherProtocolId = Configuration.getPid(prefix + "." + OTHER_PAR_PROT, -1);
 		_init();
 
 		this.routingTable = new RoutingTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,KademliaCommonConfig.MAXREPLACEMENT);
@@ -146,56 +141,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		_ALREADY_INSTALLED = true;
 	}
-
-	/**
-	 * Search through the network the Node having a specific node Id, by performing binary search (we concern about the ordering
-	 * of the network).
-	 * 
-	 * @param searchNodeId
-	 *            BigInteger
-	 * @return Node
-	 */
-	public Node nodeIdtoNode(BigInteger searchNodeId) {
-		if (searchNodeId == null)
-			return null;
-
-		int inf = 0;
-		int sup = Network.size() - 1;
-		int m;
-		
-		//System.out.println("nodeIdtoNode "+kademliaid);
-		
-		while (inf <= sup) {
-			m = (inf + sup) / 2;
-            BigInteger mId;
-            if (Network.get(m).getProtocol(kademliaid) != null)
-    			mId = ((KademliaProtocol) Network.get(m).getProtocol(kademliaid)).node.getId();
-            else
-    			mId = ((KademliaProtocol) Network.get(m).getProtocol(otherProtocolId)).node.getId();
-
-			if (mId.equals(searchNodeId))
-				return Network.get(m);
-
-			if (mId.compareTo(searchNodeId) < 0)
-				inf = m + 1;
-			else
-				sup = m - 1;
-		}
-
-		// perform a traditional search for more reliability (maybe the network is not ordered)
-		BigInteger mId;
-		for (int i = Network.size() - 1; i >= 0; i--) {
-            if (Network.get(i).getProtocol(kademliaid) != null)
-    			mId = ((KademliaProtocol) Network.get(i).getProtocol(kademliaid)).node.getId();
-            else
-    			mId = ((KademliaProtocol) Network.get(i).getProtocol(otherProtocolId)).node.getId();
-			if (mId.equals(searchNodeId))
-				return Network.get(i);
-		}
-
-		return null;
-	}
-	
 
 	/**
 	 * Perform the required operation upon receiving a message in response to a ROUTE message.<br>
@@ -374,13 +319,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	    assert m.dest != null;
 	    
 
-		Node src = nodeIdtoNode(this.node.getId());
-		Node dest = nodeIdtoNode(destId);
+		Node src = Util.nodeIdtoNode(this.node.getId());
+		Node dest = Util.nodeIdtoNode(destId);
 		
-
-        destpid = kademliaid;
-        if (dest.getProtocol(kademliaid) == null)
-            destpid = otherProtocolId;
+        destpid = dest.getKademliaProtocol().getProtocolID();
 
 		logger.info("-> (" + m + "/" + m.id + ") " + destId);
 
@@ -410,8 +352,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	public void processEvent(Node myNode, int myPid, Object event) {
 		// Parse message content Activate the correct event manager fot the particular event
-        if (this.kademliaid == -1)
-    		this.kademliaid = myPid;
 		if(((SimpleEvent) event).getType() != Timeout.TIMEOUT && ((SimpleEvent) event).getType() != Timeout.TICKET_TIMEOUT
 				&& ((SimpleEvent) event).getType() != Timeout.REG_TIMEOUT){
 			Message m = (Message) event;
@@ -492,12 +432,26 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		return this.node;
 	}
 	
+    /**
+	 * Set the protocol ID for this node.
+	 */
+    public void setProtocolID(int protocolID) {
+        this.kademliaid = protocolID;
+    }
+    
+    /**
+	 * Get the protocol ID for this node.
+	 */
+    public int getProtocolID() {
+        return this.kademliaid;
+    }
+	
 	/**
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
-	public void refreshBuckets(int kademliaid, int otherProtocolId) {
-		routingTable.refreshBuckets(kademliaid, otherProtocolId);
+	public void refreshBuckets() {
+		routingTable.refreshBuckets();
 	}
 	
 	/*public void setClient (EthClient client) {

@@ -27,25 +27,19 @@ import peersim.transport.Transport;
  */
 public class StateBuilder implements peersim.core.Control {
 
-	private static final String PAR_PROT = "protocol";
-	private static final String EVIL_PAR_PROT = "evilProtocol";
 	private static final String PAR_TRANSPORT = "transport";
 
 	private String prefix;
-	private int kademliaid;
-    private int evilKademliaid;
 	private int transportid;
 
 	public StateBuilder(String prefix) {
 		this.prefix = prefix;
-		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
-		evilKademliaid = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT, -1);
 		transportid = Configuration.getPid(this.prefix + "." + PAR_TRANSPORT);
 	}
 
 	// ______________________________________________________________________________________________
 	public final KademliaProtocol get(int i) {
-		return ((KademliaProtocol) (Network.get(i)).getProtocol(kademliaid));
+		return (Network.get(i)).getKademliaProtocol();
 	}
 
 	// ______________________________________________________________________________________________
@@ -68,7 +62,7 @@ public class StateBuilder implements peersim.core.Control {
 		
 		for(int i = 0; i < Network.size(); i++) {
 			Node node = Network.get(i); 
-			KademliaProtocol prot = (KademliaProtocol) (node.getProtocol(kademliaid));
+			KademliaProtocol prot = (KademliaProtocol) (node.getKademliaProtocol());
 			BigInteger id = prot.node.getId();
 			double ratio = id.doubleValue()/ max.doubleValue() * 360;
 			System.out.println("ID: " + id + " div: " + ratio);
@@ -100,15 +94,10 @@ public class StateBuilder implements peersim.core.Control {
 			public int compare(Node o1, Node o2) {
 				Node n1 = (Node) o1;
 				Node n2 = (Node) o2;
-				KademliaProtocol p1 = (KademliaProtocol) (n1.getProtocol(kademliaid));
-                if (p1 == null) 
-				    p1 = (KademliaProtocol) (n1.getProtocol(evilKademliaid));
+				KademliaProtocol p1 = n1.getKademliaProtocol();
 
-				KademliaProtocol p2 = (KademliaProtocol) (n2.getProtocol(kademliaid));
-                if (p2 == null) 
-				    p2 = (KademliaProtocol) (n2.getProtocol(evilKademliaid));
+				KademliaProtocol p2 = n2.getKademliaProtocol();
                 
-                BigInteger id = p1.node.getId();
 				return Util.put0(p1.node.getId()).compareTo(Util.put0(p2.node.getId()));
 			}
 
@@ -119,17 +108,11 @@ public class StateBuilder implements peersim.core.Control {
 		// for every node take 50 random node and add to k-bucket of it
 		for (int i = 0; i < sz; i++) {
 			Node iNode = Network.get(i);
-            KademliaProtocol iKad;
-            if (iNode.getProtocol(kademliaid) != null)
-    			iKad = (KademliaProtocol) (iNode.getProtocol(kademliaid));
-            else
-    			iKad = (KademliaProtocol) (iNode.getProtocol(evilKademliaid));
+            KademliaProtocol iKad = iNode.getKademliaProtocol();
 
 			for (int k = 0; k < 100; k++) {
                 int index = CommonState.r.nextInt(sz);
-				KademliaProtocol jKad = (KademliaProtocol) (Network.get(index).getProtocol(kademliaid));
-                if (jKad == null)
-                    jKad = (KademliaProtocol) (Network.get(index).getProtocol(evilKademliaid));
+				KademliaProtocol jKad = Network.get(index).getKademliaProtocol();
 
 				iKad.routingTable.addNeighbour(jKad.node.getId());
 			}
@@ -138,9 +121,7 @@ public class StateBuilder implements peersim.core.Control {
 		// add other 50 near nodes
 		for (int i = 0; i < sz; i++) {
 			Node iNode = Network.get(i);
-			KademliaProtocol iKad = (KademliaProtocol) (iNode.getProtocol(kademliaid));
-            if (iKad == null)
-                iKad = (KademliaProtocol) (iNode.getProtocol(evilKademliaid));
+			KademliaProtocol iKad = (KademliaProtocol) (iNode.getKademliaProtocol());
 
 			int start = i;
 			if (i > sz - 50) {
@@ -149,9 +130,7 @@ public class StateBuilder implements peersim.core.Control {
 			for (int k = 0; k < 50; k++) {
 				start = start++;
 				if (start > 0 && start < sz) {
-					KademliaProtocol jKad = (KademliaProtocol) (Network.get(start++).getProtocol(kademliaid));
-                    if (jKad == null)
-                        jKad = (KademliaProtocol) (Network.get(start-1).getProtocol(evilKademliaid));
+					KademliaProtocol jKad = (KademliaProtocol) (Network.get(start++).getKademliaProtocol());
 					iKad.routingTable.addNeighbour(jKad.node.getId());
 				}
 			}
@@ -174,9 +153,7 @@ public class StateBuilder implements peersim.core.Control {
 	
 		for(int i = 0; i < Network.size(); i++) {
 			Node node = Network.get(i); 
-			KademliaProtocol prot = (KademliaProtocol) (node.getProtocol(kademliaid));
-            if (prot == null)
-                prot = (KademliaProtocol) (node.getProtocol(evilKademliaid));
+			KademliaProtocol prot = (KademliaProtocol) (node.getKademliaProtocol());
 			BigInteger id = prot.node.getId();
 			Set<BigInteger> neighbours = prot.routingTable.getAllNeighbours();
 			

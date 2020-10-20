@@ -81,7 +81,7 @@ public class DnsListDistribution implements peersim.core.Control {
 
 			//enr.va
 			KademliaNode node = new KademliaNode(enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger(), enr.ip().toString(), enr.tcp());
-			node.setProtocolId(protocolID);
+			//node.setProtocolId(protocolID);
 			if(i>=Network.size()) {
 				Node newNode = (Node) Network.prototype.clone();
 				for (int j = 0; j < inits.length; ++j)
