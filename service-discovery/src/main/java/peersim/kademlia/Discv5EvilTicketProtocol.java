@@ -58,7 +58,6 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 	 */
 	public Discv5EvilTicketProtocol(String prefix) {
 		super(prefix);
-        this.is_evil = true;
         this.attackType = Configuration.getString(prefix + "." + PAR_ATTACK_TYPE);
         this.numOfRegistrations = 0;
         this.targetNumOfRegistrations = Configuration.getInt(prefix + "." + PAR_NUMBER_OF_REGISTRATIONS, 0);

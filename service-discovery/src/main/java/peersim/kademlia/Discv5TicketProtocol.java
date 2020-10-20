@@ -327,7 +327,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	
 		//lop.decreaseRequests();	
 		for(TopicRegistration r: registrations) {
-			lop.addDiscovered(r.getNode().getId());
+			lop.addDiscovered(r.getNode());
 		}
 
 		//if(registrations.length==0) searchTable.get(lop.topic.getTopicID()).removeNeighbour(m.src.getId());
@@ -336,7 +336,6 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		int found = lop.discoveredCount();
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.getTopic());		
 		int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
-		
 		
 
 		if(!lop.finished && found >= required) {

@@ -287,4 +287,19 @@ public class Discv5TopicTable { // implements TopicTable {
     	}
         return result;
     }
+
+    public float percentMaliciousRegistrations() {
+        int num_registrations = 0;
+        int num_evil = 0;
+    	for(Topic topic: topicTable.keySet()) {
+    		ArrayDeque<TopicRegistration> regQ = topicTable.get(topic);
+    		for(TopicRegistration reg: regQ) {
+                num_registrations += 1;
+                KademliaNode n = reg.getNode();
+                if (n.is_evil)
+                    num_evil += 1;
+            }
+        }
+        return ((float) num_evil)/num_registrations;
+    }
 }

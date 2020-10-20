@@ -17,7 +17,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     private int maxIncomingConnections;
     private int maxOutgoingConnections;
 
-    private List<BigInteger> lookupResultBuffer;
+    private List<KademliaNode> lookupResultBuffer;
         
     private List<BigInteger> incomingConnections;
     private List<BigInteger> outgoingConnections;
@@ -27,6 +27,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
     private Discv5ZipfTrafficGenerator client;
     
     boolean requested=false;
+
+    public boolean is_evil=false;
 
     Topic t;
     
@@ -38,7 +40,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
         outgoingConnections = new ArrayList<BigInteger>();
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
-        lookupResultBuffer = new ArrayList<BigInteger>();
+        lookupResultBuffer = new ArrayList<KademliaNode>();
     }
 
     public KademliaNode(BigInteger id){
@@ -49,18 +51,19 @@ public class KademliaNode implements Comparable<KademliaNode>{
         outgoingConnections = new ArrayList<BigInteger>();
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
-        lookupResultBuffer = new ArrayList<BigInteger>();
+        lookupResultBuffer = new ArrayList<KademliaNode>();
     }
 
     public KademliaNode(KademliaNode n){
         this.id = n.id;
         this.addr = n.addr;
         this.port = n.port;
+        this.is_evil = n.is_evil;
         incomingConnections = new ArrayList<BigInteger>();
         outgoingConnections = new ArrayList<BigInteger>();
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
-        lookupResultBuffer = new ArrayList<BigInteger>();
+        lookupResultBuffer = new ArrayList<KademliaNode>();
     }
 
     public BigInteger getId(){
@@ -98,7 +101,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
         return 0;
     }
     
-    public void setLookupResult(List<BigInteger> result) {
+    public void setLookupResult(List<KademliaNode> result) {
     	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size());
     	lookupResultBuffer = result;
     	requested=false;
@@ -106,7 +109,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     			
     }
     		
-    public List<BigInteger> getLookupResult() {
+    public List<KademliaNode> getLookupResult() {
     	return lookupResultBuffer;
     	
     }
@@ -164,9 +167,9 @@ public class KademliaNode implements Comparable<KademliaNode>{
     		boolean success=false;
     		while(!success&&lookupResultBuffer.size()>0){
     	    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start connection "+lookupResultBuffer.size());
-    			success = startConnection(lookupResultBuffer.get(0));
+    			success = startConnection(lookupResultBuffer.get(0).getId());
     			
-    			if(success)addOutgoingConnection(lookupResultBuffer.get(0));
+    			if(success)addOutgoingConnection(lookupResultBuffer.get(0).getId());
     			lookupResultBuffer.remove(0);
     	    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start2 connection "+lookupResultBuffer.size());
 

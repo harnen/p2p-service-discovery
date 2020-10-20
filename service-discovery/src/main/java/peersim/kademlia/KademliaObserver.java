@@ -92,7 +92,7 @@ public class KademliaObserver implements Control {
 			msgWriter = new FileWriter("./logs/messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");
 			opWriter = new FileWriter("./logs/operations.csv");
-			opWriter.write("id,type,src,dst,hops\n");
+			opWriter.write("id,type,src,dst,hops,malicious,discovered\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -120,7 +120,10 @@ public class KademliaObserver implements Control {
 		try {
 		    String result = "";		
 		    String type = "";
-    		result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
+            if (op instanceof LookupOperation) 
+    		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "," + ((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() + "\n";
+            else
+    		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
 	    	opWriter.write(result);
 	    	opWriter.flush();
 		} catch (IOException e) {

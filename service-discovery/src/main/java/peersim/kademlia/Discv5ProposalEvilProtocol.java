@@ -22,7 +22,6 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
 
     public Discv5ProposalEvilProtocol(String prefix) {
         super(prefix);
-        this.is_evil = true;
         this.attackType = Configuration.getString(prefix + "." + PAR_ATTACK_TYPE);
         this.targetNumOfRegistrations = Configuration.getInt(prefix + "." + PAR_NUMBER_OF_REGISTRATIONS, 10);
         this.numOfSuccessfulRegistrations = 0;

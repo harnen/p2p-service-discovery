@@ -55,7 +55,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	protected int tid;
 	protected int kademliaid;
 	protected HashMap<BigInteger,Integer> failures;
-    protected boolean is_evil = false;
 	//private EthClient client;
 
 	/**
