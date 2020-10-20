@@ -1,4 +1,4 @@
-	package peersim.kademlia;
+package peersim.kademlia;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
+
+import peersim.kademlia.Util;
 
 import peersim.core.CommonState;
 
@@ -101,8 +103,8 @@ public class TicketTable extends RoutingTable {
 	public void refreshBuckets(int kademliaid, int otherProtocolId) {
 		Random rnd= new Random();
 		/*for(int i=0;i<nBuckets;i++) {
-			logger.warning("Ticket table "+k_buckets[i].occupancy());
-		}*/
+			logger.warning("Ticket table "+i+" "+k_buckets[i].occupancy());
+		}*/	
 		int i = rnd.nextInt(nBuckets);
 		//logger.warning("Tickettable refreshBuckkets of node "+this.nodeId+" at bucket "+i+" "+k_buckets[i].occupancy());
 
@@ -115,8 +117,29 @@ public class TicketTable extends RoutingTable {
 			b.checkAndReplaceLast(kademliaid, otherProtocolId);
 			//return;
 		
+
 		//if(b.replacements.size()==0)
-		//	protocol.sendLookup(t, myPid);
+		//	protocol.sendLookup(generateRandomNode(i), myPid);
+	
+		
+	}
+		
+	private BigInteger generateRandomNode(int b) {
+			
+			UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
+			BigInteger rand = urg.generate();
+			String rand2 = Util.put0(rand);
+			
+			int distance = b + this.bucketMinDistance + 1;
+			
+			int prefixlen = (KademliaCommonConfig.BITS - distance);
+			
+			String nodeId2 = Util.put0(nodeId);
+			
+			BigInteger randNode = new BigInteger(nodeId2.substring(0,prefixlen).concat(rand2.substring(prefixlen,rand2	.length())),2);
+			
+			return randNode;
+		
 
 	}
 	
