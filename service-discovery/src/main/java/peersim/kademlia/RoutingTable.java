@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class RoutingTable implements Cloneable {
 
-	private static int bucketMinDistance;
+	protected static int bucketMinDistance;
 
 	// node ID of the node
 	protected BigInteger nodeId = null;
@@ -168,7 +168,7 @@ public class RoutingTable implements Cloneable {
 			//System.out.println("bucket at distance "+distance+" "+bucketMinDistance+" "+0);
 			return k_buckets[0];
 		}
-		//System.out.println("bucket at distance "+distance+" "+(distance - bucketMinDistance - 1));
+		//System.out.println("bucket at distance "+bucketMinDistance+" "+distance+" "+(distance - bucketMinDistance - 1));
 		return k_buckets[distance - bucketMinDistance - 1];
 	}
 	
