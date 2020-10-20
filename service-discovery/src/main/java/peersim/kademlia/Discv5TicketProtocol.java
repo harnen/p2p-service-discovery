@@ -44,7 +44,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 */
     private HashMap<BigInteger,SearchTable> searchTable;
     
-	final String PAR_BITS = "BITS";
+	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 	final String PAR_ADS_PER_QUEUE = "ADS_PER_QUEUE";
 	final String PAR_AD_LIFE_TIME = "AD_LIFE_TIME";
 	
@@ -81,10 +81,12 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		if (_ALREADY_INSTALLED)
 			return;
 
-		KademliaCommonConfig.TOPIC_TABLE_CAP = Configuration.getInt(prefix + "." + PAR_NBUCKETS, KademliaCommonConfig.TOPIC_TABLE_CAP);
+		
+		KademliaCommonConfig.TOPIC_TABLE_CAP = Configuration.getInt(prefix + "." + PAR_TOPIC_TABLE_CAP, KademliaCommonConfig.TOPIC_TABLE_CAP);
 		KademliaCommonConfig.ADS_PER_QUEUE = Configuration.getInt(prefix + "." + PAR_ADS_PER_QUEUE, KademliaCommonConfig.ADS_PER_QUEUE);
 		KademliaCommonConfig.AD_LIFE_TIME = Configuration.getInt(prefix + "." + PAR_AD_LIFE_TIME, KademliaCommonConfig.AD_LIFE_TIME);
 
+		
 		super._init();
 	}
 
@@ -376,6 +378,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			} else if (lop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 				// search operation finished
 				operations.remove(lop.operationId);
+				System.out.println("reporting operation " + lop.operationId);
+				KademliaObserver.reportOperation(lop);
 				//lop.visualize(); uncomment if you want to see visualization of the operation
 				if(!lop.finished) { 
 					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
@@ -549,11 +553,12 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
         
         if(!ticketTable.containsKey(t.getTopicID())) {
+        	//TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
         	TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
         	rou.setNodeId(t.getTopicID());
         	ticketTable.put(t.getTopicID(),rou);
         	
-        	for(int i = 0; i<= KademliaCommonConfig.NBUCKETS;i++) {
+        	for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
         		BigInteger[] neighbours = routingTable.getNeighbours(i);
         		//if(neighbours.length!=0)logger.warning("Bucket at distance "+i+" with "+neighbours.length+" nodes");
         		//else logger.warning("Bucket at distance "+i+" empty");
@@ -632,13 +637,13 @@ public class Discv5TicketProtocol extends KademliaProtocol {
  
     }
     
-    public void sendLookup(Topic t,int myPid)
+    public void sendLookup(BigInteger node,int myPid)
     {
-		Message message = Message.makeInitFindNode(t.getTopicID());
+		Message message = Message.makeInitFindNode(node);
 		message.timestamp = CommonState.getTime();
 		
 		EDSimulator.add(0, message, nodeIdtoNode(this.node.getId()), myPid);
-		System.out.println("Send init lookup to distance "+Util.logDistance(t.getTopicID(), this.getNode().getId())+" for topic "+t.getTopicID());
+		//System.out.println("Send init lookup to distance "+Util.logDistance(node, this.getNode().getId()));
   
     }
     
@@ -915,7 +920,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			ttable.refreshBuckets(kademliaid, otherProtocolId);
 		for(SearchTable stable : searchTable.values())
 			stable.refreshBuckets(kademliaid, otherProtocolId);
-		routingTable.refreshBuckets(kademliaid, otherProtocolId);
+		
+		this.routingTable.refreshBuckets(kademliaid, otherProtocolId);
 	}
 
 }
