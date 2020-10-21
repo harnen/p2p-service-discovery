@@ -113,6 +113,7 @@ public class KademliaObserver implements Control {
 		 
 	}
 	
+	
 	public static int topicRegistrationCount(String topic) {
 		if(registeredTopics.containsKey(topic)){
 			return registeredTopics.get(topic).size();

@@ -118,8 +118,8 @@ public class TicketTable extends RoutingTable {
 			//return;
 		
 
-		if(b.replacements.size()==0)
-			protocol.sendLookup(generateRandomNode(i), myPid);
+		//if(b.replacements.size()==0)
+		//	protocol.sendLookup(generateRandomNode(i), myPid);
 	
 		
 	}
