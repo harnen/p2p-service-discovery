@@ -596,7 +596,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			if (nextNode != null) {
 				m.dest = new KademliaNode(nextNode);
 				sendMessage(m.copy(), nextNode, myPid);
-				System.out.println("Send topic lookup "+ this.node.getId()+" "+lop.available_requests);
+				//System.out.println("Send topic lookup "+ this.node.getId()+" "+lop.available_requests);
 				lop.nrHops++;
 			}
 		}
