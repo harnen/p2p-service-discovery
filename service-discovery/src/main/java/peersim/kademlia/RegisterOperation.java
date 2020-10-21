@@ -39,4 +39,8 @@ public class RegisterOperation extends Operation{
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
+
+    public Topic getTopic() {
+        return this.topic;
+    }
 }

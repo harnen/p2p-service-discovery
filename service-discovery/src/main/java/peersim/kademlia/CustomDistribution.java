@@ -55,17 +55,18 @@ public class CustomDistribution implements peersim.core.Control {
 			KademliaNode node = new KademliaNode(id, "127.0.0.1", 0);
             if (i < num_evil_nodes) {
                 generalNode.setProtocol(protocolID, null);
-                node.setProtocolId(evilProtocolID);
-                node.setOtherProtocolId(protocolID);
+                node.is_evil = true;
                 ((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID))).setNode(node);
+                generalNode.setKademliaProtocol((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID)));
+                ((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID))).setProtocolID(evilProtocolID);
             }
             else {
                 if (evilProtocolID != -1) {
                     generalNode.setProtocol(evilProtocolID, null);
-                    node.setOtherProtocolId(evilProtocolID);
                 }
-                node.setProtocolId(protocolID);
+                generalNode.setKademliaProtocol((KademliaProtocol) (Network.get(i).getProtocol(protocolID)));
                 ((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
+                ((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setProtocolID(protocolID);
             }
 			
 		}

@@ -89,8 +89,6 @@ public class RoutingTable implements Cloneable {
 			resultList.addAll(bucketAtDistance(dist-1).neighbours);
 		}
 		return resultList.toArray(result);
-
-		
 	}
 	
 	public BigInteger[] getKClosestNeighbours (final int k, int dist) {
@@ -131,13 +129,13 @@ public class RoutingTable implements Cloneable {
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
-	public void refreshBuckets(int kademliaid, int otherProtocolId) {
+	public void refreshBuckets() {
 		//System.out.println("Routingtable refreshBuckkets "+CommonState.getTime());
 		Random rnd= new Random();
 		//for(int i=0;i<nBuckets;i++) {
 		KBucket b = k_buckets[rnd.nextInt(nBuckets)];
 		if(b.neighbours.size()>0) {
-			b.checkAndReplaceLast(kademliaid, otherProtocolId);
+			b.checkAndReplaceLast();
 			return;
 		}
 		//}

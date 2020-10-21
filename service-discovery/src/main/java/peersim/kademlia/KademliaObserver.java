@@ -78,16 +78,8 @@ public class KademliaObserver implements Control {
 	
 	private static HashMap<BigInteger, Integer> nodeTopicStored = new HashMap<BigInteger, Integer>();
 
-	/** Parameter of the protocol we want to observe */
-	private static final String PAR_PROT = "protocol";
-	private static final String EVIL_PAR_PROT = "evilProtocol";
-	
 	private static FileWriter msgWriter;
 	private static FileWriter opWriter; 
-
-	/** Protocol id */
-	private int pid;
-	private int evil_pid;
 
 	/** Prefix to be printed in output */
 	private String prefix;
@@ -96,13 +88,11 @@ public class KademliaObserver implements Control {
 
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
-		pid = Configuration.getPid(prefix + "." + PAR_PROT);
-		evil_pid = Configuration.getPid(prefix + "." + EVIL_PAR_PROT, -1);
 		try {
 			msgWriter = new FileWriter("./logs/messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");
 			opWriter = new FileWriter("./logs/operations.csv");
-			opWriter.write("id,type,src,dst,hops\n");
+			opWriter.write("id,type,src,dst,hops,malicious,discovered\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -110,11 +100,15 @@ public class KademliaObserver implements Control {
 	
 	public static void addTopicRegistration(String topic, BigInteger registrant) {
 		 if(!registeredTopics.containsKey(topic)){
+				System.out.println("addTopicRegistration "+topic);
+
 	            HashSet<BigInteger> set = new HashSet<BigInteger>();
 	            set.add(registrant);
 	            registeredTopics.put(topic, set);
 		 }else{
 	            registeredTopics.get(topic).add(registrant);
+				System.out.println("addTopicRegistration "+topic+" "+registeredTopics.get(topic).size());
+
 	     }
 		 
 	}
@@ -130,7 +124,10 @@ public class KademliaObserver implements Control {
 		try {
 		    String result = "";		
 		    String type = "";
-    		result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
+            if (op instanceof LookupOperation) 
+    		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "," + ((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() + "\n";
+            else
+    		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
 	    	opWriter.write(result);
 	    	opWriter.flush();
 		} catch (IOException e) {
@@ -205,10 +202,7 @@ public class KademliaObserver implements Control {
 			writer.write("host,topic,registrant\n");
 			for(int i = 0; i < Network.size(); i++) {
 				Node node = Network.get(i);
-                if (node.getProtocol(pid) != null)
-    				kadProtocol = (KademliaProtocol)node.getProtocol(pid);
-                else 
-    				kadProtocol = (KademliaProtocol)node.getProtocol(evil_pid);
+                kadProtocol = node.getKademliaProtocol();
 
 				if(kadProtocol instanceof Discv5ProposalProtocol) {
 					String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();

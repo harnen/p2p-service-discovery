@@ -30,8 +30,6 @@ import peersim.edsim.EDSimulator;
 
 public class Turbulence implements Control {
 
-	private static final String PAR_PROT = "protocol";
-	private static final String EVIL_PAR_PROT = "evilProtocol";
 	//private static final String DISCV5_PAR_PROT = "discv5_protocol";
 	private static final String PAR_TRANSPORT = "transport";
 	private static final String PAR_INIT = "init";
@@ -66,8 +64,6 @@ public class Turbulence implements Control {
 	protected NodeInitializer[] inits;
 
 	private String prefix;
-	private int kademliaid;
-    private int evilProtocolId;
 	//private int discv5id=-1;
 	private int transportid;
 	private int maxsize;
@@ -79,8 +75,6 @@ public class Turbulence implements Control {
 	// ______________________________________________________________________________________________
 	public Turbulence(String prefix) {
 		this.prefix = prefix;
-		kademliaid = Configuration.getPid(this.prefix + "." + PAR_PROT);
-		evilProtocolId = Configuration.getPid(this.prefix + "." + EVIL_PAR_PROT, -1);
 		transportid = Configuration.getPid(this.prefix + "." + PAR_TRANSPORT);
         /*if (Configuration.isValidProtocolName(prefix + "." + DISCV5_PAR_PROT)) {
 		    discv5id = Configuration.getPid(this.prefix + "." + DISCV5_PAR_PROT);
@@ -120,8 +114,8 @@ public class Turbulence implements Control {
 			public int compare(Object o1, Object o2) {
 				Node n1 = (Node) o1;
 				Node n2 = (Node) o2;
-				KademliaProtocol p1 = (KademliaProtocol) (n1.getProtocol(kademliaid));
-				KademliaProtocol p2 = (KademliaProtocol) (n2.getProtocol(kademliaid));
+				KademliaProtocol p1 = (KademliaProtocol) (n1.getKademliaProtocol());
+				KademliaProtocol p2 = (KademliaProtocol) (n2.getKademliaProtocol());
 				return Util.put0(p1.node.getId()).compareTo(Util.put0(p2.node.getId()));
 			}
 
@@ -143,13 +137,13 @@ public class Turbulence implements Control {
 		Network.add(newNode);
 
 		// get kademlia protocol of new node
-		KademliaProtocol newKad = (KademliaProtocol) (newNode.getProtocol(kademliaid));
+		KademliaProtocol newKad = (KademliaProtocol) (newNode.getKademliaProtocol());
 
 		// set node Id
 		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 		KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
-		node.setProtocolId(kademliaid);
-		((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
+		//node.setProtocolId(kademliaid);
+		newNode.getKademliaProtocol().setNode(node);
         //if (discv5id != -1)
     	//	((Discv5TicketProtocol) (newNode.getProtocol(discv5id))).setNode(node, newNode);
 		System.out.println("Adding node " + node.getId());
@@ -164,14 +158,14 @@ public class Turbulence implements Control {
 		} while ((start == null) || (!start.isUp()));
 
 		// create auto-search message (search message with destination my own Id)
-		Message m = Message.makeInitFindNode(newKad.node.getId());
+		Message m = Message.makeInitFindNode(newKad.getNode().getId());
 		m.timestamp = CommonState.getTime();
 
 		// perform initialization
-		newKad.routingTable.addNeighbour(((KademliaProtocol) (start.getProtocol(kademliaid))).node.getId());
+		newKad.routingTable.addNeighbour(start.getKademliaProtocol().getNode().getId());
 
 		// start auto-search
-		EDSimulator.add(0, m, newNode, kademliaid);
+		EDSimulator.add(0, m, newNode, newNode.getKademliaProtocol().getProtocolID());
 
 		// find another random node (this is to enrich the k-buckets)
 		Message m1 = Message.makeInitFindNode(urg.generate());
@@ -190,26 +184,26 @@ public class Turbulence implements Control {
 			remove = Network.get(CommonState.r.nextInt(Network.size()));
 		} while ((remove == null) || (!remove.isUp()));
 
-		System.out.println("Removing node " + ((KademliaProtocol) (remove.getProtocol(kademliaid))).getNode().getId());
+		System.out.println("Removing node " + remove.getKademliaProtocol().getNode().getId());
 		// remove node (set its state to DOWN)
 		remove.setFailState(Node.DOWN);
 
 		//Ethclient
-		KademliaNode kadNode = ((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode();
+		KademliaNode kadNode = remove.getKademliaProtocol().getNode();
 		List<BigInteger> incoming = kadNode.getIncomingConnections();
 		List<BigInteger> outgoing = kadNode.getOutgoingConnections();
 		for(BigInteger addr : incoming)
 		{
-			Node n = Util.nodeIdtoNode(addr, kademliaid, evilProtocolId);
-			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
+			Node n = Util.nodeIdtoNode(addr);
+			KademliaNode kad = n.getKademliaProtocol().getNode();
 			kad.deleteOutgoingConnection(kadNode.getId());
 			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
 		}
 		
 		for(BigInteger addr : outgoing)
 		{
-			Node n = Util.nodeIdtoNode(addr, kademliaid, evilProtocolId);
-			KademliaNode kad = ((KademliaProtocol)(n.getProtocol(kademliaid))).getNode();
+			Node n = Util.nodeIdtoNode(addr);
+			KademliaNode kad = n.getKademliaProtocol().getNode();
 			kad.deleteIncomingConnection(kadNode.getId());
 			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
 		}

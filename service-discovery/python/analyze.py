@@ -45,6 +45,7 @@ def analyzeOperations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
     fig, ax2 = plt.subplots()
+    fig, ax3 = plt.subplots()
     
     x = ['RegisterOperation','LookupOperation']
     for log_dir in dirs:
@@ -57,16 +58,24 @@ def analyzeOperations(dirs):
         print(df['hops'].mean())
         ax2.bar(log_dir, df['hops'].mean()) 
         ax2.set_title("Avg hop count")
+
+        print(df.query("type == 'LookupOperation'")['malicious'].sum())
+        print(df.query("type == 'LookupOperation'")['discovered'].sum())
+        total_malicious = df.query("type == 'LookupOperation'")['malicious'].sum()
+        total_discovered = df.query("type == 'LookupOperation'")['discovered'].sum()
+        ax3.bar(["Malicious", "Total_Discovered"], [total_malicious, total_discovered])
+        ax3.set_title("Percent Malicious in Lookups")
         
     ax1.legend()
     ax2.legend()
+    ax3.legend()
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
     exit(1)
 
 print('Will read logs from', sys.argv[1:])
-analyzeMessages(sys.argv[1:])
+#analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 
