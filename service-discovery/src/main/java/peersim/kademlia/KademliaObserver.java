@@ -100,14 +100,14 @@ public class KademliaObserver implements Control {
 	
 	public static void addTopicRegistration(String topic, BigInteger registrant) {
 		 if(!registeredTopics.containsKey(topic)){
-				System.out.println("addTopicRegistration "+topic);
+				//System.out.println("addTopicRegistration "+topic);
 
 	            HashSet<BigInteger> set = new HashSet<BigInteger>();
 	            set.add(registrant);
 	            registeredTopics.put(topic, set);
 		 }else{
 	            registeredTopics.get(topic).add(registrant);
-				System.out.println("addTopicRegistration "+topic+" "+registeredTopics.get(topic).size());
+				//System.out.println("addTopicRegistration "+topic+" "+registeredTopics.get(topic).size());
 
 	     }
 		 

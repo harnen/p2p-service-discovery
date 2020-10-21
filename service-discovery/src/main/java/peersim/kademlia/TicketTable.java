@@ -118,14 +118,18 @@ public class TicketTable extends RoutingTable {
 			//return;
 		
 
-		//if(b.replacements.size()==0)
-		//	protocol.sendLookup(generateRandomNode(i), myPid);
-	
+		if(b.replacements.size()==0) {
+			BigInteger randomNode = generateRandomNode(i);
+			protocol.sendLookup(randomNode, myPid);
+			//logger.warning("Sending lookup from topic table to dist "+Util.logDistance(randomNode, this.nodeId)+" "+i);
+		}
 		
 	}
 		
 	private BigInteger generateRandomNode(int b) {
 			
+		BigInteger randNode;
+		do {
 			UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 			BigInteger rand = urg.generate();
 			String rand2 = Util.put0(rand);
@@ -136,9 +140,10 @@ public class TicketTable extends RoutingTable {
 			
 			String nodeId2 = Util.put0(nodeId);
 			
-			BigInteger randNode = new BigInteger(nodeId2.substring(0,prefixlen).concat(rand2.substring(prefixlen,rand2	.length())),2);
-			
-			return randNode;
+			randNode = new BigInteger(nodeId2.substring(0,prefixlen).concat(rand2.substring(prefixlen,rand2	.length())),2);
+		}while(Util.logDistance(randNode, nodeId)!=b);
+		
+		return randNode;
 		
 
 	}

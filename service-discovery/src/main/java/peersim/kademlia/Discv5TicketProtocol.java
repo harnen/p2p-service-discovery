@@ -553,13 +553,13 @@ public class Discv5TicketProtocol extends KademliaProtocol {
  
     }
     
-    public void sendLookup(BigInteger node,int myPid)
+    public void sendLookup(BigInteger node, int myPid)
     {
 		Message message = Message.makeInitFindNode(node);
 		message.timestamp = CommonState.getTime();
 		
 		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);
-		//System.out.println("Send init lookup to distance "+Util.logDistance(node, this.getNode().getId()));
+		//System.out.println("Send init lookup to node "+Util.logDistance(node, this.getNode().getId()));
 
   
     }
