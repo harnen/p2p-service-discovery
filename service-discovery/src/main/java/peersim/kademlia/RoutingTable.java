@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class RoutingTable implements Cloneable {
 
-	protected static int bucketMinDistance;
+	protected int bucketMinDistance;
 
 	// node ID of the node
 	protected BigInteger nodeId = null;
@@ -36,7 +36,6 @@ public class RoutingTable implements Cloneable {
 	 */
 	public RoutingTable(int nBuckets, int k, int maxReplacements) {
 		// initialize k-bukets
-		//System.out.println("new routing table");
 		k_buckets = new KBucket[nBuckets];
 		this.nBuckets = nBuckets;
 		this.k=k;
@@ -45,6 +44,7 @@ public class RoutingTable implements Cloneable {
 		for (int i = 0; i < k_buckets.length; i++) {
 			k_buckets[i] = new KBucket(this,k,maxReplacements);
 		}
+
 		//this.prot=prot;
 	}
 

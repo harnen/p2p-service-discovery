@@ -463,7 +463,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     	Topic t = (Topic) m.body;
         //t.setHostID(this.node.getId());
 		
-    	logger.warning("Sending topic registration for topic "+t.getTopic());
+    	//logger.warning("Sending topic registration for topic "+t.getTopic());
     	
        // KademliaObserver.addTopicRegistration(t.getTopic(), this.node.getId());
 
@@ -481,7 +481,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         		rou.addNeighbour(neighbours);
         	}
         }
-        
+    	//logger.warning("Sending topic registration for topic "+t.getTopic()+" done");
+
         //sendLookup(t,myPid);
   }
 	
@@ -706,7 +707,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
  		m.operationId = top.operationId;
  		m.src = this.node;
  		
- 		//System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
+ 		System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
  		sendMessage(m,top.getNeighbour(),myPid);
 
  		// send ALPHA messages

@@ -1,4 +1,4 @@
-package peersim.kademlia;
+	package peersim.kademlia;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -42,6 +42,8 @@ public class TicketTable extends RoutingTable {
 		
 		logger = Logger.getLogger(protocol.getNode().getId().toString());
 		
+
+
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -49,19 +51,19 @@ public class TicketTable extends RoutingTable {
 	public void addNeighbour(BigInteger[] nodes) {
 		//logger.warning("Pending tickets "+pendingTickets.size());
 		for(BigInteger node : nodes) {
-			//System.out.println("Add node "+node+" to "+protocol.getNode().getId());
 			if(!pendingTickets.contains(node)) {
-				if(super.addNeighbour(node)) {
+				if(addNeighbour(node)) {
 					pendingTickets.add(node);
+					logger.warning("Adding node "+node+" to "+protocol.getNode().getId()+" "+(Util.logDistance(node,nodeId)-bucketMinDistance-1));
 					//pendingTickets.put(node, null);
 					//logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
 					protocol.sendTicketRequest(node,t,myPid);
-				} else {
-					//logger.warning("Node "+node+" already in "+protocol.getNode().getId());
+				}/* else {
+					logger.warning("Node "+node+" already in "+protocol.getNode().getId());
 				}
-			} /*else {
-				logger.warning("Node not added "+node+" to "+protocol.getNode().getId() +" pending tickets");
-			}*/
+			}*else {
+				logger.warning("Node not added "+node+" to "+protocol.getNode().getId() +" pending tickets");*/
+			}
 		}
 	}
 
@@ -87,6 +89,10 @@ public class TicketTable extends RoutingTable {
 		//logger.warning("Pending ticket remove "+node);
 		pendingTickets.remove(node);
 		bucket(node).removeNeighbour(node);
+		
+		BigInteger[] replacements = new BigInteger[0];
+		bucket(node).replacements.toArray(replacements);
+		addNeighbour(replacements);
 		//logger.warning("Node "+node+" removed at "+protocol.getNode().getId());
 
 		//System.out.println("Bucket remove "+bucket(node).occupancy());
@@ -110,18 +116,16 @@ public class TicketTable extends RoutingTable {
 
 		KBucket b = k_buckets[i];
 		//if(b.neighbours.size()<k)
-		while(b.neighbours.size()<k&&b.replacements.size()>0)
-			b.replace();
-			//protocol.sendLookup(t, myPid);
-		if(b.neighbours.size()>0) 
-			b.checkAndReplaceLast();
-			//return;
-		
+		if(b.neighbours.size()<k) {
+			BigInteger[] replacements = new BigInteger[0];
+			b.replacements.toArray(replacements);
+			addNeighbour(replacements);
+		}
 
-		if(b.replacements.size()==0) {
+		if(b.neighbours.size()<k) {
 			BigInteger randomNode = generateRandomNode(i);
 			protocol.sendLookup(randomNode, myPid);
-			//logger.warning("Sending lookup from topic table to dist "+Util.logDistance(randomNode, this.nodeId)+" "+i);
+			//logger.warning("Sending lookup from topic table to dist "+(Util.logDistance(randomNode, this.nodeId)- bucketMinDistance - 1)+" "+i);
 		}
 		
 	}
@@ -129,19 +133,41 @@ public class TicketTable extends RoutingTable {
 	private BigInteger generateRandomNode(int b) {
 			
 		BigInteger randNode;
-		do {
+		//do {
 			UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 			BigInteger rand = urg.generate();
 			String rand2 = Util.put0(rand);
 			
 			int distance = b + this.bucketMinDistance + 1;
-			
+				
 			int prefixlen = (KademliaCommonConfig.BITS - distance);
 			
 			String nodeId2 = Util.put0(nodeId);
 			
-			randNode = new BigInteger(nodeId2.substring(0,prefixlen).concat(rand2.substring(prefixlen,rand2	.length())),2);
-		}while(Util.logDistance(randNode, nodeId)!=b);
+			String randomString = "";
+			//logger.warning(nodeId2+" "+prefixlen+" "+b+" "+distance);
+			//logger.warning(rand2);
+			if(prefixlen>0) {
+				if(nodeId2.charAt(prefixlen)==rand2.charAt(prefixlen)) {
+					if(Integer.parseInt(nodeId2.substring(prefixlen-1,prefixlen))==0) {
+						randomString = nodeId2.substring(0,prefixlen).concat("1");
+					} else {
+						randomString = nodeId2.substring(0,prefixlen).concat("0");
+					}
+					randomString = randomString.concat(rand2.substring(prefixlen+1,rand2.length()));
+				//logger.warning(randomString);
+				} else 
+					randomString = nodeId2.substring(0,prefixlen).concat(rand2.substring(prefixlen,rand2.length()));
+			//logger.warning(randomString);
+				randNode = new BigInteger(randomString,2);
+
+			} else {
+				randNode = rand;
+			}
+			
+			//logger.warning("Distance "+Util.logDistance(randNode, b));
+			
+		//}while(Util.logDistance(randNode, nodeId)!=b);
 		
 		return randNode;
 		
