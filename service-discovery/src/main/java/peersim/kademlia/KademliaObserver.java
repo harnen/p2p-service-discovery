@@ -123,14 +123,16 @@ public class KademliaObserver implements Control {
 	
 	public static void reportOperation(Operation op) {
 		try {
+			//System.out.println("Report operation "+op.getClass().getSimpleName());
 		    String result = "";		
 		    String type = "";
-            if (op instanceof LookupOperation) 
+            if (op instanceof LookupOperation || op instanceof LookupTicketOperation) {
     		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "," + ((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() + "\n";
-            else
-    		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
-	    	opWriter.write(result);
-	    	opWriter.flush();
+            //else
+    		//    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
+    		    opWriter.write(result);
+    		    opWriter.flush();
+            }
 		} catch (IOException e) {
 	    	e.printStackTrace();
 	    }

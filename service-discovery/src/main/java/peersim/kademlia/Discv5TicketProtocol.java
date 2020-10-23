@@ -316,7 +316,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		Message.TopicLookupBody lookupBody = (Message.TopicLookupBody) m.body;
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[]  registrations = lookupBody.registrations;
-		//System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.availableRequests());
+		System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.available_requests);
 
 		lop.elaborateResponse(neighbours);
 		
@@ -570,7 +570,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		KademliaObserver.lookup_total.add(1);
 		
 		//Topic t = (Topic) m.body;
-		logger.warning("Send topic lookup for topic "+this.node.getId()+" "+t.getTopic());
+		//logger.warning("Send topic lookup for topic "+this.node.getId()+" "+t.getTopic());
 
 		LookupTicketOperation lop = new LookupTicketOperation(this.node.getId(), this.searchTable.get(t.getTopicID()), m.timestamp, t);
 		lop.body = m.body;

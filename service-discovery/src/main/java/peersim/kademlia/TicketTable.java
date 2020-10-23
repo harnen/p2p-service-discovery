@@ -54,7 +54,7 @@ public class TicketTable extends RoutingTable {
 			if(!pendingTickets.contains(node)) {
 				if(addNeighbour(node)) {
 					pendingTickets.add(node);
-					logger.warning("Adding node "+node+" to "+protocol.getNode().getId()+" "+(Util.logDistance(node,nodeId)-bucketMinDistance-1));
+					//logger.warning("Adding node "+node+" to "+protocol.getNode().getId()+" "+(Util.logDistance(node,nodeId)-bucketMinDistance-1));
 					//pendingTickets.put(node, null);
 					//logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
 					protocol.sendTicketRequest(node,t,myPid);
@@ -114,6 +114,7 @@ public class TicketTable extends RoutingTable {
 		int i = rnd.nextInt(nBuckets);
 		//logger.warning("Tickettable refreshBuckkets of node "+this.nodeId+" at bucket "+i+" "+k_buckets[i].occupancy());
 
+		//logger.warning("Ticket table "+i+" "+k_buckets[i].occupancy());
 		KBucket b = k_buckets[i];
 		//if(b.neighbours.size()<k)
 		if(b.neighbours.size()<k) {
