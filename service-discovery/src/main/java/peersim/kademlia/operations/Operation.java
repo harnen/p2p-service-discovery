@@ -1,4 +1,4 @@
-package peersim.kademlia;
+package peersim.kademlia.operations;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -13,6 +13,10 @@ import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Network;
 import peersim.core.Node;
+import peersim.kademlia.KademliaCommonConfig;
+import peersim.kademlia.KademliaProtocol;
+import peersim.kademlia.UniformRandomGenerator;
+import peersim.kademlia.Util;
 
 /**
  * This class represents a find operation and offer the methods needed to maintain and update the closest set.<br>
@@ -65,7 +69,7 @@ public class Operation {
 	/**
 	 * Number of hops the message did
 	 */
-	protected int nrHops = 0;
+	public int nrHops = 0;
 
 	/**
 	 * This map contains the K closest nodes and corresponding boolean value that indicates if the nodes has been already queried
@@ -73,7 +77,7 @@ public class Operation {
 	 */
 	protected HashMap<BigInteger, Boolean> closestSet;
 	
-	protected ArrayList<BigInteger> returned;
+	public ArrayList<BigInteger> returned;
 
 	/**
 	 * defaul constructor

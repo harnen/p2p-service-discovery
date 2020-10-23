@@ -7,6 +7,8 @@ import java.util.HashSet;
 import peersim.core.Network;
 import peersim.core.Node;
 import peersim.edsim.EDSimulator;
+import peersim.kademlia.operations.LookupOperation;
+import peersim.kademlia.operations.RegisterOperation;
 import peersim.transport.UnreliableTransport;
 
 

@@ -38,6 +38,8 @@ import peersim.kademlia.KademliaCommonConfig;
 import peersim.kademlia.KademliaNode;
 import peersim.kademlia.RoutingTable;
 import peersim.kademlia.Timeout;
+import peersim.kademlia.operations.FindOperation;
+import peersim.kademlia.operations.Operation;
 
 //__________________________________________________________________________________________________
 public class KademliaProtocol implements Cloneable, EDProtocol {
@@ -67,7 +69,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	//public BigInteger nodeId;
 
-	protected KademliaNode node;
+	public KademliaNode node;
 
 	/**
 	 * routing table of this pastry node

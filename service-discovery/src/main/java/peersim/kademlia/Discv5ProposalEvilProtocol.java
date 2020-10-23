@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import peersim.core.Node;
 import peersim.config.Configuration;
 import peersim.kademlia.KademliaCommonConfig;
+import peersim.kademlia.operations.Operation;
+import peersim.kademlia.operations.RegisterOperation;
 
 
 public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {

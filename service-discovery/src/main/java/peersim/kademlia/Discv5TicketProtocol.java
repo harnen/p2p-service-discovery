@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.TreeMap;
 
 import peersim.kademlia.Topic;
+import peersim.kademlia.operations.LookupTicketOperation;
+import peersim.kademlia.operations.TicketOperation;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,7 +26,6 @@ import peersim.transport.UnreliableTransport;
 import peersim.kademlia.KademliaCommonConfig;
 import peersim.kademlia.KademliaNode;
 import peersim.kademlia.Message;
-import peersim.kademlia.TicketOperation;
 import peersim.kademlia.TicketTable;
 
 public class Discv5TicketProtocol extends KademliaProtocol {

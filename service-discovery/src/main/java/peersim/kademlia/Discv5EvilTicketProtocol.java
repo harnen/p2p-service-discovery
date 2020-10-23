@@ -8,8 +8,6 @@ import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.TreeMap;
 
-import peersim.kademlia.Topic;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,7 +22,7 @@ import peersim.transport.UnreliableTransport;
 import peersim.kademlia.KademliaCommonConfig;
 import peersim.kademlia.KademliaNode;
 import peersim.kademlia.Message;
-import peersim.kademlia.TicketOperation;
+import peersim.kademlia.operations.TicketOperation;
 import peersim.kademlia.TicketTable;
 
 public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
