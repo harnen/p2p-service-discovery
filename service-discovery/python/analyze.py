@@ -97,6 +97,10 @@ def analyzeDistribution(dirs):
                           markerfacecolor=color, markersize=15))
     print(legend_elements)
     ax1.legend(handles=legend_elements)
+
+    # produce a legend with a cross section of sizes from the scatter
+    handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6)
+    ax1.legend(handles, labels, loc="upper right", title="Sizes")
                     
 
 def analyzeOperations(dirs):

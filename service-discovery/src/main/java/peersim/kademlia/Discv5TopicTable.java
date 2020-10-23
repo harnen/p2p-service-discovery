@@ -83,6 +83,7 @@ public class Discv5TopicTable { // implements TopicTable {
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
         long waiting_time;
         
+        //System.out.println("Topic "+reg.getTopic().topic+" "+topicQ.size());
         /*if(topicQ!=null) {
         for(Iterator<TopicRegistration> itr = topicQ.iterator();itr.hasNext();)  {
         	TopicRegistration t = itr.next();
@@ -133,14 +134,15 @@ public class Discv5TopicTable { // implements TopicTable {
 
     private void register(TopicRegistration reg) {
         ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
-        if (topicQ != null)
+        if (topicQ != null) {
             topicQ.add(reg);
-        else {
+            //System.out.println(this +" Add topictable "+reg.getTopic().getTopic()+" "+topicQ.size());
+        }else {
             ArrayDeque<TopicRegistration> q = new ArrayDeque<TopicRegistration>();
             q.add(reg);
-            //System.out.println("Add topictable "+reg.getTopic().getTopic());
             this.topicTable.put(reg.getTopic(), q);
         }
+
         this.allAds.add(reg);
     }
     
@@ -184,12 +186,15 @@ public class Discv5TopicTable { // implements TopicTable {
             TopicRegistration reg = new TopicRegistration(ticket.getSrc(), topic, curr_time);
             reg.setTimestamp(curr_time);
             long waiting_time = getWaitingTime(reg, curr_time);
+        	//if(this.topicTable.get(reg.getTopic())!=null)logger.warning("Ticket "+ticket.getTopic().topic+" "+waiting_time+" "+ticket.getSrc().getId()+" "+this.topicTable.get(reg.getTopic()).size());
+        	int topicOccupancy = 0;
+        	if(this.topicTable.get(reg.getTopic())!=null)topicOccupancy = this.topicTable.get(reg.getTopic()).size();
             if (waiting_time == -1) {
                 logger.warning("already registered advert");
                 ticket.setRegistrationComplete(false);
                 ticket.setWaitTime(waiting_time);
             }
-            else if (waiting_time == 0) {
+            else if (waiting_time == 0 && topicOccupancy <adsPerQueue && this.allAds.size()<tableCapacity) {
                 register(reg);
                 ticket.setRegistrationComplete(true);
                 if (ticket.equals(bestTicket)) {

@@ -125,6 +125,7 @@ public class KademliaObserver implements Control {
 	
 	public static void reportOperation(Operation op) {
 		try {
+			//System.out.println("Report operation "+op.getClass().getSimpleName());
 		    String result = "";		
 		    String type = "";
             if (op instanceof LookupOperation) 
@@ -134,6 +135,7 @@ public class KademliaObserver implements Control {
             result += "\n";
 	    	opWriter.write(result);
 	    	opWriter.flush();
+
 		} catch (IOException e) {
 	    	e.printStackTrace();
 	    }

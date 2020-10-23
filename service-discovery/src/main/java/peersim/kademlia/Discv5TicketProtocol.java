@@ -317,7 +317,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		Message.TopicLookupBody lookupBody = (Message.TopicLookupBody) m.body;
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[]  registrations = lookupBody.registrations;
-		//System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.availableRequests());
+		System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.available_requests);
 
 		lop.elaborateResponse(neighbours);
 		
@@ -464,7 +464,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     	Topic t = (Topic) m.body;
         //t.setHostID(this.node.getId());
 		
-    	logger.warning("Sending topic registration for topic "+t.getTopic());
+    	//logger.warning("Sending topic registration for topic "+t.getTopic());
     	
        // KademliaObserver.addTopicRegistration(t.getTopic(), this.node.getId());
 
@@ -482,7 +482,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         		rou.addNeighbour(neighbours);
         	}
         }
-        
+    	//logger.warning("Sending topic registration for topic "+t.getTopic()+" done");
+
         //sendLookup(t,myPid);
   }
 	
@@ -570,7 +571,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		KademliaObserver.lookup_total.add(1);
 		
 		//Topic t = (Topic) m.body;
-		logger.warning("Send topic lookup for topic "+this.node.getId()+" "+t.getTopic());
+		//logger.warning("Send topic lookup for topic "+this.node.getId()+" "+t.getTopic());
 
 		LookupTicketOperation lop = new LookupTicketOperation(this.node.getId(), this.searchTable.get(t.getTopicID()), m.timestamp, t);
 		lop.body = m.body;
@@ -707,7 +708,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
  		m.operationId = top.operationId;
  		m.src = this.node;
  		
- 		//System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
+ 		System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
  		sendMessage(m,top.getNeighbour(),myPid);
 
  		// send ALPHA messages
