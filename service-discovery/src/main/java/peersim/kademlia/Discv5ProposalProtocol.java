@@ -54,6 +54,9 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 			lop.addDiscovered(r.getNode());
 		}
 		
+		if(!lop.finished)lop.increaseReturned(m.src.getId());
+
+		
 		int found = lop.discoveredCount();
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
 		int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);

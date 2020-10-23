@@ -46,6 +46,7 @@ def analyzeOperations(dirs):
     fig, ax1 = plt.subplots()
     fig, ax2 = plt.subplots()
     fig, ax3 = plt.subplots()
+    fig, ax4 = plt.subplots()
     
     x = ['RegisterOperation','LookupOperation']
     for log_dir in dirs:
@@ -55,10 +56,14 @@ def analyzeOperations(dirs):
         ax1.bar(df['type'].value_counts().index, df['type'].value_counts(), label=log_dir)
         ax1.set_title("Operations by type")
     
-        print(df['hops'].mean())
-        ax2.bar(log_dir, df['hops'].mean()) 
-        ax2.set_title("Avg hop count")
+        print(df['used_hops'].mean())
+        ax2.bar(log_dir, df['used_hops'].mean()) 
+        ax2.set_title("Avg recv hop count")
 
+        print(df['returned_hops'].mean())
+        ax4.bar(log_dir, df['returned_hops'].mean()) 
+        ax4.set_title("Avg send hop count")
+        
         print(df.query("type == 'LookupOperation'")['malicious'].sum())
         print(df.query("type == 'LookupOperation'")['discovered'].sum())
         total_malicious = df.query("type == 'LookupOperation'")['malicious'].sum()
@@ -69,6 +74,7 @@ def analyzeOperations(dirs):
     ax1.legend()
     ax2.legend()
     ax3.legend()
+    ax4.legend()
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")

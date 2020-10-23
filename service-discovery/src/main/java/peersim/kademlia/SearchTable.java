@@ -82,6 +82,10 @@ public class SearchTable extends RoutingTable {
 		}
 	}
 	
+	public int getnBuckets() {
+		return nBuckets;
+	}
+	
 	
 
 

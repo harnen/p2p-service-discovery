@@ -92,7 +92,7 @@ public class KademliaObserver implements Control {
 			msgWriter = new FileWriter("./logs/messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");
 			opWriter = new FileWriter("./logs/operations.csv");
-			opWriter.write("id,type,src,dst,hops,malicious,discovered\n");
+			opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -127,7 +127,7 @@ public class KademliaObserver implements Control {
 		    String result = "";		
 		    String type = "";
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) {
-    		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "," + ((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() + "\n";
+    		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "," +op.used.size()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() + "\n";
             //else
     		//    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
     		    opWriter.write(result);
