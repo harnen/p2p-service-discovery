@@ -1,4 +1,4 @@
-package peersim.kademlia;
+package peersim.kademlia.operations;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -7,7 +7,10 @@ import java.util.List;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import peersim.core.CommonState;
 import peersim.kademlia.KademliaCommonConfig;
+import peersim.kademlia.SearchTable;
+import peersim.kademlia.Topic;
 
 public class LookupTicketOperation extends LookupOperation {
 

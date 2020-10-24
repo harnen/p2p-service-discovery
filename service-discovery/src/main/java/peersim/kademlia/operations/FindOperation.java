@@ -1,8 +1,9 @@
-package peersim.kademlia;
+package peersim.kademlia.operations;
 
 import java.math.BigInteger;
 import java.util.HashMap;
-import peersim.kademlia.Operation;
+
+import peersim.kademlia.Message;
 
 /**
  * This class represents a find operation and offer the methods needed to maintain and update the closest set.<br>

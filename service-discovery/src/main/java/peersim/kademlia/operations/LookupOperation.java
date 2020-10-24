@@ -1,12 +1,16 @@
-package peersim.kademlia;
+package peersim.kademlia.operations;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import peersim.kademlia.KademliaNode;
+import peersim.kademlia.Message;
+import peersim.kademlia.Topic;
+
 public class LookupOperation extends Operation {
-	final Topic topic;
+	public final Topic topic;
 	private HashSet<KademliaNode> discovered;
 
 	
@@ -23,6 +27,23 @@ public class LookupOperation extends Operation {
 	
 	public HashSet<KademliaNode> getDiscovered(){
 		return discovered;
+	}
+	
+	public String discoveredToString() {
+		if(discovered.size() == 0) return "";
+		
+		String result = "\"";
+		boolean first = true;
+		for(KademliaNode n: discovered) {
+			if(first) {
+				result += n.getId();
+				first = false;
+			}else {
+				result += " " + n.getId();
+			}
+		}
+		result += "\"";
+		return result;
 	}
 	
 	public List<KademliaNode> getDiscoveredArray()

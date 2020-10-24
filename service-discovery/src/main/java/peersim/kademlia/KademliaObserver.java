@@ -16,6 +16,9 @@ import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
+import peersim.kademlia.operations.LookupOperation;
+import peersim.kademlia.operations.LookupTicketOperation;
+import peersim.kademlia.operations.Operation;
 import peersim.util.IncrementalStats;
 
 /**
@@ -92,7 +95,8 @@ public class KademliaObserver implements Control {
 			msgWriter = new FileWriter("./logs/messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");
 			opWriter = new FileWriter("./logs/operations.csv");
-			opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered\n");
+			opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,topic\n");
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -126,13 +130,15 @@ public class KademliaObserver implements Control {
 			//System.out.println("Report operation "+op.getClass().getSimpleName());
 		    String result = "";		
 		    String type = "";
-            if (op instanceof LookupOperation || op instanceof LookupTicketOperation) {
-    		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "," +op.used.size()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() + "\n";
+
+		    if (op instanceof LookupOperation || op instanceof LookupTicketOperation) {
+    		    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "," +op.used.size()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).topic.topic+ "\n";
             //else
     		//    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
     		    opWriter.write(result);
     		    opWriter.flush();
             }
+
 		} catch (IOException e) {
 	    	e.printStackTrace();
 	    }
