@@ -25,6 +25,8 @@ public class KademliaCommonConfig {
 
     // Attack Types:
     public static String ATTACK_TYPE_TOPIC_SPAM = "TopicSpam";
+    public static String ATTACK_TYPE_MALICIOUS_REGISTRAR = "MaliciousRegistrar";
+    public static String ATTACK_TYPE_HYBRID = "HybridAttacker";
     //TODO show the distribution of nodes discovered (do everyone discover the same? Or different?)
     
     

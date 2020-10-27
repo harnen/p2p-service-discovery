@@ -200,12 +200,25 @@ public class KademliaObserver implements Control {
 
         }	
     }
+
+    private boolean is_eclipsed(KademliaNode node) {
+        for (KademliaNode outConn : node.getOutgoingConnections())
+            if (!outConn.is_evil)
+                return false;
+
+        for (KademliaNode inConn : node.getIncomingConnections())
+            if (!inConn.is_evil)
+                return false;
+        
+        return true;
+    }
 	/**
 	 * print the statistical snapshot of the current situation
 	 * 
 	 * @return boolean always false
 	 */
 	public boolean execute() {
+        int num_eclipsed_nodes = 0;
 		try {
 			FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
 			writer.write("host,topic,registrant\n");
@@ -221,12 +234,17 @@ public class KademliaObserver implements Control {
 					String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
 					writer.write(registrations);
 				}
+
+                if (is_eclipsed(kadProtocol.getNode()))
+                    num_eclipsed_nodes += 1;
+
 			}
 			writer.close();
 		} catch (IOException e) {
 
 			e.printStackTrace();
 		}
+        System.out.println("Number of eclipsed nodes: " + num_eclipsed_nodes);
 		return false;
 	}
 }

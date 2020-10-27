@@ -37,7 +37,6 @@ public class Topic implements Comparable<Topic> {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-
     }
     public Topic(BigInteger hostID, String topic) {
         this.hostID = hostID;

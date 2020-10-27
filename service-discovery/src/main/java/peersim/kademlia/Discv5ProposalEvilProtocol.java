@@ -1,6 +1,8 @@
 package peersim.kademlia;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 import java.math.BigInteger;
 
 import peersim.core.Node;
@@ -49,88 +51,95 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
      * @param myPid
      *            the sender Pid
      */
-    private void handleInitRegister(Message m, int myPid) {
+    protected void handleInitRegister(Message m, int myPid) {
         Topic t = (Topic) m.body;
-        TopicRegistration r = new TopicRegistration(this.node, t);
-        System.out.println("Spamming topic registration for topic "+t.getTopic());
+        
+        if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) ) {
 
-        KademliaObserver.addTopicRegistration(t.topic, this.node.getId());
+            TopicRegistration r = new TopicRegistration(this.node, t);
+            System.out.println("Spamming topic registration for topic "+t.getTopic());
     
-        RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
-        rop.body = m.body;
-        operations.put(rop.operationId, rop);
+            KademliaObserver.addTopicRegistration(t.topic, this.node.getId());
+    
+            RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
+            rop.body = m.body;
+            operations.put(rop.operationId, rop);
         
-        int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
-        BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
+            int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
+            BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
         
-        // Get all neighbors
-        neighbours = this.routingTable.getKClosestNeighbours(this.targetNumOfRegistrations, distToTopic);
-        /*
-        if(neighbours.length < KademliaCommonConfig.ALPHA)
+            // Get all neighbors
+            neighbours = this.routingTable.getKClosestNeighbours(this.targetNumOfRegistrations, distToTopic);
+            /*
+            if(neighbours.length < KademliaCommonConfig.ALPHA)
             neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
-        */
-        rop.elaborateResponse(neighbours);
+            */
+            rop.elaborateResponse(neighbours);
     
-        m.operationId = rop.operationId;
-        m.type = Message.MSG_REGISTER;
-        m.src = this.node;
+            m.operationId = rop.operationId;
+            m.type = Message.MSG_REGISTER;
+            m.src = this.node;
         
-        int numParallelRegisterations = this.targetNumOfRegistrations;
+            int numParallelRegisterations = this.targetNumOfRegistrations;
 
-        // send parallel register messages
-        for (int i = 0; i < numParallelRegisterations; i++) {
-            BigInteger nextNode = rop.getNeighbour();
-            //System.out.println("Nextnode "+nextNode);
-            if (nextNode != null) {
-                m.dest = new KademliaNode(nextNode);
-                sendMessage(m.copy(), nextNode, myPid);
-                rop.nrHops++;
-            }//nextNode may be null, if the node has less than ALPHA neighbours
-            else {
-                rop.available_requests = i;
-                System.out.println("Number of parallel registrations " + i);
-			    //logger.warning("No neighbor to register");
-                break;
+            // send parallel register messages
+            for (int i = 0; i < numParallelRegisterations; i++) {
+                BigInteger nextNode = rop.getNeighbour();
+                //System.out.println("Nextnode "+nextNode);
+                if (nextNode != null) {
+                    m.dest = new KademliaNode(nextNode);
+                    sendMessage(m.copy(), nextNode, myPid);
+                    rop.nrHops++;
+                }//nextNode may be null, if the node has less than ALPHA neighbours
+                else {
+                    rop.available_requests = i;
+                    System.out.println("Number of parallel registrations " + i);
+                    //logger.warning("No neighbor to register");
+                    break;
+                }
             }
         }
-
+        else 
+            super.handleInitRegister(m, myPid);
     }
-	/**
-	 * Perform the required operation upon receiving a message in response to a ROUTE message.<br>
-	 * Update the find operation record with the closest set of neighbour received. Then, send as many ROUTE request I can
-	 * (according to the ALPHA parameter).<br>
-	 * If no closest neighbour available and no outstanding messages stop the find operation.
-	 * 
-	 * @param m
-	 *            Message
-	 * @param myPid
-	 *            the sender Pid
-	 */
-	protected void handleResponse(Message m, int myPid) {
-		
-        Operation op = (Operation)	 this.operations.get(m.operationId);
+    /**
+     * Perform the required operation upon receiving a message in response to a ROUTE message.<br>
+     * Update the find operation record with the closest set of neighbour received. Then, send as many ROUTE request I can
+     * (according to the ALPHA parameter).<br>
+     * If no closest neighbour available and no outstanding messages stop the find operation.
+     * 
+     * @param m
+     *            Message
+     * @param myPid
+     *            the sender Pid
+     */
+    protected void handleResponse(Message m, int myPid) {
+        
+        Operation op = (Operation)   this.operations.get(m.operationId);
         if (op == null) {
             return;
         }
         if (op.type == Message.MSG_REGISTER) {
             if (this.numOfSuccessfulRegistrations >= this.targetNumOfRegistrations) {
-			    logger.warning("Reached target number of spam registrations.");
+                logger.warning("Reached target number of spam registrations.");
                 op.finished = true;
             }
         }
         super.handleResponse(m, myPid);
     }
+
+
     
-	/**
-	 * Process a register response message.<br>
-	 * The body should contain a ticket, which indicates whether registration is 
+    /**
+     * Process a register response message.<br>
+     * The body should contain a ticket, which indicates whether registration is 
      * complete. In case it is not, schedule sending a new register request
-	 * 
-	 * @param m
-	 *            Message received (contains the node to find)
-	 * @param myPid
-	 *            the sender Pid
-	 */
+     * 
+     * @param m
+     *            Message received (contains the node to find)
+     * @param myPid
+     *            the sender Pid
+     */
     private void handleRegisterResponse(Message m, int myPid) {
         boolean is_success = (boolean) m.body;
 
@@ -138,6 +147,46 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
             this.numOfSuccessfulRegistrations += 1;
 
     }   
+
+    protected void handleTopicQuery(Message m, int myPid) {
+
+        if(!this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) && !this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR))
+            super.handleTopicQuery(m, myPid);
+        
+        Topic t = (Topic) m.body;
+        TopicRegistration[] registrations = new TopicRegistration[0];
+
+        if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID)) {
+            // Return only malicious nodes as results (if registered)
+            TopicRegistration[] all_registrations = this.topicTable.getRegistration(t);
+            if (all_registrations.length > 0) {
+                List evilRegList = new ArrayList<TopicRegistration>();
+            
+                for(TopicRegistration reg: all_registrations) {
+                    KademliaNode n = reg.getNode();
+                    if (n.is_evil) 
+                        evilRegList.add(reg);
+                }
+
+                if(evilRegList.size() > 0) 
+                    registrations = (TopicRegistration[]) evilRegList.toArray(new TopicRegistration[evilRegList.size()]);
+            }   
+        }
+        BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
+        
+        Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
+        Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
+        response.operationId = m.operationId;
+        response.src = this.node;
+        assert m.src != null;
+        response.dest = m.src;
+        response.ackId = m.id; 
+        logger.info(" responds with TOPIC_QUERY_REPLY");
+        sendMessage(response, m.src.getId(), myPid);
+    }
+
+
+
     /**
      * manage the peersim receiving of the events
      * 
@@ -149,7 +198,7 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
      *            Object
      */
     public void processEvent(Node myNode, int myPid, Object event) {
-		
+        
         if(((SimpleEvent) event).getType() == Timeout.TIMEOUT) {
             System.out.println("Timeout in evil protocol");
             return;
@@ -163,19 +212,21 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
             failures.replace(m.src.getId(), 0);
         }
         
+        //TODO we could simply let these "handle" calls made in the parent class
         switch (((SimpleEvent) event).getType()) {
             case Message.MSG_INIT_REGISTER:
                 handleInitRegister(m, myPid);
                 break;          
 
             case Message.MSG_REGISTER_RESPONSE:
-                m = (Message) event;
-				//sentMsg.remove(m.ackId);
+                //sentMsg.remove(m.ackId);
                 handleRegisterResponse(m, myPid);
+                break;
+            case Message.MSG_TOPIC_QUERY:
+                handleTopicQuery(m, myPid);
                 break;
             default :
                 super.processEvent(myNode, myPid, event);
         }
     }
-
 }

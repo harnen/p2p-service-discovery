@@ -213,7 +213,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-    private void handleTopicQuery(Message m, int myPid) {
+    protected void handleTopicQuery(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
@@ -418,7 +418,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-    private void handleInitRegisterTopic(Message m, int myPid) {
+    protected void handleInitRegisterTopic(Message m, int myPid) {
         
         /*Topic t = (Topic) m.body;
         t.setHostID(this.node.getId());
