@@ -202,6 +202,9 @@ public class KademliaObserver implements Control {
     }
 
     private boolean is_eclipsed(KademliaNode node) {
+        if (node.getOutgoingConnections().size() == 0 && node.getIncomingConnections().size() == 0)
+            return false;
+
         for (KademliaNode outConn : node.getOutgoingConnections())
             if (!outConn.is_evil)
                 return false;

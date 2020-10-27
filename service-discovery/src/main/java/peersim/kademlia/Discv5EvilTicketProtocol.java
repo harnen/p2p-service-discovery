@@ -185,8 +185,6 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      */
     public void processEvent(Node myNode, int myPid, Object event) {
 
-        System.out.println("Evil node received an event");
-        
         //super.processEvent(myNode, myPid, event);
         Message m;
         
