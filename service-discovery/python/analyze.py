@@ -97,10 +97,11 @@ def analyzeDistribution(dirs):
                           markerfacecolor=color, markersize=15))
     print(legend_elements)
     ax1.legend(handles=legend_elements)
-
+    print(topics)
     # produce a legend with a cross section of sizes from the scatter
-    handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6)
-    ax1.legend(handles, labels, loc="upper right", title="Sizes")
+    #handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6)
+    #ax1.legend(handles, labels, loc="upper right", title="Sizes")
+
                     
 
 def analyzeOperations(dirs):
@@ -139,9 +140,9 @@ if (len(sys.argv) < 2):
     exit(1)
 
 print('Will read logs from', sys.argv[1:])
-#analyzeMessages(sys.argv[1:])
-#analyzeRegistrations(sys.argv[1:])
-#analyzeOperations(sys.argv[1:])
+analyzeMessages(sys.argv[1:])
+analyzeRegistrations(sys.argv[1:])
+analyzeOperations(sys.argv[1:])
 analyzeDistribution(sys.argv[1:])
 
 plt.show()
