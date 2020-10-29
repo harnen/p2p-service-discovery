@@ -77,9 +77,9 @@ public class Operation {
 	 */
 	protected HashMap<BigInteger, Boolean> closestSet;
 	
-	public ArrayList<BigInteger> returned;
+	protected ArrayList<BigInteger> returned;
 
-	public ArrayList<BigInteger> used;
+	protected ArrayList<BigInteger> used;
 
 	/**
 	 * defaul constructor
@@ -181,7 +181,7 @@ public class Operation {
 		if (res != null) {
 			closestSet.remove(res);
 			closestSet.put(res, true);
-			increaseUsed(res);
+			//increaseUsed(res);
 			available_requests--; // decrease available request
 		}
 		
@@ -257,4 +257,11 @@ public class Operation {
 		used.add(res);
 	}
 	
+	public int getReturnedCount() {
+		return returned.size();
+	}
+	
+	public int getUsedCount() {
+		return used.size();
+	}
 }

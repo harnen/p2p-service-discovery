@@ -56,7 +56,10 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 			lop.addDiscovered(r.getNode());
 		}
 		
-		if(!lop.finished)lop.increaseReturned(m.src.getId());
+		lop.increaseReturned(m.src.getId());
+		if(!lop.finished)lop.increaseUsed(m.src.getId());
+
+		//System.out.println("Topic query reply received for "+lop.topic.getTopic()+" "+this.getNode().getId()+" "+lop.discoveredCount()+" "+lop.getUsedCount()+" "+lop.getReturnedCount());
 
 		
 		int found = lop.discoveredCount();
