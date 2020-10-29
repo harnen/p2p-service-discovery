@@ -51,40 +51,23 @@ public class StateBuilder implements peersim.core.Control {
 	public static void o(Object o) {
 		System.out.println(o);
 	}
-
-
 	
-	/*public void visualize() {
-		Graph graph = new SingleGraph("Tutorial 1");
-		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
-		BigInteger max = urg.getMaxID();
-		System.out.println("MAX: " + max);
-		
-		for(int i = 0; i < Network.size(); i++) {
-			Node node = Network.get(i); 
-			KademliaProtocol prot = (KademliaProtocol) (node.getKademliaProtocol());
-			BigInteger id = prot.node.getId();
-			double ratio = id.doubleValue()/ max.doubleValue() * 360;
-			System.out.println("ID: " + id + " div: " + ratio);
-			double alpha = Math.toRadians(ratio);
-			double x = Math.cos(alpha);
-			double y = Math.sin(alpha);
+	public void addRandomConnections(int num) {
+		int sz = Network.size();
+		// for every node take 50 random node and add to k-bucket of it
+		for (int i = 0; i < sz; i++) {
+			Node iNode = Network.get(i);
+            KademliaProtocol iKad = iNode.getKademliaProtocol();
 
-			org.graphstream.graph.Node gnode = graph.addNode(id.toString());
-		    gnode.setAttribute("x", x);
-		    gnode.setAttribute("y", y);
-		    gnode.setAttribute("ui.style", "fill-color: rgba(0,100,255, 50); size: 10px, 10px;");
-		    if((i %10) == 0) {
-		    	gnode.setAttribute("ui.style", "fill-color: rgb(255,0,0); size: 20px, 20px;");
-		    }
+			for (int k = 0; k < 100; k++) {
+                int index = CommonState.r.nextInt(sz);
+				KademliaProtocol jKad = Network.get(index).getKademliaProtocol();
+
+				iKad.routingTable.addNeighbour(jKad.node.getId());
+			}
 		}
-		System.setProperty("org.graphstream.ui", "swing"); 
-		Viewer viewer = graph.display();
-		viewer.disableAutoLayout();
-		//System.exit(0);		
-		//
-	}*/
-
+		
+	}
 	
 	// ______________________________________________________________________________________________
 	public boolean execute() {
@@ -102,21 +85,8 @@ public class StateBuilder implements peersim.core.Control {
 			}
 
 		});
-
 		int sz = Network.size();
-
-		// for every node take 50 random node and add to k-bucket of it
-		for (int i = 0; i < sz; i++) {
-			Node iNode = Network.get(i);
-            KademliaProtocol iKad = iNode.getKademliaProtocol();
-
-			for (int k = 0; k < 100; k++) {
-                int index = CommonState.r.nextInt(sz);
-				KademliaProtocol jKad = Network.get(index).getKademliaProtocol();
-
-				iKad.routingTable.addNeighbour(jKad.node.getId());
-			}
-		}
+		addRandomConnections(50);
 
 		// add other 50 near nodes
 		for (int i = 0; i < sz; i++) {
@@ -136,12 +106,12 @@ public class StateBuilder implements peersim.core.Control {
 			}
 		}
 		
-		if(!isNetworkConnected()) {
-			System.err.println("Your network is not connected - try a different seed");
-			System.exit(-1);
-		}else {
-			System.err.println("Your network is connected");
+		while(!isNetworkConnected()) {
+			System.err.println("Your network is not connected - adding 10 random connection to each node");
+			addRandomConnections(10);
 		}
+		System.err.println("Your network is connected");
+		
 
 		return false;
 
@@ -190,6 +160,7 @@ public class StateBuilder implements peersim.core.Control {
 		if(groups.size() == 1) {
 			return true;
 		}else {
+			System.out.println("We have " + groups.size() + " disconnected groups");
 			return false;
 		}
 	}
