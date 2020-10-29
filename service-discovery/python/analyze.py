@@ -120,14 +120,14 @@ def analyzeOperations(dirs):
         ax1.bar(df['type'].value_counts().index, df['type'].value_counts(), label=log_dir)
         ax1.set_title("Operations by type")
     
-        print(df['hops'].mean())
-        ax2.bar(log_dir, df['hops'].mean()) 
-        ax2.set_title("Avg hop count")
-
-        print(df.query("type == 'LookupOperation'")['malicious'].sum())
-        print(df.query("type == 'LookupOperation'")['discovered'].sum())
-        total_malicious = df.query("type == 'LookupOperation'")['malicious'].sum()
-        total_discovered = df.query("type == 'LookupOperation'")['discovered'].sum()
+        print(df['used_hops'].mean())
+        ax2.bar(log_dir, df['used_hops'].mean()) 
+        ax2.set_title("Avg recv hop count")
+  
+        print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum())
+        print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['discovered'].sum())
+        total_malicious = df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum()
+        total_discovered = df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['discovered'].sum()
         ax3.bar(["Malicious", "Total_Discovered"], [total_malicious, total_discovered])
         ax3.set_title("Percent Malicious in Lookups")
         
@@ -139,10 +139,23 @@ if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
     exit(1)
 
+def analyzeEclipse(dirs):
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    fig, ax1 = plt.subplots()
+
+    for log_dir in dirs:
+        print(log_dir)
+        df = pd.read_csv(log_dir + '/eclipse_counts.csv')
+        ax1.set_title("Number of eclipsed nodes over time")
+        ax1.plot(df['time'], df['numberOfNodes'])
+
+    ax1.legend()
+
 print('Will read logs from', sys.argv[1:])
 analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeDistribution(sys.argv[1:])
+analyzeEclipse(sys.argv[1:])
 
 plt.show()

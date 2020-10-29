@@ -29,63 +29,63 @@ import peersim.util.IncrementalStats;
  */
 public class KademliaObserver implements Control {
 
-	/**
-	 * keep statistics of the number of hops of every message delivered.
-	 */
-	public static IncrementalStats hopStore = new IncrementalStats();
+    /**
+     * keep statistics of the number of hops of every message delivered.
+     */
+    public static IncrementalStats hopStore = new IncrementalStats();
 
-	/**
-	 * keep statistics of the time every message delivered.
-	 */
-	public static IncrementalStats timeStore = new IncrementalStats();
+    /**
+     * keep statistics of the time every message delivered.
+     */
+    public static IncrementalStats timeStore = new IncrementalStats();
 
-	/**
-	 * keep statistic of number of message delivered
-	 */
-	private static IncrementalStats msg_deliv = new IncrementalStats();
+    /**
+     * keep statistic of number of message delivered
+     */
+    private static IncrementalStats msg_deliv = new IncrementalStats();
 
-	/**
-	 * keep statistic of number of message sent
-	 */
-	public static IncrementalStats msg_sent = new IncrementalStats();
+    /**
+     * keep statistic of number of message sent
+     */
+    public static IncrementalStats msg_sent = new IncrementalStats();
 
-	/**
-	 * keep statistic of number of find operation
-	 */
-	public static IncrementalStats find_total = new IncrementalStats();
+    /**
+     * keep statistic of number of find operation
+     */
+    public static IncrementalStats find_total = new IncrementalStats();
 
-	/**
-	 * Successfull find operations
-	 */
-	public static IncrementalStats find_ok = new IncrementalStats();
+    /**
+     * Successfull find operations
+     */
+    public static IncrementalStats find_ok = new IncrementalStats();
 
-	/**
-	 * keep statistic of number of register operation
-	 */
-	public static IncrementalStats register_total = new IncrementalStats();
-	
-	/**
-	 * keep statistic of number of register operation
-	 */
-	public static IncrementalStats lookup_total = new IncrementalStats();
+    /**
+     * keep statistic of number of register operation
+     */
+    public static IncrementalStats register_total = new IncrementalStats();
+    
+    /**
+     * keep statistic of number of register operation
+     */
+    public static IncrementalStats lookup_total = new IncrementalStats();
 
-	/**
-	 * keep statistic of number of register operation
-	 */
-	public static IncrementalStats register_ok = new IncrementalStats();
-	
-	
-	public static HashMap<String, Set<BigInteger>> registeredTopics = new HashMap<String, Set<BigInteger>>();
-	
-	private static HashMap<BigInteger, Integer> nodeMsgReceived = new HashMap<BigInteger, Integer>();
-	
-	private static HashMap<BigInteger, Integer> nodeTopicStored = new HashMap<BigInteger, Integer>();
+    /**
+     * keep statistic of number of register operation
+     */
+    public static IncrementalStats register_ok = new IncrementalStats();
+    
+    
+    public static HashMap<String, Set<BigInteger>> registeredTopics = new HashMap<String, Set<BigInteger>>();
+    
+    private static HashMap<BigInteger, Integer> nodeMsgReceived = new HashMap<BigInteger, Integer>();
+    
+    private static HashMap<BigInteger, Integer> nodeTopicStored = new HashMap<BigInteger, Integer>();
 
-	private static FileWriter msgWriter;
-	private static FileWriter opWriter; 
+    private static FileWriter msgWriter;
+    private static FileWriter opWriter; 
 
-	/** Prefix to be printed in output */
-	private String prefix;
+    /** Prefix to be printed in output */
+    private String prefix;
 
     private static KademliaProtocol kadProtocol;
 
@@ -144,87 +144,135 @@ public class KademliaObserver implements Control {
 	}
 	
 	public static void reportMsg(Message m, boolean sent) {
-
         if (kadProtocol instanceof Discv5ProposalProtocol) {
-		    try {
-			    String result = "";
-    			if(m.src == null) return; //ignore init messages
-    			
-	    		result += m.id + "," + m.messageTypetoString() +"," + m.src.getId() + "," + m.dest.getId() + ",";
-		    	if(m.getType() == Message.MSG_REGISTER ||
-			       m.getType() == Message.MSG_TOPIC_QUERY) {
-				    result += ((Topic) m.body).topic +"," ;
-    			}else {
-	    			result += ",";
-    			}
-    			if(sent) {
-	    			result += "sent\n";
-		    	}
-			    else {
-				    result += "received\n";
-    			}
-	    		msgWriter.write(result);
-		    	msgWriter.flush();
-    		} catch (IOException e) {
-	    		// TODO Auto-generated catch block
-		    	e.printStackTrace();
-		    }
-		
-	    }else if (kadProtocol instanceof Discv5TicketProtocol) {
-		    try {
-			    String result = "";
-    			if(m.src == null) return; //ignore init messages
-	    		result += m.id + "," + m.messageTypetoString() +"," + m.src.getId() + "," + m.dest.getId() + ",";
-		    	if(m.getType() == Message.MSG_TOPIC_QUERY) {
-				    result += ((Topic) m.body).topic +"," ;
+            try {
+                String result = "";
+                if(m.src == null) return; //ignore init messages
+                
+                result += m.id + "," + m.messageTypetoString() +"," + m.src.getId() + "," + m.dest.getId() + ",";
+                if(m.getType() == Message.MSG_REGISTER ||
+                   m.getType() == Message.MSG_TOPIC_QUERY) {
+                    result += ((Topic) m.body).topic +"," ;
+                }else {
+                    result += ",";
+                }
+                if(sent) {
+                    result += "sent\n";
+                }
+                else {
+                    result += "received\n";
+                }
+                msgWriter.write(result);
+                msgWriter.flush();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        
+        }else if (kadProtocol instanceof Discv5TicketProtocol) {
+            try {
+                String result = "";
+                if(m.src == null) return; //ignore init messages
+                result += m.id + "," + m.messageTypetoString() +"," + m.src.getId() + "," + m.dest.getId() + ",";
+                if(m.getType() == Message.MSG_TOPIC_QUERY) {
+                    result += ((Topic) m.body).topic +"," ;
                 }
                 else if(m.getType() == Message.MSG_REGISTER) {
                     result += ((Ticket) m.body).getTopic() + ",";
-    			}else {
-	    			result += ",";
-    			}
-    			if(sent) {
-	    			result += "sent\n";
-		    	}
-			    else {
-				    result += "received\n";
-    			}
-	    		msgWriter.write(result);
-		    	msgWriter.flush();
-    		} catch (IOException e) {
-	    		// TODO Auto-generated catch block
-		    	e.printStackTrace();
-		    }
+                }else {
+                    result += ",";
+                }
+                if(sent) {
+                    result += "sent\n";
+                }
+                else {
+                    result += "received\n";
+                }
+                msgWriter.write(result);
+                msgWriter.flush();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
-        }	
+        }   
     }
-	/**
-	 * print the statistical snapshot of the current situation
-	 * 
-	 * @return boolean always false
-	 */
-	public boolean execute() {
-		try {
-			FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
-			writer.write("host,topic,registrant\n");
-			for(int i = 0; i < Network.size(); i++) {
-				Node node = Network.get(i);
+
+    private boolean is_eclipsed(KademliaNode node) {
+        if (node.is_evil)
+            //Don't include malicious nodes in the count
+            return false;
+
+        if (node.getOutgoingConnections().size() == 0 && node.getIncomingConnections().size() == 0)
+            return false;
+
+        for (KademliaNode outConn : node.getOutgoingConnections())
+            if (!outConn.is_evil)
+                return false;
+
+        for (KademliaNode inConn : node.getIncomingConnections())
+            if (!inConn.is_evil)
+                return false;
+        
+        return true;
+    }
+    /**
+     * print the statistical snapshot of the current situation
+     * 
+     * @return boolean always false
+     */
+    public boolean execute() {
+        try {
+            FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
+            writer.write("host,topic,registrant\n");
+            for(int i = 0; i < Network.size(); i++) {
+                Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
 
-				if(kadProtocol instanceof Discv5ProposalProtocol) {
-					String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
-					writer.write(registrations);
-				}
-				if(kadProtocol instanceof Discv5TicketProtocol) {
-					String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
-					writer.write(registrations);
-				}
-			}
-			writer.close();
-		} catch (IOException e) {
+                if(kadProtocol instanceof Discv5ProposalProtocol) {
+                    String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
+                    writer.write(registrations);
+                }
+                if(kadProtocol instanceof Discv5TicketProtocol) {
+                    String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
+                    writer.write(registrations);
+                }
 
-			e.printStackTrace();
-		}
-		return false;
-	}
+            }
+            writer.close();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
+        int num_eclipsed_nodes = 0;
+        try {
+            String filename = "./logs/eclipse_counts.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                writer.write("time,numberOfNodes\n");
+            }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+
+            for(int i = 0; i < Network.size(); i++) {
+                Node node = Network.get(i);
+                kadProtocol = node.getKademliaProtocol();
+
+                if (is_eclipsed(kadProtocol.getNode()))
+                    num_eclipsed_nodes += 1;
+            }
+            writer.write(CommonState.getTime() + "," + String.valueOf(num_eclipsed_nodes) + "\n");
+            writer.close();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

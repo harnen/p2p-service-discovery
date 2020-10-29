@@ -19,8 +19,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
 
     private List<KademliaNode> lookupResultBuffer;
         
-    private List<BigInteger> incomingConnections;
-    private List<BigInteger> outgoingConnections;
+    private List<KademliaNode> incomingConnections;
+    private List<KademliaNode> outgoingConnections;
     
     private Node n;
     
@@ -36,8 +36,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.id = id;
         this.addr = addr;
         this.port = port;
-        incomingConnections = new ArrayList<BigInteger>();
-        outgoingConnections = new ArrayList<BigInteger>();
+        incomingConnections = new ArrayList<KademliaNode>();
+        outgoingConnections = new ArrayList<KademliaNode>();
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
         lookupResultBuffer = new ArrayList<KademliaNode>();
@@ -47,8 +47,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.id = id;
         this.addr = "127.0.0.1";
         this.port = 666;
-        incomingConnections = new ArrayList<BigInteger>();
-        outgoingConnections = new ArrayList<BigInteger>();
+        incomingConnections = new ArrayList<KademliaNode>();
+        outgoingConnections = new ArrayList<KademliaNode>();
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
         lookupResultBuffer = new ArrayList<KademliaNode>();
@@ -59,8 +59,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.addr = n.addr;
         this.port = n.port;
         this.is_evil = n.is_evil;
-        incomingConnections = new ArrayList<BigInteger>();
-        outgoingConnections = new ArrayList<BigInteger>();
+        incomingConnections = new ArrayList<KademliaNode>();
+        outgoingConnections = new ArrayList<KademliaNode>();
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
         lookupResultBuffer = new ArrayList<KademliaNode>();
@@ -76,6 +76,30 @@ public class KademliaNode implements Comparable<KademliaNode>{
 
     public int getPort(){
         return this.port;
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return this.id.hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object o) { 
+        // If the object is compared with itself then return true   
+        if (o == this) { 
+            return true; 
+        } 
+
+        /* Check if o is an instance of KademliaNode or not 
+          "null instanceof [type]" also returns false */
+        if (!(o instanceof KademliaNode)) { 
+            return false; 
+        } 
+        // typecast o to KademliaNode so that we can compare data members  
+        KademliaNode r = (KademliaNode) o; 
+
+        return this.id.equals(r.id);
     }
 
     public int compareTo(KademliaNode n){
@@ -114,45 +138,45 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	
     }
     
-    public boolean addIncomingConnection(BigInteger addr) {
+    public boolean addIncomingConnection(KademliaNode node) {
     	if(incomingConnections.size()<maxIncomingConnections) {
-    		incomingConnections.add(addr);
+    		incomingConnections.add(node);
     		return true;
     	} else
     		return false;
     }		
     	
-    public boolean addOutgoingConnection(BigInteger addr) {
+    public boolean addOutgoingConnection(KademliaNode node) {
     	if(outgoingConnections.size()<maxOutgoingConnections) {
-    		outgoingConnections.add(addr);
+    		outgoingConnections.add(node);
     		return true;
     	} else
     		return false;
     }
     
-    public void deleteIncomingConnection(BigInteger addr) {
-    	incomingConnections.remove(addr);
+    public void deleteIncomingConnection(KademliaNode node) {
+    	incomingConnections.remove(node);
 
     }
     
-    public void deleteOutgoingConnection(BigInteger addr) {
+    public void deleteOutgoingConnection(KademliaNode node) {
     	/*System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection:"+outgoingConnections.size()+" "+addr);
     	for(BigInteger ad : outgoingConnections)
     	{
         	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection:"+ad);
     	}*/
 
-    	outgoingConnections.remove(addr);
+    	outgoingConnections.remove(node);
     	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" deleteOutgoingConnection2:"+outgoingConnections.size()+" "+lookupResultBuffer.size());
     	tryNewConnections();
 
     }
     
-    public List<BigInteger> getIncomingConnections(){
+    public List<KademliaNode> getIncomingConnections(){
     	return incomingConnections;
     }
     
-    public List<BigInteger> getOutgoingConnections(){
+    public List<KademliaNode> getOutgoingConnections(){
     	return outgoingConnections;
     }
     
@@ -167,9 +191,9 @@ public class KademliaNode implements Comparable<KademliaNode>{
     		boolean success=false;
     		while(!success&&lookupResultBuffer.size()>0){
     	    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start connection "+lookupResultBuffer.size());
-    			success = startConnection(lookupResultBuffer.get(0).getId());
+    			success = startConnection(lookupResultBuffer.get(0));
     			
-    			if(success)addOutgoingConnection(lookupResultBuffer.get(0).getId());
+    			if(success)addOutgoingConnection(lookupResultBuffer.get(0));
     			lookupResultBuffer.remove(0);
     	    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start2 connection "+lookupResultBuffer.size());
 
@@ -184,8 +208,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
        	}
     }
     
-    private boolean startConnection(BigInteger addr) {
-    	Node n = Util.nodeIdtoNode(addr);
-    	return(n.isUp()&&(n.getKademliaProtocol().getNode().addIncomingConnection(id)));
+    private boolean startConnection(KademliaNode node) {
+    	Node n = Util.nodeIdtoNode(node.getId());
+    	return(n.isUp()&&(n.getKademliaProtocol().getNode().addIncomingConnection(node)));
     }
 }

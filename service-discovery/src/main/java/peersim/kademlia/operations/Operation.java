@@ -79,6 +79,8 @@ public class Operation {
 	
 	public ArrayList<BigInteger> returned;
 
+	public ArrayList<BigInteger> used;
+
 	/**
 	 * defaul constructor
 	 * 
@@ -101,6 +103,8 @@ public class Operation {
 		closestSet = new HashMap<BigInteger, Boolean>();
 		
 		returned = new ArrayList<BigInteger>();
+		used = new ArrayList<BigInteger>();
+
 	}
 
 	/**
@@ -177,7 +181,7 @@ public class Operation {
 		if (res != null) {
 			closestSet.remove(res);
 			closestSet.put(res, true);
-			returned.add(res);
+			increaseUsed(res);
 			available_requests--; // decrease available request
 		}
 		
@@ -243,6 +247,14 @@ public class Operation {
 		Viewer viewer = graph.display();
 		viewer.disableAutoLayout();
 		
+	}
+	
+	public void increaseReturned(BigInteger res) {
+		returned.add(res);
+	}
+	
+	public void increaseUsed(BigInteger res) {
+		used.add(res);
 	}
 	
 }

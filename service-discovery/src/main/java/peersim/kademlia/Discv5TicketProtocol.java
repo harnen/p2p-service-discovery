@@ -213,7 +213,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-    private void handleTopicQuery(Message m, int myPid) {
+    protected void handleTopicQuery(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
@@ -317,10 +317,11 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		Message.TopicLookupBody lookupBody = (Message.TopicLookupBody) m.body;
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[]  registrations = lookupBody.registrations;
-		System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.available_requests);
+		//System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.available_requests);
 
 		lop.elaborateResponse(neighbours);
 		
+		if(!lop.finished)lop.increaseReturned(m.src.getId());
 
 		for(BigInteger neighbour: neighbours) {
 			routingTable.addNeighbour(neighbour);
@@ -417,7 +418,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-    private void handleInitRegisterTopic(Message m, int myPid) {
+    protected void handleInitRegisterTopic(Message m, int myPid) {
         
         /*Topic t = (Topic) m.body;
         t.setHostID(this.node.getId());
@@ -708,7 +709,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
  		m.operationId = top.operationId;
  		m.src = this.node;
  		
- 		System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
+ 		//System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
  		sendMessage(m,top.getNeighbour(),myPid);
 
  		// send ALPHA messages

@@ -56,6 +56,9 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 			lop.addDiscovered(r.getNode());
 		}
 		
+		if(!lop.finished)lop.increaseReturned(m.src.getId());
+
+		
 		int found = lop.discoveredCount();
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
 		int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
@@ -159,7 +162,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void handleInitRegister(Message m, int myPid) {
+	protected void handleInitRegister(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(this.node, t);
     	//System.out.println("Sending topic registration for topic "+t.getTopic());
@@ -231,14 +234,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		handleFind(m, myPid, Util.logDistance(t.getTopicID(), this.node.getId()));
 	}
 
-    private void handleRegisterResponse(Message m, int myPid) {
-        boolean success = (boolean) m.body;
-        if (success) {
-            this.numOfRegistrations += 1;
-        }
-    }
-
-	private void handleTopicQuery(Message m, int myPid) {
+	protected void handleTopicQuery(Message m, int myPid) {
 		
 		Topic t = (Topic) m.body;
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);

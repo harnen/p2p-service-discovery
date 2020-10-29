@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import peersim.core.CommonState;
 import peersim.kademlia.KademliaCommonConfig;
 import peersim.kademlia.SearchTable;
@@ -27,24 +29,27 @@ public class LookupTicketOperation extends LookupOperation {
 
 		BigInteger[] neighbours = new BigInteger[0];
 		
-		int distance = CommonState.r.nextInt(KademliaCommonConfig.NBUCKETS);
+		int distance = ThreadLocalRandom.current().nextInt(KademliaCommonConfig.BITS-sTable.getnBuckets(),KademliaCommonConfig.BITS);
 		//System.out.println("Distance "+distance);
 		int tries=0;
-		while((neighbours.length==0)&&(tries<KademliaCommonConfig.NBUCKETS)) {
+		
+		while((neighbours.length==0)&&(tries<sTable.getnBuckets())) {
 			//System.out.println("Distance "+distance);
-			distance = CommonState.r.nextInt(KademliaCommonConfig.NBUCKETS);
+			distance = ThreadLocalRandom.current().nextInt(KademliaCommonConfig.BITS-sTable.getnBuckets(),KademliaCommonConfig.BITS);
 			tries++;
 			//System.out.println("Distance "+distance);
 			neighbours = sTable.getNeighbours(distance);
-			//System.out.println("Distance "+distance+" "+neighbours.length);
+			System.out.println("Distance "+distance+" "+neighbours.length);
 		}
 
-		if(neighbours.length!=0)res = neighbours[CommonState.r.nextInt(neighbours.length)];
+		if(neighbours.length!=0)res = neighbours[ThreadLocalRandom.current().nextInt(neighbours.length)];
 		if(res!=null) {
 			sTable.removeNeighbour(res);
-		
+			//returned.add(res);
+			increaseUsed(res);
+			available_requests--;
 		}
-		available_requests--;
+		
 		return res;
 	}
 	
