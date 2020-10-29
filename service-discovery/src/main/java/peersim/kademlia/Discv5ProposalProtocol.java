@@ -8,6 +8,7 @@ import peersim.core.Network;
 import peersim.core.Node;
 import peersim.edsim.EDSimulator;
 import peersim.kademlia.operations.LookupOperation;
+import peersim.kademlia.operations.Operation;
 import peersim.kademlia.operations.RegisterOperation;
 import peersim.transport.UnreliableTransport;
 
@@ -122,6 +123,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 
 		LookupOperation lop = new LookupOperation(this.node.getId(), m.timestamp, t);
 		lop.body = m.body;
+		lop.type = Message.MSG_TOPIC_QUERY;
 		operations.put(lop.operationId, lop);
 	
 		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
@@ -171,6 +173,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	
 		RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
 		rop.body = m.body;
+		rop.type = Message.MSG_REGISTER;
 		operations.put(rop.operationId, rop);
 		
 		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
@@ -252,45 +255,22 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		
 	}
 	
-    /**
-	 * send a message with current transport layer and starting the timeout timer (which is an event) if the message is a request
-	 * 
-	 * @param m
-	 *            the message to send
-	 * @param destId
-	 *            the Id of the destination node
-	 * @param myPid
-	 *            the sender Pid
-	 */
-	public void sendMessage(Message m, BigInteger destId, int myPid) {
-		// add destination to routing table
-		this.routingTable.addNeighbour(destId);
-	    int destpid;
-	    assert m.src != null;
-	    assert m.dest != null;
-	    
-
-		Node src = Util.nodeIdtoNode(this.node.getId());
-		Node dest = Util.nodeIdtoNode(destId);
-		
-
-        destpid = dest.getKademliaProtocol().getProtocolID();
-
-		logger.info("-> (" + m + "/" + m.id + ") " + destId);
-
-		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
-		transport.send(src, dest, m, destpid);
-		KademliaObserver.msg_sent.add(1);
-
-		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
-			Timeout t = new Timeout(destId, m.id, m.operationId);
-			long latency = transport.getLatency(src, dest);
-
-			// add to sent msg
-			this.sentMsg.put(m.id, m.timestamp);
-			EDSimulator.add(4 * latency, t, src, myPid); // set delay = 2*RTT
+	private void handleTimeout(Timeout t, int myPid){
+		Operation op = this.operations.get(t.opID);
+		BigInteger unavailableNode = t.node;
+		if(op.type == Message.MSG_TOPIC_QUERY) {
+			Message m = new Message();
+			m.operationId = op.operationId;
+			m.type = Message.MSG_TOPIC_QUERY_REPLY;
+			m.src = new KademliaNode (unavailableNode);
+			m.dest = this.node;
+			m.ackId = t.msgID; 
+			m.body=  new Message.TopicLookupBody(new TopicRegistration [0], new BigInteger[0]);
+			handleTopicQueryReply(m, myPid);
 		}
-    }
+	}
+	
+	
 	/**
 	 * manage the peersim receiving of the events
 	 * 
@@ -304,7 +284,12 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	public void processEvent(Node myNode, int myPid, Object event) {
 		// Parse message content Activate the correct event manager fot the particular event
 		super.processEvent(myNode, myPid, event);
-		if(((SimpleEvent) event).getType() == Timeout.TIMEOUT) return;
+		
+		
+		if(((SimpleEvent) event).getType() == Timeout.TIMEOUT) {
+			handleTimeout((Timeout) event, myPid);
+			return;
+		}
 		Message m = (Message) event;
 		m.dest = this.node;
 		
