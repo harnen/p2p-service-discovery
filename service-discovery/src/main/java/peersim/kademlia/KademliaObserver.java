@@ -89,12 +89,13 @@ public class KademliaObserver implements Control {
 
     private static KademliaProtocol kadProtocol;
 
-    public KademliaObserver(String prefix) {
-        this.prefix = prefix;
-        try {
-            msgWriter = new FileWriter("./logs/messages.csv");
-            msgWriter.write("id,type,src,dst,topic,sent/received\n");
-            opWriter = new FileWriter("./logs/operations.csv");
+	public KademliaObserver(String prefix) {
+		this.prefix = prefix;
+		try {
+			msgWriter = new FileWriter("./logs/messages.csv");
+			msgWriter.write("id,type,src,dst,topic,sent/received\n");
+			opWriter = new FileWriter("./logs/operations.csv");
+			//opWriter.write("id,type,src,dst,hops,malicious,discovered,discovered_list,topic\n");
             opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,topic\n");
 
         } catch (IOException e) {
@@ -145,9 +146,31 @@ public class KademliaObserver implements Control {
         
     }
     
-    public static void reportMsg(Message m, boolean sent) {
+ 
+	
+	 /*public static void reportOperation(Operation op) {
+	        try {
+	            //System.out.println("Report operation "+op.getClass().getSimpleName());
+	            String result = "";     
+	            String type = "";
 
-        if (kadProtocol instanceof Discv5ProposalProtocol) {
+	            if (op instanceof LookupOperation || op instanceof LookupTicketOperation) {
+	                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "," +op.used.size()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).topic.topic+ "\n";
+	            //else
+	            //    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
+	                opWriter.write(result);
+	                opWriter.flush();
+	            }
+
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	        
+	}*/
+	
+	public static void reportMsg(Message m, boolean sent) {
+
+		if (kadProtocol instanceof Discv5ProposalProtocol) {
             try {
                 String result = "";
                 if(m.src == null) return; //ignore init messages
