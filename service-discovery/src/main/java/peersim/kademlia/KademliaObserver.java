@@ -97,35 +97,58 @@ public class KademliaObserver implements Control {
 			opWriter = new FileWriter("./logs/operations.csv");
 			//opWriter.write("id,type,src,dst,hops,malicious,discovered,discovered_list,topic\n");
             opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,topic\n");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static void addTopicRegistration(String topic, BigInteger registrant) {
-		 if(!registeredTopics.containsKey(topic)){
-				//System.out.println("addTopicRegistration "+topic);
 
-	            HashSet<BigInteger> set = new HashSet<BigInteger>();
-	            set.add(registrant);
-	            registeredTopics.put(topic, set);
-		 }else{
-	            registeredTopics.get(topic).add(registrant);
-				//System.out.println("addTopicRegistration "+topic+" "+registeredTopics.get(topic).size());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void addTopicRegistration(String topic, BigInteger registrant) {
+         if(!registeredTopics.containsKey(topic)){
+                //System.out.println("addTopicRegistration "+topic);
 
-	     }
-		 
-	}
+                HashSet<BigInteger> set = new HashSet<BigInteger>();
+                set.add(registrant);
+                registeredTopics.put(topic, set);
+         }else{
+                registeredTopics.get(topic).add(registrant);
+                //System.out.println("addTopicRegistration "+topic+" "+registeredTopics.get(topic).size());
+
+         }
+         
+    }
+    
+    
+    public static int topicRegistrationCount(String topic) {
+        if(registeredTopics.containsKey(topic)){
+            return registeredTopics.get(topic).size();
+        }
+        return 0;
+    }
+    
+    public static void reportOperation(Operation op) {
+        try {
+            //System.out.println("Report operation "+op.getClass().getSimpleName());
+            String result = "";     
+            String type = "";
+
+            if (op instanceof LookupOperation || op instanceof LookupTicketOperation) {
+                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).topic.topic+ "\n";
+            //else
+            //    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
+                opWriter.write(result);
+                opWriter.flush();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+    }
+    
+ 
 	
-	
-	public static int topicRegistrationCount(String topic) {
-		if(registeredTopics.containsKey(topic)){
-			return registeredTopics.get(topic).size();
-		}
-		return 0;
-	}
-	
-	 public static void reportOperation(Operation op) {
+	 /*public static void reportOperation(Operation op) {
 	        try {
 	            //System.out.println("Report operation "+op.getClass().getSimpleName());
 	            String result = "";     
@@ -143,10 +166,11 @@ public class KademliaObserver implements Control {
 	            e.printStackTrace();
 	        }
 	        
-	}
+	}*/
 	
 	public static void reportMsg(Message m, boolean sent) {
-        if (kadProtocol instanceof Discv5ProposalProtocol) {
+
+		if (kadProtocol instanceof Discv5ProposalProtocol) {
             try {
                 String result = "";
                 if(m.src == null) return; //ignore init messages

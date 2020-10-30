@@ -39,14 +39,14 @@ public class LookupTicketOperation extends LookupOperation {
 			tries++;
 			//System.out.println("Distance "+distance);
 			neighbours = sTable.getNeighbours(distance);
-			System.out.println("Distance "+distance+" "+neighbours.length);
+			//System.out.println("Distance "+distance+" "+neighbours.length);
 		}
 
 		if(neighbours.length!=0)res = neighbours[ThreadLocalRandom.current().nextInt(neighbours.length)];
 		if(res!=null) {
 			sTable.removeNeighbour(res);
 			//returned.add(res);
-			increaseUsed(res);
+			//increaseUsed(res);
 			available_requests--;
 		}
 		

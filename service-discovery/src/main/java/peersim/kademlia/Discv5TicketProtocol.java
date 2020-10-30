@@ -321,7 +321,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
 		lop.elaborateResponse(neighbours);
 		
-		if(!lop.finished)lop.increaseReturned(m.src.getId());
+		lop.increaseReturned(m.src.getId());
+		if(!lop.finished)lop.increaseUsed(m.src.getId());
 
 		for(BigInteger neighbour: neighbours) {
 			routingTable.addNeighbour(neighbour);
@@ -337,6 +338,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			lop.addDiscovered(r.getNode());
 		}
 
+		//System.out.println("Topic query reply received for "+lop.topic.getTopic()+" "+this.getNode().getId()+" "+lop.discoveredCount()+" "+lop.getUsedCount()+" "+lop.getReturnedCount());
 		//if(registrations.length==0) searchTable.get(lop.topic.getTopicID()).removeNeighbour(m.src.getId());
 
 		
