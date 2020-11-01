@@ -4,6 +4,7 @@ package peersim.kademlia;
 import java.math.BigInteger;
 import java.util.HashSet;
 
+import peersim.config.Configuration;
 import peersim.core.Network;
 import peersim.core.Node;
 import peersim.edsim.EDSimulator;
@@ -19,6 +20,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 
 	public Discv5ProposalTopicTable topicTable;
     protected int numOfRegistrations;
+	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 
 	public Discv5ProposalProtocol(String prefix) {
 		super(prefix);
@@ -37,6 +39,21 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	public Object clone() {
 		Discv5ProposalProtocol dolly = new Discv5ProposalProtocol(Discv5ProposalProtocol.prefix);
 		return dolly;
+	}
+	
+    /**
+	 * This procedure is called only once and allow to inizialize the internal state of KademliaProtocol. Every node shares the
+	 * same configuration, so it is sufficient to call this routine once.
+	 */
+	protected void _init() {
+		// execute once
+		if (_ALREADY_INSTALLED)
+			return;
+
+		
+		KademliaCommonConfig.TOPIC_TABLE_CAP = Configuration.getInt(prefix + "." + PAR_TOPIC_TABLE_CAP, KademliaCommonConfig.TOPIC_TABLE_CAP);
+		
+		super._init();
 	}
 	
 	

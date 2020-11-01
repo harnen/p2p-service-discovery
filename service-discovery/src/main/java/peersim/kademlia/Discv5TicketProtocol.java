@@ -804,6 +804,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
             case Timeout.REG_TIMEOUT:
             	logger.warning("Remove ticket table "+((Timeout)event).nodeSrc);
+                KademliaObserver.reportExpiredRegistration(((Timeout)event).topic, this.node.is_evil);
             	ticketTable.get(((Timeout)event).topic.topicID).removeNeighbour(((Timeout)event).nodeSrc);
             	break;
 

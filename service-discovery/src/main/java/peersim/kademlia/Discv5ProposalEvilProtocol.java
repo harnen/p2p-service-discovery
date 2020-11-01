@@ -93,7 +93,7 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
                 }//nextNode may be null, if the node has less than ALPHA neighbours
                 else {
                     rop.available_requests = i;
-                    System.out.println("Number of parallel registrations " + i);
+                    logger.info("Number of parallel registrations " + i);
                     //logger.warning("No neighbor to register");
                     break;
                 }
@@ -199,7 +199,7 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
     public void processEvent(Node myNode, int myPid, Object event) {
         
         if(((SimpleEvent) event).getType() == Timeout.TIMEOUT) {
-            System.out.println("Timeout in evil protocol");
+            logger.warning("Timeout in evil protocol");
             return;
         }
 
