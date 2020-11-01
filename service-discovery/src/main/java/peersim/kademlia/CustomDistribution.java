@@ -50,10 +50,7 @@ public class CustomDistribution implements peersim.core.Control {
         subtract = new int[this.topicNum];
     }
 
-    private BigInteger generate_non_uniform_id() {
-        int topicNo = zipf.sample();
-		String topic = new String("t"+topicNo);
-		Topic t = new Topic(topic);
+    private BigInteger generate_non_uniform_id(int topicNo, Topic t) {
         int amountToSubstract = subtract[topicNo-1];
         subtract[topicNo-1] += 1;
         String str = String.valueOf(amountToSubstract); 
@@ -81,9 +78,13 @@ public class CustomDistribution implements peersim.core.Control {
             BigInteger id;
             KademliaNode node; 
             if (i < num_evil_nodes) {
+                Topic t=null;
                 if (idDist.equals(KademliaCommonConfig.NON_UNIFORM_ID_DISTRIBUTION)) {
                     // generate an id close to a topicID for malicious nodes
-                    id = generate_non_uniform_id();
+                    int topicNo = zipf.sample();
+            		String topic = new String("t"+topicNo);
+            		t = new Topic(topic);
+                    id = generate_non_uniform_id(topicNo, t);
                     System.out.println("Generated nonuniform id: " + id);
                 }
                 else { //uniform id distribution
@@ -97,6 +98,9 @@ public class CustomDistribution implements peersim.core.Control {
                 ((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID))).setNode(node);
                 generalNode.setKademliaProtocol((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID)));
                 ((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID))).setProtocolID(evilProtocolID);
+                if (idDist.equals(KademliaCommonConfig.NON_UNIFORM_ID_DISTRIBUTION)) 
+                    ((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID))).setTargetTopic(t);
+                    
             }
             else {
                 // generate uniformly distributed ids for honest nodes

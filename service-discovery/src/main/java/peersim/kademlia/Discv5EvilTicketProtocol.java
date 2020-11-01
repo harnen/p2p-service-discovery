@@ -74,7 +74,8 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 
 		super._init();
 	}
-    
+
+
     /**
      * Start a register topic operation.<br>
      * If this is an on-going register operation with a previously obtained 

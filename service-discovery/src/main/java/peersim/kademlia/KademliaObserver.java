@@ -85,6 +85,9 @@ public class KademliaObserver implements Control {
     private static HashMap<BigInteger, Integer> nodeMsgReceived = new HashMap<BigInteger, Integer>();
     
     private static HashMap<BigInteger, Integer> nodeTopicStored = new HashMap<BigInteger, Integer>();
+    
+    private static HashMap<BigInteger, BigInteger> nodeInfo = new HashMap<BigInteger, BigInteger>();
+    private static HashSet<BigInteger> writtenNodeIDs = new HashSet<BigInteger>();
 
     private static FileWriter msgWriter;
     private static FileWriter opWriter; 
@@ -107,8 +110,9 @@ public class KademliaObserver implements Control {
             e.printStackTrace();
         }
     }
-    
-    public static void addTopicRegistration(String topic, BigInteger registrant) {
+
+    public static void addTopicRegistration(Topic t, BigInteger registrant) {
+         String topic = t.getTopic();
          if(!registeredTopics.containsKey(topic)){
                 //System.out.println("addTopicRegistration "+topic);
 
@@ -120,7 +124,11 @@ public class KademliaObserver implements Control {
                 //System.out.println("addTopicRegistration "+topic+" "+registeredTopics.get(topic).size());
 
          }
-         
+
+        if(!nodeInfo.containsKey(registrant)) 
+        {
+            nodeInfo.put(registrant, t.getTopicID());
+        }
     }
     
     
@@ -305,9 +313,48 @@ public class KademliaObserver implements Control {
         }
     }
 
+    private void write_node_info() {
+        try {
+            String filename = "./logs/node_information.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                if (nodeInfo.size() < Network.size())
+                    return;
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                writer.write("nodeID,topicID,is_evil?\n");
+            }
+            else {
+                
+                writer = new FileWriter(myFile, true);
+            }
+
+            for(int i = 0; i < Network.size(); i++) {
+                Node node = Network.get(i);
+                kadProtocol = node.getKademliaProtocol();
+                BigInteger id = kadProtocol.getNode().getId();
+                if (writtenNodeIDs.contains(id))
+                    continue;
+                int is_evil = kadProtocol.getNode().is_evil ? 1 : 0; 
+                writer.write(id + "," + nodeInfo.get(id) + "," + is_evil + "\n");
+                writtenNodeIDs.add(id);
+            }
+            writer.close();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+    }
+                
+
+
     private void write_eclipsing_results() {
 
         int num_eclipsed_nodes = 0;
+        HashSet<BigInteger> eclipsed_nodes = new HashSet<BigInteger>();
+        HashSet<BigInteger> uneclipsed_nodes = new HashSet<BigInteger>();
+        HashSet<BigInteger> evil_nodes = new HashSet<BigInteger>();
         try {
             String filename = "./logs/eclipse_counts.csv";
             File myFile = new File(filename);
@@ -315,7 +362,7 @@ public class KademliaObserver implements Control {
             if (!myFile.exists()) {
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
-                writer.write("time,numberOfNodes\n");
+                writer.write("time,numberOfNodes,eclipsedNodes,UnEclipsedNodes,EvilNodes\n");
             }
             else {
                 writer = new FileWriter(myFile, true);
@@ -325,10 +372,23 @@ public class KademliaObserver implements Control {
                 Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
 
-                if (is_eclipsed(kadProtocol.getNode()))
-                    num_eclipsed_nodes += 1;
+                if (kadProtocol.getNode().is_evil) {
+                    evil_nodes.add(kadProtocol.getNode().getId());
+                }
+                else {
+                    if (is_eclipsed(kadProtocol.getNode())) {
+                        eclipsed_nodes.add(kadProtocol.getNode().getId());
+                        num_eclipsed_nodes += 1;
+                    }
+                    else {
+                        uneclipsed_nodes.add(kadProtocol.getNode().getId());
+                    }
+                }
             }
-            writer.write(CommonState.getTime() + "," + String.valueOf(num_eclipsed_nodes) + "\n");
+            writer.write(CommonState.getTime() + "," + String.valueOf(num_eclipsed_nodes));
+            writer.write("," + Util.bigIntegetSetToString(eclipsed_nodes));
+            writer.write("," + Util.bigIntegetSetToString(uneclipsed_nodes));
+            writer.write("," + Util.bigIntegetSetToString(evil_nodes) + "\n");
             writer.close();
         } catch (IOException e) {
 
@@ -363,7 +423,7 @@ public class KademliaObserver implements Control {
     public boolean execute() {
         try {
             FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
-            writer.write("host,topic,registrant,is_registrant_evil?\n");
+            writer.write("host,topic,registrant\n");
             for(int i = 0; i < Network.size(); i++) {
                 Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
@@ -386,6 +446,7 @@ public class KademliaObserver implements Control {
 
         write_eclipsing_results();
         write_registration_stats();
+        write_node_info();
 
         return false;
     }

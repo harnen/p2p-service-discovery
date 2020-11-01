@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import peersim.core.Network;
 import peersim.core.Node;
 
+import java.util.HashSet;
+
 /**
  * Some utility and mathematical function to work with BigInteger numbers and strings.
  * 
@@ -207,5 +209,21 @@ public class Util {
 		return 8 - len8tab[x];
 	}
 
+    public static String bigIntegetSetToString(HashSet<BigInteger> set) {
+        if(set.size() == 0) return "";
+        
+        String result = "\"";
+        boolean first = true;
+        for(BigInteger n: set) {
+            if(first) {
+                result += n;
+                first = false;
+            }else {
+                result += " " + n;
+            }
+        }
+        result += "\"";
+        return result;
+    }
 
 }
