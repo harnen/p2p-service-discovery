@@ -127,7 +127,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     public void setLookupResult(List<KademliaNode> result) {
     	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size());
-    	lookupResultBuffer = result;
+    	//lookupResultBuffer = result;
+    	lookupResultBuffer.addAll(result);
     	requested=false;
     	tryNewConnections();
     			
@@ -191,10 +192,11 @@ public class KademliaNode implements Comparable<KademliaNode>{
     		boolean success=false;
     		while(!success&&lookupResultBuffer.size()>0){
     	    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start connection "+lookupResultBuffer.size());
-    			success = startConnection(lookupResultBuffer.get(0));
+    			int n = CommonState.r.nextInt(lookupResultBuffer.size());
+    			success = startConnection(lookupResultBuffer.get(n));
     			
-    			if(success)addOutgoingConnection(lookupResultBuffer.get(0));
-    			lookupResultBuffer.remove(0);
+    			if(success)addOutgoingConnection(lookupResultBuffer.get(n));
+    			lookupResultBuffer.remove(n);
     	    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start2 connection "+lookupResultBuffer.size());
 
     		}
