@@ -83,7 +83,9 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             
             int numberOfOutstandingRegistrations = 0;
             if(!ticketTable.containsKey(t.getTopicID())) {
-                TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS, this.numOfRegistrations/KademliaCommonConfig.NBUCKETS, 10, this,t,myPid);
+                //TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS, this.numOfRegistrations/KademliaCommonConfig.NBUCKETS, 10, this,t,myPid);
+                int k = (int) Math.ceil((double) this.targetNumOfRegistrations / KademliaCommonConfig.NBUCKETS);
+        	    TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,k,10,this,t,myPid);
                 rou.setNodeId(t.getTopicID());
                 ticketTable.put(t.getTopicID(),rou);
             
@@ -119,6 +121,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
         if (ticket.isRegistrationComplete() == true) {
+            KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
             logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
             this.numOfRegistrations += 1;
             if (this.numOfRegistrations < this.targetNumOfRegistrations) {

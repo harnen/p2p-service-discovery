@@ -218,27 +218,38 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	private void handleRegister(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(m.src, t);
-        boolean success;
         Message response; 
 
 		if(this.topicTable.register(r, t)) {
 			logger.info(t.topic + " registered on " + this.node.getId() + " by " + m.src.getId());
-            response = new Message(Message.MSG_REGISTER_RESPONSE, success=true);
+            response = new Message(Message.MSG_REGISTER_RESPONSE, t);
+            response.ackId = m.id;
+    		response.operationId = m.operationId;
+            response.dest = m.src;
+            response.src = this.node;
+	    	assert m.src != null;
+    		logger.info(" responds with REGISTER_RESPONSE");
+            sendMessage(response, m.src.getId(), myPid);
 		}
-        else {
-            // registration failed
-            response = new Message(Message.MSG_REGISTER_RESPONSE, success=false);
-        }
-        response.ackId = m.id;
-		response.operationId = m.operationId;
-        response.dest = m.src;
-        response.src = this.node;
-		assert m.src != null;
-		logger.info(" responds with REGISTER_RESPONSE");
-        sendMessage(response, m.src.getId(), myPid);
 
 		handleFind(m, myPid, Util.logDistance(t.getTopicID(), this.node.getId()));
-	}
+    }
+     
+     /**
+     * Process a register response message.<br>
+     * The body should contain a ticket, which indicates whether registration is 
+     * complete. In case it is not, schedule sending a new register request
+     * 
+     * @param m
+     *            Message received (contains the node to find)
+     * @param myPid
+     *            the sender Pid
+     */
+    protected void handleRegisterResponse(Message m, int myPid) {
+        Topic t = (Topic) m.body;
+
+        KademliaObserver.reportActiveRegistration(t, this.node.is_evil);
+    }   
 
 	protected void handleTopicQuery(Message m, int myPid) {
 		
@@ -323,6 +334,9 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 			case Message.MSG_INIT_TOPIC_LOOKUP:
 				handleInitTopicLookup(m, myPid);
 				break;
+            case Message.MSG_REGISTER_RESPONSE:
+                handleRegisterResponse(m, myPid);
+                break;
 	
 			case Message.MSG_EMPTY:
 				// TO DO

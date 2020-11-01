@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -76,6 +77,10 @@ public class KademliaObserver implements Control {
     
     
     public static HashMap<String, Set<BigInteger>> registeredTopics = new HashMap<String, Set<BigInteger>>();
+    
+    public static TreeMap<String, Integer> activeRegistrations = new TreeMap<String, Integer>();
+
+    public static TreeMap<String, Integer> activeRegistrationsByMalicious = new TreeMap<String, Integer>();
     
     private static HashMap<BigInteger, Integer> nodeMsgReceived = new HashMap<BigInteger, Integer>();
     
@@ -167,6 +172,41 @@ public class KademliaObserver implements Control {
 	        }
 	        
 	}*/
+	public static void reportActiveRegistration(Topic t, boolean is_evil) {
+        if (is_evil) {
+            if (!activeRegistrationsByMalicious.containsKey(t.getTopic())) {
+                activeRegistrationsByMalicious.put(t.getTopic(), new Integer(1));
+            } 
+            else {
+                Integer num = activeRegistrationsByMalicious.get(t.getTopic());
+                num += 1;
+                activeRegistrationsByMalicious.put(t.getTopic(), num);
+            }
+        }
+        else {
+            if (!activeRegistrations.containsKey(t.getTopic())) {
+                activeRegistrations.put(t.getTopic(), new Integer(1));
+            } 
+            else {
+                Integer num = activeRegistrations.get(t.getTopic());
+                num += 1;
+                activeRegistrations.put(t.getTopic(), num);
+            }
+        }
+    }
+
+    public static void reportExpiredRegistration(Topic t, boolean is_evil) {
+        if (is_evil) {
+            Integer num = activeRegistrationsByMalicious.get(t.getTopic());
+            num -= 1;
+            activeRegistrationsByMalicious.put(t.getTopic(), num);
+        }
+        else {
+            Integer num = activeRegistrations.get(t.getTopic());
+            num -= 1;
+            activeRegistrations.put(t.getTopic(), num);
+        }
+    }
 	
 	public static void reportMsg(Message m, boolean sent) {
 
@@ -224,52 +264,48 @@ public class KademliaObserver implements Control {
         }   
     }
 
-    private boolean is_eclipsed(KademliaNode node) {
-        if (node.is_evil)
-            //Don't include malicious nodes in the count
-            return false;
-
-        if (node.getOutgoingConnections().size() == 0 && node.getIncomingConnections().size() == 0)
-            return false;
-
-        for (KademliaNode outConn : node.getOutgoingConnections())
-            if (!outConn.is_evil)
-                return false;
-
-        for (KademliaNode inConn : node.getIncomingConnections())
-            if (!inConn.is_evil)
-                return false;
-        
-        return true;
-    }
-    /**
-     * print the statistical snapshot of the current situation
-     * 
-     * @return boolean always false
-     */
-    public boolean execute() {
+    private void write_registration_stats() {
+        if (activeRegistrations.size() == 0)
+            return;
         try {
-            FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
-            writer.write("host,topic,registrant\n");
-            for(int i = 0; i < Network.size(); i++) {
-                Node node = Network.get(i);
-                kadProtocol = node.getKademliaProtocol();
-
-                if(kadProtocol instanceof Discv5ProposalProtocol) {
-                    String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
-                    writer.write(registrations);
+            String filename = "./logs/registration_stats.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                String title = "time";
+                for (String topic : activeRegistrations.keySet()) {
+                    title += "," + topic + "-normal";
+                    title += "," + topic + "-evil";
                 }
-                if(kadProtocol instanceof Discv5TicketProtocol) {
-                    String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
-                    writer.write(registrations);
-                }
-
+                title += "\n";
+                writer.write(title);
             }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+            writer.write("" + CommonState.getTime());
+            for (String topic : activeRegistrations.keySet()) {
+                writer.write("," + activeRegistrations.get(topic));
+                Integer maliciousRegistrants = activeRegistrationsByMalicious.get(topic);
+                if (maliciousRegistrants == null) 
+                    writer.write(",0");
+                else
+                {
+                    writer.write("," + activeRegistrationsByMalicious.get(topic));
+                    //activeRegistrationsByMalicious.put(topic, 0);
+                }
+                //activeRegistrations.put(topic, 0);
+            }
+            writer.write("\n");
             writer.close();
         } catch (IOException e) {
-
             e.printStackTrace();
         }
+    }
+
+    private void write_eclipsing_results() {
 
         int num_eclipsed_nodes = 0;
         try {
@@ -298,7 +334,60 @@ public class KademliaObserver implements Control {
 
             e.printStackTrace();
         }
+    }
+
+    private boolean is_eclipsed(KademliaNode node) {
+        if (node.is_evil)
+            //Don't include malicious nodes in the count
+            return false;
+
+        if (node.getOutgoingConnections().size() == 0)
+            return false;
+
+        for (KademliaNode outConn : node.getOutgoingConnections())
+            if (!outConn.is_evil)
+                return false;
+        /*
+        for (KademliaNode inConn : node.getIncomingConnections())
+            if (!inConn.is_evil)
+                return false;
+        */
+
+        return true;
+    }
+    /**
+     * print the statistical snapshot of the current situation
+     * 
+     * @return boolean always false
+     */
+    public boolean execute() {
+        try {
+            FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
+            writer.write("host,topic,registrant,is_registrant_evil?\n");
+            for(int i = 0; i < Network.size(); i++) {
+                Node node = Network.get(i);
+                kadProtocol = node.getKademliaProtocol();
+
+                if(kadProtocol instanceof Discv5ProposalProtocol) {
+                    String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
+                    writer.write(registrations);
+                }
+                if(kadProtocol instanceof Discv5TicketProtocol) {
+                    String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
+                    writer.write(registrations);
+                }
+
+            }
+            writer.close();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
+        write_eclipsing_results();
+        write_registration_stats();
 
         return false;
     }
+
 }

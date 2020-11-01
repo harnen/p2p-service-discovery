@@ -140,12 +140,11 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
      * @param myPid
      *            the sender Pid
      */
-    private void handleRegisterResponse(Message m, int myPid) {
-        boolean is_success = (boolean) m.body;
+    protected void handleRegisterResponse(Message m, int myPid) {
+        Topic t = (Topic) m.body;
 
-        if (is_success) 
-            this.numOfSuccessfulRegistrations += 1;
-
+        KademliaObserver.reportActiveRegistration(t, this.node.is_evil);
+        this.numOfSuccessfulRegistrations += 1;
     }   
 
     protected void handleTopicQuery(Message m, int myPid) {
@@ -217,11 +216,6 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
             case Message.MSG_INIT_REGISTER:
                 handleInitRegister(m, myPid);
                 break;          
-
-            case Message.MSG_REGISTER_RESPONSE:
-                //sentMsg.remove(m.ackId);
-                handleRegisterResponse(m, myPid);
-                break;
             case Message.MSG_TOPIC_QUERY:
                 handleTopicQuery(m, myPid);
                 break;
