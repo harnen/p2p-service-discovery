@@ -107,30 +107,6 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         }
     }
     
-    /**
-     * Process a register response message.<br>
-     * The body should contain a ticket, which indicates whether registration is 
-     * complete. In case it is not, schedule sending a new register request
-     * 
-     * @param m
-     *            Message received (contains the node to find)
-     * @param myPid
-     *            the sender Pid
-     */
-    protected void handleRegisterResponse(Message m, int myPid) {
-        Ticket ticket = (Ticket) m.body;
-        Topic topic = ticket.getTopic();
-        if (ticket.isRegistrationComplete() == true) {
-            KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
-            logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
-            this.numOfRegistrations += 1;
-            if (this.numOfRegistrations < this.targetNumOfRegistrations) {
-                ticketTable.get(ticket.getTopic().topicID).removeNeighbour(m.src.getId());
-            }
-        }
-        else
-            super.handleRegisterResponse(m, myPid);
-    }
 
     /**
      * Process a topic query message.<br>
@@ -203,11 +179,6 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             case Message.MSG_INIT_REGISTER:
                 m = (Message) event;
                 handleInitRegisterTopic(m, myPid);
-                break;
-
-            case Message.MSG_REGISTER_RESPONSE:
-                m = (Message) event;
-                handleRegisterResponse(m, myPid);
                 break;
 
             case Message.MSG_TOPIC_QUERY:
