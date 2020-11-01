@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import peersim.kademlia.Topic;
 import peersim.kademlia.operations.LookupTicketOperation;
+import peersim.kademlia.operations.Operation;
 import peersim.kademlia.operations.TicketOperation;
 
 import java.util.Arrays;
@@ -730,6 +731,22 @@ public class Discv5TicketProtocol extends KademliaProtocol {
  		}*/
    }
 
+	private void handleTimeout(Timeout t, int myPid){
+		Operation op = this.operations.get(t.opID);
+		BigInteger unavailableNode = t.node;
+		if(op.type == Message.MSG_TOPIC_QUERY) {
+			Message m = new Message();
+			m.operationId = op.operationId;
+			m.type = Message.MSG_TOPIC_QUERY_REPLY;
+			m.src = new KademliaNode (unavailableNode);
+			m.dest = this.node;
+			m.ackId = t.msgID; 
+			m.body=  new Message.TopicLookupBody(new TopicRegistration [0], new BigInteger[0]);
+			handleTopicQueryReply(m, myPid);
+		}
+	}
+	
+	
 	/**
 	 * manage the peersim receiving of the events
 	 * 
@@ -745,6 +762,12 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		//this.discv5id = myPid;
 		super.processEvent(myNode, myPid, event);
         Message m;
+        
+		
+		if(((SimpleEvent) event).getType() == Timeout.TIMEOUT) {
+			handleTimeout((Timeout) event, myPid);
+			return;
+		}
 
 	    SimpleEvent s = (SimpleEvent) event;
         if (s instanceof Message) {
