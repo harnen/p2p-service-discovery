@@ -62,6 +62,18 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         this.numOfRegistrations = 0;
         this.targetNumOfRegistrations = Configuration.getInt(prefix + "." + PAR_NUMBER_OF_REGISTRATIONS, 0);
     }
+	
+    /**
+	 * This procedure is called only once and allow to inizialize the internal state of KademliaProtocol. Every node shares the
+	 * same configuration, so it is sufficient to call this routine once.
+	 */
+	protected void _init() {
+		// execute once
+		if (_ALREADY_INSTALLED)
+			return;
+
+		super._init();
+	}
     
     /**
      * Start a register topic operation.<br>

@@ -43,6 +43,18 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
     }
     
     /**
+	 * This procedure is called only once and allow to inizialize the internal state of KademliaProtocol. Every node shares the
+	 * same configuration, so it is sufficient to call this routine once.
+	 */
+	protected void _init() {
+		// execute once
+		if (_ALREADY_INSTALLED)
+			return;
+
+		super._init();
+	}
+    
+    /**
      * Start a register opearation.<br>
      * Find the ALPHA closest node and send register request to them.
      * 
@@ -63,6 +75,7 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
     
             RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
             rop.body = m.body;
+		    rop.type = Message.MSG_REGISTER;
             operations.put(rop.operationId, rop);
         
             int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());

@@ -20,6 +20,7 @@ public class CustomDistribution implements peersim.core.Control {
     private static final String PAR_PROT = "protocol";
     private static final String PAR_EVIL_PROT = "evilProtocol";
     private static final String PAR_PERCENT_EVIL = "percentEvil";
+    private static final String PAR_ID_DIST = "idDistribution";
 
 	private final static String PAR_TOPICNUM = "topicnum";
 	private final static String PAR_ZIPF = "zipf";
@@ -31,6 +32,8 @@ public class CustomDistribution implements peersim.core.Control {
 	private final int topicNum;
 	private final double exp;
     private ZipfDistribution zipf;
+    private String idDist;
+    private int[] subtract; 
 
     public CustomDistribution(String prefix) {
         protocolID = Configuration.getPid(prefix + "." + PAR_PROT);
@@ -39,10 +42,24 @@ public class CustomDistribution implements peersim.core.Control {
         percentEvil = Configuration.getDouble(prefix + "." + PAR_PERCENT_EVIL, 0.0);
 		topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
 		exp = Configuration.getDouble(prefix + "." + PAR_ZIPF, -1);
+        idDist = Configuration.getString(prefix + "." + PAR_ID_DIST, KademliaCommonConfig.UNIFORM_ID_DISTRIBUTION);
 		
         if (exp != -1)
             zipf = new ZipfDistribution(topicNum,exp);
         urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
+        subtract = new int[this.topicNum];
+    }
+
+    private BigInteger generate_non_uniform_id() {
+        int topicNo = zipf.sample();
+		String topic = new String("t"+topicNo);
+		Topic t = new Topic(topic);
+        int amountToSubstract = subtract[topicNo-1];
+        subtract[topicNo-1] += 1;
+        String str = String.valueOf(amountToSubstract); 
+        BigInteger b = new BigInteger(str);
+        
+        return t.getTopicID().subtract(b);
     }
 
     /**
@@ -58,23 +75,22 @@ public class CustomDistribution implements peersim.core.Control {
         
         int num_evil_nodes = (int) (Network.size()*percentEvil);
         System.out.println("Number of evil nodes: " + num_evil_nodes);
-        int[] subtract = new int[this.topicNum];
 
         for (int i = 0; i < Network.size(); ++i) {
             Node generalNode = Network.get(i);
             BigInteger id;
             KademliaNode node; 
             if (i < num_evil_nodes) {
-                // generate an id close to a topicID for malicious nodes
-                int topicNo = zipf.sample();
-				String topic = new String("t"+topicNo);
-				Topic t = new Topic(topic);
-                int amountToSubstract = subtract[topicNo-1];
-                subtract[topicNo-1] += 1;
-                String str = String.valueOf(amountToSubstract); 
-                BigInteger b = new BigInteger(str);
-                id = t.getTopicID().subtract(b);
-
+                if (idDist.equals(KademliaCommonConfig.NON_UNIFORM_ID_DISTRIBUTION)) {
+                    // generate an id close to a topicID for malicious nodes
+                    id = generate_non_uniform_id();
+                    System.out.println("Generated nonuniform id: " + id);
+                }
+                else { //uniform id distribution
+                    id = urg.generate();
+                    System.out.println("Generated uniform id: " + id);
+                }
+                
                 node = new KademliaNode(id, "127.0.0.1", 0);
                 generalNode.setProtocol(protocolID, null);
                 node.is_evil = true;

@@ -28,7 +28,9 @@ public class KademliaCommonConfig {
     public static String ATTACK_TYPE_MALICIOUS_REGISTRAR = "MaliciousRegistrar";
     public static String ATTACK_TYPE_HYBRID = "HybridAttacker";
     //TODO show the distribution of nodes discovered (do everyone discover the same? Or different?)
-    
+    // Settings for CustomDistribution (id distribution setting for nodes)
+    public static String NON_UNIFORM_ID_DISTRIBUTION = "nonUniform";
+    public static String UNIFORM_ID_DISTRIBUTION = "uniform";
     
 	/**
 	 * short information about current mspastry configuration
