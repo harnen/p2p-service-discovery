@@ -733,16 +733,19 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
 	private void handleTimeout(Timeout t, int myPid){
 		Operation op = this.operations.get(t.opID);
-		BigInteger unavailableNode = t.node;
-		if(op.type == Message.MSG_TOPIC_QUERY) {
-			Message m = new Message();
-			m.operationId = op.operationId;
-			m.type = Message.MSG_TOPIC_QUERY_REPLY;
-			m.src = new KademliaNode (unavailableNode);
-			m.dest = this.node;
-			m.ackId = t.msgID; 
-			m.body=  new Message.TopicLookupBody(new TopicRegistration [0], new BigInteger[0]);
-			handleTopicQueryReply(m, myPid);
+		if(op!=null) {	
+			logger.warning("Timeout "+t.getType());
+			BigInteger unavailableNode = t.node;
+			if(op.type == Message.MSG_TOPIC_QUERY) {
+				Message m = new Message();
+				m.operationId = op.operationId;
+				m.type = Message.MSG_TOPIC_QUERY_REPLY;
+				m.src = new KademliaNode (unavailableNode);
+				m.dest = this.node;
+				m.ackId = t.msgID; 
+				m.body=  new Message.TopicLookupBody(new TopicRegistration [0], new BigInteger[0]);
+				handleTopicQueryReply(m, myPid);
+			}
 		}
 	}
 	

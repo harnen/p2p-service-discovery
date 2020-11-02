@@ -331,7 +331,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		transport.send(src, dest, m, destpid);
 		KademliaObserver.msg_sent.add(1);
 
-		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
+		if ((m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)) { // is a request
 			Timeout t = new Timeout(destId, m.id, m.operationId);
 			long latency = transport.getLatency(src, dest);
 
