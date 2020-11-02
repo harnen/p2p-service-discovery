@@ -71,7 +71,7 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
             TopicRegistration r = new TopicRegistration(this.node, t);
             System.out.println("Spamming topic registration for topic "+t.getTopic());
     
-            KademliaObserver.addTopicRegistration(t.topic, this.node.getId());
+            KademliaObserver.addTopicRegistration(t, this.node.getId());
     
             RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
             rop.body = m.body;

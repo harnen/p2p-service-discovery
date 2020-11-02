@@ -76,8 +76,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 */
 	protected RoutingTable routingTable;
 
-	//protected Discv5ProposalTopicTable topicTable;
-
 	protected Logger logger;
 
 
@@ -90,6 +88,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * find operations set
 	 */
 	protected LinkedHashMap<Long, Operation> operations;
+
+    //Target topic for attackers
+    protected Topic targetTopic=null;
 
 	/**
 	 * Replicate this object by returning an identical copy.<br>
@@ -142,6 +143,22 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		_ALREADY_INSTALLED = true;
 	}
+    /** 
+    * Getter for target topic when a protocol is malicious 
+    */
+    protected Topic getTargetTopic() {
+        return this.targetTopic;
+    }
+
+    /** 
+    * Setter for target topic when a protocol is malicious 
+    * 
+    * @param t 
+    *           Topic that is target for attack by this protocol instance
+    */
+    protected void setTargetTopic(Topic t) {
+        this.targetTopic = t;
+    }
 
 	/**
 	 * Perform the required operation upon receiving a message in response to a ROUTE message.<br>

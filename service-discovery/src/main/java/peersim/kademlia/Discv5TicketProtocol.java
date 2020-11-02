@@ -300,7 +300,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         }
         else {
             logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
-            KademliaObserver.addTopicRegistration(topic.getTopic(), this.node.getId());
+            KademliaObserver.addTopicRegistration(topic, this.node.getId());
             KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
             Timeout timeout = new Timeout(ticket.getTopic(),m.src.getId());
             EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);

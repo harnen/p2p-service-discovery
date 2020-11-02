@@ -137,9 +137,7 @@ public class Discv5ProposalTopicTable implements TopicTable {
     		for(TopicRegistration reg: regList) {
     			result += this.hostID + ",";
     			result += reg.getTopic().getTopic() + ",";
-    			result += reg.getNode().getId()+ ",";
-                int is_evil = reg.getNode().is_evil ? 1 : 0; 
-                result += is_evil + "\n";
+    			result += reg.getNode().getId()+ "\n";
     		}	
     	}
     	return result;
