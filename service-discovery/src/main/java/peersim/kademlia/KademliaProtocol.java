@@ -56,7 +56,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	protected UnreliableTransport transport;
 	protected int tid;
 	protected int kademliaid;
-	protected HashMap<BigInteger,Integer> failures;
 	//private EthClient client;
 
 	/**
@@ -112,7 +111,6 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	public KademliaProtocol(String prefix) {
 		this.node = null; // empty nodeId
 		KademliaProtocol.prefix = prefix;
-		failures = new HashMap();
 		_init();
 
 		this.routingTable = new RoutingTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,KademliaCommonConfig.MAXREPLACEMENT);
