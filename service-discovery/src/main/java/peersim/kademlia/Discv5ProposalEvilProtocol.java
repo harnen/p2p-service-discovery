@@ -221,7 +221,6 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
         
         if (m.src != null) {
             routingTable.addNeighbour(m.src.getId());
-            failures.replace(m.src.getId(), 0);
         }
         
         //TODO we could simply let these "handle" calls made in the parent class

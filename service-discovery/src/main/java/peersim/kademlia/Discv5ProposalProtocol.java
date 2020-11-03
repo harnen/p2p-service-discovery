@@ -329,7 +329,6 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		
 		if (m.src != null) {
 			routingTable.addNeighbour(m.src.getId());
-			failures.replace(m.src.getId(), 0);
 		}
 
 

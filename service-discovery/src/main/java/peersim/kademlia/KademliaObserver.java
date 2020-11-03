@@ -18,6 +18,7 @@ import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
 import peersim.kademlia.operations.LookupOperation;
+import peersim.kademlia.operations.RegisterOperation;
 import peersim.kademlia.operations.LookupTicketOperation;
 import peersim.kademlia.operations.Operation;
 import peersim.util.IncrementalStats;
@@ -154,13 +155,15 @@ public class KademliaObserver implements Control {
             String result = "";     
             String type = "";
 
-            if (op instanceof LookupOperation || op instanceof LookupTicketOperation) {
+            if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
                 result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).topic.topic+ "\n";
-            //else
-            //    result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.returned.size() + "\n";
-                opWriter.write(result);
-                opWriter.flush();
+            } else if (op instanceof RegisterOperation) {
+                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  + "," + "," + ((RegisterOperation)op).topic.topic+ "\n";
+            } else {
+            	;//result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  + "," + "," + "\n";
             }
+            opWriter.write(result);
+            opWriter.flush();
 
         } catch (IOException e) {
             e.printStackTrace();
