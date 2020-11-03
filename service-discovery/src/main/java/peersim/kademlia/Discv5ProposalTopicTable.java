@@ -4,6 +4,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.math.BigInteger;
 
 import peersim.kademlia.Topic;
@@ -19,6 +20,7 @@ public class Discv5ProposalTopicTable implements TopicTable {
 
     private SortedMap<Topic, List<TopicRegistration>> table;
     private BigInteger hostID;
+    
 
     public Discv5ProposalTopicTable(BigInteger hostID){
         table = new TreeMap<Topic, List<TopicRegistration>>();
@@ -88,6 +90,28 @@ public class Discv5ProposalTopicTable implements TopicTable {
         
         return new TopicRegistration[0];
     }
+    
+    public HashMap<Topic,Integer> getRegbyTopic(){
+        HashMap<Topic,Integer> regByTopic = new HashMap<Topic,Integer>();
+        for(List<TopicRegistration> t: table.values())
+        {
+        	regByTopic.put(t.get(0).getTopic(), t.size());
+        }
+        
+        return regByTopic;
+
+    }
+    
+    public int getRegbyRegistrar(){
+    	int count=0;
+    	 for(List<TopicRegistration> t: table.values())
+         {
+         	count+=t.size();
+         }
+    	 //System.out.println("Table "+hostID+" "+count);
+        return count;
+
+    }
 
     public int getCapacity(){
         return this.capacity;
@@ -129,6 +153,8 @@ public class Discv5ProposalTopicTable implements TopicTable {
         result.append("\n--------------------------------");
         return result.toString();
     }
+    
+
     
     public String dumpRegistrations() {
     	String result = "";

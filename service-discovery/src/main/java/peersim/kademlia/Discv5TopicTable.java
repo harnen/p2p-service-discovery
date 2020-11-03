@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.Collections;
 import java.math.BigInteger;
@@ -306,5 +307,23 @@ public class Discv5TopicTable { // implements TopicTable {
             }
         }
         return ((float) num_evil)/num_registrations;
+    }
+    
+    
+    public HashMap<Topic,Integer> getRegbyTopic(){
+    	//System.out.println("Reg by topic");
+        HashMap<Topic,Integer> regByTopic = new HashMap<Topic,Integer>();
+        for(ArrayDeque<TopicRegistration> t: topicTable.values())
+        {
+        	regByTopic.put(t.getFirst().getTopic(), t.size());
+        }
+        
+        return regByTopic;
+
+    }
+    
+    public int getRegbyRegistrar(){
+        return allAds.size();
+
     }
 }
