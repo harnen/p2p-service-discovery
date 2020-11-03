@@ -102,6 +102,23 @@ public class Discv5ProposalTopicTable implements TopicTable {
 
     }
     
+    public HashMap<BigInteger,Integer> getRegbyRegistrant(){
+        HashMap<BigInteger,Integer> regByRegistrant = new HashMap<BigInteger,Integer>();
+    	 for(List<TopicRegistration> t: table.values())
+         {
+    		for(TopicRegistration reg : t)
+    		{
+    			int count=0;
+    			if(regByRegistrant.get(reg.getNode().getId())!=null)count=regByRegistrant.get(reg.getNode().getId());
+    			count++;
+    			regByRegistrant.put(reg.getNode().getId(),count);
+    		}
+         }
+    	 //System.out.println("Table "+hostID+" "+count);
+        return regByRegistrant;
+
+    }
+    
     public int getRegbyRegistrar(){
     	int count=0;
     	 for(List<TopicRegistration> t: table.values())

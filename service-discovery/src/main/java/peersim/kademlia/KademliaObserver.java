@@ -404,10 +404,36 @@ public class KademliaObserver implements Control {
 	    	writer.close();
 
     	}catch(IOException e) {
-    		//e.printStackTrace();
+    		e.printStackTrace();
     	}
 
     }
+    
+    private void write_registered_registrant_average() {
+    	try {
+	        String filename = "./logs/registeredRegistrant.csv";
+	        File myFile = new File(filename);
+	        FileWriter writer;
+	        if (myFile.exists())myFile.delete();
+	        myFile.createNewFile();
+	        writer = new FileWriter(myFile, true);
+	        writer.write("nodeId,count\n");
+
+	        for(BigInteger t : regByRegistrant.keySet()) {
+	        	//System.out.println("Re "+t.getTopic()+" "+regByRegistrar.get(t)/avgCounter);
+	        	writer.write(String.valueOf(t));
+	        	writer.write(",");
+	        	writer.write(String.valueOf(regByRegistrant.get(t).intValue()/avgCounter));
+	        	writer.write("\n");
+	        }
+	    	writer.close();
+
+    	}catch(IOException e) {
+    		e.printStackTrace();
+    	}
+
+    }
+
 
     private void write_eclipsing_results() {
 
@@ -481,6 +507,7 @@ public class KademliaObserver implements Control {
      * @return boolean always false
      */
     public boolean execute() {
+    	//System.out.println(CommonState.getTime()+" execute");
     	avgCounter++;
         try {
             FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
@@ -510,22 +537,51 @@ public class KademliaObserver implements Control {
                 if(kadProtocol instanceof Discv5ProposalProtocol) {
                     String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
                     writer.write(registrations);
+                    
+                    //topic table registrations by registrar
                     int count=0;
                     if(regByRegistrar.get(kadProtocol.getNode().getId())!=null) {
                     	count = regByRegistrar.get(kadProtocol.getNode().getId());
                     	count+=((Discv5ProposalProtocol) kadProtocol).topicTable.getRegbyRegistrar();
                     }
                     regByRegistrar.put(kadProtocol.getNode().getId(), count);
+                    
+                    //topic table registrations by registrant
+                    HashMap<BigInteger,Integer> tmpReg = ((Discv5ProposalProtocol) kadProtocol).topicTable.getRegbyRegistrant();
+                    for(BigInteger id : tmpReg.keySet())
+                    {             
+                    	count=0;
+                    	if(regByRegistrant.get(id)!=null) {
+                    		count = regByRegistrant.get(id);
+                    	}
+                    	count+=tmpReg.get(id);
+                    	regByRegistrant.put(id,count);
+                    }
+                    
                 }
                 if(kadProtocol instanceof Discv5TicketProtocol) {
                     String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
                     writer.write(registrations);
+                    
+                    //topic table registrations by registrar
                     int count=0;
                     if(regByRegistrar.get(kadProtocol.getNode().getId())!=null) {
                     	count = regByRegistrar.get(kadProtocol.getNode().getId());
                     	count+=((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyRegistrar();
                     }
                     regByRegistrar.put(kadProtocol.getNode().getId(), count);
+                    
+                    //topic table registrations by registrant
+                    HashMap<BigInteger,Integer> tmpReg = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyRegistrant();
+                    for(BigInteger id : tmpReg.keySet())
+                    {             
+                    	count=0;
+                    	if(regByRegistrant.get(id)!=null) {
+                    		count = regByRegistrant.get(id);
+                    	}
+                    	count+=tmpReg.get(id);
+                    	regByRegistrant.put(id,count);
+                    }
                 }
                 /*for(Topic t : regByTopic.keySet())
                 {
@@ -539,6 +595,7 @@ public class KademliaObserver implements Control {
             e.printStackTrace();
         }
 
+        write_registered_registrant_average();
         write_registered_topics_average();
         write_registered_registrar_average();
         write_eclipsing_results();

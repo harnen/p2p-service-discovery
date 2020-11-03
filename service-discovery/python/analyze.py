@@ -4,12 +4,14 @@ import pandas as pd
 import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
+from numpy import genfromtxt
+import array
 import sys
 import csv
 import math
 
 def analyzeMessages(dirs):
-    
+
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
     fig, ax2 = plt.subplots()
@@ -17,9 +19,9 @@ def analyzeMessages(dirs):
     for log_dir in dirs:
         print(log_dir)
         df = pd.read_csv(log_dir + '/messages.csv')
-        
+
         df['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label=log_dir)
-        ax2.bar(df['type'].value_counts().index, df['type'].value_counts(), label=log_dir) 
+        ax2.bar(df['type'].value_counts().index, df['type'].value_counts(), label=log_dir)
         df['src'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message sent by node", label=log_dir)
 
     ax1.legend()
@@ -37,7 +39,7 @@ def analyzeRegistrations(dirs):
         df = pd.read_csv(log_dir + '/3500000_registrations.csv')
         print(df['host'].value_counts())
         df['host'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Registrations by advertisement medium", label=log_dir)
-        ax2.bar(df['topic'].value_counts().index, df['topic'].value_counts(), label=log_dir) 
+        ax2.bar(df['topic'].value_counts().index, df['topic'].value_counts(), label=log_dir)
         ax2.set_title("Global registration count by topic")
         df['registrant'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Registrations by advertiser", label=log_dir)
     ax1.legend()
@@ -45,16 +47,37 @@ def analyzeRegistrations(dirs):
     ax3.legend()
 
 
+def analyzeRegistrationsAverage(dirs):
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    fig, ax1 = plt.subplots()
+    fig, ax2 = plt.subplots()
+#    fig, ax3 = plt.subplots()
+
+    for log_dir in dirs:
+        print(log_dir)
+        data1 = genfromtxt(log_dir+'/registeredRegistrant.csv',delimiter=',',names=['x', 'y'])
+        ax1.plot(sorted(data1['y'],reverse=True))
+        data2 = genfromtxt(log_dir+'/registeredRegistrar.csv',delimiter=',',names=['x', 'y'])
+        ax2.plot(sorted(data2['y'],reverse=True))
+#        data3 = genfromtxt(log_dir+'/registeredTopics.csv',delimiter=',',names=['x', 'y'])
+#        ax3.bar(data3['x'],data3['y'],label=log_dir)
+
+#    ax1.xlabel ('Nodes')
+#    ax1.ylabel ('#Registrations')
+    ax1.set_title('Registrations by advertiser (average)')
+    ax2.set_title('Registrations by advertiser medium (average)')
+    ax1.legend()
+    ax2.legend()
 
 def analyzeRegistrarDistribution(dirs):
     fig, ax1 = plt.subplots()
     ax1.tick_params(bottom=False,
                 labelbottom=False)
     topics = set()
-    
+
     colors = ['red', 'green', 'blue']
     x = []
-    y = []    
+    y = []
     topics = []
     dir_nums = []
     c = []
@@ -73,8 +96,8 @@ def analyzeRegistrarDistribution(dirs):
                 x.append(node)
                 c.append(colors[dir_num])
 
-    counter = 0   
-    topics_set = set(topics)         
+    counter = 0
+    topics_set = set(topics)
     for topic in topics:
         topic_index = sorted(topics_set).index(topic)
         dir_offset = dir_nums[counter]*0.3
@@ -91,7 +114,7 @@ def analyzeRegistrarDistribution(dirs):
     print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Registrars")
-    
+
 
 
 
@@ -100,16 +123,16 @@ def analyzeRegistrantDistribution(dirs):
     ax1.tick_params(bottom=False,
                 labelbottom=False)
     topics = set()
-    
+
     colors = ['red', 'green', 'blue']
     x = []
-    y = []    
+    y = []
     s = []
     c = []
 
     x_nondiscovered = []
-    y_nondiscovered = []  
-    s_nondiscovered = []  
+    y_nondiscovered = []
+    s_nondiscovered = []
     c_nondiscovered = []
 
     for log_dir in dirs:
@@ -136,8 +159,8 @@ def analyzeRegistrantDistribution(dirs):
                             stats[node][topic] = 0
                         if row['type'] != 'RegisterOperation':
                             stats[node][topic] += 1
-                        
-        
+
+
             for node in stats:
                 for topic in stats[node]:
                     topic_index = sorted(topics).index(topic)
@@ -163,35 +186,35 @@ def analyzeRegistrantDistribution(dirs):
     ax1.legend(handles=legend_elements)
     ax1.set_title("Discovered Registrants")
 
-                    
+
 
 def analyzeOperations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
     fig, ax2 = plt.subplots()
     fig, ax3 = plt.subplots()
-    
+
     x = ['RegisterOperation','LookupOperation']
     for log_dir in dirs:
         print(log_dir)
         df = pd.read_csv(log_dir + '/operations.csv')
         print(df)
-    
+
         print(df['type'].value_counts())
         ax1.bar(df['type'].value_counts().index, df['type'].value_counts(), label=log_dir)
         ax1.set_title("Operations by type")
-    
+
         print(df['used_hops'].mean())
-        ax2.bar(log_dir, df['used_hops'].mean()) 
+        ax2.bar(log_dir, df['used_hops'].mean())
         ax2.set_title("Avg recv hop count")
-  
+
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum())
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['discovered'].sum())
         total_malicious = df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum()
         total_discovered = df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['discovered'].sum()
         ax3.bar(["Malicious", "Total_Discovered"], [total_malicious, total_discovered])
         ax3.set_title("Percent Malicious in Lookups")
-        
+
     ax1.legend()
     ax2.legend()
     ax3.legend()
@@ -215,6 +238,7 @@ def analyzeEclipse(dirs):
 print('Will read logs from', sys.argv[1:])
 analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
+analyzeRegistrationsAverage(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
 analyzeRegistrarDistribution(sys.argv[1:])

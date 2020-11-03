@@ -313,9 +313,11 @@ public class Discv5TopicTable { // implements TopicTable {
     public HashMap<Topic,Integer> getRegbyTopic(){
     	//System.out.println("Reg by topic");
         HashMap<Topic,Integer> regByTopic = new HashMap<Topic,Integer>();
-        for(ArrayDeque<TopicRegistration> t: topicTable.values())
+        for(Topic t: topicTable.keySet())
         {
-        	regByTopic.put(t.getFirst().getTopic(), t.size());
+        	ArrayDeque<TopicRegistration> regs = topicTable.get(t);
+      
+        	regByTopic.put(t, regs.size());
         }
         
         return regByTopic;
@@ -324,6 +326,24 @@ public class Discv5TopicTable { // implements TopicTable {
     
     public int getRegbyRegistrar(){
         return allAds.size();
+    }
+    
+    public HashMap<BigInteger,Integer> getRegbyRegistrant(){
+        HashMap<BigInteger,Integer> regByRegistrant = new HashMap<BigInteger,Integer>();
+    	 for(ArrayDeque<TopicRegistration> t: topicTable.values())
+         {
+    		Object[] treg = t.toArray();
+   
+    		for(Object reg : treg)
+    		{
+    			int count=0;
+    			if(regByRegistrant.get(((TopicRegistration)reg).getNode().getId())!=null)count=regByRegistrant.get(((TopicRegistration)reg).getNode().getId());
+    			count++;
+    			regByRegistrant.put(((TopicRegistration)reg).getNode().getId(),count);
+    	    	//System.out.println("Table "+((TopicRegistration)reg).getNode().getId()+" "+count);
+    		}
+         }
+        return regByRegistrant;
 
     }
 }
