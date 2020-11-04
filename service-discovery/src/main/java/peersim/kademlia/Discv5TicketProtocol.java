@@ -734,7 +734,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	private void handleTimeout(Timeout t, int myPid){
 		Operation op = this.operations.get(t.opID);
 		if(op!=null) {	
-			logger.warning("Timeout "+t.getType());
+			//logger.warning("Timeout "+t.getType());
 			BigInteger unavailableNode = t.node;
 			if(op.type == Message.MSG_TOPIC_QUERY) {
 				Message m = new Message();

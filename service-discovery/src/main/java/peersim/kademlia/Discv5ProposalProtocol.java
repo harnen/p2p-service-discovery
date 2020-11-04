@@ -265,7 +265,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
     protected void handleRegisterResponse(Message m, int myPid) {
         Topic t = (Topic) m.body;
 
-        KademliaObserver.reportActiveRegistration(t, this.node.is_evil);
+        KademliaObserver.reportActiveRegistration(t,this.node.is_evil);
     }   
 
 	protected void handleTopicQuery(Message m, int myPid) {
@@ -289,7 +289,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	private void handleTimeout(Timeout t, int myPid){
 		Operation op = this.operations.get(t.opID);
 		if(op!=null) {	
-			logger.warning("Timeout "+t.getType());
+			//logger.warning("Timeout "+t.getType());
 			BigInteger unavailableNode = t.node;
 			if(op.type == Message.MSG_TOPIC_QUERY) {
 				Message m = new Message();

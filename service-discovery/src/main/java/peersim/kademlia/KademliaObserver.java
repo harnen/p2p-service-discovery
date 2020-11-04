@@ -92,6 +92,12 @@ public class KademliaObserver implements Control {
 
     private static FileWriter msgWriter;
     private static FileWriter opWriter; 
+    
+    private static HashMap<Topic,Integer> regByTopic;
+    private static HashMap<BigInteger,Integer> regByRegistrant;
+    private static HashMap<BigInteger,Integer> regByRegistrar;
+
+    private static int avgCounter=0;
 
     /** Prefix to be printed in output */
     private String prefix;
@@ -106,7 +112,10 @@ public class KademliaObserver implements Control {
 			opWriter = new FileWriter("./logs/operations.csv");
 			//opWriter.write("id,type,src,dst,hops,malicious,discovered,discovered_list,topic\n");
             opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,topic\n");
-
+            regByTopic = new HashMap<Topic,Integer>();
+            regByRegistrant = new HashMap<BigInteger,Integer>();
+            regByRegistrar = new HashMap<BigInteger,Integer>();
+          
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -351,6 +360,80 @@ public class KademliaObserver implements Control {
     }
                 
 
+    private void write_registered_topics_average() {
+    	try {
+	        String filename = "./logs/registeredTopics.csv";
+	        File myFile = new File(filename);
+	        FileWriter writer;
+	        if (myFile.exists())myFile.delete();
+	        myFile.createNewFile();
+	        writer = new FileWriter(myFile, true);
+	        writer.write("topic,count\n");
+	        for(Topic t : regByTopic.keySet()) {
+	        	//System.out.println("Topic "+t.getTopic()+" "+regByTopic.get(t)/avgCounter);
+	        	writer.write(t.topic);
+	        	writer.write(",");
+	        	writer.write(String.valueOf(regByTopic.get(t).intValue()/avgCounter));
+	        	writer.write("\n");
+	        }
+	    	writer.close();
+
+    	}catch(IOException e) {
+    		//e.printStackTrace();
+    	}
+
+    }
+    
+    private void write_registered_registrar_average() {
+    	try {
+	        String filename = "./logs/registeredRegistrar.csv";
+	        File myFile = new File(filename);
+	        FileWriter writer;
+	        if (myFile.exists())myFile.delete();
+	        myFile.createNewFile();
+	        writer = new FileWriter(myFile, true);
+	        writer.write("nodeId,count\n");
+
+	        for(BigInteger t : regByRegistrar.keySet()) {
+	        	//System.out.println("Re "+t.getTopic()+" "+regByRegistrar.get(t)/avgCounter);
+	        	writer.write(String.valueOf(t));
+	        	writer.write(",");
+	        	writer.write(String.valueOf(regByRegistrar.get(t).intValue()/avgCounter));
+	        	writer.write("\n");
+	        }
+	    	writer.close();
+
+    	}catch(IOException e) {
+    		e.printStackTrace();
+    	}
+
+    }
+    
+    private void write_registered_registrant_average() {
+    	try {
+	        String filename = "./logs/registeredRegistrant.csv";
+	        File myFile = new File(filename);
+	        FileWriter writer;
+	        if (myFile.exists())myFile.delete();
+	        myFile.createNewFile();
+	        writer = new FileWriter(myFile, true);
+	        writer.write("nodeId,count\n");
+
+	        for(BigInteger t : regByRegistrant.keySet()) {
+	        	//System.out.println("Re "+t.getTopic()+" "+regByRegistrar.get(t)/avgCounter);
+	        	writer.write(String.valueOf(t));
+	        	writer.write(",");
+	        	writer.write(String.valueOf(regByRegistrant.get(t).intValue()/avgCounter));
+	        	writer.write("\n");
+	        }
+	    	writer.close();
+
+    	}catch(IOException e) {
+    		e.printStackTrace();
+    	}
+
+    }
+
 
     private void write_eclipsing_results() {
 
@@ -424,21 +507,86 @@ public class KademliaObserver implements Control {
      * @return boolean always false
      */
     public boolean execute() {
+    	//System.out.println(CommonState.getTime()+" execute");
+    	avgCounter++;
         try {
             FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
             writer.write("host,topic,registrant\n");
+            
+            
             for(int i = 0; i < Network.size(); i++) {
+            	
                 Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
-
+                
+                HashMap<Topic,Integer> topics = new HashMap<Topic,Integer>();
+                
+                if(kadProtocol instanceof Discv5ProposalProtocol) {
+                	topics = ((Discv5ProposalProtocol) kadProtocol).topicTable.getRegbyTopic();
+                } else if(kadProtocol instanceof Discv5TicketProtocol) {
+                	topics = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyTopic();
+                }
+                
+                for(Topic t: topics.keySet()) {
+            		int count = 0;
+            		if(regByTopic.get(t)!=null)count=regByTopic.get(t);
+            		count+=topics.get(t);
+            		regByTopic.put(t, count);
+                }
+                
                 if(kadProtocol instanceof Discv5ProposalProtocol) {
                     String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
                     writer.write(registrations);
+                    
+                    //topic table registrations by registrar
+                    int count=0;
+                    if(regByRegistrar.get(kadProtocol.getNode().getId())!=null) {
+                    	count = regByRegistrar.get(kadProtocol.getNode().getId());
+                    	count+=((Discv5ProposalProtocol) kadProtocol).topicTable.getRegbyRegistrar();
+                    }
+                    regByRegistrar.put(kadProtocol.getNode().getId(), count);
+                    
+                    //topic table registrations by registrant
+                    HashMap<BigInteger,Integer> tmpReg = ((Discv5ProposalProtocol) kadProtocol).topicTable.getRegbyRegistrant();
+                    for(BigInteger id : tmpReg.keySet())
+                    {             
+                    	count=0;
+                    	if(regByRegistrant.get(id)!=null) {
+                    		count = regByRegistrant.get(id);
+                    	}
+                    	count+=tmpReg.get(id);
+                    	regByRegistrant.put(id,count);
+                    }
+                    
                 }
                 if(kadProtocol instanceof Discv5TicketProtocol) {
                     String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
                     writer.write(registrations);
+                    
+                    //topic table registrations by registrar
+                    int count=0;
+                    if(regByRegistrar.get(kadProtocol.getNode().getId())!=null) {
+                    	count = regByRegistrar.get(kadProtocol.getNode().getId());
+                    	count+=((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyRegistrar();
+                    }
+                    regByRegistrar.put(kadProtocol.getNode().getId(), count);
+                    
+                    //topic table registrations by registrant
+                    HashMap<BigInteger,Integer> tmpReg = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyRegistrant();
+                    for(BigInteger id : tmpReg.keySet())
+                    {             
+                    	count=0;
+                    	if(regByRegistrant.get(id)!=null) {
+                    		count = regByRegistrant.get(id);
+                    	}
+                    	count+=tmpReg.get(id);
+                    	regByRegistrant.put(id,count);
+                    }
                 }
+                /*for(Topic t : regByTopic.keySet())
+                {
+                	System.out.println("Topic "+t.getTopic()+" "+regByTopic.get(t)/avgCounter);
+                }*/
 
             }
             writer.close();
@@ -447,6 +595,9 @@ public class KademliaObserver implements Control {
             e.printStackTrace();
         }
 
+        write_registered_registrant_average();
+        write_registered_topics_average();
+        write_registered_registrar_average();
         write_eclipsing_results();
         write_registration_stats();
         write_node_info();
