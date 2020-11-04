@@ -200,7 +200,7 @@ if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
     exit(1)
 
-def analyzeEclipse(dirs):
+def analyzeEclipsedNodesOverTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
 
@@ -212,12 +212,102 @@ def analyzeEclipse(dirs):
 
     ax1.legend()
 
+def analyzeEclipsedNodeDistribution(dirs):
+    
+    fig, ax1 = plt.subplots()
+    ax1.tick_params(bottom=False,
+                labelbottom=False)
+    colors = ['red', 'green', 'blue', 'black']
+    markers = ["o" , "v" , "^" , "<", ">"]
+    topics = set()
+    for log_dir in dirs:
+        x = []
+        y = []    
+        m = []
+        c = []
+        # get only the columns you want from the csv file
+        df1 = pd.read_csv(log_dir + '/node_information.csv', usecols=['nodeID', 'topicID'])
+        node_to_topicID = df1.set_index('nodeID')['topicID'].to_dict()
+        df2 = pd.read_csv(log_dir + '/node_information.csv', usecols=['nodeID', 'is_evil?'])
+        is_evil_node = df2.set_index('nodeID')['is_evil?'].to_dict()
+        
+        uneclipsed_nodes_set = None
+        eclipsed_nodes_set = None
+        evil_nodes_set = None
+        with open(log_dir + '/eclipse_counts.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+
+            for row in reader:
+                if row['time'] != '3500000':
+                    continue
+                
+                eclipsed_nodes = row['eclipsedNodes'].split()
+                eclipsed_nodes_set = set(eclipsed_nodes)
+                uneclipsed_nodes = row['UnEclipsedNodes'].split()
+                uneclipsed_nodes_set = set(uneclipsed_nodes)
+                evil_nodes = row['EvilNodes'].split()
+                evil_nodes_set = set(evil_nodes)
+
+        for topic in node_to_topicID.values():
+            topics.add(topic)
+
+        IDs = []
+        id_to_short = {}
+        for node in is_evil_node.keys():       
+            IDs.append(node)
+        for topic in topics:
+            IDs.append(topic)
+
+        IDs = sorted(IDs)
+        short_num = 0
+        for identifier in IDs:
+            id_to_short[identifier] = short_num
+            short_num += 1
+        
+        x,y = [],[]
+        for topic in topics:
+            x.append(id_to_short[topic])
+            y.append(id_to_short[topic])
+
+        ax1.scatter(x,y, s=100,marker='x',color='black',linewidths=4)
+        
+        x,y = [],[]
+        for node in eclipsed_nodes_set:
+            x.append(id_to_short[node_to_topicID[node]])
+            y.append(id_to_short[node])
+        
+        ax1.scatter(x,y, s=1,marker='o',color='red',linewidths=1)
+        
+        x,y = [],[]
+        for node in uneclipsed_nodes_set:
+            x.append(id_to_short[node_to_topicID[node]])
+            y.append(id_to_short[node])
+        
+        ax1.scatter(x,y, s=1,marker='v',color='green',linewidths=1)
+
+        x,y = [],[]
+        for node in evil_nodes_set:
+            x.append(id_to_short[node_to_topicID[node]])
+            y.append(id_to_short[node])
+        ax1.scatter(x,y, s=1,marker='<',color='blue',linewidths=1)
+
+    ax1.set_yticks([]) 
+    ax1.scatter(x, y, color=c, marker='o')
+    legend_elements = []
+    legend_elements = [Line2D([0], [0], marker='o',  color='red', label='Eclipsed Node'),
+                   Line2D([0], [0], marker='v', color='green', label='Non-Eclipsed Node'),
+                   Line2D([0], [0], marker='<', color='blue', label='Malicious Node'),
+                   Line2D([0], [0], marker='x', color='black', label='Topic ID')]
+    
+    ax1.legend(handles=legend_elements, loc='upper center')
+    
 print('Will read logs from', sys.argv[1:])
 analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
 analyzeRegistrarDistribution(sys.argv[1:])
-analyzeEclipse(sys.argv[1:])
+analyzeEclipsedNodesOverTime(sys.argv[1:])
+analyzeEclipsedNodeDistribution(sys.argv[1:])
 
 plt.show()
