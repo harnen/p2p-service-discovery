@@ -5,6 +5,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 from numpy import genfromtxt
+import numpy as np
 import array
 import sys
 import csv
@@ -34,14 +35,24 @@ def analyzeRegistrations(dirs):
     fig, ax2 = plt.subplots()
     fig, ax3 = plt.subplots()
 
+    i=0
+
     for log_dir in dirs:
         print(log_dir)
         df = pd.read_csv(log_dir + '/3500000_registrations.csv')
         print(df['host'].value_counts())
         df['host'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Registrations by advertisement medium", label=log_dir)
-        ax2.bar(df['topic'].value_counts().index, df['topic'].value_counts(), label=log_dir)
+        width=0.3
+        margin=width*i
+        ax2.bar(np.arange(len(df['topic'].value_counts()))+margin, df['topic'].value_counts(), width=width, label=log_dir)
         ax2.set_title("Global registration count by topic")
         df['registrant'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Registrations by advertiser", label=log_dir)
+        i = i+1
+
+    ticks = df['topic'].value_counts().index
+    ax2.set_xticks(range(len(ticks)))
+    ax2.set_xticklabels(ticks)
+    #ax2.set_xticklabels(df['topic'].value_counts().index)
     ax1.legend()
     ax2.legend()
     ax3.legend()
@@ -236,7 +247,7 @@ def analyzeEclipsedNodesOverTime(dirs):
     ax1.legend()
 
 def analyzeEclipsedNodeDistribution(dirs):
-    
+
     fig, ax1 = plt.subplots()
     ax1.tick_params(bottom=False,
                 labelbottom=False)
@@ -245,7 +256,7 @@ def analyzeEclipsedNodeDistribution(dirs):
     topics = set()
     for log_dir in dirs:
         x = []
-        y = []    
+        y = []
         m = []
         c = []
         # get only the columns you want from the csv file
@@ -253,7 +264,7 @@ def analyzeEclipsedNodeDistribution(dirs):
         node_to_topicID = df1.set_index('nodeID')['topicID'].to_dict()
         df2 = pd.read_csv(log_dir + '/node_information.csv', usecols=['nodeID', 'is_evil?'])
         is_evil_node = df2.set_index('nodeID')['is_evil?'].to_dict()
-        
+
         uneclipsed_nodes_set = None
         eclipsed_nodes_set = None
         evil_nodes_set = None
@@ -263,7 +274,7 @@ def analyzeEclipsedNodeDistribution(dirs):
             for row in reader:
                 if row['time'] != '3500000':
                     continue
-                
+
                 eclipsed_nodes = row['eclipsedNodes'].split()
                 eclipsed_nodes_set = set(eclipsed_nodes)
                 uneclipsed_nodes = row['UnEclipsedNodes'].split()
@@ -276,7 +287,7 @@ def analyzeEclipsedNodeDistribution(dirs):
 
         IDs = []
         id_to_short = {}
-        for node in is_evil_node.keys():       
+        for node in is_evil_node.keys():
             IDs.append(node)
         for topic in topics:
             IDs.append(topic)
@@ -286,26 +297,26 @@ def analyzeEclipsedNodeDistribution(dirs):
         for identifier in IDs:
             id_to_short[identifier] = short_num
             short_num += 1
-        
+
         x,y = [],[]
         for topic in topics:
             x.append(id_to_short[topic])
             y.append(id_to_short[topic])
 
         ax1.scatter(x,y, s=100,marker='x',color='black',linewidths=4)
-        
+
         x,y = [],[]
         for node in eclipsed_nodes_set:
             x.append(id_to_short[node_to_topicID[node]])
             y.append(id_to_short[node])
-        
+
         ax1.scatter(x,y, s=1,marker='o',color='red',linewidths=1)
-        
+
         x,y = [],[]
         for node in uneclipsed_nodes_set:
             x.append(id_to_short[node_to_topicID[node]])
             y.append(id_to_short[node])
-        
+
         ax1.scatter(x,y, s=1,marker='v',color='green',linewidths=1)
 
         x,y = [],[]
@@ -314,24 +325,24 @@ def analyzeEclipsedNodeDistribution(dirs):
             y.append(id_to_short[node])
         ax1.scatter(x,y, s=1,marker='<',color='blue',linewidths=1)
 
-    ax1.set_yticks([]) 
+    ax1.set_yticks([])
     ax1.scatter(x, y, color=c, marker='o')
     legend_elements = []
     legend_elements = [Line2D([0], [0], marker='o',  color='red', label='Eclipsed Node'),
                    Line2D([0], [0], marker='v', color='green', label='Non-Eclipsed Node'),
                    Line2D([0], [0], marker='<', color='blue', label='Malicious Node'),
                    Line2D([0], [0], marker='x', color='black', label='Topic ID')]
-    
+
     ax1.legend(handles=legend_elements, loc='upper center')
-    
+
 print('Will read logs from', sys.argv[1:])
-analyzeMessages(sys.argv[1:])
+#analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
-analyzeRegistrationsAverage(sys.argv[1:])
-analyzeOperations(sys.argv[1:])
-analyzeRegistrantDistribution(sys.argv[1:])
-analyzeRegistrarDistribution(sys.argv[1:])
-analyzeEclipsedNodesOverTime(sys.argv[1:])
-analyzeEclipsedNodeDistribution(sys.argv[1:])
+#analyzeRegistrationsAverage(sys.argv[1:])
+#analyzeOperations(sys.argv[1:])
+#analyzeRegistrantDistribution(sys.argv[1:])
+#analyzeRegistrarDistribution(sys.argv[1:])
+#analyzeEclipsedNodesOverTime(sys.argv[1:])
+#analyzeEclipsedNodeDistribution(sys.argv[1:])
 
 plt.show()
