@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.Collections;
 import java.math.BigInteger;
@@ -306,5 +307,43 @@ public class Discv5TopicTable { // implements TopicTable {
             }
         }
         return ((float) num_evil)/num_registrations;
+    }
+    
+    
+    public HashMap<Topic,Integer> getRegbyTopic(){
+    	//System.out.println("Reg by topic");
+        HashMap<Topic,Integer> regByTopic = new HashMap<Topic,Integer>();
+        for(Topic t: topicTable.keySet())
+        {
+        	ArrayDeque<TopicRegistration> regs = topicTable.get(t);
+      
+        	regByTopic.put(t, regs.size());
+        }
+        
+        return regByTopic;
+
+    }
+    
+    public int getRegbyRegistrar(){
+        return allAds.size();
+    }
+    
+    public HashMap<BigInteger,Integer> getRegbyRegistrant(){
+        HashMap<BigInteger,Integer> regByRegistrant = new HashMap<BigInteger,Integer>();
+    	 for(ArrayDeque<TopicRegistration> t: topicTable.values())
+         {
+    		Object[] treg = t.toArray();
+   
+    		for(Object reg : treg)
+    		{
+    			int count=0;
+    			if(regByRegistrant.get(((TopicRegistration)reg).getNode().getId())!=null)count=regByRegistrant.get(((TopicRegistration)reg).getNode().getId());
+    			count++;
+    			regByRegistrant.put(((TopicRegistration)reg).getNode().getId(),count);
+    	    	//System.out.println("Table "+((TopicRegistration)reg).getNode().getId()+" "+count);
+    		}
+         }
+        return regByRegistrant;
+
     }
 }
