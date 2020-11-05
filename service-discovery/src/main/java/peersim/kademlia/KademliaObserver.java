@@ -143,7 +143,7 @@ public class KademliaObserver implements Control {
     public static void reportOperation(Operation op) {
         try {
             //System.out.println("Report operation "+op.getClass().getSimpleName());
-            String result = "";     
+            String result = "";
             String type = "";
 
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
