@@ -62,23 +62,32 @@ def analyzeRegistrationsAverage(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
     fig, ax2 = plt.subplots()
-#    fig, ax3 = plt.subplots()
+    fig, ax3 = plt.subplots()
 
+    i=0
     for log_dir in dirs:
         print(log_dir)
         data1 = genfromtxt(log_dir+'/registeredRegistrant.csv',delimiter=',',names=['x', 'y'])
-        ax1.plot(sorted(data1['y'],reverse=True))
+        ax1.plot(sorted(data1['y'],reverse=True),label=log_dir)
         data2 = genfromtxt(log_dir+'/registeredRegistrar.csv',delimiter=',',names=['x', 'y'])
-        ax2.plot(sorted(data2['y'],reverse=True))
-#        data3 = genfromtxt(log_dir+'/registeredTopics.csv',delimiter=',',names=['x', 'y'])
-#        ax3.bar(data3['x'],data3['y'],label=log_dir)
+        ax2.plot(sorted(data2['y'],reverse=True),label=log_dir)
+        width=0.3
+        margin=width*i
+        table = pd.read_csv(log_dir + '/registeredTopics.csv')
+        sorted_table = table.sort_values(by='count',ascending=False)
+        ax3.bar(np.arange(len(sorted_table['count'].values))+margin,sorted_table['count'].values,width=width, label=log_dir)
+        i=i+1
 
-#    ax1.xlabel ('Nodes')
-#    ax1.ylabel ('#Registrations')
+    ticks = sorted_table['topic'].values
+    ax3.set_xticks(range(len(ticks)))
+    ax3.set_xticklabels(ticks)
+
     ax1.set_title('Registrations by advertiser (average)')
     ax2.set_title('Registrations by advertiser medium (average)')
+    ax3.set_title('Registrations by topics (average)')
     ax1.legend()
     ax2.legend()
+    ax3.legend()
 
 def analyzeRegistrarDistribution(dirs):
     fig, ax1 = plt.subplots()
@@ -336,13 +345,13 @@ def analyzeEclipsedNodeDistribution(dirs):
     ax1.legend(handles=legend_elements, loc='upper center')
 
 print('Will read logs from', sys.argv[1:])
-#analyzeMessages(sys.argv[1:])
+analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
-#analyzeRegistrationsAverage(sys.argv[1:])
-#analyzeOperations(sys.argv[1:])
-#analyzeRegistrantDistribution(sys.argv[1:])
-#analyzeRegistrarDistribution(sys.argv[1:])
-#analyzeEclipsedNodesOverTime(sys.argv[1:])
-#analyzeEclipsedNodeDistribution(sys.argv[1:])
+analyzeRegistrationsAverage(sys.argv[1:])
+analyzeOperations(sys.argv[1:])
+analyzeRegistrantDistribution(sys.argv[1:])
+analyzeRegistrarDistribution(sys.argv[1:])
+analyzeEclipsedNodesOverTime(sys.argv[1:])
+analyzeEclipsedNodeDistribution(sys.argv[1:])
 
 plt.show()
