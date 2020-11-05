@@ -115,7 +115,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	
 	public void emptyBufferCallback(Node n, Topic t) {
         System.out.println("Emptybuffer:" + n.getKademliaProtocol().getNode().getId());
-		EDSimulator.add(0,generateTopicLookupMessage(t.getTopic()),n, n.getKademliaProtocol().getProtocolID());
+		//EDSimulator.add(0,generateTopicLookupMessage(t.getTopic()),n, n.getKademliaProtocol().getProtocolID());
 
 	}
 	
