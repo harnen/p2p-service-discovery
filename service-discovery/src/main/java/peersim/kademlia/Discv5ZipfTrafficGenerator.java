@@ -168,12 +168,13 @@ public class Discv5ZipfTrafficGenerator implements Control {
 
                 if (prot.getNode().is_evil) {
                     t = prot.getTargetTopic();
-                    topic = t.getTopic();
                 }
                 if (t == null) {
 				    topic = new String("t"+zipf.sample());
     				t = new Topic(topic);
                 }
+                else 
+                    topic = t.getTopic();
 				Integer value = n.get(topic);
 				if(value==null)
 					n.put(topic, 1);
