@@ -153,7 +153,9 @@ We should decide how to implement it.
 
 ### Simulation results
 
-TBC
+[Ticket vs No Ticket protocol comparison](doc/report/report.md)
+
+[Security report with sybil attacks](doc/security_report/report.md)
 
 ## Resources 
 
