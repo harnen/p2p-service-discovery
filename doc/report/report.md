@@ -21,7 +21,7 @@ The same applies for the sent messages
 
 
 We continue by analyzing the number of registrations present on regisrars. 
-![a](./img/Figure_4.png)
+![a](./img/Figure_8.png)
 
 The noticket proposal results in less equal load on registrars. Nodes closer to hashes of popular topic receive more traffic than the rest. 
 This effect is mitigated in the ticket protocol as the registration are performed at uniformly distributed nodes. However, the ticket protocol place the advertisements on a higher number of registrars. 
