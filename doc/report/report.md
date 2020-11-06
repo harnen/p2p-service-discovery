@@ -6,7 +6,8 @@ The report consist of a comparison between simulations using the following confi
 * `./config/discv5noticket.cfg` - `./logs/noticket` on the graphs
 
 The parameters used in the simulation are the following:
-* 1000 nodes
+* Network size: 1000 nodes.
+* Simulation time: 1 hour.
 * No turbulence/churn.
 * Bucket size: 17 (for routing, ticket and search table).
 * Topic table: 100 per topic limit and 500 total limit.
