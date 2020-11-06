@@ -68,8 +68,8 @@ Fig.6. In the above plots, we see the distribution of registrars for both protoc
 Fig.7. In the above plots, we see the distribution of registrants for both protocols in the presence of 10% malicious nodes. On the left is the noticket protocol, and on the right is the ticket protocol. 
 
 <p float="left">
-  <img src="./img/proposal/nonuniform/node_type_dist.png" width="900" />
-  <img src="./img/ticket/nonuniform/node_type_dist.png" width="900" /> 
+  <img src="./img/proposal/nonuniform/node_type_dist.png" width="1200" />
+  <img src="./img/ticket/nonuniform/node_type_dist.png" width="1200" /> 
 </p>
 
 Fig.8. In the above plots, we see the distribution of nodes types (eclipsed/non-eclipsed/malicious) for both protocols in the presence of 20% malicious nodes. On the top is the noticket protocol, and the bottom one is the ticket protocol. 
