@@ -42,8 +42,10 @@ For the ticket protocol, we also observe differences in the number of placed ads
 
 Finally, we observer the registrants for each topic. The x-axis represents the ID hash space. 
 ![a](./img/Figure_13.png)
+
 Both protocol expierience similar number of registrants uniformly distributed for each topic. This is expected, as it's a part of the random registrant selection process. 
 
 The situation changes when observing the registrars for each topic:
 ![a](./img/Figure_14.png)
+
 The ticket protocol places advertisements on registrars uniformly distributed over the hash space. We do not observe differences between various topics. In contrast, the noticket protocol places advertisements uniquely close to the hash of each topic. 
