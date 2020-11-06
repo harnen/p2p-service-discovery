@@ -14,7 +14,8 @@ Both networks consists of 1000 nodes and no turbulance/churn.
 
 The graph above shows the number of messages received by nodes in the network. 
 The ticket protocol sends advertisement and lookups to a higher number of nodes and expieriences high number of received messages. We're currently investigating why there's a significant disproportion in the number of received message between nodes. 
-In contract, the noticket protocol sends advertisement and lookups to a small portion of the nodes (close to the topic hash) and produces lower overhead.
+
+In contrast, the noticket protocol sends advertisement and lookups to a small portion of the nodes (close to the topic hash) and produces lower overhead.
 
 The same applies for the sent messages 
 
