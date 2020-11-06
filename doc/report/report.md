@@ -26,7 +26,7 @@ In contrast, the noticket protocol sends advertisement and lookups to a small po
 The same applies for the sent messages 
 
 
-We continue by analyzing the number of registrations present on regisrars. 
+We continue by analyzing the number of registrations present on registrars. 
 
 ![a](./img/Figure_8.png)
 
@@ -38,7 +38,7 @@ This effect is mitigated in the ticket protocol as the registration are performe
 We now have a look at the number of successful registrations for each topic. 
 ![a](./img/Figure_9.png)
 
-The number of registrations follows the popularity of each topic (more popular topic having more registrations in the network). We don't observe major differences between the protocols. 
+The number of registrations follows the popularity of each topic (more popular topic having more registrations in the network). We don nott observe major differences between the protocols. 
 
 
 We analyze the number of advertisements placed by each registrants:
