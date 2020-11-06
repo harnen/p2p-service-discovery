@@ -5,12 +5,18 @@ The report consist of a comparison between simulations using the following confi
 * `./config/discv5ticket.cfg` - `./logs/ticket` on the graphs
 * `./config/discv5noticket.cfg` - `./logs/noticket` on the graphs
 
-Both networks consists of 1000 nodes and no turbulance/churn. 
+The parameters used in the simulation are the following:
+* 1000 nodes
+* No turbulence/churn.
+* Bucket size: 17 (for routing, ticket and search table).
+* Topic table: 100 per topic limit and 500 total limit.
+* Ticket expiration time: 15min.
 
-
-
-![a](./img/Figure_1.png)
-![a](./img/Figure_3.png)
+<p float="left">
+  <img src="./img/Figure_1.png" width="450" />
+  <img src="./img/Figure_3.png" width="450" /> 
+</p>
+<!-- ![a](./img/Figure_1.png) | ![a](./img/Figure_3.png) -->
 
 The graph above shows the number of messages received by nodes in the network. 
 The ticket protocol sends advertisement and lookups to a higher number of nodes and expieriences high number of received messages. We're currently investigating why there's a significant disproportion in the number of received message between nodes. 
@@ -21,7 +27,9 @@ The same applies for the sent messages
 
 
 We continue by analyzing the number of registrations present on regisrars. 
+
 ![a](./img/Figure_8.png)
+
 
 The noticket proposal results in less equal load on registrars. Nodes closer to hashes of popular topic receive more traffic than the rest. 
 This effect is mitigated in the ticket protocol as the registration are performed at uniformly distributed nodes. However, the ticket protocol place the advertisements on a higher number of registrars. 
