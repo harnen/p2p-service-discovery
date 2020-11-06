@@ -132,13 +132,13 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	requested=false;
     	if(lookupResultBuffer.size()>0)tryNewConnections();
     	else {
-    		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size()+" Sending lookup");
-    		if(client!=null&&n!=null&&t!=null){
+    		System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size()+" Sending lookup");
+    		/*if(client!=null&&n!=null&&t!=null){
            		if(!requested) {
            			client.emptyBufferCallback(n,t);
            			requested=true;
            		}
-           	}
+           	}*/
     	}
     }
     		
@@ -148,7 +148,11 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }
     
     public boolean addIncomingConnection(KademliaNode node) {
-     	if(incomingConnections.size()<maxIncomingConnections&&!incomingConnections.contains(node)) {
+    	/*System.out.println(CommonState.getTime()+" "+incomingConnections.size()+" "+maxIncomingConnections);
+    	for(KademliaNode n: incomingConnections)
+    		System.out.println(CommonState.getTime()+" "+n.getId());*/
+    	//if(incomingConnections.size()==maxIncomingConnections)System.out.println(CommonState.getTime()+" node full");
+    	if(incomingConnections.size()<maxIncomingConnections&&!incomingConnections.contains(node)) {
     		incomingConnections.add(node);
     		return true;
     	} else
@@ -218,7 +222,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
 			lookupResultBuffer.remove(n);
     	}
        	if(lookupResultBuffer.size()==0&&client!=null&&n!=null&&t!=null){
-       		System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size());
+       		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size());
        		if(!requested) {
        			client.emptyBufferCallback(n,t);
        			requested=true;
