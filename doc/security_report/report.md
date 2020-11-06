@@ -72,3 +72,6 @@ Fig.7. In the above plots, we see the distribution of registrants for both proto
 
 Fig.8. In the above plots, we see the distribution of nodes types (aclipsed/non-eclipsed/malicious) for both protocols in the presence of 20% malicious nodes. On the left is the noticket protocol, and on the right is the ticket protocol. 
 
+![a](./img/eclipse_percentage.png.png)
+
+Fig.9. In the above plot, we see the number of eclipsed nodes for difference percentages of malicious nodes (10%-40%) for a total of 1000 nodes.
