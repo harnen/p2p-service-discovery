@@ -13,7 +13,7 @@ Both networks consists of 1000 nodes and no turbulance/churn.
 ![a](./img/Figure_3.png)
 
 The graph above shows the number of messages received by nodes in the network. 
-The ticket protocol sends advertisement and lookups to a higher number of nodes and expieriences high number of received messages.
+The ticket protocol sends advertisement and lookups to a higher number of nodes and expieriences high number of received messages. We're currently investigating why there's a significant disproportion in the number of received message between nodes. 
 In contract, the noticket protocol sends advertisement and lookups to a small portion of the nodes (close to the topic hash) and produces lower overhead.
 
 The same applies for the sent messages 
@@ -35,7 +35,7 @@ We analyze the number of advertisements placed by each registrants:
 ![a](./img/Figure_5.png)
 For the noticket protocol the number of placed ads differs slightly. It depends on the distance of vthe registrant's id from the topic id. The furher away the registrant is, the more nodes it needs to traverse thus placing more advertisements. 
 
-For the noticket - I have no idea why it's the case for now. 
+For the ticket protocol, we also observe differences in the number of placed ads. This is a consequence of the initial connections present in the DHT. Nodes having some buckets empty need first to fill them up by sending FIND messages. it delays the registration process and results in a lwoer number of places registrations. 
 
 Finally, we observer the registrants for each topic. The x-axis represents the ID hash space. 
 ![a](./img/Figure_13.png)
