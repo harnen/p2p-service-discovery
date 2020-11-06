@@ -24,28 +24,30 @@ The default behavior of attackers are as follows:
   <img src="./img/ticket/nonuniform/registration_origin.png" width="450" /> 
 </p>
 
-Fig.1. In the above graphs, we see the number of registrations by good and malicious nodes when the IDs of the malicious nodes are chosen in a non-uniform manner. On the left is the noticket protocol, and on the right is the ticket protocol.
+Fig.1. In the above graphs, we see the number of registrations by good and malicious nodes when the IDs of the malicious nodes are chosen in a non-uniform manner. On the left is the noticket protocol, and on the right is the ticket protocol. In both protocols the ratio of good to malicious registrations is roughly the same which is important for a fair comparison.
 
 <p float="left">
   <img src="./img/proposal/uniform/registration_origin.png" width="450" />
   <img src="./img/ticket/uniform/registration_origin.png" width="450" /> 
 </p>
 
-Fig.2. In the above graphs, we see the number of registrations by good and malicious nodes when the IDs of the malicious nodes are chosen in a uniform manner (similar to good nodes). On the left is the noticket protocol, and on the right is the ticket protocol.
+Fig.2. In the above graphs, we see the number of registrations by good and malicious nodes when the IDs of the malicious nodes are chosen in a uniform manner (similar to good nodes). On the left is the noticket protocol, and on the right is the ticket protocol. 
+
+From Figures 1 and 2, we see that good (non-malicious) nodes are more successful in registering their ads on other good nodes when the ID distribution of malicious nodes in uniform. This is more apparent in the noticket protocol. This is expected because in the ticket protocol, the registrations are made uniformly throughout the hash space whereas in the noticket protocol many of the registrations are made at nodes close to the topic hash (especially when there is contention for topic storage resources).
 
 <p float="left">
   <img src="./img/proposal/nonuniform/lookup_distribution.png" width="450" />
   <img src="./img/ticket/nonuniform/lookup_distribution.png" width="450" /> 
 </p>
 
-Fig.3. In the above graph, we see the number of malicious entries in the results to topic queries when the IDs of the malicious nodes are chosen in a non-uniform manner. On the left is the noticket protocol, and on the right is the ticket protocol.
+Fig.3. In the above graph, we see the number of malicious entries in the results to topic queries when the IDs of the malicious nodes are chosen in a non-uniform manner. On the left is the noticket protocol, and on the right is the ticket protocol. We observe that the percent of malicious ads (registrations of malicious nodes) returned in the topic queries is higher for the noticket protocol. This is also expected since the results are mostly obtained from nodes close to the topic hash in this protocol when malicious nodes are located close to the topic ID in the hash space.
 
 <p float="left">
   <img src="./img/proposal/uniform/lookup_distribution.png" width="450" />
   <img src="./img/ticket/uniform/lookup_distribution.png" width="450" /> 
 </p>
 
-Fig.4. In the above graph, we see the number of malicious entries in the results to topic queries when the IDs of the malicious nodes are chosen in a non-uniform manner. On the left is the noticket protocol, and on the right is the ticket protocol.
+Fig.4. In the above graph, we see the number of malicious entries in the results to topic queries when the IDs of the malicious nodes are chosen in a non-uniform manner. On the left is the noticket protocol, and on the right is the ticket protocol. When malicious node IDs are generated uniformly, both protocols obtain similar percentage of malicious ads in their topic query results.
 
 ![a](./img/eclipsed_node_over_time.png)
 
@@ -66,8 +68,8 @@ Fig.6. In the above plots, we see the distribution of registrars for both protoc
 Fig.7. In the above plots, we see the distribution of registrants for both protocols in the presence of 10% malicious nodes. On the left is the noticket protocol, and on the right is the ticket protocol. 
 
 <p float="left">
-  <img src="./img/proposal/nonuniform/node_type_dist.png" width="450" />
-  <img src="./img/ticket/nonuniform/node_type_dist.png" width="450" /> 
+  <img src="./img/proposal/nonuniform/node_type_dist.png" width="600" />
+  <img src="./img/ticket/nonuniform/node_type_dist.png" width="600" /> 
 </p>
 
 Fig.8. In the above plots, we see the distribution of nodes types (aclipsed/non-eclipsed/malicious) for both protocols in the presence of 20% malicious nodes. On the left is the noticket protocol, and on the right is the ticket protocol. 
