@@ -9,8 +9,8 @@ Both networks consists of 1000 nodes and no turbulance/churn.
 
 
 
-![a](./report/img/Figure_1.png)
-![a](./report/img/Figure_3.png)
+![a](./img/Figure_1.png)
+![a](./img/Figure_3.png)
 
 The graph above shows the number of messages received by nodes in the network. 
 The ticket protocol sends advertisement and lookups to a higher number of nodes and expieriences high number of received messages.
