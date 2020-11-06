@@ -29,6 +29,56 @@ def analyzeMessages(dirs):
     ax2.legend()
     ax3.legend()
 
+def analyzeActiveRegistrations(dirs):
+    """ Plot a bar chart showing the number of registrations by malicious and good nodes.
+    """
+
+    topics = []
+    evil_registration_count_per_topic = {}
+    normal_registration_count_per_topic = {}
+    for log_dir in dirs:
+        evil_registration_count_per_topic = {}
+        normal_registration_count_per_topic = {}
+        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            ncol = len(next(reader)) # Read first line and count columns
+            numOfTopics = int((ncol-1)/2)
+            print('Number of topics: ', numOfTopics)
+            topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
+            for topic in topics:
+                normal_registration_count_per_topic[topic] = 0
+                evil_registration_count_per_topic[topic] = 0
+        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            nrows = 0
+            for row in reader:
+                for topic in topics:
+                    normal = int(row[topic + '-normal'])
+                    evil = int(row[topic + '-evil'])
+                    normal_registration_count_per_topic[topic] += normal
+                    evil_registration_count_per_topic[topic] += evil
+                nrows += 1
+        normal_counts = [normal_registration_count_per_topic[topic]/nrows for topic in topics]
+        evil_counts = [evil_registration_count_per_topic[topic]/nrows for topic in topics]
+        width = 0.35  # the width of the bars
+
+        fig, ax = plt.subplots()
+        x_values = [x-width/2 for x in range(1, numOfTopics+1)]
+        rects1 = ax.bar(x_values, normal_counts, width,
+                label='Good registrations')
+        x_values = [x+width/2 for x in range(1, numOfTopics+1)]
+        rects2 = ax.bar(x_values, evil_counts, width,
+                label='Malicious registrations')
+
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Number of registrations')
+        ax.set_title('Active Registrations by good and malicious nodes')
+        ax.set_xticks(x_values)
+        ax.set_xticklabels(topics)
+        ax.legend()
+
+        plt.savefig('./plots/registration_origin.png')
+
 def analyzeRegistrations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
@@ -239,10 +289,6 @@ def analyzeOperations(dirs):
     ax2.legend()
     ax3.legend()
 
-if (len(sys.argv) < 2):
-    print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
-    exit(1)
-
 def analyzeEclipsedNodesOverTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
@@ -254,9 +300,10 @@ def analyzeEclipsedNodesOverTime(dirs):
         ax1.plot(df['time'], df['numberOfNodes'])
 
     ax1.legend()
+    plt.savefig('./plots/eclipsed_node_over_time.png')
 
 def analyzeEclipsedNodeDistribution(dirs):
-
+    
     fig, ax1 = plt.subplots()
     ax1.tick_params(bottom=False,
                 labelbottom=False)
@@ -265,7 +312,7 @@ def analyzeEclipsedNodeDistribution(dirs):
     topics = set()
     for log_dir in dirs:
         x = []
-        y = []
+        y = []    
         m = []
         c = []
         # get only the columns you want from the csv file
@@ -273,7 +320,7 @@ def analyzeEclipsedNodeDistribution(dirs):
         node_to_topicID = df1.set_index('nodeID')['topicID'].to_dict()
         df2 = pd.read_csv(log_dir + '/node_information.csv', usecols=['nodeID', 'is_evil?'])
         is_evil_node = df2.set_index('nodeID')['is_evil?'].to_dict()
-
+        
         uneclipsed_nodes_set = None
         eclipsed_nodes_set = None
         evil_nodes_set = None
@@ -283,7 +330,7 @@ def analyzeEclipsedNodeDistribution(dirs):
             for row in reader:
                 if row['time'] != '3500000':
                     continue
-
+                
                 eclipsed_nodes = row['eclipsedNodes'].split()
                 eclipsed_nodes_set = set(eclipsed_nodes)
                 uneclipsed_nodes = row['UnEclipsedNodes'].split()
@@ -294,9 +341,10 @@ def analyzeEclipsedNodeDistribution(dirs):
         for topic in node_to_topicID.values():
             topics.add(topic)
 
+
         IDs = []
         id_to_short = {}
-        for node in is_evil_node.keys():
+        for node in is_evil_node.keys():       
             IDs.append(node)
         for topic in topics:
             IDs.append(topic)
@@ -306,43 +354,59 @@ def analyzeEclipsedNodeDistribution(dirs):
         for identifier in IDs:
             id_to_short[identifier] = short_num
             short_num += 1
-
+        
         x,y = [],[]
         for topic in topics:
-            x.append(id_to_short[topic])
             y.append(id_to_short[topic])
+            x.append(id_to_short[topic])
 
-        ax1.scatter(x,y, s=100,marker='x',color='black',linewidths=4)
-
+        ax1.scatter(x,y, s=100,marker='|',color='black',linewidths=1)
+        
         x,y = [],[]
         for node in eclipsed_nodes_set:
-            x.append(id_to_short[node_to_topicID[node]])
-            y.append(id_to_short[node])
-
-        ax1.scatter(x,y, s=1,marker='o',color='red',linewidths=1)
-
+            y.append(id_to_short[node_to_topicID[node]])
+            x.append(id_to_short[node])
+        
+        ax1.scatter(x,y, s=10,marker='|',color='red',linewidths=1)
+        
         x,y = [],[]
         for node in uneclipsed_nodes_set:
-            x.append(id_to_short[node_to_topicID[node]])
-            y.append(id_to_short[node])
-
-        ax1.scatter(x,y, s=1,marker='v',color='green',linewidths=1)
+            y.append(id_to_short[node_to_topicID[node]])
+            x.append(id_to_short[node])
+        
+        ax1.scatter(x,y, s=10,marker='|',color='green',linewidths=1)
 
         x,y = [],[]
         for node in evil_nodes_set:
-            x.append(id_to_short[node_to_topicID[node]])
-            y.append(id_to_short[node])
-        ax1.scatter(x,y, s=1,marker='<',color='blue',linewidths=1)
+            y.append(id_to_short[node_to_topicID[node]])
+            x.append(id_to_short[node])
+        ax1.scatter(x,y, s=10,marker='|',color='orange',linewidths=1)
 
-    ax1.set_yticks([])
+    #ax1.set_yticks([]) 
+    topics_list = [id_to_short[x] for x in topics]
+    tick_labels = ['topic'+str(x) for x in range(1, len(topics_list)+1)]
+    print('Tick labels: ', tick_labels)
+    print('topics_list: ', topics_list)
+    ax1.set_yticks(sorted(topics_list))
+    ax1.set_yticklabels(tick_labels)
     ax1.scatter(x, y, color=c, marker='o')
     legend_elements = []
-    legend_elements = [Line2D([0], [0], marker='o',  color='red', label='Eclipsed Node'),
-                   Line2D([0], [0], marker='v', color='green', label='Non-Eclipsed Node'),
-                   Line2D([0], [0], marker='<', color='blue', label='Malicious Node'),
-                   Line2D([0], [0], marker='x', color='black', label='Topic ID')]
+    legend_elements = [Line2D([0], [0], marker='|',  color='red', label='Eclipsed Node'),
+                    Line2D([0], [0], marker='|', color='green', label='Non-Eclipsed Node'),
+                    Line2D([0], [0], marker='|', color='orange', label='Malicious Node'),
+                    Line2D([0], [0], marker='|', color='black', label='Topic ID')]
+    
+    ax1.legend(handles=legend_elements, bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
+                mode="expand", borderaxespad=0, ncol=4)
+    #ax1.legend(handles=legend_elements, loc='upper center')
+    ax1.set_ylabel('Topics')
+    ax1.set_xlabel('Node status')
 
-    ax1.legend(handles=legend_elements, loc='upper center')
+    plt.savefig('./plots/node_type_dist.png')
+    
+if (len(sys.argv) < 2):
+    print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
+    exit(1)
 
 print('Will read logs from', sys.argv[1:])
 analyzeMessages(sys.argv[1:])
@@ -353,5 +417,6 @@ analyzeRegistrantDistribution(sys.argv[1:])
 analyzeRegistrarDistribution(sys.argv[1:])
 analyzeEclipsedNodesOverTime(sys.argv[1:])
 analyzeEclipsedNodeDistribution(sys.argv[1:])
+analyzeActiveRegistrations(sys.argv[1:])
 
 plt.show()

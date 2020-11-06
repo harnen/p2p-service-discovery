@@ -130,8 +130,16 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	//lookupResultBuffer = result;
     	lookupResultBuffer.addAll(result);
     	requested=false;
-    	tryNewConnections();
-    			
+    	if(lookupResultBuffer.size()>0)tryNewConnections();
+    	else {
+    		System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size()+" Sending lookup");
+    		/*if(client!=null&&n!=null&&t!=null){
+           		if(!requested) {
+           			client.emptyBufferCallback(n,t);
+           			requested=true;
+           		}
+           	}*/
+    	}
     }
     		
     public List<KademliaNode> getLookupResult() {
@@ -140,7 +148,11 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }
     
     public boolean addIncomingConnection(KademliaNode node) {
-    	if(incomingConnections.size()<maxIncomingConnections) {
+    	/*System.out.println(CommonState.getTime()+" "+incomingConnections.size()+" "+maxIncomingConnections);
+    	for(KademliaNode n: incomingConnections)
+    		System.out.println(CommonState.getTime()+" "+n.getId());*/
+    	//if(incomingConnections.size()==maxIncomingConnections)System.out.println(CommonState.getTime()+" node full");
+    	if(incomingConnections.size()<maxIncomingConnections&&!incomingConnections.contains(node)) {
     		incomingConnections.add(node);
     		return true;
     	} else
@@ -148,7 +160,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }		
     	
     public boolean addOutgoingConnection(KademliaNode node) {
-    	if(outgoingConnections.size()<maxOutgoingConnections) {
+    	if(outgoingConnections.size()<maxOutgoingConnections&&!outgoingConnections.contains(node)) {
     		outgoingConnections.add(node);
     		return true;
     	} else
@@ -188,23 +200,31 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }
     
     private void tryNewConnections() {
+    	//System.out.println(CommonState.getTime()+" trying connections "+maxOutgoingConnections);
        	while(outgoingConnections.size()<maxOutgoingConnections&&lookupResultBuffer.size()>0) {
-    		boolean success=false;
+    		/*boolean success=false;
     		while(!success&&lookupResultBuffer.size()>0){
-    	    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start connection "+lookupResultBuffer.size());
+    	    	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start connection "+lookupResultBuffer.size());
     			int n = CommonState.r.nextInt(lookupResultBuffer.size());
     			success = startConnection(lookupResultBuffer.get(n));
     			
     			if(success)addOutgoingConnection(lookupResultBuffer.get(n));
     			lookupResultBuffer.remove(n);
-    	    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start2 connection "+lookupResultBuffer.size());
+    	    	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start2 connection "+lookupResultBuffer.size());
 
-    		}
+    		}*/
+
+       		int n = CommonState.r.nextInt(lookupResultBuffer.size());
+       		boolean success = startConnection(lookupResultBuffer.get(n));
+	    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" start connection "+lookupResultBuffer.get(n).getId()+" "+lookupResultBuffer.size()+" "+success);
+
+			if(success)addOutgoingConnection(lookupResultBuffer.get(n));
+			lookupResultBuffer.remove(n);
     	}
-       	if(lookupResultBuffer.size()==0&&client!=null&&n!=null){
+       	if(lookupResultBuffer.size()==0&&client!=null&&n!=null&&t!=null){
        		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size());
        		if(!requested) {
-       			if(client!=null&&n!=null&&t!=null)client.emptyBufferCallback(n,t);
+       			client.emptyBufferCallback(n,t);
        			requested=true;
        		}
        	}
@@ -212,6 +232,6 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     private boolean startConnection(KademliaNode node) {
     	Node n = Util.nodeIdtoNode(node.getId());
-    	return(n.isUp()&&(n.getKademliaProtocol().getNode().addIncomingConnection(node)));
+    	return(n.isUp()&&(n.getKademliaProtocol().getNode().addIncomingConnection(this)));
     }
 }
