@@ -9,8 +9,8 @@ Both networks consists of 1000 nodes and no turbulance/churn.
 
 
 
-![](./report/img/Figure_1.png)
-![](./report/img/Figure_3.png)
+![a](./report/img/Figure_1.png)
+![a](./report/img/Figure_3.png)
 
 The graph above shows the number of messages received by nodes in the network. 
 The ticket protocol sends advertisement and lookups to a higher number of nodes and expieriences high number of received messages.
@@ -20,27 +20,27 @@ The same applies for the sent messages
 
 
 We continue by analyzing the number of registrations present on regisrars. 
-![](./report/img/Figure_4.png)
+![a](./report/img/Figure_4.png)
 
 The noticket proposal results in less equal load on registrars. Nodes closer to hashes of popular topic receive more traffic than the rest. 
 This effect is mitigated in the ticket protocol as the registration are performed at uniformly distributed nodes. However, the ticket protocol place the advertisements on a higher number of registrars. 
 
 
 We now have a look at the number of successful registrations for each topic. 
-![](./report/img/Figure_9.png)
+![a](./report/img/Figure_9.png)
 The number of registrations follows the popularity of each topic (more popular topic having more registrations in the network). We don't observe major differences between the protocols. 
 
 
 We analyze the number of advertisements placed by each registrants:
-![](./report/img/Figure_5.png)
+![a](./report/img/Figure_5.png)
 For the noticket protocol the number of placed ads differs slightly. It depends on the distance of vthe registrant's id from the topic id. The furher away the registrant is, the more nodes it needs to traverse thus placing more advertisements. 
 
 For the noticket - I have no idea why it's the case for now. 
 
 Finally, we observer the registrants for each topic. The x-axis represents the ID hash space. 
-![](./report/img/Figure_13.png)
+![a](./report/img/Figure_13.png)
 Both protocol expierience similar number of registrants uniformly distributed for each topic. This is expected, as it's a part of the random registrant selection process. 
 
 The situation changes when observing the registrars for each topic:
-![](./report/img/Figure_14.png)
+![a](./report/img/Figure_14.png)
 The ticket protocol places advertisements on registrars uniformly distributed over the hash space. We do not observe differences between various topics. In contrast, the noticket protocol places advertisements uniquely close to the hash of each topic. 
