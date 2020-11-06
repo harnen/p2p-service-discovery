@@ -29,12 +29,14 @@ This effect is mitigated in the ticket protocol as the registration are performe
 
 We now have a look at the number of successful registrations for each topic. 
 ![a](./img/Figure_9.png)
+
 The number of registrations follows the popularity of each topic (more popular topic having more registrations in the network). We don't observe major differences between the protocols. 
 
 
 We analyze the number of advertisements placed by each registrants:
-![a](./img/Figure_5.png)
-For the noticket protocol the number of placed ads differs slightly. It depends on the distance of vthe registrant's id from the topic id. The furher away the registrant is, the more nodes it needs to traverse thus placing more advertisements. 
+![a](./img/Figure_7.png)
+
+For the noticket protocol the number of placed ads differs slightly. It depends on the distance of the registrant's id from the topic id. The furher away the registrant is, the more nodes it needs to traverse thus placing more advertisements. 
 
 For the ticket protocol, we also observe differences in the number of placed ads. This is a consequence of the initial connections present in the DHT. Nodes having some buckets empty need first to fill them up by sending FIND messages. it delays the registration process and results in a lwoer number of places registrations. 
 
