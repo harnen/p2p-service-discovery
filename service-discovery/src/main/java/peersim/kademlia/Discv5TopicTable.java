@@ -277,8 +277,14 @@ public class Discv5TopicTable { // implements TopicTable {
             }
             return new TopicRegistration[0];
         }
-
-        return (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);
+      
+        List<TopicRegistration> result = new ArrayList<>();
+        
+        int i=0;
+        for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<16;i++)
+        	result.add(iter.next());
+        
+        return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
     }
     //TODO
     public String dumpRegistrations() {

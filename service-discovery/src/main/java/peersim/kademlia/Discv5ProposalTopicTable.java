@@ -84,7 +84,11 @@ public class Discv5ProposalTopicTable implements TopicTable {
     	Topic t1 = new Topic(t);
     	t1.hostID = this.hostID;
         if(table.containsKey(t1)){
-        	List<TopicRegistration> list = table.get(t1);
+        	List<TopicRegistration> list;
+        	if(table.get(t1).size()>=16)
+        		list = table.get(t1).subList(0, 16);
+        	else 
+        		list = table.get(t1);
             return (TopicRegistration[]) list.toArray(new TopicRegistration[list.size()]);
         }
         
