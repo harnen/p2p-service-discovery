@@ -72,6 +72,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 
 		for(TopicRegistration r: registrations) {
 			lop.addDiscovered(r.getNode());
+			KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
 		}
 		
 		lop.increaseReturned(m.src.getId());
@@ -266,6 +267,9 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
         Topic t = (Topic) m.body;
 
         KademliaObserver.reportActiveRegistration(t,this.node.is_evil);
+        
+        KademliaObserver.addAcceptedRegistration(t, this.node.getId(),m.src.getId());
+
     }   
 
 	protected void handleTopicQuery(Message m, int myPid) {

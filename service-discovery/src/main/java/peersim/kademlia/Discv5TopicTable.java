@@ -294,7 +294,8 @@ public class Discv5TopicTable { // implements TopicTable {
     		for(TopicRegistration reg: regQ) {
     			result += this.hostID + ",";
     			result += reg.getTopic().getTopic() + ",";
-    			result += reg.getNode().getId()+ "\n";
+    			result += reg.getNode().getId()+ ",";
+    			result += reg.getTimestamp() +"\n";
     		}	
     	}
         return result;

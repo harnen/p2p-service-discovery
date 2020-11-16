@@ -38,6 +38,7 @@ public class Topic implements Comparable<Topic> {
             e.printStackTrace();
         }
     }
+    
     public Topic(BigInteger hostID, String topic) {
         this.hostID = hostID;
         this.topic = topic;

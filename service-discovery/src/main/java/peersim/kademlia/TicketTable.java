@@ -42,8 +42,6 @@ public class TicketTable extends RoutingTable {
 		
 		logger = Logger.getLogger(protocol.getNode().getId().toString());
 		
-
-
 		// TODO Auto-generated constructor stub
 	}
 	

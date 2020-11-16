@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Set;
 import java.math.BigInteger;
 
+import com.google.common.collect.HashBasedTable; 
+import com.google.common.collect.Table; 
+
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
@@ -77,7 +80,9 @@ public class KademliaObserver implements Control {
     public static IncrementalStats register_ok = new IncrementalStats();
     
     
-    public static HashMap<String, Set<BigInteger>> registeredTopics = new HashMap<String, Set<BigInteger>>();
+    //public static HashMap<String, Set<BigInteger>> registeredTopics = new HashMap<String, Set<BigInteger>>();
+    
+    public static HashMap<String, HashMap<BigInteger,RegistrationLog>> registeredTopics = new HashMap<String, HashMap<BigInteger,RegistrationLog>>();
     
     public static TreeMap<String, Integer> activeRegistrations = new TreeMap<String, Integer>();
 
@@ -97,6 +102,7 @@ public class KademliaObserver implements Control {
     private static HashMap<BigInteger,Integer> regByRegistrant;
     private static HashMap<BigInteger,Integer> regByRegistrar;
 
+
     private static int avgCounter=0;
 
     /** Prefix to be printed in output */
@@ -115,31 +121,59 @@ public class KademliaObserver implements Control {
             regByTopic = new HashMap<Topic,Integer>();
             regByRegistrant = new HashMap<BigInteger,Integer>();
             regByRegistrar = new HashMap<BigInteger,Integer>();
-          
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public static void addTopicRegistration(Topic t, BigInteger registrant) {
+    	
          String topic = t.getTopic();
          if(!registeredTopics.containsKey(topic)){
                 //System.out.println("addTopicRegistration "+topic);
 
-                HashSet<BigInteger> set = new HashSet<BigInteger>();
-                set.add(registrant);
+                HashMap<BigInteger,RegistrationLog> set = new HashMap<BigInteger,RegistrationLog>();
+                RegistrationLog reg = new RegistrationLog(registrant,CommonState.getTime());
+                set.put(registrant,reg);
                 registeredTopics.put(topic, set);
          }else{
-                registeredTopics.get(topic).add(registrant);
+        	 	HashMap<BigInteger,RegistrationLog> set = registeredTopics.get(topic);
+             	RegistrationLog reg = new RegistrationLog(registrant,CommonState.getTime());
+             	set.put(registrant, reg);
+                registeredTopics.put(topic,set);
                 //System.out.println("addTopicRegistration "+topic+" "+registeredTopics.get(topic).size());
 
          }
+    	
 
         if(!nodeInfo.containsKey(registrant)) 
         {
             nodeInfo.put(registrant, t.getTopicID());
         }
     }
+    
+    public static void addAcceptedRegistration(Topic t, BigInteger registrant,  BigInteger registrar) {
+    	String topic = t.getTopic();
+        if(registeredTopics.containsKey(topic)){
+        	HashMap<BigInteger,RegistrationLog> set = registeredTopics.get(topic);
+        	if(set.containsKey(registrant)) {
+        		set.get(registrant).addRegistrar(registrar, CommonState.getTime());
+        	}	
+        }
+
+   }
+    
+    public static void addDiscovered(Topic t, BigInteger requesting,  BigInteger discovered) {
+    	String topic = t.getTopic();
+        if(registeredTopics.containsKey(topic)){
+        	HashMap<BigInteger,RegistrationLog> set = registeredTopics.get(topic);
+        	if(set.containsKey(discovered)) {
+        		set.get(discovered).addDiscovered(requesting, CommonState.getTime());
+        		//set.get(discovered).addRegistrar(requesting, CommonState.getTime());
+        	}	
+        }
+
+   }
     
     
     public static int topicRegistrationCount(String topic) {
@@ -360,6 +394,38 @@ public class KademliaObserver implements Control {
     }
                 
 
+    private void write_registered_topics_timing() {
+    	
+    	try {
+	        String filename = "./logs/registeredTopicsTime.csv";
+	        File myFile = new File(filename);
+	        FileWriter writer;
+	        if (myFile.exists())myFile.delete();
+	        myFile.createNewFile();
+	        writer = new FileWriter(myFile, true);
+	        writer.write("topic,registrant,times_registered,min_registration_time,average_registration_time\n");
+	        for(String t : registeredTopics.keySet()) {
+            	//System.out.println("RegisteredTopics "+t+" "+registeredTopics.get(t).size());
+            	for(RegistrationLog reg : registeredTopics.get(t).values()) {
+            		writer.write(t);
+            		writer.write(",");
+            		writer.write(String.valueOf(reg.getRegistrant()));
+            		writer.write(",");
+            		writer.write(String.valueOf(reg.getRegistered().size()));
+            		writer.write(",");
+            		writer.write(String.valueOf(reg.getMinRegisterTime()));
+            		writer.write(",");
+            		writer.write(String.valueOf(reg.getAvgRegisterTime()));
+    	        	writer.write("\n");
+            	}
+            	
+	        }
+	    	writer.close();
+
+    	}catch(IOException e) {
+    		//e.printStackTrace();
+    	}
+    }
     private void write_registered_topics_average() {
     	try {
 	        String filename = "./logs/registeredTopics.csv";
@@ -381,6 +447,7 @@ public class KademliaObserver implements Control {
     	}catch(IOException e) {
     		//e.printStackTrace();
     	}
+
 
     }
     
@@ -511,8 +578,8 @@ public class KademliaObserver implements Control {
     	avgCounter++;
         try {
             FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
-            writer.write("host,topic,registrant\n");
-            
+            writer.write("host,topic,registrant,timestamp\n");
+
             
             for(int i = 0; i < Network.size(); i++) {
             	
@@ -601,7 +668,7 @@ public class KademliaObserver implements Control {
         write_eclipsing_results();
         write_registration_stats();
         write_node_info();
-
+        write_registered_topics_timing();
         return false;
     }
 
