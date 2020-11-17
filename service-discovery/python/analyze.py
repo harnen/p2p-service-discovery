@@ -82,18 +82,19 @@ def analyzeActiveRegistrations(dirs):
 def analyzeRegistrations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
-    fig, ax2 = plt.subplots()
-    fig, ax3 = plt.subplots()
+    ig, ax2 = plt.subplots()
+    #fig, ax3 = plt.subplots()
 
     i=0
 
     for log_dir in dirs:
         print(log_dir)
         df = pd.read_csv(log_dir + '/3500000_registrations.csv')
-        print(df['host'].value_counts())
+        #print(df['host'].value_counts())
         df['host'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Registrations by advertisement medium", label=log_dir)
         width=0.3
         margin=width*i
+        #print(df['topic'].value_counts())
         ax2.bar(np.arange(len(df['topic'].value_counts()))+margin, df['topic'].value_counts(), width=width, label=log_dir)
         ax2.set_title("Global registration count by topic")
         df['registrant'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Registrations by advertiser", label=log_dir)
@@ -156,7 +157,7 @@ def analyzeRegistrarDistribution(dirs):
         stats = {}
         print(log_dir)
         dir_num = dirs.index(log_dir)
-        with open(log_dir + '/900000_registrations.csv', newline='') as csvfile:
+        with open(log_dir + '/3500000_registrations.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 node = row['host']
@@ -184,8 +185,6 @@ def analyzeRegistrarDistribution(dirs):
     print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Registrars")
-
-
 
 
 def analyzeRegistrantDistribution(dirs):
@@ -255,7 +254,6 @@ def analyzeRegistrantDistribution(dirs):
     print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Discovered Registrants")
-
 
 
 def analyzeOperations(dirs):

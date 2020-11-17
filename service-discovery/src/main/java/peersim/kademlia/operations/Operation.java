@@ -123,22 +123,22 @@ public class Operation {
 					if (closestSet.size() < KademliaCommonConfig.K) { // add directly
 						closestSet.put(n, false);
 					} else { // find in the closest set if there are nodes whit less distance
-						BigInteger newdist = Util.distance(n, destNode);
+						int newDist = Util.logDistance(n, destNode);
 
 						// find the node with max distance
-						BigInteger maxdist = newdist;
-						BigInteger nodemaxdist = n;
+						int maxDist = newDist;
+						BigInteger nodeMaxDist = n;
 						for (BigInteger i : closestSet.keySet()) {
-							BigInteger dist = Util.distance(i, destNode);
+							int dist = Util.logDistance(i, destNode);
 
-							if (dist.compareTo(maxdist) > 0) {
-								maxdist = dist;
-								nodemaxdist = i;
+							if (dist > maxDist) {
+								maxDist = dist;
+								nodeMaxDist = i;
 							}
 						}
 
-						if (nodemaxdist.compareTo(n) != 0) {
-							closestSet.remove(nodemaxdist);
+						if (nodeMaxDist.compareTo(n) != 0) {
+							closestSet.remove(nodeMaxDist);
 							closestSet.put(n, false);
 						}
 					}
@@ -160,24 +160,19 @@ public class Operation {
 	 * @return the Id of the node or null if there aren't available node
 	 */
 	public BigInteger getNeighbour() {
-		// find closest neighbour ( the first not already queried)
+		//find closest neighbour (the first not already queried)
 		BigInteger res = null;
 		for (BigInteger n : closestSet.keySet()) {
 			if (n != null && closestSet.get(n) == false) {
 				if (res == null) {
-					//System.out.println("Res = "+n);
 					res = n;
-				} else if (Util.distance(n, destNode).compareTo(Util.distance(res, destNode)) < 0) {
+				} else if (Util.logDistance(n, destNode) < Util.logDistance(res, destNode)) {
 					res = n;
-					//System.out.println("Res = "+n);
 				}
-			} else {
-				//System.out.println("Res = "+n+" alreaady queried");
-
 			}
 		}
 
-		// Has been found a valid neighbour
+		// Found a valid neighbour
 		if (res != null) {
 			closestSet.remove(res);
 			closestSet.put(res, true);
@@ -228,8 +223,6 @@ public class Operation {
 		    	gnode.setAttribute("ui.style", "fill-color: rgba(0,100,255, 50); size: 8px, 8px;");
 		    }
 		    
-		    
-
 		}
 		org.graphstream.graph.Node dst = graph.getNode(destNode.toString());
 		if(dst == null) {

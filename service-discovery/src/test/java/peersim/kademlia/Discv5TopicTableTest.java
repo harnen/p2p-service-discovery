@@ -41,18 +41,18 @@ public class Discv5TopicTableTest{
         Ticket successful_ticket = null;
         Ticket failed_ticket = null;
         for(int i = 0; i < 20; i++) {
-            System.out.println("Current time: " + curr_time);
+            //System.out.println("Current time: " + curr_time);
             if (i>0 && i%2 ==0) {
-                System.out.println("Making decision for topic: " + topic);
+                //System.out.println("Making decision for topic: " + topic);
                 Ticket [] tickets = table.makeRegisterDecisionForTopic(topic, curr_time);
                 for (Ticket t:tickets) {
                     if (t.isRegistrationComplete()) {
                         successful_ticket = t;
-                        System.out.println("Successful ticket for topic: " + t.getTopic() + " waiting time: " + t.getWaitTime());
+                        //System.out.println("Successful ticket for topic: " + t.getTopic() + " waiting time: " + t.getWaitTime());
                     }
                     else {
                         failed_ticket = t;
-                        System.out.println("Failed ticket for topic: " + t.getTopic() + " waiting time: " + t.getWaitTime());
+                        //System.out.println("Failed ticket for topic: " + t.getTopic() + " waiting time: " + t.getWaitTime());
                     }
                 }
                 //assert(successful_ticket.getRegTime() < failed_ticket.getRegTime());
@@ -60,10 +60,10 @@ public class Discv5TopicTableTest{
             if (i%2 == 0) {
                 topic = new Topic(new BigInteger("0"), "topic"+i);
             }
-            System.out.println("Ticketing for topic: " + topic);
+            //System.out.println("Ticketing for topic: " + topic);
             KademliaNode advertiser = new KademliaNode(urg.generate(), "127.0.0.1", 0);
             Ticket ticket = table.getTicket(topic, advertiser, rtt_delay, curr_time);
-            System.out.println("Waiting time: " + ticket.getWaitTime());
+            //System.out.println("Waiting time: " + ticket.getWaitTime());
             assert(ticket.getWaitTime() == 0);
             table.register_ticket(ticket, null);
             curr_time += 1;
@@ -73,16 +73,16 @@ public class Discv5TopicTableTest{
         for(int i = 0; i < 10; i++) {
             System.out.println("Current time: " + curr_time);
             if (i>0 && i%2 ==0) {
-                System.out.println("Making decision for topic: " + topic);
+                //System.out.println("Making decision for topic: " + topic);
                 Ticket [] tickets = table.makeRegisterDecisionForTopic(topic, curr_time);
                 for (Ticket t:tickets) {
                     if (t.isRegistrationComplete()) {
                         successful_ticket = t;
-                        System.out.println("Successful ticket for topic: " + t.getTopic() + " waiting time: " + t.getWaitTime());
+                        //System.out.println("Successful ticket for topic: " + t.getTopic() + " waiting time: " + t.getWaitTime());
                     }
                     else {
                         failed_ticket = t;
-                        System.out.println("Failed ticket for topic: " + t.getTopic() + " waiting time: " + t.getWaitTime());
+                        //System.out.println("Failed ticket for topic: " + t.getTopic() + " waiting time: " + t.getWaitTime());
                     }
                 }
                 //assert(successful_ticket.getRegTime() < failed_ticket.getRegTime());
@@ -90,10 +90,10 @@ public class Discv5TopicTableTest{
             if (i%2 == 0) {
                 topic = new Topic(new BigInteger("0"), "topic"+i);
             }
-            System.out.println("Ticketing for topic: " + topic);
+            //System.out.println("Ticketing for topic: " + topic);
             KademliaNode advertiser = new KademliaNode(urg.generate(), "127.0.0.1", 0);
             Ticket ticket = table.getTicket(topic, advertiser, rtt_delay, curr_time);
-            System.out.println("Waiting time: " + ticket.getWaitTime());
+            //System.out.println("Waiting time: " + ticket.getWaitTime());
             //assert(ticket.getWaitTime() == 0);
             table.register_ticket(ticket, null);
             curr_time += 1;

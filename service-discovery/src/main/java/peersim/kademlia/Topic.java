@@ -63,8 +63,11 @@ public class Topic implements Comparable<Topic> {
 
     public int compareTo(Topic t){
         assert this.hostID == t.hostID : "Comparing topics with different hostID";
-
-        return Util.distance(this.hostID, this.topicID).compareTo(Util.distance(t.hostID, t.topicID));
+        int thisDist = Util.logDistance(this.hostID, this.topicID);
+        int topicDist = Util.logDistance(t.hostID, t.topicID);
+        if(thisDist < topicDist) return -1;
+        if(thisDist > topicDist) return 1;
+        return 0;
     }
 
     public String toString(){
