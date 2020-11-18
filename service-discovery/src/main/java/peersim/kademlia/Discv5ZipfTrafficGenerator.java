@@ -34,18 +34,18 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	private final static String PAR_TOPICNUM = "topicnum";
 	private final static String PAR_FREQ = "maxfreq";
 
-	private boolean first = true;
+	protected boolean first = true;
 	private boolean second = false;
 
 	private static Integer topicCounter = 0;
 
-	private ZipfDistribution zipf;
+	protected ZipfDistribution zipf;
 	/**
 	 * MSPastry Protocol ID to act
 	 */
 	private final int topicNum;
 	
-	private final double exp;
+	protected final double exp;
 	
 	private int pendingRegistrations,pendingLookups,topicCount;
 	
@@ -82,7 +82,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	 * 
 	 * @return Message
 	 */
-	private Message generateFindNodeMessage() {
+	protected Message generateFindNodeMessage() {
 		// existing active destination node
 		Node n = Network.get(CommonState.r.nextInt(Network.size()));
 		while (!n.isUp()) {
@@ -104,7 +104,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	 * 
 	 * @return Message
 	 */
-	private Message generateRegisterMessage(String topic) {
+	protected Message generateRegisterMessage(String topic) {
 		Topic t = new Topic(topic);
 		Message m = Message.makeRegister(t);
 		m.timestamp = CommonState.getTime();
@@ -126,7 +126,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	 * 
 	 * @return Message
 	 */
-	private Message generateTopicLookupMessage(String topic) {
+	protected Message generateTopicLookupMessage(String topic) {
 		//System.out.println("New lookup message "+topic);
 
 		Topic t = new Topic(topic);
