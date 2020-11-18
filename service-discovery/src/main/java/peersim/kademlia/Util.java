@@ -48,9 +48,9 @@ public class Util {
 	 *            BigInteger
 	 * @return BigInteger
 	 */
-	/*public static final BigInteger distance(BigInteger a, BigInteger b) {
+	public static final BigInteger distance(BigInteger a, BigInteger b) {
 		return a.xor(b);
-	}*/
+	}
 
 	/**
 	 * convert a BigInteger into a String (base 2) and lead all needed non-significative zeroes in order to reach the canonical

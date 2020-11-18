@@ -121,7 +121,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
     			nId = ((KademliaProtocol) (node.getProtocol(pid))).node.getId();
             else
     			nId = ((KademliaProtocol) (node.getProtocol(evil_pid))).node.getId();
-			if(closestId == null || (Util.logDistance(id, closestId) > Util.logDistance(id, nId))) {
+			if(closestId == null || (Util.distance(id, closestId).compareTo(Util.distance(id, nId)) == 1)) {
 				closestId = nId;
 			}
 		}

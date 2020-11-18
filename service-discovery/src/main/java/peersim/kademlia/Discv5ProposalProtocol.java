@@ -200,7 +200,6 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
 		BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
 		
-		//TODO shouldn't it be a part of routingTable.getNeighbours(dist)?
 		if(neighbours.length < KademliaCommonConfig.ALPHA)
 			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
 
