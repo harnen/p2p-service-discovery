@@ -75,6 +75,15 @@ public final class UniformRandomGenerator {
 		return max;
 		
 	}
+	
+	public BigInteger getMinID() {
+		BigInteger min = this.generate();
+		for(int i = 0; i < bits; i++) {
+			min = min.clearBit(i);
+		}
+		return min;
+		
+	}
 
 	// ______________________________________________________________________________________________
 	/**

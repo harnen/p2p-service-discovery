@@ -220,10 +220,10 @@ public class Operation {
 		    gnode.setAttribute("x", x);
 		    gnode.setAttribute("y", y);
 		    if(returned.contains(id)) {
-		    	gnode.setAttribute("ui.style", "fill-color: rgb(255,0,0); size: 20px, 20px;");
+		    	gnode.setAttribute("ui.style", "fill-color: rgb(255,0,0); size: 50px, 50px;");// text-size: 30pt");
 		    	gnode.setAttribute("label", String.valueOf(returned.indexOf(id)));
 		    }else if(id.equals(srcNode)){
-		    	gnode.setAttribute("ui.style", "fill-color: rgb(0,0,255); size: 20px, 20px;");
+		    	gnode.setAttribute("ui.style", "fill-color: rgb(0,0,255); size: 50px, 50px;");
 		    }else {
 		    	gnode.setAttribute("ui.style", "fill-color: rgba(0,100,255, 50); size: 8px, 8px;");
 		    }
@@ -241,7 +241,7 @@ public class Operation {
 			dst.setAttribute("x", x);
 			dst.setAttribute("y", y);
 		}
-		dst.setAttribute("ui.style", "fill-color: rgb(0,255,0); size: 20px, 20px;");
+		dst.setAttribute("ui.style", "fill-color: rgb(0,255,0); size: 50px, 50px;");
 	 
 		System.setProperty("org.graphstream.ui", "swing"); 
 		Viewer viewer = graph.display();

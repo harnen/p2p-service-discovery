@@ -114,12 +114,12 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 			} else if (lop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 				// search operation finished
 				operations.remove(lop.operationId);
+				lop.visualize();
 				logger.warning("reporting operation " + lop.operationId);
 				KademliaObserver.reportOperation(lop);
 				//lop.visualize(); uncomment if you want to see visualization of the operation
 				if(!lop.finished) { 
 					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
-					
 				}
 				//System.out.println("Writing stats");
 				KademliaObserver.register_total.add(all);

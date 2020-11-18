@@ -25,33 +25,29 @@ public class Topic implements Comparable<Topic> {
         this.topicID = new BigInteger("0");
     }
 
-    public Topic(String topic){
-        this.hostID = new BigInteger("0");
-        this.topic = topic;
-
-        MessageDigest digest;
+    
+    private void setTopicID() {
+    	MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(topic.getBytes(StandardCharsets.UTF_8));
-            this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8).abs();
+            this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }
     
+    public Topic(String topic){
+        this.hostID = new BigInteger("0");
+        this.topic = topic;
+        setTopicID();
+        
+    }
+    
     public Topic(BigInteger hostID, String topic) {
         this.hostID = hostID;
         this.topic = topic;
-
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(topic.getBytes(StandardCharsets.UTF_8));
-            this.topicID = new BigInteger(hash, 0, KademliaCommonConfig.BITS/8).abs();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        
+        setTopicID();
     }
 
     public Topic(Topic t){
