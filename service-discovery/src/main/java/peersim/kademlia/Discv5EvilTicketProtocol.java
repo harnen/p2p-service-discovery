@@ -92,11 +92,9 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         //t.setHostID(this.node.getId());
         
         if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) ) {
-            System.out.println("Spamming registration for topic "+t.getTopic());
             
-            int numberOfOutstandingRegistrations = 0;
             if(!ticketTable.containsKey(t.getTopicID())) {
-                //TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS, this.numOfRegistrations/KademliaCommonConfig.NBUCKETS, 10, this,t,myPid);
+                KademliaObserver.addTopicRegistration(t, this.node.getId());
                 int k = (int) Math.ceil((double) this.targetNumOfRegistrations / KademliaCommonConfig.NBUCKETS);
         	    TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,k,10,this,t,myPid);
                 rou.setNodeId(t.getTopicID());
@@ -106,12 +104,12 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
                     BigInteger[] neighbours = routingTable.getNeighbours(i);
                     //if(neighbours.length!=0)logger.warning("Bucket at distance "+i+" with "+neighbours.length+" nodes");
                     //else logger.warning("Bucket at distance "+i+" empty");
-                    numberOfOutstandingRegistrations += 1;
+                    this.numOfRegistrations += 1;
                     rou.addNeighbour(neighbours);
                 }
             }
-            if (this.numOfRegistrations != numberOfOutstandingRegistrations) {
-                System.out.println("Failed to send " + this.numOfRegistrations + " registrations - only sent " + numberOfOutstandingRegistrations);
+            if (this.numOfRegistrations < this.targetNumOfRegistrations) {
+                logger.warning("Failed to send " + this.targetNumOfRegistrations + " registrations - only sent " + this.numOfRegistrations);
             }
             //sendLookup(t,myPid);
         }
@@ -162,7 +160,6 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         response.src = this.node;
         response.ackId = m.id; 
         logger.info(" responds with TOPIC_QUERY_REPLY");
-        //System.out.println(" responds with TOPIC_QUERY_REPLY");
         sendMessage(response, m.src.getId(), myPid);
     }
     /**

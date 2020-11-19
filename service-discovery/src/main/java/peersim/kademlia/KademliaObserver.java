@@ -79,7 +79,6 @@ public class KademliaObserver implements Control {
      */
     public static IncrementalStats register_ok = new IncrementalStats();
     
-    
     //public static HashMap<String, Set<BigInteger>> registeredTopics = new HashMap<String, Set<BigInteger>>();
     
     public static HashMap<String, HashMap<BigInteger,RegistrationLog>> registeredTopics = new HashMap<String, HashMap<BigInteger,RegistrationLog>>();

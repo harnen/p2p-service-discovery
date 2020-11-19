@@ -19,13 +19,11 @@ import peersim.transport.UnreliableTransport;
 public class Discv5ProposalProtocol extends KademliaProtocol {
 
 	public Discv5ProposalTopicTable topicTable;
-    protected int numOfRegistrations;
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 
 	public Discv5ProposalProtocol(String prefix) {
 		super(prefix);
 		this.topicTable = new Discv5ProposalTopicTable();
-        this.numOfRegistrations = 0;
 
 		// TODO Auto-generated constructor stub
 	}

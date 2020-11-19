@@ -77,9 +77,9 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
                     System.out.println("Assigning node to " + numTopics + " topics");
                     if (numTopics < mintopicNum)
                         numTopics = mintopicNum;
-                    for (int topicIndex = 0; topicIndex < numTopics; topicIndex++) {
+                    for (int topicIndex = 1; topicIndex < numTopics+1; topicIndex++) {
                         topic = new String("t" + topicIndex);
-                        topicList[topicIndex] = new Topic(topic);
+                        topicList[topicIndex-1] = new Topic(topic);
                     }
                 }
 				Integer value = n.get(topic);
@@ -93,16 +93,16 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 				//System.out.println("Topic hash: " + t.getTopicID());
 				//System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
 				
-                for (int topicIndex = 0; topicIndex < numTopics; topicIndex++) {
+                for (int topicIndex = 1; topicIndex < numTopics+1; topicIndex++) {
 				    //kad.setClient(this);
-			    	prot.getNode().setCallBack(this,start,topicList[topicIndex]);
-				    Message registerMessage = generateRegisterMessage(topicList[topicIndex].getTopic());
-				    Message lookupMessage = generateTopicLookupMessage(topicList[topicIndex].getTopic());
+			    	prot.getNode().setCallBack(this,start,topicList[topicIndex-1]);
+				    Message registerMessage = generateRegisterMessage(topicList[topicIndex-1].getTopic());
+				    Message lookupMessage = generateTopicLookupMessage(topicList[topicIndex-1].getTopic());
                     System.out.println();
 				    if(registerMessage != null) {
 					    //int time = CommonState.r.nextInt(900000);
 					    int time = 0;
-					    System.out.println("Topic " + topicList[topicIndex].getTopic() + " will be registered by "+prot.getNode().getId()+" at "+time);
+					    System.out.println("Topic " + topicList[topicIndex-1].getTopic() + " will be registered by "+prot.getNode().getId()+" at "+time);
 					    EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
 					    EDSimulator.add(time+20000, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
 
