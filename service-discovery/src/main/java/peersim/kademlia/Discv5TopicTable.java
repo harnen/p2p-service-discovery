@@ -68,7 +68,7 @@ public class Discv5TopicTable { // implements TopicTable {
 		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
-        	if (curr_time - r.getTimestamp() > this.adLifeTime) {
+        	if (curr_time - r.getTimestamp() >= this.adLifeTime) {
             	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic());
 	            TopicRegistration r_same = topicQ.pop(); 
 				it.remove(); //removes from allAds
@@ -93,10 +93,11 @@ public class Discv5TopicTable { // implements TopicTable {
         }*/
         // check if the advertisement already registered before
         if ( (topicQ != null) && (topicQ.contains(reg)) ) {
-            //Iterator<TopicRegistration> it = topicQ.iterator();
-            logger.warning("Ad already registered by this node");
+            //logger.warning("Ad already registered by this node");
             return -1;
         }
+        if (topicQ != null)
+            assert topicQ.size() <= this.adsPerQueue;
 
         // compute the waiting time
         if (topicQ != null && topicQ.size() == this.adsPerQueue) {
@@ -191,7 +192,7 @@ public class Discv5TopicTable { // implements TopicTable {
         	int topicOccupancy = 0;
         	if(this.topicTable.get(reg.getTopic())!=null)topicOccupancy = this.topicTable.get(reg.getTopic()).size();
             if (waiting_time == -1) {
-                logger.warning("already registered advert");
+                //logger.warning("already registered advert");
                 ticket.setRegistrationComplete(false);
                 ticket.setWaitTime(waiting_time);
             }
@@ -204,6 +205,7 @@ public class Discv5TopicTable { // implements TopicTable {
                 //System.out.println("Registered topic: " + topic.getTopic() + " at node: " + ticket.getSrc());
             }
             else { //waiting_time > 0
+                assert waiting_time > 0;
                 waiting_time = (waiting_time - ticket.getRTT() - KademliaCommonConfig.ONE_UNIT_OF_TIME > 0) ? waiting_time - ticket.getRTT() - KademliaCommonConfig.ONE_UNIT_OF_TIME : 0;
                 ticket.updateWaitingTime(waiting_time);
                 ticket.setRegistrationComplete(false);

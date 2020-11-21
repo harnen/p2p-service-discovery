@@ -296,14 +296,14 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
         if (ticket.isRegistrationComplete() == false) {
-        	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopicID() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
+        	//logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopicID() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
             register.body = m.body;
             scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
         }
         else {
-            logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
+            //logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
             KademliaObserver.addAcceptedRegistration(topic, this.node.getId(),m.src.getId());
             KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
             Timeout timeout = new Timeout(ticket.getTopic(),m.src.getId());
@@ -786,7 +786,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
                 break;
 
             case Timeout.REG_TIMEOUT:
-            	logger.warning("Remove ticket table "+((Timeout)event).nodeSrc);
+            	//logger.warning("Remove ticket table "+((Timeout)event).nodeSrc);
                 KademliaObserver.reportExpiredRegistration(((Timeout)event).topic, this.node.is_evil);
             	ticketTable.get(((Timeout)event).topic.topicID).removeNeighbour(((Timeout)event).nodeSrc);
             	break;

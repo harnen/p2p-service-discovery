@@ -72,7 +72,7 @@ def analyzeActiveRegistrations(dirs):
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
         ax.set_ylabel('Number of registrations')
-        ax.set_title('Active Registrations by good and malicious nodes')
+        ax.set_title('Active Registrations ' + log_dir)
         ax.set_xticks(x_values)
         ax.set_xticklabels(topics)
         ax.legend()
@@ -265,6 +265,10 @@ def analyzeOperations(dirs):
     fig, ax3 = plt.subplots()
 
     x = ['RegisterOperation','LookupOperation']
+    x_val = 1
+    x_vals = []
+    total_malicious_list = []
+    total_discovered_list = []
     for log_dir in dirs:
         print(log_dir)
         df = pd.read_csv(log_dir + '/operations.csv')
@@ -282,8 +286,20 @@ def analyzeOperations(dirs):
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['discovered'].sum())
         total_malicious = df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum()
         total_discovered = df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['discovered'].sum()
-        ax3.bar(["Malicious", "Total_Discovered"], [total_malicious, total_discovered])
-        ax3.set_title("Percent Malicious in Lookups")
+        total_malicious_list.append(total_malicious)
+        total_discovered_list.append(total_discovered)
+        x_vals.append(x_val)
+        x_val += 3
+
+    print('x_vals: ', x_vals)
+    width = 1.0  # the width of the bars
+    x_values = [x-width/2 for x in x_vals]
+    ax3.bar(x_values, total_malicious_list, width, label='Malicious')
+    x_values = [x+width/2 for x in x_vals]
+    ax3.bar(x_values, total_discovered_list, width, label='All')
+    ax3.set_title("Malicious nodes out of all lookup results")
+    ax3.set_xticks(x_vals)
+    ax3.set_xticklabels(dirs)
 
     ax1.legend()
     ax2.legend()
@@ -292,12 +308,13 @@ def analyzeOperations(dirs):
 def analyzeEclipsedNodesOverTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
+    colors = ['red', 'green', 'blue']
 
     for log_dir in dirs:
         print(log_dir)
         df = pd.read_csv(log_dir + '/eclipse_counts.csv')
         ax1.set_title("Number of eclipsed nodes over time")
-        ax1.plot(df['time'], df['numberOfNodes'])
+        ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
 
     ax1.legend()
     plt.savefig('./plots/eclipsed_node_over_time.png')
@@ -411,7 +428,7 @@ if (len(sys.argv) < 2):
 print('Will read logs from', sys.argv[1:])
 analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
-analyzeRegistrationsAverage(sys.argv[1:])
+#analyzeRegistrationsAverage(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
 analyzeRegistrarDistribution(sys.argv[1:])

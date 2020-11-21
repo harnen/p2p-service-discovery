@@ -69,7 +69,6 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
         if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) ) {
 
             TopicRegistration r = new TopicRegistration(this.node, t);
-            System.out.println("Spamming topic registration for topic "+t.getTopic());
     
             KademliaObserver.addTopicRegistration(t, this.node.getId());
     
@@ -98,7 +97,6 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
             // send parallel register messages
             for (int i = 0; i < numParallelRegisterations; i++) {
                 BigInteger nextNode = rop.getNeighbour();
-                //System.out.println("Nextnode "+nextNode);
                 if (nextNode != null) {
                     m.dest = new KademliaNode(nextNode);
                     sendMessage(m.copy(), nextNode, myPid);
@@ -107,7 +105,6 @@ public class Discv5ProposalEvilProtocol extends Discv5ProposalProtocol {
                 else {
                     rop.available_requests = i;
                     logger.info("Number of parallel registrations " + i);
-                    //logger.warning("No neighbor to register");
                     break;
                 }
             }
