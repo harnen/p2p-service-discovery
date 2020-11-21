@@ -61,7 +61,7 @@ public class RoutingTable implements Cloneable {
 	// add a neighbour to the correct k-bucket
 	public boolean addNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
-		//System.out.println("Bucket add node "+node+" in "+nodeId+" at bucket "+(Util.logDistance(nodeId, node) - bucketMinDistance -1));
+		//System.out.println("Bucket add node "+node+" in "+nodeId+" at bucket "+Util.logDistance(nodeId, node));
 		if(node.compareTo(nodeId)==0) return false;
 		return bucket(node).addNeighbour(node);
 	}
@@ -173,6 +173,51 @@ public class RoutingTable implements Cloneable {
 	public void setNodeId(BigInteger id){
 		this.nodeId = id;
 	}
+	
+	protected BigInteger generateRandomNode(int b) {
+		
+		BigInteger randNode;
+		//do {
+			UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
+			BigInteger rand = urg.generate();
+			String rand2 = Util.put0(rand);
+			
+			int distance = b + this.bucketMinDistance + 1;
+				
+			int prefixlen = (KademliaCommonConfig.BITS - distance);
+			
+			String nodeId2 = Util.put0(nodeId);
+			
+			String randomString = "";
+			//System.out.println(nodeId2+" "+prefixlen+" "+b+" "+distance);
+			//System.out.println(rand2);
+			if(prefixlen>0) {
+				if(nodeId2.charAt(prefixlen)==rand2.charAt(prefixlen)) {
+					if(Integer.parseInt(nodeId2.substring(prefixlen-1,prefixlen))==0) {
+						randomString = nodeId2.substring(0,prefixlen).concat("1");
+					} else {
+						randomString = nodeId2.substring(0,prefixlen).concat("0");
+					}
+					randomString = randomString.concat(rand2.substring(prefixlen+1,rand2.length()));
+				//logger.warning(randomString);
+				} else 
+					randomString = nodeId2.substring(0,prefixlen).concat(rand2.substring(prefixlen,rand2.length()));
+			//logger.warning(randomString);
+				randNode = new BigInteger(randomString,2);
+
+			} else {
+				randNode = rand;
+			}
+			
+			//logger.warning("Distance "+Util.logDistance(randNode, b));
+			
+		//}while(Util.logDistance(randNode, nodeId)!=b);
+		
+		return randNode;
+		
+
+	}
+
 	// ______________________________________________________________________________________________
 
 } // End of class

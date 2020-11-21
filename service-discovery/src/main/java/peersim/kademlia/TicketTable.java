@@ -26,7 +26,9 @@ public class TicketTable extends RoutingTable {
     
     Logger logger;
     
-	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid) {
+    boolean refresh;
+    
+	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
 		super(nBuckets, k, maxReplacements);
 		
@@ -41,6 +43,9 @@ public class TicketTable extends RoutingTable {
 		this.myPid = myPid;
 		
 		logger = Logger.getLogger(protocol.getNode().getId().toString());
+		
+		this.refresh = refresh;
+		//System.out.println("New ticket table size "+k+" "+refresh);
 		
 		// TODO Auto-generated constructor stub
 	}
@@ -121,57 +126,16 @@ public class TicketTable extends RoutingTable {
 			addNeighbour(replacements);
 		}
 
-		if(b.neighbours.size()<k) {
-			BigInteger randomNode = generateRandomNode(i);
-			protocol.sendLookup(randomNode, myPid);
-			//logger.warning("Sending lookup from topic table to dist "+(Util.logDistance(randomNode, this.nodeId)- bucketMinDistance - 1)+" "+i);
+		if(refresh) {
+			if(b.neighbours.size()<k) {
+				BigInteger randomNode = generateRandomNode(i);
+				protocol.sendLookup(randomNode, myPid);
+				//logger.warning("Sending lookup from topic table to dist "+(Util.logDistance(randomNode, this.nodeId)- bucketMinDistance - 1)+" "+i);
+			}
 		}
 		
 	}
 		
-	private BigInteger generateRandomNode(int b) {
-			
-		BigInteger randNode;
-		//do {
-			UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
-			BigInteger rand = urg.generate();
-			String rand2 = Util.put0(rand);
-			
-			int distance = b + this.bucketMinDistance + 1;
-				
-			int prefixlen = (KademliaCommonConfig.BITS - distance);
-			
-			String nodeId2 = Util.put0(nodeId);
-			
-			String randomString = "";
-			//logger.warning(nodeId2+" "+prefixlen+" "+b+" "+distance);
-			//logger.warning(rand2);
-			if(prefixlen>0) {
-				if(nodeId2.charAt(prefixlen)==rand2.charAt(prefixlen)) {
-					if(Integer.parseInt(nodeId2.substring(prefixlen-1,prefixlen))==0) {
-						randomString = nodeId2.substring(0,prefixlen).concat("1");
-					} else {
-						randomString = nodeId2.substring(0,prefixlen).concat("0");
-					}
-					randomString = randomString.concat(rand2.substring(prefixlen+1,rand2.length()));
-				//logger.warning(randomString);
-				} else 
-					randomString = nodeId2.substring(0,prefixlen).concat(rand2.substring(prefixlen,rand2.length()));
-			//logger.warning(randomString);
-				randNode = new BigInteger(randomString,2);
-
-			} else {
-				randNode = rand;
-			}
-			
-			//logger.warning("Distance "+Util.logDistance(randNode, b));
-			
-		//}while(Util.logDistance(randNode, nodeId)!=b);
-		
-		return randNode;
-		
-
-	}
 	
 	
 	

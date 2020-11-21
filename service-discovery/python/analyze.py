@@ -17,14 +17,47 @@ def analyzeMessages(dirs):
     fig, ax1 = plt.subplots()
     fig, ax2 = plt.subplots()
     fig, ax3 = plt.subplots()
+    i=0
+
     for log_dir in dirs:
         print(log_dir)
         df = pd.read_csv(log_dir + '/messages.csv')
-
+        #print(df)
         df['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label=log_dir)
-        ax2.bar(df['type'].value_counts().index, df['type'].value_counts(), label=log_dir)
+        width=0.3
+        margin=width*i
+        #print(df['type'].value_counts().index)
+        if not (df.index == 'MSG_FIND').any():
+            new_row = { 'id':0, 'type':'MSG_FIND', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
+            df = df.append(new_row,ignore_index=True)
+        if not (df.index == 'MSG_TICKET_REQUEST').any():
+            new_row = { 'id':0, 'type':'MSG_TICKET_REQUEST', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
+            df = df.append(new_row,ignore_index=True)
+        if not (df.index == 'MSG_RESPONSE').any():
+            new_row = { 'id':0, 'type':'MSG_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
+            df = df.append(new_row,ignore_index=True)
+        if not (df.index == 'MSG_TICKET_RESPONSE').any():
+            new_row = { 'id':0, 'type':'MSG_TICKET_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
+            df = df.append(new_row,ignore_index=True)
+
+        table = df['type'].value_counts().sort_index()
+#        sorted_table = table.sort_values(by='type',ascending=False)
+#        sorted_table = table.sort_values(by='count',ascending=False)
+        print(table)
+        ax2.bar(np.arange(len(table.index))+margin,table.values,width=width, label=log_dir)
+        #ax2.bar(np.arange(len(df['type'].value_counts(sort=True)))+margin, df['type'].value_counts(sort=True), width=width, label=log_dir)
+        #ax2.bar(np.arange(len(df['topic'].value_counts()))+margin, df['topic'].value_counts(), width=width, label=log_dir)
+        #ax2.set_title("Global registration count by topic")
+        i = i+1
+        #ax2.bar(df['type'].value_counts().index, df['type'].value_counts(), label=log_dir)
         df['src'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message sent by node", label=log_dir)
 
+    #df = pd.read_csv('logs/ticket/messages.csv')
+    ticks = table.index
+    #print(ticks)
+    #print(len(ticks))
+    ax2.set_xticks(range(len(ticks)))
+    ax2.set_xticklabels(ticks)
     ax1.legend()
     ax2.legend()
     ax3.legend()
@@ -320,7 +353,7 @@ def analyzeEclipsedNodesOverTime(dirs):
     plt.savefig('./plots/eclipsed_node_over_time.png')
 
 def analyzeEclipsedNodeDistribution(dirs):
-    
+
     fig, ax1 = plt.subplots()
     ax1.tick_params(bottom=False,
                 labelbottom=False)
@@ -329,7 +362,7 @@ def analyzeEclipsedNodeDistribution(dirs):
     topics = set()
     for log_dir in dirs:
         x = []
-        y = []    
+        y = []
         m = []
         c = []
         # get only the columns you want from the csv file
@@ -337,7 +370,7 @@ def analyzeEclipsedNodeDistribution(dirs):
         node_to_topicID = df1.set_index('nodeID')['topicID'].to_dict()
         df2 = pd.read_csv(log_dir + '/node_information.csv', usecols=['nodeID', 'is_evil?'])
         is_evil_node = df2.set_index('nodeID')['is_evil?'].to_dict()
-        
+
         uneclipsed_nodes_set = None
         eclipsed_nodes_set = None
         evil_nodes_set = None
@@ -347,7 +380,7 @@ def analyzeEclipsedNodeDistribution(dirs):
             for row in reader:
                 if row['time'] != '3500000':
                     continue
-                
+
                 eclipsed_nodes = row['eclipsedNodes'].split()
                 eclipsed_nodes_set = set(eclipsed_nodes)
                 uneclipsed_nodes = row['UnEclipsedNodes'].split()
@@ -361,7 +394,7 @@ def analyzeEclipsedNodeDistribution(dirs):
 
         IDs = []
         id_to_short = {}
-        for node in is_evil_node.keys():       
+        for node in is_evil_node.keys():
             IDs.append(node)
         for topic in topics:
             IDs.append(topic)
@@ -371,26 +404,26 @@ def analyzeEclipsedNodeDistribution(dirs):
         for identifier in IDs:
             id_to_short[identifier] = short_num
             short_num += 1
-        
+
         x,y = [],[]
         for topic in topics:
             y.append(id_to_short[topic])
             x.append(id_to_short[topic])
 
         ax1.scatter(x,y, s=100,marker='|',color='black',linewidths=1)
-        
+
         x,y = [],[]
         for node in eclipsed_nodes_set:
             y.append(id_to_short[node_to_topicID[node]])
             x.append(id_to_short[node])
-        
+
         ax1.scatter(x,y, s=10,marker='|',color='red',linewidths=1)
-        
+
         x,y = [],[]
         for node in uneclipsed_nodes_set:
             y.append(id_to_short[node_to_topicID[node]])
             x.append(id_to_short[node])
-        
+
         ax1.scatter(x,y, s=10,marker='|',color='green',linewidths=1)
 
         x,y = [],[]
@@ -399,7 +432,7 @@ def analyzeEclipsedNodeDistribution(dirs):
             x.append(id_to_short[node])
         ax1.scatter(x,y, s=10,marker='|',color='orange',linewidths=1)
 
-    #ax1.set_yticks([]) 
+    #ax1.set_yticks([])
     topics_list = [id_to_short[x] for x in topics]
     tick_labels = ['topic'+str(x) for x in range(1, len(topics_list)+1)]
     print('Tick labels: ', tick_labels)
@@ -412,7 +445,7 @@ def analyzeEclipsedNodeDistribution(dirs):
                     Line2D([0], [0], marker='|', color='green', label='Non-Eclipsed Node'),
                     Line2D([0], [0], marker='|', color='orange', label='Malicious Node'),
                     Line2D([0], [0], marker='|', color='black', label='Topic ID')]
-    
+
     ax1.legend(handles=legend_elements, bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
                 mode="expand", borderaxespad=0, ncol=4)
     #ax1.legend(handles=legend_elements, loc='upper center')
@@ -420,15 +453,15 @@ def analyzeEclipsedNodeDistribution(dirs):
     ax1.set_xlabel('Node status')
 
     plt.savefig('./plots/node_type_dist.png')
-    
+
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
     exit(1)
 
 print('Will read logs from', sys.argv[1:])
 analyzeMessages(sys.argv[1:])
-analyzeRegistrations(sys.argv[1:])
-#analyzeRegistrationsAverage(sys.argv[1:])
+#analyzeRegistrations(sys.argv[1:])
+analyzeRegistrationsAverage(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
 analyzeRegistrarDistribution(sys.argv[1:])

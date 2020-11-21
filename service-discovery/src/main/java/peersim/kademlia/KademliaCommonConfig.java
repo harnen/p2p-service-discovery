@@ -22,7 +22,10 @@ public class KademliaCommonConfig {
     public static int AD_LIFE_TIME = 250000; //life time of ads the topic table
     public static int ONE_UNIT_OF_TIME = 1; // smallest time value
     public static int TOPIC_PEER_LIMIT = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
-
+    public static int SEARCH_REFRESH = 0;
+    public static int TICKET_REFRESH = 0;
+    public static int TICKET_BUCKET_SIZE = 3;
+    public static int SEARCH_BUCKET_SIZE = 3;
     // Attack Types:
     public static String ATTACK_TYPE_TOPIC_SPAM = "TopicSpam";
     public static String ATTACK_TYPE_MALICIOUS_REGISTRAR = "MaliciousRegistrar";

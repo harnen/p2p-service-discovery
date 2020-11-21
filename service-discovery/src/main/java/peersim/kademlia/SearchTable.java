@@ -23,7 +23,9 @@ public class SearchTable extends RoutingTable {
     
     boolean pendingLookup;
     
-	public SearchTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid) {
+    boolean refresh;
+    
+	public SearchTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
 		super(nBuckets, k, maxReplacements);
 		
@@ -37,22 +39,28 @@ public class SearchTable extends RoutingTable {
 		
 		this.myPid = myPid;
 		
-		pendingLookup = true;
+		//this.pendingLookup = true;
+		
+		this.refresh = refresh;
+		
+		//System.out.println("New search table size "+k+" "+refresh);
+
 		// TODO Auto-generated constructor stub
 	}
 	
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger[] node) {
+		//System.out.println("Search table adding node");
 		for(BigInteger dest : node)
 			super.addNeighbour(dest);
 		
-		if(pendingLookup) {
+		/*if(pendingLookup) {
 			pendingLookup = false;
 
         	Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
     		m.timestamp = CommonState.getTime();
 			protocol.sendTopicLookup(m, t, myPid);
-		}
+		}*/
 
 	}
 
@@ -72,7 +80,8 @@ public class SearchTable extends RoutingTable {
 		//System.out.println("Routingtable refreshBuckkets "+CommonState.getTime());
 		Random rnd= new Random();
 		//for(int i=0;i<nBuckets;i++) {
-		KBucket b = k_buckets[rnd.nextInt(nBuckets)];
+		int i = rnd.nextInt(nBuckets);
+		KBucket b = k_buckets[i];
 		while(b.neighbours.size()<k&&b.replacements.size()>0)
 			//protocol.sendLookup(t, myPid);
 			b.replace();
@@ -80,6 +89,11 @@ public class SearchTable extends RoutingTable {
 			b.checkAndReplaceLast();
 			//return;
 		}
+		if(b.neighbours.size()==0&&refresh) {
+			BigInteger randomNode = generateRandomNode(i);
+			protocol.sendLookup(randomNode, myPid);
+		}
+
 	}
 	
 	public int getnBuckets() {

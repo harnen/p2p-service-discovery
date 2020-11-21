@@ -96,7 +96,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             if(!ticketTable.containsKey(t.getTopicID())) {
                 KademliaObserver.addTopicRegistration(t, this.node.getId());
                 int k = (int) Math.ceil((double) this.targetNumOfRegistrations / KademliaCommonConfig.NBUCKETS);
-        	    TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,k,10,this,t,myPid);
+        	    TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,k,10,this,t,myPid,false);
                 rou.setNodeId(t.getTopicID());
                 ticketTable.put(t.getTopicID(),rou);
             

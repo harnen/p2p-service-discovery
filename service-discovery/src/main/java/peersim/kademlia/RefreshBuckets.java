@@ -41,8 +41,6 @@ public class RefreshBuckets implements Control {
 
 	// ______________________________________________________________________________________________
 	public boolean execute() {
-		// throw the dice
-		// for every node take 50 random node and add to k-bucket of it
 		//System.out.println("RefreshBuckets execute "+CommonState.getTime());
 		for (int i = 0; i < Network.size(); i++) {
 			Node iNode = Network.get(i);

@@ -32,7 +32,6 @@ public class LookupTicketOperation extends LookupOperation {
 		int distance = ThreadLocalRandom.current().nextInt(KademliaCommonConfig.BITS-sTable.getnBuckets(),KademliaCommonConfig.BITS);
 		//System.out.println("Distance "+distance);
 		int tries=0;
-		
 		while((neighbours.length==0)&&(tries<sTable.getnBuckets())) {
 			//System.out.println("Distance "+distance);
 			distance = ThreadLocalRandom.current().nextInt(KademliaCommonConfig.BITS-sTable.getnBuckets(),KademliaCommonConfig.BITS);
