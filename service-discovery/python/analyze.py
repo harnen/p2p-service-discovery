@@ -454,6 +454,35 @@ def analyzeEclipsedNodeDistribution(dirs):
 
     plt.savefig('./plots/node_type_dist.png')
 
+def analyzeRegistrationTime(dirs):
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    fig, ax1 = plt.subplots()
+    fig, ax2 = plt.subplots()
+    fig, ax3 = plt.subplots()
+    fig, ax4 = plt.subplots()
+    fig, ax5 = plt.subplots()
+
+    for log_dir in dirs:
+        print(log_dir)
+        data1 = genfromtxt(log_dir+'/registeredTopicsTime.csv',delimiter=',',names=['topic','registrant', 'times','regmintime','regavgtime','discmintime','discavgtime'])
+        ax1.plot(sorted(data1['times'],reverse=True),label=log_dir)
+        ax2.plot(sorted(data1['regmintime'],reverse=True),label=log_dir)
+        ax3.plot(sorted(data1['regavgtime'],reverse=True),label=log_dir)
+        ax4.plot(sorted(data1['discmintime'],reverse=True),label=log_dir)
+        ax5.plot(sorted(data1['discavgtime'],reverse=True),label=log_dir)
+
+
+    ax1.set_title('Total registrations by registrant')
+    ax2.set_title('Minimum time to register')
+    ax3.set_title('Average time to register')
+    ax4.set_title('Average time to discovery')
+    ax5.set_title('Minimum time to discovery')
+    ax1.legend()
+    ax2.legend()
+    ax3.legend()
+    ax4.legend()
+    ax5.legend()
+
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
     exit(1)
@@ -468,5 +497,5 @@ analyzeRegistrarDistribution(sys.argv[1:])
 analyzeEclipsedNodesOverTime(sys.argv[1:])
 analyzeEclipsedNodeDistribution(sys.argv[1:])
 analyzeActiveRegistrations(sys.argv[1:])
-
+analyzeRegistrationTime(sys.argv[1:])
 plt.show()

@@ -402,7 +402,7 @@ public class KademliaObserver implements Control {
 	        if (myFile.exists())myFile.delete();
 	        myFile.createNewFile();
 	        writer = new FileWriter(myFile, true);
-	        writer.write("topic,registrant,times_registered,min_registration_time,average_registration_time\n");
+	        writer.write("topic,registrant,times_registered,min_registration_time,average_registration_time,min_discovery_time,average_discovery_time\n");
 	        for(String t : registeredTopics.keySet()) {
             	//System.out.println("RegisteredTopics "+t+" "+registeredTopics.get(t).size());
             	for(RegistrationLog reg : registeredTopics.get(t).values()) {
@@ -415,6 +415,10 @@ public class KademliaObserver implements Control {
             		writer.write(String.valueOf(reg.getMinRegisterTime()));
             		writer.write(",");
             		writer.write(String.valueOf(reg.getAvgRegisterTime()));
+            		writer.write(",");
+            		writer.write(String.valueOf(reg.getMinDiscoveryTime()));
+            		writer.write(",");
+            		writer.write(String.valueOf(reg.getAvgDiscoveryTime()));           		
     	        	writer.write("\n");
             	}
             	
@@ -425,6 +429,7 @@ public class KademliaObserver implements Control {
     		//e.printStackTrace();
     	}
     }
+    
     private void write_registered_topics_average() {
     	try {
 	        String filename = "./logs/registeredTopics.csv";
