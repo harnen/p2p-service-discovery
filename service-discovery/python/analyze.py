@@ -11,6 +11,9 @@ import sys
 import csv
 import math
 
+csv.field_size_limit(sys.maxsize)
+
+
 def analyzeMessages(dirs):
 
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")

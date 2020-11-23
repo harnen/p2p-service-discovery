@@ -33,6 +33,12 @@ import peersim.util.IncrementalStats;
  * @version 1.0
  */
 public class KademliaObserver implements Control {
+    
+    private static final String PAR_RANGE_EXPERIMENT = "rangeExperiment";
+
+    private String logFolderName; 
+    private String parameterName;
+    private double parameterValue; 
 
     /**
      * keep statistics of the number of hops of every message delivered.
@@ -111,10 +117,24 @@ public class KademliaObserver implements Control {
 
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
+        this.parameterName = Configuration.getString(prefix + "." + PAR_RANGE_EXPERIMENT, "");
+        if (!this.parameterName.isEmpty())
+            this.parameterValue = Configuration.getDouble(prefix + "." + PAR_RANGE_EXPERIMENT, -1);
+        
+        if (this.parameterName.isEmpty())
+            this.logFolderName = "./logs";
+        else
+            this.logFolderName = this.parameterName + "-" + String.valueOf(this.parameterValue);
+
+        File directory = new File(this.logFolderName);
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+
 		try {
-			msgWriter = new FileWriter("./logs/messages.csv");
+			msgWriter = new FileWriter(this.logFolderName + "/" + "messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");
-			opWriter = new FileWriter("./logs/operations.csv");
+			opWriter = new FileWriter(this.logFolderName + "/" + "operations.csv");
 			//opWriter.write("id,type,src,dst,hops,malicious,discovered,discovered_list,topic\n");
             opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,topic\n");
             regByTopic = new HashMap<Topic,Integer>();
@@ -321,7 +341,7 @@ public class KademliaObserver implements Control {
         if (activeRegistrations.size() == 0)
             return;
         try {
-            String filename = "./logs/registration_stats.csv";
+            String filename = this.logFolderName + "/" + "registration_stats.csv";
             File myFile = new File(filename);
             FileWriter writer;
             if (!myFile.exists()) {
@@ -360,7 +380,7 @@ public class KademliaObserver implements Control {
 
     private void write_node_info() {
         try {
-            String filename = "./logs/node_information.csv";
+            String filename = this.logFolderName + "/" + "node_information.csv";
             File myFile = new File(filename);
             FileWriter writer;
             if (!myFile.exists()) {
@@ -396,7 +416,7 @@ public class KademliaObserver implements Control {
     private void write_registered_topics_timing() {
     	
     	try {
-	        String filename = "./logs/registeredTopicsTime.csv";
+	        String filename = this.logFolderName + "/" + "registeredTopicsTime.csv";
 	        File myFile = new File(filename);
 	        FileWriter writer;
 	        if (myFile.exists())myFile.delete();
@@ -432,7 +452,7 @@ public class KademliaObserver implements Control {
     
     private void write_registered_topics_average() {
     	try {
-	        String filename = "./logs/registeredTopics.csv";
+	        String filename = this.logFolderName + "/" + "registeredTopics.csv";
 	        File myFile = new File(filename);
 	        FileWriter writer;
 	        if (myFile.exists())myFile.delete();
@@ -457,7 +477,7 @@ public class KademliaObserver implements Control {
     
     private void write_registered_registrar_average() {
     	try {
-	        String filename = "./logs/registeredRegistrar.csv";
+	        String filename = this.logFolderName + "/" + "registeredRegistrar.csv";
 	        File myFile = new File(filename);
 	        FileWriter writer;
 	        if (myFile.exists())myFile.delete();
@@ -482,7 +502,7 @@ public class KademliaObserver implements Control {
     
     private void write_registered_registrant_average() {
     	try {
-	        String filename = "./logs/registeredRegistrant.csv";
+	        String filename = this.logFolderName + "/" + "registeredRegistrant.csv";
 	        File myFile = new File(filename);
 	        FileWriter writer;
 	        if (myFile.exists())myFile.delete();
@@ -513,7 +533,7 @@ public class KademliaObserver implements Control {
         HashSet<BigInteger> uneclipsed_nodes = new HashSet<BigInteger>();
         HashSet<BigInteger> evil_nodes = new HashSet<BigInteger>();
         try {
-            String filename = "./logs/eclipse_counts.csv";
+            String filename = this.logFolderName + "/" + "eclipse_counts.csv";
             File myFile = new File(filename);
             FileWriter writer;
             if (!myFile.exists()) {
@@ -581,7 +601,7 @@ public class KademliaObserver implements Control {
     	//System.out.println(CommonState.getTime()+" execute");
     	avgCounter++;
         try {
-            FileWriter writer = new FileWriter("./logs/" + CommonState.getTime() +  "_registrations.csv");
+            FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
             writer.write("host,topic,registrant,timestamp\n");
 
             
