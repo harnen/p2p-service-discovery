@@ -27,16 +27,16 @@ def analyzeMessages(dirs):
         width=0.3
         margin=width*i
         #print(df['type'].value_counts().index)
-        if not (df.index == 'MSG_FIND').any():
+        if not (df.type == 'MSG_FIND').any():
             new_row = { 'id':0, 'type':'MSG_FIND', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
             df = df.append(new_row,ignore_index=True)
-        if not (df.index == 'MSG_TICKET_REQUEST').any():
+        if not (df.type == 'MSG_TICKET_REQUEST').any():
             new_row = { 'id':0, 'type':'MSG_TICKET_REQUEST', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
             df = df.append(new_row,ignore_index=True)
-        if not (df.index == 'MSG_RESPONSE').any():
+        if not (df.type == 'MSG_RESPONSE').any():
             new_row = { 'id':0, 'type':'MSG_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
             df = df.append(new_row,ignore_index=True)
-        if not (df.index == 'MSG_TICKET_RESPONSE').any():
+        if not (df.type == 'MSG_TICKET_RESPONSE').any():
             new_row = { 'id':0, 'type':'MSG_TICKET_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
             df = df.append(new_row,ignore_index=True)
 
