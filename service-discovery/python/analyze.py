@@ -15,18 +15,17 @@ csv.field_size_limit(sys.maxsize)
 
 
 def analyzeMessages(dirs):
-
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    fig, ax1 = plt.subplots()
-    fig, ax2 = plt.subplots()
-    fig, ax3 = plt.subplots()
+    fig1, ax1 = plt.subplots()
+    fig2, ax2 = plt.subplots()
+    fig3, ax3 = plt.subplots()
     i=0
 
     for log_dir in dirs:
         print(log_dir)
         df = pd.read_csv(log_dir + '/messages.csv')
-        #print(df)
+        
         df['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label=log_dir)
+        
         width=0.3
         margin=width*i
         #print(df['type'].value_counts().index)
@@ -42,28 +41,33 @@ def analyzeMessages(dirs):
         if not (df.type == 'MSG_TICKET_RESPONSE').any():
             new_row = { 'id':0, 'type':'MSG_TICKET_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
             df = df.append(new_row,ignore_index=True)
-
         table = df['type'].value_counts().sort_index()
-#        sorted_table = table.sort_values(by='type',ascending=False)
-#        sorted_table = table.sort_values(by='count',ascending=False)
         print(table)
         ax2.bar(np.arange(len(table.index))+margin,table.values,width=width, label=log_dir)
-        #ax2.bar(np.arange(len(df['type'].value_counts(sort=True)))+margin, df['type'].value_counts(sort=True), width=width, label=log_dir)
-        #ax2.bar(np.arange(len(df['topic'].value_counts()))+margin, df['topic'].value_counts(), width=width, label=log_dir)
-        #ax2.set_title("Global registration count by topic")
         i = i+1
-        #ax2.bar(df['type'].value_counts().index, df['type'].value_counts(), label=log_dir)
+        
         df['src'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message sent by node", label=log_dir)
 
-    #df = pd.read_csv('logs/ticket/messages.csv')
+    
     ticks = table.index
-    #print(ticks)
-    #print(len(ticks))
     ax2.set_xticks(range(len(ticks)))
     ax2.set_xticklabels(ticks)
+    
     ax1.legend()
+    #add line showing how the result should be
+    ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+    ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
+    fig1.savefig('messages_received.png')
+
+    
     ax2.legend()
+    fig2.savefig('messages_types.png')
+    
     ax3.legend()
+    #add line showing how the result should be
+    ax3.plot([ax3.get_xlim()[0], ax3.get_xlim()[1]], [(ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+    ax3.text(ax3.get_xlim()[1]*0.8, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, "optimal", size=12)
+    fig3.savefig('messages_sent.png')
 
 def analyzeActiveRegistrations(dirs):
     """ Plot a bar chart showing the number of registrations by malicious and good nodes.
@@ -115,41 +119,13 @@ def analyzeActiveRegistrations(dirs):
 
         plt.savefig('./plots/registration_origin.png')
 
+
 def analyzeRegistrations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    fig, ax1 = plt.subplots()
-    fig, ax2 = plt.subplots()
-    fig, ax3 = plt.subplots()
-
-    i=0
-
-    for log_dir in dirs:
-        print(log_dir)
-        df = pd.read_csv(log_dir + '/3500000_registrations.csv')
-        print(df['host'].value_counts())
-        df['host'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Registrations by advertisement medium", label=log_dir)
-        width=0.3
-        margin=width*i
-        ax2.bar(np.arange(len(df['topic'].value_counts()))+margin, df['topic'].value_counts(), width=width, label=log_dir)
-        ax2.set_title("Global registration count by topic")
-        df['registrant'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Registrations by advertiser", label=log_dir)
-        i = i+1
-
-    ticks = df['topic'].value_counts().index
-    ax2.set_xticks(range(len(ticks)))
-    ax2.set_xticklabels(ticks)
-    #ax2.set_xticklabels(df['topic'].value_counts().index)
-    ax1.legend()
-    ax2.legend()
-    ax3.legend()
-
-
-def analyzeRegistrationsAverage(dirs):
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    fig, ax1 = plt.subplots()
-    fig, ax2 = plt.subplots()
-    fig, ax3 = plt.subplots()
-
+    fig1, ax1 = plt.subplots()
+    fig2, ax2 = plt.subplots()
+    fig3, ax3 = plt.subplots()
+    
     i=0
     for log_dir in dirs:
         print(log_dir)
@@ -164,16 +140,28 @@ def analyzeRegistrationsAverage(dirs):
         ax3.bar(np.arange(len(sorted_table['count'].values))+margin,sorted_table['count'].values,width=width, label=log_dir)
         i=i+1
 
+    ax1.set_title('Registrations by registrant')
+    #add line showing how the result should be
+    ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+    ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
+    ax1.set_ylim(bottom=0)
+    fig1.savefig('registrations_registrant.png')
+    
+    ax2.set_title('Registrations by registrar')
+    ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+    ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
+    ax2.set_ylim(bottom=0)
+    fig2.savefig('registrations_registrar.png')
+    
+    ax3.set_title('Registrations by topics (average)')
     ticks = sorted_table['topic'].values
     ax3.set_xticks(range(len(ticks)))
     ax3.set_xticklabels(ticks)
 
-    ax1.set_title('Registrations by advertiser (average)')
-    ax2.set_title('Registrations by advertiser medium (average)')
-    ax3.set_title('Registrations by topics (average)')
     ax1.legend()
     ax2.legend()
     ax3.legend()
+    fig3.savefig('registrations_topic.png')
 
 def analyzeRegistrarDistribution(dirs):
     fig, ax1 = plt.subplots()
@@ -220,9 +208,6 @@ def analyzeRegistrarDistribution(dirs):
     print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Registrars")
-
-
-
 
 def analyzeRegistrantDistribution(dirs):
     fig, ax1 = plt.subplots()
@@ -291,8 +276,6 @@ def analyzeRegistrantDistribution(dirs):
     print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Discovered Registrants")
-
-
 
 def analyzeOperations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -491,14 +474,13 @@ if (len(sys.argv) < 2):
     exit(1)
 
 print('Will read logs from', sys.argv[1:])
-analyzeMessages(sys.argv[1:])
+#analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
-analyzeRegistrationsAverage(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
-analyzeRegistrantDistribution(sys.argv[1:])
-analyzeRegistrarDistribution(sys.argv[1:])
-analyzeEclipsedNodesOverTime(sys.argv[1:])
-analyzeEclipsedNodeDistribution(sys.argv[1:])
-analyzeActiveRegistrations(sys.argv[1:])
-analyzeRegistrationTime(sys.argv[1:])
+#analyzeRegistrantDistribution(sys.argv[1:])
+#analyzeRegistrarDistribution(sys.argv[1:])
+#analyzeEclipsedNodesOverTime(sys.argv[1:])
+#analyzeEclipsedNodeDistribution(sys.argv[1:])
+#analyzeActiveRegistrations(sys.argv[1:])
+#analyzeRegistrationTime(sys.argv[1:])
 plt.show()

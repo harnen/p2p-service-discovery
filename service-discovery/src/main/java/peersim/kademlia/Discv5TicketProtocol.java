@@ -47,7 +47,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     /**
 	 * Table to search for topics
 	 */
-    private HashMap<BigInteger,SearchTable> searchTable;
+    private HashMap<BigInteger,SearchTable> searchTables;
     
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 	final String PAR_ADS_PER_QUEUE = "ADS_PER_QUEUE";
@@ -78,7 +78,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		super(prefix);
         this.topicTable = new Discv5TopicTable();
         ticketTable = new HashMap<BigInteger,TicketTable>();
-        searchTable = new HashMap<BigInteger,SearchTable>();
+        searchTables = new HashMap<BigInteger,SearchTable>();
     }
 	
 	/**
@@ -337,7 +337,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
 		for(BigInteger neighbour: neighbours) {
 			routingTable.addNeighbour(neighbour);
-			for(SearchTable st : searchTable.values())
+			for(SearchTable st : searchTables.values())
 				st.addNeighbour(neighbour);
 			
 			for(TicketTable tt : ticketTable.values())
@@ -387,6 +387,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				//System.out.println("Writing stats");
 				KademliaObserver.register_total.add(all);
 				KademliaObserver.register_ok.add(found);
+				//lop.visualize();
 									
 				node.setLookupResult(lop.getDiscoveredArray());
 				return;
@@ -470,12 +471,12 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     	
 		//logger.warning("Send init lookup for topic "+this.node.getId()+" "+t.getTopic());
 
-        if(!searchTable.containsKey(t.getTopicID())) {
+        if(!searchTables.containsKey(t.getTopicID())) {
     		//logger.warning("new search table for topic "+this.node.getId()+" "+t.getTopic());
 
         	SearchTable rou = new SearchTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.SEARCH_BUCKET_SIZE,10,this,t,myPid,KademliaCommonConfig.SEARCH_BUCKET_SIZE==1);
         	rou.setNodeId(t.getTopicID());
-        	searchTable.put(t.getTopicID(),rou);
+        	searchTables.put(t.getTopicID(),rou);
         	
         	
         	for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
@@ -483,17 +484,15 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         		//logger.warning("Adding "+neighbours.length+" for distance "+i);
         		if(neighbours.length!=0)rou.addNeighbour(neighbours);
         	}
-        	
-        	sendTopicLookup(m,t,myPid);
         	/*Message message = Message.makeInitFindNode(t.getTopicID());
     		message.timestamp = CommonState.getTime();
     		
     		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);*/
         } else {
     		//logger.warning("existing search table for topic "+this.node.getId()+" "+t.getTopic());
-
-        	sendTopicLookup(m,t,myPid);
         }
+        
+        sendTopicLookup(m,t,myPid);
   
  
     }
@@ -516,7 +515,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		//Topic t = (Topic) m.body;
 		logger.warning("Send topic lookup for topic "+this.node.getId()+" "+t.getTopic());
 
-		LookupTicketOperation lop = new LookupTicketOperation(this.node.getId(), this.searchTable.get(t.getTopicID()), m.timestamp, t);
+		LookupTicketOperation lop = new LookupTicketOperation(this.node.getId(), this.searchTables.get(t.getTopicID()), m.timestamp, t);
 		lop.body = m.body;
 		operations.put(lop.operationId, lop);
 	
@@ -623,7 +622,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		if(m.getType() == Message.MSG_RESPONSE) {
 			BigInteger[] neighbours = (BigInteger[]) m.body;
 			//if(neighbours.length!=0)logger.warning("Find response received at "+this.node.getId()+" from "+m.src.getId()+" with "+neighbours.length+" neighbours");
-			for(SearchTable table : searchTable.values())
+			for(SearchTable table : searchTables.values())
 	    		table.addNeighbour(neighbours);
 			
 			for(TicketTable table : ticketTable.values())
@@ -808,7 +807,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		//System.out.print(topicTable.dumpRegistrations());
 		for(TicketTable ttable : ticketTable.values())
 			ttable.refreshBuckets();
-		for(SearchTable stable : searchTable.values())
+		for(SearchTable stable : searchTables.values())
 			stable.refreshBuckets();
 			//stable.refreshBuckets(kademliaid, otherProtocolId);
 		
