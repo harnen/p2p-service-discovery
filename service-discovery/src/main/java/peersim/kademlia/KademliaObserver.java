@@ -388,7 +388,7 @@ public class KademliaObserver implements Control {
                     return;
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
-                writer.write("nodeID,topicID,is_evil?\n");
+                writer.write("nodeID,topicID,is_evil?,numOutConnections,numInConnections,numEvilOutConnections,numEvilInConnections\n");
             }
             else {
                 
@@ -402,7 +402,22 @@ public class KademliaObserver implements Control {
                 if (writtenNodeIDs.contains(id))
                     continue;
                 int is_evil = kadProtocol.getNode().is_evil ? 1 : 0; 
-                writer.write(id + "," + nodeInfo.get(id) + "," + is_evil + "\n");
+                writer.write(id + "," + nodeInfo.get(id) + "," + is_evil + ",");
+                writer.write(kadProtocol.getNode().getOutgoingConnections().size() + ",");
+                writer.write(kadProtocol.getNode().getIncomingConnections().size() + ",");
+                int numEvil = 0;
+                for(KademliaNode n : kadProtocol.getNode().getIncomingConnections()) {
+                    if (n.is_evil) 
+                        numEvil++;
+                }
+                writer.write(numEvil + ",");
+                numEvil = 0;
+                for(KademliaNode n : kadProtocol.getNode().getOutgoingConnections()) {
+                    if (n.is_evil)
+                        numEvil++;
+                }
+                writer.write(numEvil + "\n");
+
                 writtenNodeIDs.add(id);
             }
             writer.close();
@@ -691,7 +706,8 @@ public class KademliaObserver implements Control {
         write_registered_registrar_average();
         write_eclipsing_results();
         write_registration_stats();
-        write_node_info();
+    	if(CommonState.getTime() > 300000)
+            write_node_info();
         write_registered_topics_timing();
         return false;
     }
