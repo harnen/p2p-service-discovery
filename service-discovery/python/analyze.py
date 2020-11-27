@@ -119,7 +119,6 @@ def analyzeActiveRegistrations(dirs):
 
         plt.savefig('./plots/registration_origin.png')
 
-
 def analyzeRegistrations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig1, ax1 = plt.subplots()
@@ -279,7 +278,6 @@ def analyzeRegistrantDistribution(dirs):
 
 def analyzeOperations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    fig, ax1 = plt.subplots()
     fig, ax2 = plt.subplots()
     fig, ax3 = plt.subplots()
 
@@ -288,18 +286,15 @@ def analyzeOperations(dirs):
     x_vals = []
     total_malicious_list = []
     total_discovered_list = []
+
     for log_dir in dirs:
         print(log_dir)
         df = pd.read_csv(log_dir + '/operations.csv')
         print(df)
-
-        print(df['type'].value_counts())
-        ax1.bar(df['type'].value_counts().index, df['type'].value_counts(), label=log_dir)
-        ax1.set_title("Operations by type")
-
+        
         print(df['used_hops'].mean())
-        ax2.bar(log_dir, df['used_hops'].mean())
-        ax2.set_title("Avg recv hop count")
+        ax2.bar(log_dir, df['used_hops'].mean(), yerr=df['used_hops'].std(), capsize=10)
+        ax2.set_title("Avg Lookup Hop Count")
 
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum())
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['discovered'].sum())
@@ -320,7 +315,6 @@ def analyzeOperations(dirs):
     ax3.set_xticks(x_vals)
     ax3.set_xticklabels(dirs)
 
-    ax1.legend()
     ax2.legend()
     ax3.legend()
 
@@ -476,8 +470,8 @@ if (len(sys.argv) < 2):
 print('Will read logs from', sys.argv[1:])
 #analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
-analyzeOperations(sys.argv[1:])
-#analyzeRegistrantDistribution(sys.argv[1:])
+#analyzeOperations(sys.argv[1:])
+analyzeRegistrantDistribution(sys.argv[1:])
 #analyzeRegistrarDistribution(sys.argv[1:])
 #analyzeEclipsedNodesOverTime(sys.argv[1:])
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
