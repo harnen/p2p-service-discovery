@@ -139,7 +139,14 @@ public class Turbulence implements Control {
 			inits[j].initialize(newNode);
 		Network.add(newNode);
 		
-		System.out.println("Adding node 1 " + Network.size());
+		int count=0;
+		for (int i = 0; i < Network.size(); ++i) 
+			if(Network.get(i).isUp())count++;
+		
+		System.out.println("Adding node " + count);
+
+		
+		System.out.println("Adding node " + Network.size());
 
 
 		// get kademlia protocol of new node
@@ -149,13 +156,6 @@ public class Turbulence implements Control {
 		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 		KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
 		((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
-		//node.setProtocolId(kademliaid);
-		//System.out.println("Adding node 2 " + newNode);
-		//System.out.println("Adding node 3 " + newKad);
-		//System.out.println("Adding node 4 " + node.getId());
-		//newNode.getKademliaProtocol().setNode(node);
-        //if (discv5id != -1)
-    	//	((Discv5TicketProtocol) (newNode.getProtocol(discv5id))).setNode(node, newNode);
 
 		// sort network
 		sortNet();
