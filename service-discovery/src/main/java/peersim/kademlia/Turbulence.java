@@ -145,10 +145,6 @@ public class Turbulence implements Control {
 		
 		System.out.println("Adding node " + count);
 
-		
-		System.out.println("Adding node " + Network.size());
-
-
 		// get kademlia protocol of new node
 		KademliaProtocol newKad = (KademliaProtocol) (newNode.getProtocol(kademliaid));
 		newNode.setKademliaProtocol(newKad);
