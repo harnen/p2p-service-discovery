@@ -64,7 +64,7 @@ public class Turbulence implements Control {
 	protected NodeInitializer[] inits;
 
 	private String prefix;
-	private int kademliaid;
+	protected int kademliaid;
 	//private int discv5id=-1;
 	private int transportid;
 	private int maxsize;
@@ -139,8 +139,11 @@ public class Turbulence implements Control {
 			inits[j].initialize(newNode);
 		Network.add(newNode);
 		
-		System.out.println("Adding node 1 " + Network.size());
-
+		int count=0;
+		for (int i = 0; i < Network.size(); ++i) 
+			if(Network.get(i).isUp())count++;
+		
+		System.out.println("Adding node " + count);
 
 		// get kademlia protocol of new node
 		KademliaProtocol newKad = (KademliaProtocol) (newNode.getProtocol(kademliaid));
@@ -149,13 +152,6 @@ public class Turbulence implements Control {
 		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 		KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
 		((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
-		//node.setProtocolId(kademliaid);
-		//System.out.println("Adding node 2 " + newNode);
-		//System.out.println("Adding node 3 " + newKad);
-		//System.out.println("Adding node 4 " + node.getId());
-		//newNode.getKademliaProtocol().setNode(node);
-        //if (discv5id != -1)
-    	//	((Discv5TicketProtocol) (newNode.getProtocol(discv5id))).setNode(node, newNode);
 
 		// sort network
 		sortNet();
@@ -191,7 +187,7 @@ public class Turbulence implements Control {
 		Node remove;
 		do {
 			remove = Network.get(CommonState.r.nextInt(Network.size()));
-		} while ((remove == null) || (!remove.isUp()));
+		} while (remove == null || !remove.isUp() || remove.getKademliaProtocol().getNode().is_evil);
 
 		System.out.println("Removing node " + remove.getKademliaProtocol().getNode().getId());
 		// remove node (set its state to DOWN)
@@ -219,6 +215,38 @@ public class Turbulence implements Control {
 		
 		return false;
 	}
+	
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a register message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	protected Message generateRegisterMessage(String topic) {
+		Topic t = new Topic(topic);
+		Message m = Message.makeRegister(t);
+		m.timestamp = CommonState.getTime();
+
+		return m;
+	}
+	
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a topic lookup message, by selecting randomly the destination and one of previousely registered topic.
+	 * 
+	 * @return Message
+	 */
+	protected Message generateTopicLookupMessage(String topic) {
+		//System.out.println("New lookup message "+topic);
+
+		Topic t = new Topic(topic);
+		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
+		m.timestamp = CommonState.getTime();
+
+		return m;
+	}
+	
+	
 
 	// ______________________________________________________________________________________________
 	public boolean execute() {

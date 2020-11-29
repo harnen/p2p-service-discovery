@@ -106,7 +106,7 @@ public class StateBuilder implements peersim.core.Control {
 			}
 		}
 		
-		while(!isNetworkConnected()) {
+		while(!Util.isNetworkConnected()) {
 			System.err.println("Your network is not connected - adding 10 random connection to each node");
 			addRandomConnections(10);
 		}
@@ -117,52 +117,5 @@ public class StateBuilder implements peersim.core.Control {
 
 	} // end execute()
 	
-	
-	private boolean isNetworkConnected() {
-		ArrayList<Set<BigInteger>> groups = new ArrayList<Set<BigInteger>>(); 
-	
-		for(int i = 0; i < Network.size(); i++) {
-			Node node = Network.get(i); 
-			KademliaProtocol prot = (KademliaProtocol) (node.getKademliaProtocol());
-			BigInteger id = prot.node.getId();
-			Set<BigInteger> neighbours = prot.routingTable.getAllNeighbours();
-			
-			boolean added = false;
-			for(Set<BigInteger> group: groups) {
-				HashSet<BigInteger> intersection = new HashSet<BigInteger>(group);
-				intersection.retainAll(neighbours);
-				if(intersection.size() > 0) {
-					group.addAll(neighbours);
-					added = true;
-					break;
-				}
-			}
-			if(!added) {
-				groups.add(neighbours);
-			}
-		}
-
-		//try merging groups
-		boolean merged = true;
-		while((groups.size() > 1) && !merged) {
-			merged = false;
-			for (int i = 1; i < groups.size(); i++) {
-				HashSet<BigInteger> intersection = new HashSet<BigInteger>(groups.get(0));
-				intersection.retainAll(groups.get(i));
-				if(intersection.size() > 0) {
-					groups.get(0).addAll(groups.get(i));
-					groups.remove(i);
-					merged = true;
-					break;
-				}			
-			}
-		}
-		if(groups.size() == 1) {
-			return true;
-		}else {
-			System.out.println("We have " + groups.size() + " disconnected groups");
-			return false;
-		}
-	}
 
 }

@@ -441,6 +441,9 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	 */
     protected void handleInitRegisterTopic(Message m, int myPid) {
     	Topic t = (Topic) m.body;
+    	
+    	logger.warning("handleInitRegisterTopic "+t.getTopic());
+
 
     	//restore the IF statement
         KademliaObserver.addTopicRegistration(t, this.node.getId());

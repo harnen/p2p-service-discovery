@@ -32,7 +32,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	 */
 	private final static String PAR_ZIPF = "zipf";
 	private final static String PAR_TOPICNUM = "topicnum";
-	private final static String PAR_FREQ = "maxfreq";
+	//private final static String PAR_FREQ = "maxfreq";
 
 	protected boolean first = true;
 	private boolean second = false;
