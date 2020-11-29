@@ -11,6 +11,7 @@ import peersim.core.CommonState;
 import peersim.kademlia.KademliaCommonConfig;
 import peersim.kademlia.SearchTable;
 import peersim.kademlia.Topic;
+import peersim.kademlia.Util;
 
 public class LookupTicketOperation extends LookupOperation {
 
@@ -24,24 +25,29 @@ public class LookupTicketOperation extends LookupOperation {
 
 
 	public BigInteger getNeighbour() {
-		// find closest neighbour ( the first not already queried)
 		BigInteger res = null;
-
 		BigInteger[] neighbours = new BigInteger[0];
-		
-		int distance = ThreadLocalRandom.current().nextInt(KademliaCommonConfig.BITS-sTable.getnBuckets(),KademliaCommonConfig.BITS);
-		//System.out.println("Distance "+distance);
 		int tries=0;
+		
 		while((neighbours.length==0)&&(tries<sTable.getnBuckets())) {
-			//System.out.println("Distance "+distance);
-			distance = ThreadLocalRandom.current().nextInt(KademliaCommonConfig.BITS-sTable.getnBuckets(),KademliaCommonConfig.BITS);
+			int distance = ThreadLocalRandom.current().nextInt(KademliaCommonConfig.BITS-sTable.getnBuckets(),KademliaCommonConfig.BITS);
 			tries++;
-			//System.out.println("Distance "+distance);
 			neighbours = sTable.getNeighbours(distance);
-			//System.out.println("Distance "+distance+" "+neighbours.length);
+			System.out.println("Distance "+distance+" "+neighbours.length);
 		}
+		
+		/*for(int dist = sTable.getbucketMinDistance(); dist <= KademliaCommonConfig.BITS; dist++) {
+			neighbours = sTable.getNeighbours(dist);
+			if(neighbours.length != 0)
+				break;
+		}*/
+		
+		/*for(BigInteger n: neighbours) {
+			System.out.println("Logdist to the topic: " + Util.logDistance(topic.getTopicID(), n));
+		}*/
 
 		if(neighbours.length!=0)res = neighbours[ThreadLocalRandom.current().nextInt(neighbours.length)];
+		
 		if(res!=null) {
 			sTable.removeNeighbour(res);
 			//returned.add(res);

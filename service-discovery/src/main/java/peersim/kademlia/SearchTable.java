@@ -25,6 +25,9 @@ public class SearchTable extends RoutingTable {
     
     boolean refresh;
     
+    //just for statistics
+    HashMap<Integer, Integer> removedPerDist;
+    
 	public SearchTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
 		super(nBuckets, k, maxReplacements);
@@ -42,6 +45,8 @@ public class SearchTable extends RoutingTable {
 		//this.pendingLookup = true;
 		
 		this.refresh = refresh;
+		
+		removedPerDist = new HashMap<Integer, Integer>();
 		
 		//System.out.println("New search table size "+k+" "+refresh);
 
@@ -69,7 +74,13 @@ public class SearchTable extends RoutingTable {
 	public void removeNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
 		//pendingTickets.remove(node);
-		bucket(node).removeNeighbour(node);
+		getBucket(node).removeNeighbour(node);
+		int dist = Util.logDistance(nodeId, node);
+		if(!removedPerDist.containsKey(dist)){
+			removedPerDist.put(dist, 1);
+		}else {
+			removedPerDist.put(dist, removedPerDist.get(dist) + 1);
+		}
 	}	
 	/**
 	 * Check nodes and replace buckets with valid nodes from replacement list
@@ -100,7 +111,19 @@ public class SearchTable extends RoutingTable {
 		return nBuckets;
 	}
 	
-	
+	public void print() {
+		System.out.println("Routing table:");
+		int sum = 0;
+		for(int dist = 256; dist > bucketMinDistance ; dist-- ) {
+			int removed = 0;
+			if(removedPerDist.containsKey(dist))
+				removed = removedPerDist.get(dist);
+			
+			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() + " +" + removed);
+			sum += removed;
+		}
+		System.out.println("Asked " + sum + " nodes.");
+	}
 
 
 }

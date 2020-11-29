@@ -93,12 +93,12 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         
         if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) ) {
             
-            if(!ticketTable.containsKey(t.getTopicID())) {
+            if(!ticketTables.containsKey(t.getTopicID())) {
                 KademliaObserver.addTopicRegistration(t, this.node.getId());
                 int k = (int) Math.ceil((double) this.targetNumOfRegistrations / KademliaCommonConfig.NBUCKETS);
         	    TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,k,10,this,t,myPid,false);
                 rou.setNodeId(t.getTopicID());
-                ticketTable.put(t.getTopicID(),rou);
+                ticketTables.put(t.getTopicID(),rou);
             
                 for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
                     BigInteger[] neighbours = routingTable.getNeighbours(i);

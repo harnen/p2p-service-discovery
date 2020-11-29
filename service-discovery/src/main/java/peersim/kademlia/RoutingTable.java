@@ -63,13 +63,14 @@ public class RoutingTable implements Cloneable {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
 		//System.out.println("Bucket add node "+node+" in "+nodeId+" at bucket "+Util.logDistance(nodeId, node));
 		if(node.compareTo(nodeId)==0) return false;
-		return bucket(node).addNeighbour(node);
+
+		return getBucket(node).addNeighbour(node);
 	}
 
 	// remove a neighbour from the correct k-bucket
 	public void removeNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
-		bucket(node).removeNeighbour(node);
+		getBucket(node).removeNeighbour(node);
 	}
 	
 
@@ -151,17 +152,26 @@ public class RoutingTable implements Cloneable {
 	
 	public void sendToFront(BigInteger node)
 	{
-		if(bucket(node).neighbours.remove(node))
-			bucket(node).neighbours.add(0,node);
+		if(getBucket(node).neighbours.remove(node))
+			getBucket(node).neighbours.add(0,node);
 	}
 	
 	
-	public KBucket bucket(BigInteger node) {
+	
+	public KBucket getBucket(BigInteger node) {
 		//return bucketAtDistance(Util.prefixLen(nodeId, node));
 		return bucketAtDistance(Util.logDistance(nodeId, node));
 	}
+
+	public int getBucketNum(BigInteger node) {
+		int dist = Util.logDistance(nodeId, node);
+		if (dist <= bucketMinDistance) {
+			return 0;
+		}
+		return dist - bucketMinDistance - 1;
+	}
 	
-	private KBucket bucketAtDistance(int distance) {
+	protected KBucket bucketAtDistance(int distance) {
 		if (distance <= bucketMinDistance) {
 			//System.out.println("bucket at distance "+distance+" "+bucketMinDistance+" "+0);
 			return k_buckets[0];
@@ -214,9 +224,12 @@ public class RoutingTable implements Cloneable {
 		//}while(Util.logDistance(randNode, nodeId)!=b);
 		
 		return randNode;
-		
-
 	}
+	
+	public int getbucketMinDistance() {
+		return bucketMinDistance;
+	}
+	
 
 	// ______________________________________________________________________________________________
 

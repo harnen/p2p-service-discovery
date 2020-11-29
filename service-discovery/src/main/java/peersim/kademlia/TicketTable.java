@@ -91,10 +91,10 @@ public class TicketTable extends RoutingTable {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
 		//logger.warning("Pending ticket remove "+node);
 		pendingTickets.remove(node);
-		bucket(node).removeNeighbour(node);
+		getBucket(node).removeNeighbour(node);
 		
 		BigInteger[] replacements = new BigInteger[0];
-		bucket(node).replacements.toArray(replacements);
+		getBucket(node).replacements.toArray(replacements);
 		addNeighbour(replacements);
 		//logger.warning("Node "+node+" removed at "+protocol.getNode().getId());
 
