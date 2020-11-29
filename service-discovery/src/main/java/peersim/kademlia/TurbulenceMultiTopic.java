@@ -65,12 +65,13 @@ public class TurbulenceMultiTopic extends Turbulence{
 			UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 			KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
 			((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
+			newKad.setProtocolID(kademliaid);  
 
 
 			// sort network
 			sortNet();
 			
-			/*for (int k = 0; k < 10; k++) {
+			for (int k = 0; k < 10; k++) {
                 int index = CommonState.r.nextInt(Network.size());
                 Node n  = Network.get(index);
                 if(n.getFailState()==Node.DOWN) {
@@ -80,15 +81,8 @@ public class TurbulenceMultiTopic extends Turbulence{
 				KademliaProtocol jKad =(KademliaProtocol) n.getProtocol(kademliaid);
 				//System.out.println("Adding node "+jKad.getNode().getId());
 				newKad.routingTable.addNeighbour(jKad.getNode().getId());
-			}*/
-			
-			// select one random bootstrap node
-			Node start;
-			do {
-				start = Network.get(CommonState.r.nextInt(Network.size()));
-			} while ((start == null) || (!start.isUp()));
-			newKad.routingTable.addNeighbour(((KademliaProtocol) (start.getProtocol(kademliaid))).node.getId());
-
+			}
+		
 
             int numTopics;
             
@@ -106,16 +100,18 @@ public class TurbulenceMultiTopic extends Turbulence{
             	}while(topicList.contains(t));
             	topicList.add(t);
             }
-            //System.out.print("Assigning node to " + numTopics + " topics"+" "+topicList.size()+" ");
-            for (int i = 0; i < 1; i++) {
+            System.out.println("Assigning to node " + newKad.getNode().getId() +" "+topicList.size()+" topics");
+            
+			node.setTopicList(topicList, newNode);
+
+            for (int i = 0; i < topicList.size(); i++) {
                 //System.out.print(topicList.get(i)+" ");
 			    Message registerMessage = generateRegisterMessage(topicList.get(i));
 			    Message lookupMessage = generateTopicLookupMessage(topicList.get(i));
 			    if(registerMessage != null) {
-				    int time = CommonState.r.nextInt(90000);
-				    //System.out.println("Topic " + topicList.get(i) + " will be registered by "+kademliaid+" "+newNode.getKademliaProtocol().getProtocolID());
-				    EDSimulator.add(0+i, registerMessage, newNode, kademliaid);
-				    //EDSimulator.add(0, lookupMessage, newNode, kademliaid);
+				    System.out.println("Topic " + topicList.get(i) + " will be registered by "+newKad.getNode().getId());
+				    EDSimulator.add(0, registerMessage, newNode, kademliaid);
+				    EDSimulator.add(0, lookupMessage, newNode, kademliaid);
 
 			    }
 		    }

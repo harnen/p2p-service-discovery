@@ -6,6 +6,7 @@ import java.util.List;
 
 import peersim.core.CommonState;
 import peersim.core.Node;
+import peersim.edsim.EDSimulator;
 
 import java.math.BigInteger;
 
@@ -16,6 +17,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     private int maxIncomingConnections;
     private int maxOutgoingConnections;
+    
+    private List<String> t;
 
     private List<KademliaNode> lookupResultBuffer;
         
@@ -24,13 +27,12 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     private Node n;
     
-    private Discv5ZipfTrafficGenerator client;
+    //private Discv5ZipfTrafficGenerator client;
     
     boolean requested=false;
 
     public boolean is_evil=false;
 
-    Topic t;
     
     public KademliaNode(BigInteger id, String addr, int port){
         this.id = id;
@@ -128,17 +130,20 @@ public class KademliaNode implements Comparable<KademliaNode>{
     public void setLookupResult(List<KademliaNode> result) {
     	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size());
     	//lookupResultBuffer = result;
+    	//for(KademliaNode rest : result)
+    	//	if(lookupResultBuffer.size()<10)lookupResultBuffer.add(rest);
     	lookupResultBuffer.addAll(result);
     	requested=false;
+    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+lookupResultBuffer.size()+" "+outgoingConnections.size());
     	if(lookupResultBuffer.size()>0)tryNewConnections();
     	else {
-    		System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size()+" Sending lookup");
-    		/*if(client!=null&&n!=null&&t!=null){
-           		if(!requested) {
-           			client.emptyBufferCallback(n,t);
-           			requested=true;
-           		}
-           	}*/
+    		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size()+" Sending lookup");
+   
+   			for(String topic : t)
+   				EDSimulator.add(0,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
+
+   			requested=true;
+
     	}
     }
     		
@@ -193,14 +198,25 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	return outgoingConnections;
     }
     
-    public void setCallBack(Discv5ZipfTrafficGenerator client, Node n,Topic t) {
+   /* public void setCallBack(Discv5ZipfTrafficGenerator client, Node n,Topic t) {
     	this.client = client;
     	this.n = n;
     	this.t = t;
+    }*/
+    
+    public void setTopic(String t, Node n) {
+    	this.t = new ArrayList<String>();
+    	this.t.add(t);
+    	this.n = n;
+    }
+    
+    public void setTopicList(List<String> t, Node n) {
+    	this.t = t;
+    	this.n = n;
     }
     
     private void tryNewConnections() {
-    	//System.out.println(CommonState.getTime()+" trying connections "+maxOutgoingConnections);
+    	//System.out.println(CommonState.getTime()+" "+id+" trying connections "+maxOutgoingConnections);
        	while(outgoingConnections.size()<maxOutgoingConnections&&lookupResultBuffer.size()>0) {
     		/*boolean success=false;
     		while(!success&&lookupResultBuffer.size()>0){
@@ -221,10 +237,13 @@ public class KademliaNode implements Comparable<KademliaNode>{
 			if(success)addOutgoingConnection(lookupResultBuffer.get(n));
 			lookupResultBuffer.remove(n);
     	}
-       	if(lookupResultBuffer.size()==0&&client!=null&&n!=null&&t!=null){
-       		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size());
+       	if(lookupResultBuffer.size()==0){
+       		//System.out.println(CommonState.getTime()+" "+id+" emptybuffer:"+lookupResultBuffer.size()+" "+outgoingConnections.size());
        		if(!requested) {
-       			client.emptyBufferCallback(n,t);
+       			//client.emptyBufferCallback(n,t);
+       			for(String topic : t)
+       				EDSimulator.add(0,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
+
        			requested=true;
        		}
        	}
@@ -234,4 +253,21 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	Node n = Util.nodeIdtoNode(node.getId());
     	return(n.isUp()&&(n.getKademliaProtocol().getNode().addIncomingConnection(this)));
     }
+    
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a topic lookup message, by selecting randomly the destination and one of previousely registered topic.
+	 * 
+	 * @return Message
+	 */
+	protected Message generateTopicLookupMessage(String topic) {
+		//System.out.println("New lookup message "+topic);
+
+		Topic t = new Topic(topic);
+		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
+		m.timestamp = CommonState.getTime();
+
+		return m;
+	}
+	
 }

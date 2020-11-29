@@ -57,12 +57,12 @@ public class TurbulenceSingleTopic extends Turbulence{
 			UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 			KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
 			((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
-
+			newKad.setProtocolID(kademliaid);  
 
 			// sort network
 			sortNet();
 			
-			/*for (int k = 0; k < 10; k++) {
+			for (int k = 0; k < 10; k++) {
                 int index = CommonState.r.nextInt(Network.size());
                 Node n  = Network.get(index);
                 if(n.getFailState()==Node.DOWN) {
@@ -72,17 +72,11 @@ public class TurbulenceSingleTopic extends Turbulence{
 				KademliaProtocol jKad =(KademliaProtocol) n.getProtocol(kademliaid);
 				//System.out.println("Adding node "+jKad.getNode().getId());
 				newKad.routingTable.addNeighbour(jKad.getNode().getId());
-			}*/
+			}
 			
-			// select one random bootstrap node
-			Node start;
-			do {
-				start = Network.get(CommonState.r.nextInt(Network.size()));
-			} while ((start == null) || (!start.isUp()));
-			newKad.routingTable.addNeighbour(((KademliaProtocol) (start.getProtocol(kademliaid))).node.getId());
-
 		    String topic = new String("t"+zipf.sample());
-			
+			node.setTopic(topic, newNode);
+
 			Message registerMessage = generateRegisterMessage(topic);
 		    Message lookupMessage = generateTopicLookupMessage(topic);
 		    if(registerMessage != null) {
