@@ -309,7 +309,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
         }
         else {
-            logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
+            //logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
+            logger.warning("Registration succesful for topic "+ticket.getTopic().topic+" at dist "+ Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID()));
             KademliaObserver.addAcceptedRegistration(topic, this.node.getId(),m.src.getId());
             KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
             Timeout timeout = new Timeout(ticket.getTopic(),m.src.getId());
@@ -329,7 +330,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[]  registrations = lookupBody.registrations;
 		//System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.available_requests);
-		System.out.println("Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) +" regs:" + registrations.length+ " neigh:"+neighbours.length);
+		System.out.println("Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) + ": " +  m.src.getId() + " regs:" + registrations.length+ " neigh:"+neighbours.length);
 		lop.elaborateResponse(neighbours);
 		
 		lop.increaseReturned(m.src.getId());
@@ -510,7 +511,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		KademliaObserver.lookup_total.add(1);
 		
 		//Topic t = (Topic) m.body;
-		logger.warning("Send topic lookup for topic "+this.node.getId()+" "+t.getTopic());
+		//logger.warning("Send topic lookup for topic "+this.node.getId()+" "+t.getTopic());
 
 		LookupTicketOperation lop = new LookupTicketOperation(this.node.getId(), this.searchTables.get(t.getTopicID()), m.timestamp, t);
 		lop.body = m.body;
@@ -537,7 +538,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			if (nextNode != null) {
 				m.dest = new KademliaNode(nextNode);
 				sendMessage(m.copy(), nextNode, myPid);
-				System.out.println("Send topic lookup to: " + this.node.getId()+" at distance:"+Util.logDistance(lop.topic.topicID, nextNode));
+				System.out.println("Send topic lookup to: " + nextNode +" at distance:"+Util.logDistance(lop.topic.topicID, nextNode));
 				lop.nrHops++;
 			}
 		}
