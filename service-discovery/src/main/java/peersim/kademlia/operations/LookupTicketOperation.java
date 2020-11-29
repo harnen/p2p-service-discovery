@@ -46,9 +46,9 @@ public class LookupTicketOperation extends LookupOperation {
 		
 		/*for(BigInteger n: neighbours) {
 			System.out.println("Logdist to the topic: " + Util.logDistance(topic.getTopicID(), n));
-		}
+		}*/
 		
-		System.out.println("Used:");
+		/*System.out.println("Used:");
 		for(BigInteger n: this.used) {
 			System.out.println(n);
 		}
@@ -59,12 +59,15 @@ public class LookupTicketOperation extends LookupOperation {
 			res = neighbours.get(CommonState.r.nextInt(neighbours.size()));
 			
 			//don't ask the same neighbour twice
-			/*if(this.used.contains(res)) {
+			if(this.used.contains(res)) {
+				System.out.println("This shouldn't happen");
+				System.out.println("N:" + res);
+				System.exit(1);
 				neighbours.remove(res);
 				res = null;
 			}else {
 				break;
-			}*/
+			}
 			break;
 		}
 		
@@ -73,7 +76,10 @@ public class LookupTicketOperation extends LookupOperation {
 			//returned.add(res);
 			//increaseUsed(res);
 			available_requests--;
+		}else {
+			System.out.println("Returning null");
 		}
+		
 		
 		
 		

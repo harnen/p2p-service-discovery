@@ -3,6 +3,7 @@ package peersim.kademlia;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -27,6 +28,7 @@ public class SearchTable extends RoutingTable {
     
     //just for statistics
     HashMap<Integer, Integer> removedPerDist;
+    HashSet<BigInteger> added;
     
 	public SearchTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
@@ -48,16 +50,23 @@ public class SearchTable extends RoutingTable {
 		
 		removedPerDist = new HashMap<Integer, Integer>();
 		
+		added = new HashSet<BigInteger>();
+		
 		//System.out.println("New search table size "+k+" "+refresh);
 
 		// TODO Auto-generated constructor stub
 	}
 	
+	
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger[] node) {
 		//System.out.println("Search table adding node");
-		for(BigInteger dest : node)
-			super.addNeighbour(dest);
+		for(BigInteger dest : node) {
+			if(!added.contains(dest)) {
+				added.add(dest);
+				super.addNeighbour(dest);
+			}
+		}
 		
 		/*if(pendingLookup) {
 			pendingLookup = false;
@@ -121,6 +130,18 @@ public class SearchTable extends RoutingTable {
 			
 			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() + " +" + removed);
 			sum += removed;
+		}
+		System.out.println("Asked " + sum + " nodes.");
+	}
+	
+	public void dump() {
+		System.out.println("Routing table:");
+		int sum = 0;
+		for(int dist = 256; dist > bucketMinDistance ; dist-- ) {
+						
+			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).neighbours);
+			System.out.println("\tb_r[" + dist + "]: " + super.bucketAtDistance(dist).replacements);
+			
 		}
 		System.out.println("Asked " + sum + " nodes.");
 	}

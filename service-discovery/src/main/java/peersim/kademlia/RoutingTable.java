@@ -63,7 +63,7 @@ public class RoutingTable implements Cloneable {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
 		//System.out.println("Bucket add node "+node+" in "+nodeId+" at bucket "+Util.logDistance(nodeId, node));
 		if(node.compareTo(nodeId)==0) return false;
-
+			
 		return getBucket(node).addNeighbour(node);
 	}
 
