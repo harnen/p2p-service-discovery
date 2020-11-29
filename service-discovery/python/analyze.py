@@ -278,8 +278,8 @@ def analyzeRegistrantDistribution(dirs):
 
 def analyzeOperations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    fig, ax2 = plt.subplots()
-    fig, ax3 = plt.subplots()
+    fig2, ax2 = plt.subplots()
+    fig3, ax3 = plt.subplots()
 
     x = ['RegisterOperation','LookupOperation']
     x_val = 1
@@ -317,6 +317,8 @@ def analyzeOperations(dirs):
 
     ax2.legend()
     ax3.legend()
+    fig2.savefig('lookup_hopcount.png')
+    fig3.savefig('malicious_discovered.png')
 
 def analyzeEclipsedNodesOverTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
