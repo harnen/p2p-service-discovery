@@ -57,14 +57,25 @@ public class SearchTable extends RoutingTable {
 		// TODO Auto-generated constructor stub
 	}
 	
+	// add a neighbour to the correct k-bucket
+	public boolean addNeighbour(BigInteger node) {
+		boolean result = false;
+		if(!added.contains(node)) {
+			 result = super.addNeighbour(node);
+			//don't add the same node multiple time
+			if(result) added.add(node);
+		}
+		return result;
+	}
+	
 	
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger[] node) {
-		//System.out.println("Search table adding node");
 		for(BigInteger dest : node) {
 			if(!added.contains(dest)) {
-				added.add(dest);
-				super.addNeighbour(dest);
+				//don't add the same node multiple time
+				if(super.addNeighbour(dest))
+					added.add(dest);
 			}
 		}
 		

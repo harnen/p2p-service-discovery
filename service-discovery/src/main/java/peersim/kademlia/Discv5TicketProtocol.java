@@ -330,7 +330,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[]  registrations = lookupBody.registrations;
 		//System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.available_requests);
-		System.out.print("Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) + ": " +  m.src.getId() + " regs:" + registrations.length+ " neigh:"+neighbours.length);
+		System.out.print("Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) + ": " +  m.src.getId() + " regs:" + registrations.length+ " neigh:"+neighbours.length + "-> ");
 		for(BigInteger neighbour: neighbours) {
 			System.out.print(Util.logDistance(neighbour, lop.topic.topicID) + ", ");
 		}
