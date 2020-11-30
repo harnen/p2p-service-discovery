@@ -85,6 +85,7 @@ public class LookupTicketOperation extends LookupOperation {
 		}
 		
 		if(res!=null) {
+			//System.out.println("Searching to node "+res);
 			sTable.removeNeighbour(res);
 			//returned.add(res);
 			//increaseUsed(res);

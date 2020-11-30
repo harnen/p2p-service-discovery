@@ -337,6 +337,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
 
         }
+        
+        //ticketTables.get(ticket.getTopic().getTopicID()).print();
     }
     
 	protected void handleTopicQueryReply(Message m, int myPid) {
@@ -419,7 +421,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				//lop.visualize();
 									
 				node.setLookupResult(lop.getDiscoveredArray());
-				searchTables.get(lop.topic.getTopicID()).print();
+				//searchTables.get(lop.topic.getTopicID()).print();
 				
 				return;
 			} else {
@@ -467,14 +469,14 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     protected void handleInitRegisterTopic(Message m, int myPid) {
     	Topic t = (Topic) m.body;
     	
-    	//logger.warning("handleInitRegisterTopic "+t.getTopic());
+    	logger.warning("handleInitRegisterTopic "+t.getTopic()+" "+t.getTopicID());
 
 
     	//restore the IF statement
         KademliaObserver.addTopicRegistration(t, this.node.getId());
 
         //TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
-        TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,10,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+        TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
         rou.setNodeId(t.getTopicID());
         ticketTables.put(t.getTopicID(),rou);
         	
@@ -482,6 +484,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         	BigInteger[] neighbours = routingTable.getNeighbours(i);
         	rou.addNeighbour(neighbours);
         }
+        //rou.print();
         //Register messages are automatically sent when adding Neighbours
         
 
@@ -499,8 +502,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     private void handleInitTopicLookup(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 	
-		//logger.warning("Send init lookup for topic "+this.node.getId()+" "+t.getTopic());
-      	SearchTable rou = new SearchTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.SEARCH_BUCKET_SIZE,10,this,t,myPid,KademliaCommonConfig.SEARCH_BUCKET_SIZE==1);
+		logger.warning("Send init lookup for topic "+this.node.getId()+" "+t.getTopic());
+      	SearchTable rou = new SearchTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.SEARCH_BUCKET_SIZE,KademliaCommonConfig.SEARCH_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.SEARCH_BUCKET_SIZE==1);
        	rou.setNodeId(t.getTopicID());
        	searchTables.put(t.getTopicID(),rou);
         	
@@ -513,9 +516,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
    		message.timestamp = CommonState.getTime();
     		
    		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);*/
-        rou.print();
+       // rou.print();
         sendTopicLookup(m,t,myPid);
-  
  
     }
     
@@ -791,7 +793,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             case Timeout.REG_TIMEOUT:
             	//logger.warning("Remove ticket table "+((Timeout)event).nodeSrc);
                 KademliaObserver.reportExpiredRegistration(((Timeout)event).topic, this.node.is_evil);
-            	ticketTables.get(((Timeout)event).topic.topicID).removeNeighbour(((Timeout)event).nodeSrc);
+            	ticketTables.get(((Timeout)event).topic.getTopicID()).removeNeighbour(((Timeout)event).nodeSrc);
             	break;
 
 			/*case Timeout.TIMEOUT: // timeout

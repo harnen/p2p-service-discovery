@@ -61,9 +61,13 @@ public class SearchTable extends RoutingTable {
 	public boolean addNeighbour(BigInteger node) {
 		boolean result = false;
 		if(!added.contains(node)) {
-			 result = super.addNeighbour(node);
+			//System.out.println("Adding "+Util.logDistance(nodeId, node)+" "+node);
+			result = super.addNeighbour(node);
 			//don't add the same node multiple time
-			if(result) added.add(node);
+			if(result) {
+				//System.out.println("Added "+node);
+				added.add(node);
+			}
 		}
 		return result;
 	}
@@ -72,11 +76,7 @@ public class SearchTable extends RoutingTable {
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger[] node) {
 		for(BigInteger dest : node) {
-			if(!added.contains(dest)) {
-				//don't add the same node multiple time
-				if(super.addNeighbour(dest))
-					added.add(dest);
-			}
+			addNeighbour(dest);
 		}
 		
 		/*if(pendingLookup) {
@@ -95,6 +95,10 @@ public class SearchTable extends RoutingTable {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
 		//pendingTickets.remove(node);
 		getBucket(node).removeNeighbour(node);
+		/*BigInteger[] replacements = new BigInteger[0];
+		getBucket(node).replacements.toArray(replacements);
+		System.out.println("remove neighbour "+node+" "+Util.logDistance(nodeId, node)+" adding "+replacements.length+" replacements.");
+		addNeighbour(replacements);*/
 		int dist = Util.logDistance(nodeId, node);
 		if(!removedPerDist.containsKey(dist)){
 			removedPerDist.put(dist, 1);
@@ -124,6 +128,7 @@ public class SearchTable extends RoutingTable {
 			BigInteger randomNode = generateRandomNode(i);
 			protocol.sendLookup(randomNode, myPid);
 		}
+		//print();
 
 	}
 	
@@ -132,21 +137,21 @@ public class SearchTable extends RoutingTable {
 	}
 	
 	public void print() {
-		System.out.println("Routing table:");
+		System.out.println("Search table:");
 		int sum = 0;
 		for(int dist = 256; dist > bucketMinDistance ; dist-- ) {
 			int removed = 0;
 			if(removedPerDist.containsKey(dist))
 				removed = removedPerDist.get(dist);
 			
-			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() + " +" + removed);
+			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() +" replacements:"+super.bucketAtDistance(dist).replacements.size()+" +" + removed);
 			sum += removed;
 		}
 		System.out.println("Asked " + sum + " nodes.");
 	}
 	
 	public void dump() {
-		System.out.println("Routing table:");
+		System.out.println("Search table:");
 		int sum = 0;
 		for(int dist = 256; dist > bucketMinDistance ; dist-- ) {
 						

@@ -28,6 +28,9 @@ public class TicketTable extends RoutingTable {
     
     boolean refresh;
     
+    HashMap<Integer, Integer> registeredPerDist;
+
+    
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
 		super(nBuckets, k, maxReplacements);
@@ -45,6 +48,9 @@ public class TicketTable extends RoutingTable {
 		logger = Logger.getLogger(protocol.getNode().getId().toString());
 		
 		this.refresh = refresh;
+		
+		registeredPerDist = new HashMap<Integer, Integer>();
+
 		//System.out.println("New ticket table size "+k+" "+refresh);
 		
 		// TODO Auto-generated constructor stub
@@ -82,6 +88,13 @@ public class TicketTable extends RoutingTable {
 		    register.body = ticket;
 		    register.operationId = m.operationId;
 			protocol.scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
+			
+			int dist = Util.logDistance(nodeId,  m.src.getId());
+			if(!registeredPerDist.containsKey(dist)){
+				registeredPerDist.put(dist, 1);
+			}else {
+				registeredPerDist.put(dist, registeredPerDist.get(dist) + 1);
+			}
 		}
 			
 	}
@@ -93,11 +106,10 @@ public class TicketTable extends RoutingTable {
 		pendingTickets.remove(node);
 		getBucket(node).removeNeighbour(node);
 		
-		BigInteger[] replacements = new BigInteger[0];
+		/*BigInteger[] replacements = new BigInteger[0];
 		getBucket(node).replacements.toArray(replacements);
-		addNeighbour(replacements);
+		addNeighbour(replacements);*/
 		//logger.warning("Node "+node+" removed at "+protocol.getNode().getId());
-
 		//System.out.println("Bucket remove "+bucket(node).occupancy());
 		
 	}	
@@ -120,23 +132,33 @@ public class TicketTable extends RoutingTable {
 		//logger.warning("Ticket table "+i+" "+k_buckets[i].occupancy());
 		KBucket b = k_buckets[i];
 		//if(b.neighbours.size()<k)
-		if(b.neighbours.size()<k) {
-			BigInteger[] replacements = new BigInteger[0];
-			b.replacements.toArray(replacements);
-			addNeighbour(replacements);
+		while(b.neighbours.size()<k&&b.replacements.size()>0)
+			//protocol.sendLookup(t, myPid);
+			b.replace();
+		if(b.neighbours.size()>0) {
+			b.checkAndReplaceLast();
+			//return;
 		}
-
-		if(refresh) {
-			if(b.neighbours.size()<k) {
-				BigInteger randomNode = generateRandomNode(i);
-				protocol.sendLookup(randomNode, myPid);
-				//logger.warning("Sending lookup from topic table to dist "+(Util.logDistance(randomNode, this.nodeId)- bucketMinDistance - 1)+" "+i);
-			}
+		if(b.neighbours.size()==0&&refresh) {
+			BigInteger randomNode = generateRandomNode(i);
+			protocol.sendLookup(randomNode, myPid);
 		}
 		
 	}
 		
-	
+	public void print() {
+		System.out.println("Ticket table:");
+		int sum = 0;
+		for(int dist = 256; dist > bucketMinDistance ; dist-- ) {
+			int removed = 0;
+			if(registeredPerDist.containsKey(dist))
+				removed = registeredPerDist.get(dist);
+			
+			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() +" replacements:"+super.bucketAtDistance(dist).replacements.size()+" +" + removed);
+			sum += removed;
+		}
+		System.out.println("Asked " + sum + " nodes.");
+	}
 	
 	
 
