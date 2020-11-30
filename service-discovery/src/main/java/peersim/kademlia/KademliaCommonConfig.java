@@ -36,6 +36,14 @@ public class KademliaCommonConfig {
     public static String NON_UNIFORM_ID_DISTRIBUTION = "nonUniform";
     public static String UNIFORM_ID_DISTRIBUTION = "uniform";
     
+    public static final int RANDOM_BUCKET_ORDER = 0;
+    public static final int CLOSEST_BUCKET_ORDER = 1;
+    public static final int ALL_BUCKET_ORDER = 2;
+    public static int LOOKUP_BUCKET_ORDER = RANDOM_BUCKET_ORDER;
+    
+    
+    
+    
 	/**
 	 * short information about current mspastry configuration
 	 * 

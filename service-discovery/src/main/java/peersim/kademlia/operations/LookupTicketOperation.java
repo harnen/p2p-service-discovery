@@ -17,58 +17,71 @@ import peersim.kademlia.Util;
 public class LookupTicketOperation extends LookupOperation {
 
 	SearchTable sTable;
+	int lastAskedBucket;
 
 	public LookupTicketOperation(BigInteger srcNode, SearchTable sTable, Long timestamp, Topic t) {
 		super(srcNode, timestamp, t);
 		this.sTable = sTable;
-		// TODO Auto-generated constructor stub
+		lastAskedBucket = KademliaCommonConfig.BITS;
 	}
 
-
-	public BigInteger getNeighbour() {
-		BigInteger res = null;
+	private ArrayList<BigInteger> getRandomBucketNeighbours(){
 		ArrayList<BigInteger> neighbours = new ArrayList<BigInteger>();
 		int tries=0;
-		
 		while((neighbours.size() == 0)&&(tries<sTable.getnBuckets())) {
 			//int distance = ThreadLocalRandom.current().nextInt(KademliaCommonConfig.BITS-sTable.getnBuckets(),KademliaCommonConfig.BITS);
 			int distance = KademliaCommonConfig.BITS - CommonState.r.nextInt(sTable.getnBuckets());
 			tries++;
 			Collections.addAll(neighbours, sTable.getNeighbours(distance));
-			//System.out.println("Distance "+distance+" "+neighbours.size());
 		}
-		
-		/*for(int dist = sTable.getbucketMinDistance(); dist <= KademliaCommonConfig.BITS; dist++) {
+		return neighbours;
+	}
+	
+	private ArrayList<BigInteger> getMinBucketNeighbours(){
+		ArrayList<BigInteger> neighbours = new ArrayList<BigInteger>();
+		for(int dist = sTable.getbucketMinDistance(); dist <= KademliaCommonConfig.BITS; dist++) {
 			Collections.addAll(neighbours, sTable.getNeighbours(dist));
 			if(neighbours.size() != 0)
 				break;
-		}*/
-		
-		/*for(BigInteger n: neighbours) {
-			System.out.println("Logdist to the topic: " + Util.logDistance(topic.getTopicID(), n));
-		}*/
-		
-		/*System.out.println("Used:");
-		for(BigInteger n: this.used) {
-			System.out.println(n);
 		}
-		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~");*/
+		return neighbours;
+	}
+	
+	private ArrayList<BigInteger> getAllBucketNeighbours(){
+		ArrayList<BigInteger> neighbours = new ArrayList<BigInteger>();
+		int tries = 0;
+		for(; tries<sTable.getnBuckets(); lastAskedBucket--, tries++) {
+			if(neighbours.size() != 0) break;
+			if(lastAskedBucket < (KademliaCommonConfig.BITS - sTable.getnBuckets())) lastAskedBucket = KademliaCommonConfig.BITS;
+			
+			Collections.addAll(neighbours, sTable.getNeighbours(lastAskedBucket));
+		}
+		return neighbours;
+	}
+	
 
-		while(neighbours.size() != 0) {
+	public BigInteger getNeighbour() {
+		BigInteger res = null;
+		ArrayList<BigInteger> neighbours = null;
+		
+		switch(KademliaCommonConfig.LOOKUP_BUCKET_ORDER) {
+			case KademliaCommonConfig.RANDOM_BUCKET_ORDER:
+				neighbours = getRandomBucketNeighbours();
+				break;
+			case KademliaCommonConfig.CLOSEST_BUCKET_ORDER:
+				neighbours = getMinBucketNeighbours();
+				break;
+			case KademliaCommonConfig.ALL_BUCKET_ORDER:
+				neighbours = getAllBucketNeighbours();
+				break;
+		}
+		
+		if(neighbours.size() != 0) {
 			//res = neighbours.get(ThreadLocalRandom.current().nextInt(neighbours.size()));
 			res = neighbours.get(CommonState.r.nextInt(neighbours.size()));
 			
-			//don't ask the same neighbour twice
-			if(this.used.contains(res)) {
-				System.out.println("This shouldn't happen");
-				System.out.println("N:" + res);
-				System.exit(1);
-				neighbours.remove(res);
-				res = null;
-			}else {
-				break;
-			}
-			break;
+			//We should never get the same neighbour twice
+			assert !this.used.contains(res);
 		}
 		
 		if(res!=null) {
