@@ -79,7 +79,7 @@ public class TicketTable extends RoutingTable {
 		    Message register = new Message(Message.MSG_REGISTER, t);
 			register.ackId = m.id; // set ACK number
 		    register.dest = new KademliaNode(m.src);
-		    register.body = m.body;
+		    register.body = ticket;
 		    register.operationId = m.operationId;
 			protocol.scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
 		}

@@ -188,7 +188,8 @@ public class Discv5ZipfTrafficGenerator implements Control {
 				Message registerMessage = generateRegisterMessage(t.getTopic());
 				
 				//kad.setClient(this);
-				prot.getNode().setCallBack(this,start,t);
+				prot.getNode().setTopic(topic,start);
+				//prot.getNode().setCallBack(this,start,t);
 				
 				Message lookupMessage = generateTopicLookupMessage(t.getTopic());
 

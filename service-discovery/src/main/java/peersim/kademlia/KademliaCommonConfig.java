@@ -24,6 +24,7 @@ public class KademliaCommonConfig {
     public static int TOPIC_PEER_LIMIT = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
     public static int SEARCH_REFRESH = 0;
     public static int TICKET_REFRESH = 0;
+    public static int TICKET_NEIGHBOURS = 0;
     public static int TICKET_BUCKET_SIZE = 3;
     public static int SEARCH_BUCKET_SIZE = 3;
     // Attack Types:

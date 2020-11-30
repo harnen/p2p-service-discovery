@@ -280,4 +280,14 @@ public class Message extends SimpleEvent {
 			this.neighbours = neighbours;
 		}
 	}
+	
+	static class TicketRequestBody{
+		public final Ticket ticket;
+		public final BigInteger[] neighbours;
+
+		public TicketRequestBody(Ticket ticket, BigInteger[] neighbours) {
+			this.ticket = ticket;
+			this.neighbours = neighbours;
+		}
+	}
 }

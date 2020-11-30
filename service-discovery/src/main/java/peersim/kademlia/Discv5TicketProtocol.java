@@ -56,7 +56,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	final String PAR_SEARCH_TABLE_BUCKET_SIZE = "SEARCH_TABLE_BUCKET_SIZE";
 	final String PAR_REFRESH_TICKET_TABLE = "REFRESH_TICKET_TABLE";
 	final String PAR_REFRESH_SEARCH_TABLE = "REFRESH_SEARCH_TABLE";
-	
+	final String PAR_REFRESH_TICKET_NEIGHBOURS = "REFRESH_TICKET_NEIGHBOURS";
+
 	/**
 	 * Replicate this object by returning an identical copy.<br>
 	 * It is called by the initializer and do not fill any particular field.
@@ -98,7 +99,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		KademliaCommonConfig.SEARCH_BUCKET_SIZE = Configuration.getInt(prefix + "." + PAR_SEARCH_TABLE_BUCKET_SIZE, KademliaCommonConfig.SEARCH_BUCKET_SIZE);
 		KademliaCommonConfig.TICKET_REFRESH = Configuration.getInt(prefix + "." + PAR_REFRESH_TICKET_TABLE, KademliaCommonConfig.TICKET_REFRESH);
 		KademliaCommonConfig.SEARCH_REFRESH = Configuration.getInt(prefix + "." + PAR_REFRESH_SEARCH_TABLE, KademliaCommonConfig.SEARCH_REFRESH);
-		
+		KademliaCommonConfig.TICKET_NEIGHBOURS = Configuration.getInt(prefix + "." + PAR_REFRESH_TICKET_NEIGHBOURS, KademliaCommonConfig.TICKET_NEIGHBOURS);
+
 		super._init();
 	}
 
@@ -262,9 +264,15 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             EDSimulator.add(rtt_delay + ticket.getWaitTime() + KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
         }
         // Send a response message with a ticket back to advertiser
-        Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
+		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
+
+    	Message.TicketRequestBody body = new Message.TicketRequestBody(ticket, neighbours);
+		Message response  = new Message(Message.MSG_TICKET_RESPONSE, body);
+	
+        //Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
 		response.ackId = m.id; // set ACK number
 		response.operationId = m.operationId;
+        
         sendMessage(response, m.src.getId(), myPid);
     }
 
@@ -273,12 +281,24 @@ public class Discv5TicketProtocol extends KademliaProtocol {
      *
      */
     private void handleTicketResponse(Message m, int myPid) {
-        Ticket t = (Ticket) m.body;
+		Message.TicketRequestBody body = (Message.TicketRequestBody) m.body;
+		
+        Ticket t = body.ticket;
         if (t.getWaitTime() == -1) 
         {   
             logger.warning("Attempted to re-register topic on the same node");
             ticketTables.get(t.getTopic().getTopicID()).removeNeighbour(m.src.getId());
             return;
+        }
+        if(KademliaCommonConfig.TICKET_NEIGHBOURS==1) {    	
+        	for(BigInteger node: body.neighbours)
+        		routingTable.addNeighbour(node);
+        	
+        	TicketTable ttable = ticketTables.get(t.getTopic().getTopicID());
+        	if(ttable!=null)ttable.addNeighbour(body.neighbours);
+         	SearchTable stable = searchTables.get(t.getTopic().getTopicID());
+        	if(stable!=null)stable.addNeighbour(body.neighbours);
+   	
         }
     	//System.out.println("handleTicketResponse from " + m.src.getId()+" waiting time "+t.getWaitTime()+" "+this.node.getId());
 
@@ -447,7 +467,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     protected void handleInitRegisterTopic(Message m, int myPid) {
     	Topic t = (Topic) m.body;
     	
-    	logger.warning("handleInitRegisterTopic "+t.getTopic());
+    	//logger.warning("handleInitRegisterTopic "+t.getTopic());
 
 
     	//restore the IF statement

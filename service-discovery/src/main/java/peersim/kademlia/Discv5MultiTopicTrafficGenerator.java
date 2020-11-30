@@ -95,7 +95,7 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 				
                 for (int topicIndex = 1; topicIndex < numTopics+1; topicIndex++) {
 				    //kad.setClient(this);
-			    	prot.getNode().setCallBack(this,start,topicList[topicIndex-1]);
+			    	//prot.getNode().setCallBack(this,start,topicList[topicIndex-1]);
 				    Message registerMessage = generateRegisterMessage(topicList[topicIndex-1].getTopic());
 				    Message lookupMessage = generateTopicLookupMessage(topicList[topicIndex-1].getTopic());
                     System.out.println();
