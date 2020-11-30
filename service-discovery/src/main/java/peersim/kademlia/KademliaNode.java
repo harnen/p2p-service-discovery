@@ -43,6 +43,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
         lookupResultBuffer = new ArrayList<KademliaNode>();
+    	this.t = new ArrayList<String>();
+
     }
 
     public KademliaNode(BigInteger id){
@@ -54,6 +56,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
         lookupResultBuffer = new ArrayList<KademliaNode>();
+    	this.t = new ArrayList<String>();
+
     }
 
     public KademliaNode(KademliaNode n){
@@ -66,6 +70,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
         maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
         maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
         lookupResultBuffer = new ArrayList<KademliaNode>();
+    	this.t = new ArrayList<String>();
+
     }
 
     public BigInteger getId(){
@@ -140,7 +146,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size()+" Sending lookup");
    
    			for(String topic : t)
-   				EDSimulator.add(0,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
+   				if(n!=null)EDSimulator.add(0,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
 
    			requested=true;
 
@@ -242,7 +248,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
        		if(!requested) {
        			//client.emptyBufferCallback(n,t);
        			for(String topic : t)
-       				EDSimulator.add(0,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
+       				if(n!=null)EDSimulator.add(0,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
 
        			requested=true;
        		}
