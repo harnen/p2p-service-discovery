@@ -82,9 +82,9 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
                         topic = new String("t" + topicIndex);
                         topicList[topicIndex-1] = new Topic(topic);
                     }
-                    System.out.println(i + "," + numTopics);
+                    //System.out.println(i + "," + numTopics);
                 }
-				if(true) continue;
+				
                 Integer value = n.get(topic);
 				if(value==null)
 					n.put(topic, 1);
