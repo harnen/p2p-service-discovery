@@ -64,6 +64,7 @@ public class LookupTicketOperation extends LookupOperation {
 		BigInteger res = null;
 		ArrayList<BigInteger> neighbours = null;
 		
+		//System.out.println("LOOKUP_BUCKET_ORDER "+KademliaCommonConfig.LOOKUP_BUCKET_ORDER);
 		switch(KademliaCommonConfig.LOOKUP_BUCKET_ORDER) {
 			case KademliaCommonConfig.RANDOM_BUCKET_ORDER:
 				neighbours = getRandomBucketNeighbours();

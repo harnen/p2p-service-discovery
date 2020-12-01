@@ -57,7 +57,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	final String PAR_REFRESH_TICKET_TABLE = "REFRESH_TICKET_TABLE";
 	final String PAR_REFRESH_SEARCH_TABLE = "REFRESH_SEARCH_TABLE";
 	final String PAR_REFRESH_TICKET_NEIGHBOURS = "REFRESH_TICKET_NEIGHBOURS";
-
+	final String PAR_LOOKUP_BUCKET_ORDER = "LOOKUP_BUCKET_ORDER";
 	/**
 	 * Replicate this object by returning an identical copy.<br>
 	 * It is called by the initializer and do not fill any particular field.
@@ -100,6 +100,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		KademliaCommonConfig.TICKET_REFRESH = Configuration.getInt(prefix + "." + PAR_REFRESH_TICKET_TABLE, KademliaCommonConfig.TICKET_REFRESH);
 		KademliaCommonConfig.SEARCH_REFRESH = Configuration.getInt(prefix + "." + PAR_REFRESH_SEARCH_TABLE, KademliaCommonConfig.SEARCH_REFRESH);
 		KademliaCommonConfig.TICKET_NEIGHBOURS = Configuration.getInt(prefix + "." + PAR_REFRESH_TICKET_NEIGHBOURS, KademliaCommonConfig.TICKET_NEIGHBOURS);
+		KademliaCommonConfig.LOOKUP_BUCKET_ORDER = Configuration.getInt(prefix + "." + PAR_LOOKUP_BUCKET_ORDER, KademliaCommonConfig.LOOKUP_BUCKET_ORDER);
 
 		super._init();
 	}
@@ -421,7 +422,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				//lop.visualize();
 									
 				node.setLookupResult(lop.getDiscoveredArray());
-				//searchTables.get(lop.topic.getTopicID()).print();
+				searchTables.get(lop.topic.getTopicID()).print();
 				
 				return;
 			} else {
@@ -484,7 +485,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         	BigInteger[] neighbours = routingTable.getNeighbours(i);
         	rou.addNeighbour(neighbours);
         }
-        //rou.print();
+        rou.print();
         //Register messages are automatically sent when adding Neighbours
         
 
@@ -516,7 +517,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
    		message.timestamp = CommonState.getTime();
     		
    		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);*/
-       // rou.print();
+        rou.print();
         sendTopicLookup(m,t,myPid);
  
     }
