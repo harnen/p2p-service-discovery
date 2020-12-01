@@ -72,6 +72,7 @@ public class SearchTable extends RoutingTable {
 		return result;
 	}
 	
+
 	
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger[] node) {
@@ -117,13 +118,20 @@ public class SearchTable extends RoutingTable {
 		//for(int i=0;i<nBuckets;i++) {
 		int i = rnd.nextInt(nBuckets);
 		KBucket b = k_buckets[i];
-		while(b.neighbours.size()<k&&b.replacements.size()>0)
+		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
-			b.replace();
+			//b.replace();
+			Random rand = new Random();
+			BigInteger n = b.replacements.get(rand.nextInt(b.replacements.size()));
+			b.neighbours.add(n);
+			b.replacements.remove(n);
+			added.add(n);
+		}
 		if(b.neighbours.size()>0) {
 			b.checkAndReplaceLast();
 			//return;
 		}
+		
 		if(b.neighbours.size()==0&&refresh) {
 			BigInteger randomNode = generateRandomNode(i);
 			protocol.sendLookup(randomNode, myPid);

@@ -422,7 +422,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				//lop.visualize();
 									
 				node.setLookupResult(lop.getDiscoveredArray());
-				//searchTables.get(lop.topic.getTopicID()).print();
+				searchTables.get(lop.topic.getTopicID()).print();
 				
 				return;
 			} else {
@@ -485,7 +485,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         	BigInteger[] neighbours = routingTable.getNeighbours(i);
         	rou.addNeighbour(neighbours);
         }
-        //rou.print();
+        rou.print();
         //Register messages are automatically sent when adding Neighbours
         
 
@@ -517,7 +517,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
    		message.timestamp = CommonState.getTime();
     		
    		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);*/
-       // rou.print();
+        rou.print();
         sendTopicLookup(m,t,myPid);
  
     }
