@@ -56,7 +56,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	final String PAR_SEARCH_TABLE_BUCKET_SIZE = "SEARCH_TABLE_BUCKET_SIZE";
 	final String PAR_REFRESH_TICKET_TABLE = "REFRESH_TICKET_TABLE";
 	final String PAR_REFRESH_SEARCH_TABLE = "REFRESH_SEARCH_TABLE";
-	final String PAR_REFRESH_TICKET_NEIGHBOURS = "REFRESH_TICKET_NEIGHBOURS";
+	final String PAR_TICKET_NEIGHBOURS = "TICKET_NEIGHBOURS";
 	final String PAR_LOOKUP_BUCKET_ORDER = "LOOKUP_BUCKET_ORDER";
 	final String PAR_TICKET_REMOVE_AFTER_REG = "TICKET_REMOVE_AFTER_REG";
 	
@@ -102,7 +102,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		KademliaCommonConfig.SEARCH_BUCKET_SIZE = Configuration.getInt(prefix + "." + PAR_SEARCH_TABLE_BUCKET_SIZE, KademliaCommonConfig.SEARCH_BUCKET_SIZE);
 		KademliaCommonConfig.TICKET_REFRESH = Configuration.getInt(prefix + "." + PAR_REFRESH_TICKET_TABLE, KademliaCommonConfig.TICKET_REFRESH);
 		KademliaCommonConfig.SEARCH_REFRESH = Configuration.getInt(prefix + "." + PAR_REFRESH_SEARCH_TABLE, KademliaCommonConfig.SEARCH_REFRESH);
-		KademliaCommonConfig.TICKET_NEIGHBOURS = Configuration.getInt(prefix + "." + PAR_REFRESH_TICKET_NEIGHBOURS, KademliaCommonConfig.TICKET_NEIGHBOURS);
+		KademliaCommonConfig.TICKET_NEIGHBOURS = Configuration.getInt(prefix + "." + PAR_TICKET_NEIGHBOURS, KademliaCommonConfig.TICKET_NEIGHBOURS);
 		KademliaCommonConfig.LOOKUP_BUCKET_ORDER = Configuration.getInt(prefix + "." + PAR_LOOKUP_BUCKET_ORDER, KademliaCommonConfig.LOOKUP_BUCKET_ORDER);
 		KademliaCommonConfig.TICKET_REMOVE_AFTER_REG = Configuration.getInt(prefix + "." + PAR_TICKET_REMOVE_AFTER_REG, KademliaCommonConfig.TICKET_REMOVE_AFTER_REG);
 
@@ -296,12 +296,19 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             ticketTables.get(t.getTopic().getTopicID()).removeNeighbour(m.src.getId());
             return;
         }
-        if(KademliaCommonConfig.TICKET_NEIGHBOURS==1) {    	
+        if(KademliaCommonConfig.TICKET_NEIGHBOURS==1) {  
+        	
+			//System.out.println("Ticket new node received  "+body.neighbours.length+" nodes");
+
         	for(BigInteger node: body.neighbours)
         		routingTable.addNeighbour(node);
         	
         	TicketTable ttable = ticketTables.get(t.getTopic().getTopicID());
-        	if(ttable!=null)ttable.addNeighbour(body.neighbours);
+        	if(ttable!=null) {
+        		//for(BigInteger node : body.neighbours)
+        		//	System.out.println("Ticket new node received distance "+Util.logDistance(node, t.getTopic().getTopicID()));
+        		ttable.addNeighbour(body.neighbours);
+        	}
          	SearchTable stable = searchTables.get(t.getTopic().getTopicID());
         	if(stable!=null)stable.addNeighbour(body.neighbours);
    	
