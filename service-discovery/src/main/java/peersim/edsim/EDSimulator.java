@@ -306,6 +306,11 @@ private static boolean executeNext() {
 		{
 			EDProtocol prot = null;
 			try {
+                /*
+                if (pid == 0) {
+                    System.out.println("Event: " + ev.toString());
+                    return false;
+                }*/
 				prot = (EDProtocol) ev.node.getProtocol(pid);
 			} catch (ClassCastException e) {
 				e.printStackTrace();

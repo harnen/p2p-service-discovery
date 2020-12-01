@@ -38,6 +38,9 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
     // number of registrations to make
     private int numOfRegistrations;
     private int targetNumOfRegistrations;
+    private boolean first=true;
+    private HashMap<Topic, ArrayList<TopicRegistration>> evilTopicTable;
+	private RoutingTable evilRoutingTable; // routing table only containing evil neighbors
 
     /**
      * Replicate this object by returning an identical copy.<br>
@@ -61,6 +64,19 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         this.attackType = Configuration.getString(prefix + "." + PAR_ATTACK_TYPE);
         this.numOfRegistrations = 0;
         this.targetNumOfRegistrations = Configuration.getInt(prefix + "." + PAR_NUMBER_OF_REGISTRATIONS, 0);
+        this.evilTopicTable = new HashMap<Topic, ArrayList<TopicRegistration>>();
+		this.evilRoutingTable = new RoutingTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,KademliaCommonConfig.MAXREPLACEMENT);
+        /*
+        if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID)) 
+            logger.info("Attacker type Hybrid");
+        else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR))
+            logger.info("Attacker type Malicious Registrar");
+        else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM))
+            logger.info("Attacker type Topic Spam");
+        else {
+            logger.warning("Invalid attacker type");
+            System.exit(1);
+        }*/
     }
 	
     /**
@@ -89,8 +105,45 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      */
     protected void handleInitRegisterTopic(Message m, int myPid) {
         Topic t = (Topic) m.body;
-        //t.setHostID(this.node.getId());
         
+        // Fill up the evilTopicTable only with other malicious nodes
+        if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
+            first = false;
+            logger.info("Filling up the topic table with malicious entries");
+            for (int i = 0; i < Network.size(); i++) {
+                Node n = Network.get(i);
+                KademliaProtocol prot = (KademliaProtocol) n.getKademliaProtocol();
+                if(this.getNode().equals(prot.getNode()))
+                    continue; //skip this node
+                if (prot.getNode().is_evil) { //add a registration to evilTopicTable
+                    TopicRegistration reg = new TopicRegistration(prot.getNode());
+                    Topic targetTopic = prot.getTargetTopic();
+                    ArrayList<TopicRegistration> regList = this.evilTopicTable.get(targetTopic);
+                    if (regList != null)
+                        regList.add(reg);
+                    else {
+                        regList = new ArrayList<TopicRegistration>();
+                        this.evilTopicTable.put(targetTopic, regList);
+                    }
+                }
+            }
+        }
+
+        // Fill the evilRoutingTable only with other malicious nodes
+        this.evilRoutingTable.setNodeId(this.node.getId());
+        for (int i = 0; i < Network.size(); i++) {
+            Node n = Network.get(i);
+            KademliaProtocol prot = (KademliaProtocol) n.getKademliaProtocol();
+            if(this.getNode().equals(prot.getNode()))
+                continue;
+            if (prot.getNode().is_evil) {
+                this.evilRoutingTable.addNeighbour(prot.getNode().getId());   
+            }
+        }
+
+        super.handleInitRegisterTopic(m, myPid);
+
+        /*
         if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) ) {
             
             if(!ticketTables.containsKey(t.getTopicID())) {
@@ -115,7 +168,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         }
         else {
             super.handleInitRegisterTopic(m, myPid);
-        }
+        }*/
     }
     
 
@@ -130,38 +183,109 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      *            the sender Pid
      */
     protected void handleTopicQuery(Message m, int myPid) {
-        if(!this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) && !this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR))
+        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM))
             super.handleTopicQuery(m, myPid);
 
         Topic t = (Topic) m.body;
         TopicRegistration[] registrations = new TopicRegistration[0];
 
-        if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID)) {
-            TopicRegistration[] all_registrations = this.topicTable.getRegistration(t);
-            if (all_registrations.length > 0) {
-                List evilRegList = new ArrayList<TopicRegistration>();
-            
-                for(TopicRegistration reg: all_registrations) {
-                    KademliaNode n = reg.getNode();
-                    if (n.is_evil) 
-                        evilRegList.add(reg);
-                }
-
-                if(evilRegList.size() > 0) 
-                    registrations = (TopicRegistration[]) evilRegList.toArray(new TopicRegistration[evilRegList.size()]);
-            }
+        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)) {
+        // if only a spammer than follow the normal protocol
+            super.handleTopicQuery(m, myPid);
         }
+        else {
+            ArrayList<TopicRegistration> regList = this.evilTopicTable.get(t);
+            if(regList != null && !regList.isEmpty()) {
+                registrations = (TopicRegistration []) regList.toArray(new TopicRegistration[regList.size()]);
+            }
         
-        BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
+            BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 
-        Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
-        Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
-        response.operationId = m.operationId;
-        response.src = this.node;
-        response.ackId = m.id; 
-        logger.info(" responds with TOPIC_QUERY_REPLY");
+            Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
+            Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
+            response.operationId = m.operationId;
+            response.src = this.node;
+            response.ackId = m.id; 
+            logger.info(" responds with Malicious TOPIC_QUERY_REPLY");
+            sendMessage(response, m.src.getId(), myPid);
+        }
+    }
+    /**
+     * Process a ticket request by malicious node.
+     * The goal here is to approve all registrations immediately.
+     *
+     */
+    protected void handleTicketRequest(Message m, int myPid) {
+        long curr_time = CommonState.getTime();
+        Topic topic = (Topic) m.body;
+        KademliaNode advertiser = new KademliaNode(m.src); 
+		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
+        long rtt_delay = 2*transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
+        // Generate a ticket without any waiting time
+        Ticket ticket = new Ticket(topic, curr_time, 0, advertiser, rtt_delay);
+        ticket.setMsg(m);
+
+        // Send a response message with a ticket back to advertiser
+		BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
+
+    	Message.TicketRequestBody body = new Message.TicketRequestBody(ticket, neighbours);
+		Message response  = new Message(Message.MSG_TICKET_RESPONSE, body);
+	
+        //Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
+		response.ackId = m.id; // set ACK number
+		response.operationId = m.operationId;
+        
         sendMessage(response, m.src.getId(), myPid);
     }
+
+    /**
+     *  Process register requests
+     *  The malicious node simply approves all tickets
+     *
+     */
+    protected void handleRegister(Message m, int myPid) {
+		Ticket ticket = (Ticket) m.body;
+        ticket.setRegistrationComplete(true);
+        
+        Message response  = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
+        response.ackId = ticket.getMsg().id;
+        response.operationId = ticket.getMsg().operationId;
+        sendMessage(response, ticket.getSrc().getId(), myPid);
+    }
+
+	/**
+	 * Response to a route request.<br>
+	 * Respond with only K-closest malicious peers 
+	 * 
+	 * @param m
+	 *            Message
+	 * @param myPid
+	 *            the sender Pid
+	 */
+	protected void handleFind(Message m, int myPid, int dist) {
+		// get the ALPHA closest node to destNode
+        this.evilRoutingTable.setNodeId(this.node.getId());
+		BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(dist);
+
+		/*System.out.print("Including neigbours: [");
+		for(BigInteger n : neighbours){
+			System.out.println(", " + n);
+		}
+		System.out.println("]");*/
+
+
+		// create a response message containing the neighbours (with the same id of the request)
+		Message response = new Message(Message.MSG_RESPONSE, neighbours);
+		response.operationId = m.operationId;
+		//response.body = m.body;
+		response.src = this.node;
+		response.dest = m.src; 
+		response.ackId = m.id; // set ACK number
+
+		// send back the neighbours to the source of the message
+		sendMessage(response, m.src.getId(), myPid);
+	}
+
     /**
      * manage the peersim receiving of the events
      * 
