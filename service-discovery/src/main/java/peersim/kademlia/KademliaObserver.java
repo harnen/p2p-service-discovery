@@ -130,7 +130,7 @@ public class KademliaObserver implements Control {
         if (! directory.exists()){
             directory.mkdir();
         }
-
+        
 		try {
 			msgWriter = new FileWriter(this.logFolderName + "/" + "messages.csv");
 			msgWriter.write("id,type,src,dst,topic,sent/received\n");
@@ -384,8 +384,8 @@ public class KademliaObserver implements Control {
             File myFile = new File(filename);
             FileWriter writer;
             if (!myFile.exists()) {
-                if (nodeInfo.size() < Network.size())
-                    return;
+                //if (nodeInfo.size() < Network.size())
+                //    return;
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
                 writer.write("nodeID,topicID,is_evil?,numOutConnections,numInConnections,numEvilOutConnections,numEvilInConnections\n");
@@ -401,7 +401,7 @@ public class KademliaObserver implements Control {
                 BigInteger id = kadProtocol.getNode().getId();
                 if (writtenNodeIDs.contains(id))
                     continue;
-                int is_evil = kadProtocol.getNode().is_evil ? 1 : 0; 
+                int is_evil = kadProtocol.getNode().is_evil ? 1 : 0;
                 writer.write(id + "," + nodeInfo.get(id) + "," + is_evil + ",");
                 writer.write(kadProtocol.getNode().getOutgoingConnections().size() + ",");
                 writer.write(kadProtocol.getNode().getIncomingConnections().size() + ",");
@@ -706,7 +706,7 @@ public class KademliaObserver implements Control {
         write_registered_registrar_average();
         write_eclipsing_results();
         write_registration_stats();
-    	if(CommonState.getTime() > 300000)
+    	if(CommonState.getTime() > 3000000)
             write_node_info();
         write_registered_topics_timing();
         return false;
