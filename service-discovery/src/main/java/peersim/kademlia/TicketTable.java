@@ -109,7 +109,7 @@ public class TicketTable extends RoutingTable {
 		pendingTickets.remove(node);
 		getBucket(node).removeNeighbour(node);
 		
-		logger.warning("Pending ticket remove "+node+" "+getBucket(node).occupancy());
+		//logger.warning("Pending ticket remove "+node+" "+getBucket(node).occupancy());
 
 		/*BigInteger[] replacements = new BigInteger[0];
 		getBucket(node).replacements.toArray(replacements);

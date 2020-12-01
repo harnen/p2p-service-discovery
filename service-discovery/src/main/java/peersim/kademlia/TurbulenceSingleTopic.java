@@ -65,12 +65,12 @@ public class TurbulenceSingleTopic extends Turbulence{
 			for (int k = 0; k < 10; k++) {
                 int index = CommonState.r.nextInt(Network.size());
                 Node n  = Network.get(index);
-                if(n.getFailState()==Node.DOWN) {
+				KademliaProtocol jKad = (KademliaProtocol) n.getProtocol(kademliaid);
+                if(n.getFailState()==Node.DOWN||jKad==null) {
                 	k--;
                 	break;
                 }
-				KademliaProtocol jKad =(KademliaProtocol) n.getProtocol(kademliaid);
-				//System.out.println("Adding node "+jKad.getNode().getId());
+				System.out.println("Adding node "+jKad.getNode().getId());
 				newKad.routingTable.addNeighbour(jKad.getNode().getId());
 			}
 			

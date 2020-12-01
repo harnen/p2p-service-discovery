@@ -119,6 +119,7 @@ public class Turbulence implements Control {
 				Node n2 = (Node) o2;
 				KademliaProtocol p1 = (KademliaProtocol) (n1.getProtocol(kademliaid));
 				KademliaProtocol p2 = (KademliaProtocol) (n2.getProtocol(kademliaid));
+				if(p1==null||p2==null) return 0;
 				return Util.put0(p1.node.getId()).compareTo(Util.put0(p2.node.getId()));
 			}
 
