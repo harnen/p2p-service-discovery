@@ -59,7 +59,7 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 		HashMap<String,Integer> n = new HashMap<String,Integer>();
         Topic [] topicList = new Topic[maxtopicNum]; //references to topics of a node
 		if(first) {
-			for(int i = 0;i<Network.size();i++) 
+			for(int i = 0; i<Network.size(); i++) 
 			{
 				Node start = Network.get(i);
 				KademliaProtocol prot = (KademliaProtocol)start.getKademliaProtocol();
@@ -74,15 +74,18 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
                     numTopics = 1;
                 } else {
                     numTopics = zipf.sample();
-                    System.out.println("Assigning node to " + numTopics + " topics");
+                    //System.out.println("Assigning node to " + numTopics + " topics");
+                    
                     if (numTopics < mintopicNum)
                         numTopics = mintopicNum;
                     for (int topicIndex = 1; topicIndex < numTopics+1; topicIndex++) {
                         topic = new String("t" + topicIndex);
                         topicList[topicIndex-1] = new Topic(topic);
                     }
+                    System.out.println(i + "," + numTopics);
                 }
-				Integer value = n.get(topic);
+				if(true) continue;
+                Integer value = n.get(topic);
 				if(value==null)
 					n.put(topic, 1);
 				else {
