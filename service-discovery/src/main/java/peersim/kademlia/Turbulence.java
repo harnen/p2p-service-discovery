@@ -148,6 +148,8 @@ public class Turbulence implements Control {
 		// get kademlia protocol of new node
 		KademliaProtocol newKad = (KademliaProtocol) (newNode.getProtocol(kademliaid));
 		newNode.setKademliaProtocol(newKad);
+        newKad.setProtocolID(kademliaid);
+        //newNode.setProtocol(kademliaid, newKad);
 		// set node Id
 		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 		KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
@@ -189,7 +191,7 @@ public class Turbulence implements Control {
 			remove = Network.get(CommonState.r.nextInt(Network.size()));
 		} while (remove == null || !remove.isUp() || remove.getKademliaProtocol().getNode().is_evil);
 
-		System.out.println("Removing node " + remove.getKademliaProtocol().getNode().getId());
+		System.out.println("Removing node " + remove.getKademliaProtocol().getNode().getId()+ " with index: " + remove.getIndex());
 		// remove node (set its state to DOWN)
 		remove.setFailState(Node.DOWN);
 

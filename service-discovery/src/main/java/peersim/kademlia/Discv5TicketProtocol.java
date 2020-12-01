@@ -213,7 +213,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
      * 
      *
      */
-    private void handleRegister(Message m, int myPid) {
+    protected void handleRegister(Message m, int myPid) {
 		Ticket ticket = (Ticket) m.body;
         topicTable.register_ticket(ticket, m);
     	//System.out.println("Register ticket at "+this.node.getId()+" for topic "+ticket.getTopic().getTopic());
@@ -252,7 +252,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
      * Process a ticket request
      *
      */
-    private void handleTicketRequest(Message m, int myPid) {
+    protected void handleTicketRequest(Message m, int myPid) {
         //FIXME add logs
         long curr_time = CommonState.getTime();
 		//System.out.println("Ticket request received from " + m.src.getId()+" in node "+this.node.getId());
