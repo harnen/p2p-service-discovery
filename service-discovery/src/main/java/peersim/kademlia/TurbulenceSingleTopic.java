@@ -70,7 +70,7 @@ public class TurbulenceSingleTopic extends Turbulence{
                 	k--;
                 	break;
                 }
-				System.out.println("Adding node "+jKad.getNode().getId());
+				//System.out.println("Adding node "+jKad.getNode().getId());
 				newKad.routingTable.addNeighbour(jKad.getNode().getId());
 			}
 			
