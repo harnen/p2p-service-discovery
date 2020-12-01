@@ -141,11 +141,11 @@ public class TicketTable extends RoutingTable {
 
 		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
-			b.replace();
-			/*Random rand = new Random();
+			//b.replace();
+			Random rand = new Random();
 			BigInteger n = b.replacements.get(rand.nextInt(b.replacements.size()));
 			addNeighbour(n);
-			b.replacements.remove(n);*/
+			b.replacements.remove(n);
 		}
 
 		if(b.neighbours.size()==0&&refresh) {
