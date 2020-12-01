@@ -83,11 +83,12 @@ public class RoutingTable implements Cloneable {
 		if(resultList.size()<k && (dist+1)<=256) {
 			//System.out.println("Getneighbours "+resultList.size());
 			resultList.addAll(bucketAtDistance(dist+1).neighbours);
-
+			while(resultList.size()>k)resultList.remove(resultList.size()-1);
 		}
 		if(resultList.size()<k& (dist-1)>=0) {
 			//System.out.println("Getneighbours "+resultList.size());
 			resultList.addAll(bucketAtDistance(dist-1).neighbours);
+			while(resultList.size()>k)resultList.remove(resultList.size()-1);
 		}
 		return resultList.toArray(result);
 	}

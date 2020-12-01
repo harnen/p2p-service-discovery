@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import peersim.kademlia.Util;
 
 import peersim.core.CommonState;
+import peersim.edsim.EDSimulator;
 
 public class TicketTable extends RoutingTable {
 
@@ -29,7 +30,7 @@ public class TicketTable extends RoutingTable {
     boolean refresh;
     
     HashMap<Integer, Integer> registeredPerDist;
-
+    
     
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
@@ -56,23 +57,25 @@ public class TicketTable extends RoutingTable {
 		// TODO Auto-generated constructor stub
 	}
 	
+	public boolean addNeighbour(BigInteger node) {
+		//logger.warning("addNeighbour");
+		if(!pendingTickets.contains(node)) {
+			if(super.addNeighbour(node)) {
+				pendingTickets.add(node);
+				//logger.warning("Adding node "+node+" to "+protocol.getNode().getId()+" "+(Util.logDistance(node,nodeId)-bucketMinDistance-1));
+				//pendingTickets.put(node, null);
+				//logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
+				protocol.sendTicketRequest(node,t,myPid);
+				return true;
+			} 
+		}
+		return false;
+	}
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger[] nodes) {
-		//logger.warning("Pending tickets "+pendingTickets.size());
+		//logger.warning("addNeighbours");
 		for(BigInteger node : nodes) {
-			if(!pendingTickets.contains(node)) {
-				if(addNeighbour(node)) {
-					pendingTickets.add(node);
-					//logger.warning("Adding node "+node+" to "+protocol.getNode().getId()+" "+(Util.logDistance(node,nodeId)-bucketMinDistance-1));
-					//pendingTickets.put(node, null);
-					//logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
-					protocol.sendTicketRequest(node,t,myPid);
-				}/* else {
-					logger.warning("Node "+node+" already in "+protocol.getNode().getId());
-				}
-			}*else {
-				logger.warning("Node not added "+node+" to "+protocol.getNode().getId() +" pending tickets");*/
-			}
+			addNeighbour(node);
 		}
 	}
 
@@ -102,10 +105,12 @@ public class TicketTable extends RoutingTable {
 	// remove a neighbour from the correct k-bucket
 	public void removeNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
-		//logger.warning("Pending ticket remove "+node);
+		//logger.warning("Pending ticket remove "+node+" "+getBucket(node).occupancy());
 		pendingTickets.remove(node);
 		getBucket(node).removeNeighbour(node);
 		
+		logger.warning("Pending ticket remove "+node+" "+getBucket(node).occupancy());
+
 		/*BigInteger[] replacements = new BigInteger[0];
 		getBucket(node).replacements.toArray(replacements);
 		addNeighbour(replacements);*/
@@ -129,16 +134,20 @@ public class TicketTable extends RoutingTable {
 		int i = rnd.nextInt(nBuckets);
 		//logger.warning("Tickettable refreshBuckkets of node "+this.nodeId+" at bucket "+i+" "+k_buckets[i].occupancy());
 
-		//logger.warning("Ticket table "+i+" "+k_buckets[i].occupancy());
 		KBucket b = k_buckets[i];
 		//if(b.neighbours.size()<k)
-		while(b.neighbours.size()<k&&b.replacements.size()>0)
+		
+		//logger.warning("Ticket table "+i+" "+b.occupancy()+" "+b.replacements.size());
+
+		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
 			b.replace();
-		if(b.neighbours.size()>0) {
-			b.checkAndReplaceLast();
-			//return;
+			/*Random rand = new Random();
+			BigInteger n = b.replacements.get(rand.nextInt(b.replacements.size()));
+			addNeighbour(n);
+			b.replacements.remove(n);*/
 		}
+
 		if(b.neighbours.size()==0&&refresh) {
 			BigInteger randomNode = generateRandomNode(i);
 			protocol.sendLookup(randomNode, myPid);

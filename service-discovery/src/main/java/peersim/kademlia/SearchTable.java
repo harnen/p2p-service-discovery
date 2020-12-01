@@ -113,24 +113,23 @@ public class SearchTable extends RoutingTable {
 	 */
 	public void refreshBuckets() {
 		//System.out.println("Refresh bucket");
-		//System.out.println("Routingtable refreshBuckkets "+CommonState.getTime());
 		Random rnd= new Random();
 		//for(int i=0;i<nBuckets;i++) {
 		int i = rnd.nextInt(nBuckets);
 		KBucket b = k_buckets[i];
+		
 		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
 			//b.replace();
 			Random rand = new Random();
 			BigInteger n = b.replacements.get(rand.nextInt(b.replacements.size()));
-			b.neighbours.add(n);
+			addNeighbour(n);
 			b.replacements.remove(n);
-			added.add(n);
 		}
-		if(b.neighbours.size()>0) {
+		/*if(b.neighbours.size()>0) {
 			b.checkAndReplaceLast();
 			//return;
-		}
+		}*/
 		
 		if(b.neighbours.size()==0&&refresh) {
 			BigInteger randomNode = generateRandomNode(i);

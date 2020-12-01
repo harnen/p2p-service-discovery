@@ -58,6 +58,9 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	final String PAR_REFRESH_SEARCH_TABLE = "REFRESH_SEARCH_TABLE";
 	final String PAR_REFRESH_TICKET_NEIGHBOURS = "REFRESH_TICKET_NEIGHBOURS";
 	final String PAR_LOOKUP_BUCKET_ORDER = "LOOKUP_BUCKET_ORDER";
+	final String PAR_TICKET_REMOVE_AFTER_REG = "TICKET_REMOVE_AFTER_REG";
+	
+	boolean printSearchTable=false;
 	/**
 	 * Replicate this object by returning an identical copy.<br>
 	 * It is called by the initializer and do not fill any particular field.
@@ -101,6 +104,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		KademliaCommonConfig.SEARCH_REFRESH = Configuration.getInt(prefix + "." + PAR_REFRESH_SEARCH_TABLE, KademliaCommonConfig.SEARCH_REFRESH);
 		KademliaCommonConfig.TICKET_NEIGHBOURS = Configuration.getInt(prefix + "." + PAR_REFRESH_TICKET_NEIGHBOURS, KademliaCommonConfig.TICKET_NEIGHBOURS);
 		KademliaCommonConfig.LOOKUP_BUCKET_ORDER = Configuration.getInt(prefix + "." + PAR_LOOKUP_BUCKET_ORDER, KademliaCommonConfig.LOOKUP_BUCKET_ORDER);
+		KademliaCommonConfig.TICKET_REMOVE_AFTER_REG = Configuration.getInt(prefix + "." + PAR_TICKET_REMOVE_AFTER_REG, KademliaCommonConfig.TICKET_REMOVE_AFTER_REG);
 
 		super._init();
 	}
@@ -275,6 +279,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		response.operationId = m.operationId;
         
         sendMessage(response, m.src.getId(), myPid);
+        
     }
 
     /**
@@ -334,9 +339,13 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             logger.warning("Registration succesful for topic "+ticket.getTopic().topic+" at node " + m.src.getId() + " at dist "+ Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID()));
             KademliaObserver.addAcceptedRegistration(topic, this.node.getId(),m.src.getId());
             KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
-            Timeout timeout = new Timeout(ticket.getTopic(),m.src.getId());
-            EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
 
+        	if(KademliaCommonConfig.TICKET_REMOVE_AFTER_REG==0) {
+        		Timeout timeout = new Timeout(ticket.getTopic(),m.src.getId());
+            	EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+        	} else {
+            	ticketTables.get(ticket.getTopic().getTopicID()).removeNeighbour(m.src.getId());
+        	}
         }
         
         //ticketTables.get(ticket.getTopic().getTopicID()).print();
@@ -422,7 +431,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				//lop.visualize();
 									
 				node.setLookupResult(lop.getDiscoveredArray());
-				searchTables.get(lop.topic.getTopicID()).print();
+				if(printSearchTable)searchTables.get(lop.topic.getTopicID()).print();
 				
 				return;
 			} else {
@@ -485,7 +494,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         	BigInteger[] neighbours = routingTable.getNeighbours(i);
         	rou.addNeighbour(neighbours);
         }
-        rou.print();
+        if(printSearchTable)rou.print();
         //Register messages are automatically sent when adding Neighbours
         
 
@@ -517,7 +526,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
    		message.timestamp = CommonState.getTime();
     		
    		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);*/
-        rou.print();
+        if(printSearchTable)rou.print();
         sendTopicLookup(m,t,myPid);
  
     }
@@ -677,6 +686,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
  		
  		//System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
  		sendMessage(m,top.getNeighbour(),myPid);
+ 		
+ 		//Timeout timeout = new Timeout(t,m.src.getId());
+        //EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+
 
  		// send ALPHA messages
  		/*for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
