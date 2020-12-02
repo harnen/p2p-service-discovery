@@ -80,14 +80,15 @@ public class TurbulenceMultiTopic extends Turbulence{
 			sortNet();
 			
 			for (int k = 0; k < 10; k++) {
-                int index = CommonState.r.nextInt(Network.size());
-                Node n  = Network.get(index);
-				KademliaProtocol jKad =(KademliaProtocol) n.getProtocol(kademliaid);
-                if(n.getFailState()==Node.DOWN||jKad==null) {
-                	k--;
-                	break;
-                }
-				//System.out.println("Adding node "+jKad.getNode().getId());
+	               
+				KademliaProtocol jKad; 
+				Node n;
+				do {
+					n =  Network.get(CommonState.r.nextInt(Network.size()));
+					jKad = (KademliaProtocol)n.getProtocol(kademliaid);
+			
+				} while(jKad==null||n.getFailState()==Node.DOWN);
+
 				newKad.routingTable.addNeighbour(jKad.getNode().getId());
 			}
 		

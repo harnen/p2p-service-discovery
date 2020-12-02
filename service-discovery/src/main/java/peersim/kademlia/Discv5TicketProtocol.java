@@ -419,7 +419,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		
 		while ((lop.available_requests > 0)) { // I can send a new find request
 			// get an available neighbour
-			logger.warning("Topic query reply loop "+ m.src.getId()+" "+lop.available_requests+" found "+found+" "+all+" "+lop.nrHops);
+			//logger.warning("Topic query reply loop "+ m.src.getId()+" "+lop.available_requests+" found "+found+" "+all+" "+lop.nrHops);
 			if(lop.available_requests < KademliaCommonConfig.ALPHA) {
 				//logger.warning("Topic query reply return"+ m.src.getId()+" "+lop.available_requests+" found "+found);
 				return;
@@ -438,7 +438,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				KademliaObserver.register_ok.add(found);
 				//lop.visualize();
 					
-				logger.warning("setLookupResult "+lop.getDiscoveredArray().size());
+				//logger.warning("setLookupResult "+lop.getDiscoveredArray().size());
 				node.setLookupResult(lop.getDiscoveredArray());
 				if(printSearchTable)searchTables.get(lop.topic.getTopicID()).print();
 				
@@ -458,7 +458,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	
 					if(request != null) {
 						lop.nrHops++;
-						logger.warning("Sending new requests");
+					//	logger.warning("Sending new requests");
 						sendMessage(request, neighbour, myPid);
 					}
 				} else {
@@ -639,7 +639,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			if (nextNode != null) {
 				m.dest = new KademliaNode(nextNode);
 				sendMessage(m.copy(), nextNode, myPid);
-				System.out.println("Send topic lookup to: " + nextNode +" at distance:"+Util.logDistance(lop.topic.topicID, nextNode));
+				//System.out.println("Send topic lookup to: " + nextNode +" at distance:"+Util.logDistance(lop.topic.topicID, nextNode));
 				lop.nrHops++;
 			}
 		}
