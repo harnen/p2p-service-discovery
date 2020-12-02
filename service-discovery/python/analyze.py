@@ -470,7 +470,7 @@ if (len(sys.argv) < 2):
     exit(1)
 
 print('Will read logs from', sys.argv[1:])
-analyzeMessages(sys.argv[1:])
+#analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])

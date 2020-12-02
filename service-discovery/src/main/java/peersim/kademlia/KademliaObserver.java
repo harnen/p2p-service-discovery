@@ -388,7 +388,7 @@ public class KademliaObserver implements Control {
                 //    return;
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
-                writer.write("nodeID,topicID,is_evil?,numOutConnections,numInConnections,numEvilOutConnections,numEvilInConnections\n");
+                writer.write("nodeID,topicID,is_evil?,numInConnections,numOutConnections,numEvilOutConnections,numEvilInConnections\n");
             }
             else {
                 
@@ -403,8 +403,8 @@ public class KademliaObserver implements Control {
                     continue;
                 int is_evil = kadProtocol.getNode().is_evil ? 1 : 0;
                 writer.write(id + "," + nodeInfo.get(id) + "," + is_evil + ",");
-                writer.write(kadProtocol.getNode().getOutgoingConnections().size() + ",");
                 writer.write(kadProtocol.getNode().getIncomingConnections().size() + ",");
+                writer.write(kadProtocol.getNode().getOutgoingConnections().size() + ",");
                 int numEvil = 0;
                 for(KademliaNode n : kadProtocol.getNode().getIncomingConnections()) {
                     if (n.is_evil) 

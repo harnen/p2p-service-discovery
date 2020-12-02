@@ -66,17 +66,18 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         this.targetNumOfRegistrations = Configuration.getInt(prefix + "." + PAR_NUMBER_OF_REGISTRATIONS, 0);
         this.evilTopicTable = new HashMap<Topic, ArrayList<TopicRegistration>>();
 		this.evilRoutingTable = new RoutingTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,KademliaCommonConfig.MAXREPLACEMENT);
-        /*
+        
+        // logger is not initialised at this point
         if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID)) 
-            logger.info("Attacker type Hybrid");
+            System.out.println("Attacker type Hybrid");
         else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR))
-            logger.info("Attacker type Malicious Registrar");
+            System.out.println("Attacker type Malicious Registrar");
         else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM))
-            logger.info("Attacker type Topic Spam");
+            System.out.println("Attacker type Topic Spam");
         else {
-            logger.warning("Invalid attacker type");
+            System.out.println("Invalid attacker type");
             System.exit(1);
-        }*/
+        }
     }
 	
     /**
@@ -106,6 +107,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
     protected void handleInitRegisterTopic(Message m, int myPid) {
         Topic t = (Topic) m.body;
         
+        logger.warning("In handleInitRegister of EVIL node");
         // Fill up the evilTopicTable only with other malicious nodes
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
             first = false;

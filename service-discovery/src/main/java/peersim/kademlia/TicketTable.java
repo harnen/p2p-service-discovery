@@ -1,10 +1,10 @@
-	package peersim.kademlia;
+package peersim.kademlia;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
+//import java.util.Random;
 import java.util.logging.Logger;
 
 import peersim.kademlia.Util;
@@ -127,11 +127,11 @@ public class TicketTable extends RoutingTable {
 	 * 
 	 */
 	public void refreshBuckets() {
-		Random rnd= new Random();
+		//Random rnd= new Random();
 		/*for(int i=0;i<nBuckets;i++) {
 			logger.warning("Ticket table "+i+" "+k_buckets[i].occupancy());
 		}*/	
-		int i = rnd.nextInt(nBuckets);
+		int i = CommonState.r.nextInt(nBuckets);
 		//logger.warning("Tickettable refreshBuckkets of node "+this.nodeId+" at bucket "+i+" "+k_buckets[i].occupancy());
 
 		KBucket b = k_buckets[i];
@@ -142,8 +142,8 @@ public class TicketTable extends RoutingTable {
 		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
 			//b.replace();
-			Random rand = new Random();
-			BigInteger n = b.replacements.get(rand.nextInt(b.replacements.size()));
+			//Random rand = new Random();
+			BigInteger n = b.replacements.get(CommonState.r.nextInt(b.replacements.size()));
 			addNeighbour(n);
 			b.replacements.remove(n);
 		}

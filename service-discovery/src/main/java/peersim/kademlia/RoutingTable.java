@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import peersim.core.CommonState;
 
 import java.util.Map;
-import java.util.Random;
+//import java.util.Random;
 import java.util.Set;
 
 /**
@@ -133,9 +133,9 @@ public class RoutingTable implements Cloneable {
 	 */
 	public void refreshBuckets() {
 		//System.out.println("Routingtable refreshBuckkets "+CommonState.getTime());
-		Random rnd= new Random();
+		//Random rnd= new Random();
 		//for(int i=0;i<nBuckets;i++) {
-		KBucket b = k_buckets[rnd.nextInt(nBuckets)];
+		KBucket b = k_buckets[CommonState.r.nextInt(nBuckets)];
 		if(b.neighbours.size()>0) {
 			b.checkAndReplaceLast();
 			return;
