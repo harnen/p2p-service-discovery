@@ -54,7 +54,6 @@ public class TurbulenceMultiTopic extends Turbulence{
 			
 			System.out.println("Adding node " + count);
 
-			
 			//System.out.println("Adding node " + Network.size());
 
 
@@ -66,6 +65,14 @@ public class TurbulenceMultiTopic extends Turbulence{
 			KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
 			((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
 			newKad.setProtocolID(kademliaid);  
+            if (newKad instanceof Discv5EvilTicketProtocol)
+            {
+                node.is_evil = true;
+            }
+            else if (newKad instanceof Discv5TicketProtocol)
+            {
+                node.is_evil = false;
+            }
 
 			System.out.println("Turbulence add "+node.getId());
 
