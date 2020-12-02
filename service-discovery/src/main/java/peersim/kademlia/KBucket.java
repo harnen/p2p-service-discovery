@@ -3,7 +3,7 @@ package peersim.kademlia;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+//import java.util.Random;
 import java.util.TreeMap;
 
 import peersim.core.CommonState;
@@ -108,8 +108,9 @@ public class KBucket implements Cloneable {
 	
 	public void replace() {
 		if(replacements.size()>0&&neighbours.size() < k) {
-			Random rand = new Random();
-			BigInteger n = replacements.get(rand.nextInt(replacements.size()));
+			//Random rand = new Random();
+			//BigInteger n = replacements.get(rand.nextInt(replacements.size()));
+            BigInteger n = replacements.get(CommonState.r.nextInt(replacements.size()));
 			neighbours.add(n);
 			replacements.remove(n);
 		}
@@ -136,8 +137,9 @@ public class KBucket implements Cloneable {
 			// Still the last entry.
 			neighbours.remove(neighbours.size()-1);
 			if(replacements.size()>0) {
-				Random rand = new Random();
-				BigInteger n = replacements.get(rand.nextInt(replacements.size()));
+				//Random rand = new Random();
+				//BigInteger n = replacements.get(rand.nextInt(replacements.size()));
+                BigInteger n = replacements.get(CommonState.r.nextInt(replacements.size()));
 				neighbours.add(n);
 				replacements.remove(n);
 			}

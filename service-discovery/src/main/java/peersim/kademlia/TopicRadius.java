@@ -5,7 +5,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
+//import java.util.Random;
 
 import peersim.core.CommonState;
 
@@ -94,7 +94,7 @@ public class TopicRadius {
 		if(c==0) {
 			return -1;
 		}
-		int rnd = new Random().nextInt(c);
+		int rnd = CommonState.r.nextInt(c);
 		for(int i=a;i<=b;i++) {
 			if((i>=buckets.size())||(buckets.get(i).getWeight(TopicRadiusBucket.trNoAdjust) < maxNoAdjust)) {
 				if(rnd==0) {
@@ -292,9 +292,9 @@ public class TopicRadius {
 		if (max.compareTo(BigInteger.valueOf(2))==-1) {
 			return BigInteger.valueOf(0);
 		}
-		Random rnd = new Random();
+		//Random rnd = new Random();
 		//System.out.println("Random "+max);
-		return new BigInteger(64,rnd).mod(max);
+		return new BigInteger(64,CommonState.r).mod(max);
 		
 	}
 	
@@ -302,8 +302,8 @@ public class TopicRadius {
 		if(max<2) {
 			return 0;
 		}
-		Random rnd = new Random();
-		return rnd.nextInt(max);
+		//Random rnd = new Random();
+		return CommonState.r.nextInt(max);
 
 	}
 	

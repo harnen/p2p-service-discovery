@@ -285,6 +285,8 @@ public class Discv5TopicTable { // implements TopicTable {
         int i=0;
         for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<KademliaCommonConfig.K;i++)
         	result.add(iter.next());
+        //for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<2;i++)
+        //	result.add(iter.next());
         
         return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
     }

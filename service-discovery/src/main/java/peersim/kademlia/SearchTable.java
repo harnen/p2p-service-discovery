@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+//import java.util.Random;
 
 import peersim.core.CommonState;
 
@@ -113,16 +113,16 @@ public class SearchTable extends RoutingTable {
 	 */
 	public void refreshBuckets() {
 		//System.out.println("Refresh bucket");
-		Random rnd= new Random();
+		//Random rnd= new Random();
 		//for(int i=0;i<nBuckets;i++) {
-		int i = rnd.nextInt(nBuckets);
+		int i = CommonState.r.nextInt(nBuckets);
 		KBucket b = k_buckets[i];
 		
 		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
 			//b.replace();
-			Random rand = new Random();
-			BigInteger n = b.replacements.get(rand.nextInt(b.replacements.size()));
+			//Random rand = new Random();
+			BigInteger n = b.replacements.get(CommonState.r.nextInt(b.replacements.size()));
 			addNeighbour(n);
 			b.replacements.remove(n);
 		}
