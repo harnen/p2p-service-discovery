@@ -22,15 +22,15 @@ public class CustomDistribution implements peersim.core.Control {
     private static final String PAR_PERCENT_EVIL = "percentEvil";
     private static final String PAR_ID_DIST = "idDistribution";
 
-	private final static String PAR_TOPICNUM = "topicnum";
-	private final static String PAR_ZIPF = "zipf";
-	
+    private final static String PAR_TOPICNUM = "topicnum";
+    private final static String PAR_ZIPF = "zipf";
+    
     private int protocolID;
     private int evilProtocolID;
     private double percentEvil;
     private UniformRandomGenerator urg;
-	private final int topicNum;
-	private final double exp;
+    private final int topicNum;
+    private final double exp;
     private ZipfDistribution zipf;
     private String idDist;
     private int[] subtract; 
@@ -40,10 +40,10 @@ public class CustomDistribution implements peersim.core.Control {
         // Optional configurations when including secondary (malicious) protocol:
         evilProtocolID = Configuration.getPid(prefix + "." + PAR_EVIL_PROT, -1);
         percentEvil = Configuration.getDouble(prefix + "." + PAR_PERCENT_EVIL, 0.0);
-		topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
-		exp = Configuration.getDouble(prefix + "." + PAR_ZIPF, -1);
+        topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
+        exp = Configuration.getDouble(prefix + "." + PAR_ZIPF, -1);
         idDist = Configuration.getString(prefix + "." + PAR_ID_DIST, KademliaCommonConfig.UNIFORM_ID_DISTRIBUTION);
-		
+        
         if (exp != -1)
             zipf = new ZipfDistribution(topicNum,exp);
         urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
@@ -78,12 +78,11 @@ public class CustomDistribution implements peersim.core.Control {
             BigInteger id;
             KademliaNode node; 
             if (i < num_evil_nodes) {
-                Topic t=null;
+                int topicNo = zipf.sample();
+                String topic = new String("t"+topicNo);
+                Topic t = new Topic(topic);
                 if (idDist.equals(KademliaCommonConfig.NON_UNIFORM_ID_DISTRIBUTION)) {
                     // generate an id close to a topicID for malicious nodes
-                    int topicNo = zipf.sample();
-            		String topic = new String("t"+topicNo);
-            		t = new Topic(topic);
                     id = generate_non_uniform_id(topicNo, t);
                     System.out.println("Generated nonuniform id: " + id);
                 }
@@ -98,8 +97,8 @@ public class CustomDistribution implements peersim.core.Control {
                 ((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID))).setNode(node);
                 generalNode.setKademliaProtocol((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID)));
                 ((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID))).setProtocolID(evilProtocolID);
-                if (idDist.equals(KademliaCommonConfig.NON_UNIFORM_ID_DISTRIBUTION)) 
-                    ((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID))).setTargetTopic(t);
+                //if (idDist.equals(KademliaCommonConfig.NON_UNIFORM_ID_DISTRIBUTION)) 
+                ((KademliaProtocol) (Network.get(i).getProtocol(evilProtocolID))).setTargetTopic(t);
                     
             }
             else {
