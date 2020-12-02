@@ -148,6 +148,9 @@ def analyzeRegistrations(dirs):
     ax1.set_ylim(bottom=0)
     ax1.set_xlabel("Nodes")
     ax1.set_ylabel("#placed registrations")
+    ax1.legend()
+    ax2.legend()
+    ax3.legend()
     fig1.savefig('registrations_registrant.png')
     
     ax2.set_title('Registrations by registrar')
@@ -163,9 +166,7 @@ def analyzeRegistrations(dirs):
     ax3.set_xticks(range(len(ticks)))
     ax3.set_xticklabels(ticks)
 
-    ax1.legend()
-    ax2.legend()
-    ax3.legend()
+    
     fig3.savefig('registrations_topic.png')
 
 def analyzeRegistrarDistribution(dirs):
@@ -174,7 +175,7 @@ def analyzeRegistrarDistribution(dirs):
                 labelbottom=False)
     topics = set()
 
-    colors = ['red', 'green', 'blue']
+    colors = ['red', 'green', 'blue', 'orange']
     x = []
     y = []
     topics = []
@@ -213,6 +214,7 @@ def analyzeRegistrarDistribution(dirs):
     print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Registrars")
+    fig.savefig('registrar_distribution.png')
 
 def analyzeRegistrantDistribution(dirs):
     fig, ax1 = plt.subplots()
@@ -220,7 +222,7 @@ def analyzeRegistrantDistribution(dirs):
                 labelbottom=False)
     topics = set()
 
-    colors = ['red', 'green', 'blue']
+    colors = ['red', 'green', 'blue', 'orange']
     x = []
     y = []
     s = []
@@ -281,6 +283,7 @@ def analyzeRegistrantDistribution(dirs):
     print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Discovered Registrants")
+    fig.savefig('registrant_distribution.png')
 
 def analyzeOperations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -444,11 +447,11 @@ def analyzeEclipsedNodeDistribution(dirs):
 
 def analyzeRegistrationTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    #fig, ax1 = plt.subplots()
-    fig, ax2 = plt.subplots()
-    fig, ax3 = plt.subplots()
-    fig, ax4 = plt.subplots()
-    fig, ax5 = plt.subplots()
+    #fig1, ax1 = plt.subplots()
+    fig2, ax2 = plt.subplots()
+    fig3, ax3 = plt.subplots()
+    fig4, ax4 = plt.subplots()
+    fig5, ax5 = plt.subplots()
 
     for log_dir in dirs:
         print(log_dir)
@@ -463,13 +466,17 @@ def analyzeRegistrationTime(dirs):
     #ax1.set_title('Total registrations by registrant')
     ax2.set_title('Minimum time to register')
     ax3.set_title('Average time to register')
-    ax4.set_title('Average time to discovery')
-    ax5.set_title('Minimum time to discovery')
+    ax4.set_title('Minimum time to discovery')
+    ax5.set_title('Average time to discovery')
     #ax1.legend()
     ax2.legend()
     ax3.legend()
     ax4.legend()
     ax5.legend()
+    fig2.savefig('min_time_register.png')
+    fig3.savefig('avg_time_register.png')
+    fig4.savefig('min_time_lookup.png')
+    fig5.savefig('avg_time_register')
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
@@ -485,4 +492,4 @@ analyzeRegistrarDistribution(sys.argv[1:])
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
 #analyzeActiveRegistrations(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
-plt.show()
+#plt.show()
