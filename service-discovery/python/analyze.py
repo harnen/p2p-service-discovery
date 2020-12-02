@@ -17,7 +17,7 @@ csv.field_size_limit(sys.maxsize)
 def analyzeMessages(dirs):
     fig1, ax1 = plt.subplots()
     fig2, ax2 = plt.subplots()
-    fig3, ax3 = plt.subplots()
+    #fig3, ax3 = plt.subplots()
     i=0
 
     for log_dir in dirs:
@@ -46,7 +46,7 @@ def analyzeMessages(dirs):
         ax2.bar(np.arange(len(table.index))+margin,table.values,width=width, label=log_dir)
         i = i+1
         
-        df['src'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message sent by node", label=log_dir)
+        #df['src'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message sent by node", label=log_dir)
 
     
     ticks = table.index
@@ -57,17 +57,19 @@ def analyzeMessages(dirs):
     #add line showing how the result should be
     ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
     ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
+    ax1.set_xlabel("Nodes")
+    ax1.set_ylabel("#Messages")
     fig1.savefig('messages_received.png')
 
     
     ax2.legend()
     fig2.savefig('messages_types.png')
     
-    ax3.legend()
+    #ax3.legend()
     #add line showing how the result should be
-    ax3.plot([ax3.get_xlim()[0], ax3.get_xlim()[1]], [(ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
-    ax3.text(ax3.get_xlim()[1]*0.8, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, "optimal", size=12)
-    fig3.savefig('messages_sent.png')
+    #ax3.plot([ax3.get_xlim()[0], ax3.get_xlim()[1]], [(ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+    #ax3.text(ax3.get_xlim()[1]*0.8, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, "optimal", size=12)
+    #fig3.savefig('messages_sent.png')
 
 def analyzeActiveRegistrations(dirs):
     """ Plot a bar chart showing the number of registrations by malicious and good nodes.
@@ -144,12 +146,16 @@ def analyzeRegistrations(dirs):
     ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
     ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
     ax1.set_ylim(bottom=0)
+    ax1.set_xlabel("Nodes")
+    ax1.set_ylabel("#placed registrations")
     fig1.savefig('registrations_registrant.png')
     
     ax2.set_title('Registrations by registrar')
     ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
     ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
     ax2.set_ylim(bottom=0)
+    ax1.set_xlabel("Nodes")
+    ax1.set_ylabel("#Received registrations")
     fig2.savefig('registrations_registrar.png')
     
     ax3.set_title('Registrations by topics (average)')
@@ -279,7 +285,7 @@ def analyzeRegistrantDistribution(dirs):
 def analyzeOperations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig2, ax2 = plt.subplots()
-    fig3, ax3 = plt.subplots()
+    #fig3, ax3 = plt.subplots()
 
     x = ['RegisterOperation','LookupOperation']
     x_val = 1
@@ -308,17 +314,17 @@ def analyzeOperations(dirs):
     print('x_vals: ', x_vals)
     width = 1.0  # the width of the bars
     x_values = [x-width/2 for x in x_vals]
-    ax3.bar(x_values, total_malicious_list, width, label='Malicious')
-    x_values = [x+width/2 for x in x_vals]
-    ax3.bar(x_values, total_discovered_list, width, label='All')
-    ax3.set_title("Malicious nodes out of all lookup results")
-    ax3.set_xticks(x_vals)
-    ax3.set_xticklabels(dirs)
+    #ax3.bar(x_values, total_malicious_list, width, label='Malicious')
+    #x_values = [x+width/2 for x in x_vals]
+    #ax3.bar(x_values, total_discovered_list, width, label='All')
+    #ax3.set_title("Malicious nodes out of all lookup results")
+    #ax3.set_xticks(x_vals)
+    #ax3.set_xticklabels(dirs)
 
     ax2.legend()
-    ax3.legend()
+    #ax3.legend()
     fig2.savefig('lookup_hopcount.png')
-    fig3.savefig('malicious_discovered.png')
+    #fig3.savefig('malicious_discovered.png')
 
 def analyzeEclipsedNodesOverTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -438,7 +444,7 @@ def analyzeEclipsedNodeDistribution(dirs):
 
 def analyzeRegistrationTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    fig, ax1 = plt.subplots()
+    #fig, ax1 = plt.subplots()
     fig, ax2 = plt.subplots()
     fig, ax3 = plt.subplots()
     fig, ax4 = plt.subplots()
@@ -447,19 +453,19 @@ def analyzeRegistrationTime(dirs):
     for log_dir in dirs:
         print(log_dir)
         data1 = genfromtxt(log_dir+'/registeredTopicsTime.csv',delimiter=',',names=['topic','registrant', 'times','regmintime','regavgtime','discmintime','discavgtime'])
-        ax1.plot(sorted(data1['times'],reverse=True),label=log_dir)
+        #ax1.plot(sorted(data1['times'],reverse=True),label=log_dir)
         ax2.plot(sorted(data1['regmintime'],reverse=True),label=log_dir)
         ax3.plot(sorted(data1['regavgtime'],reverse=True),label=log_dir)
         ax4.plot(sorted(data1['discmintime'],reverse=True),label=log_dir)
         ax5.plot(sorted(data1['discavgtime'],reverse=True),label=log_dir)
 
 
-    ax1.set_title('Total registrations by registrant')
+    #ax1.set_title('Total registrations by registrant')
     ax2.set_title('Minimum time to register')
     ax3.set_title('Average time to register')
     ax4.set_title('Average time to discovery')
     ax5.set_title('Minimum time to discovery')
-    ax1.legend()
+    #ax1.legend()
     ax2.legend()
     ax3.legend()
     ax4.legend()
@@ -475,8 +481,8 @@ analyzeRegistrations(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
 analyzeRegistrarDistribution(sys.argv[1:])
-analyzeEclipsedNodesOverTime(sys.argv[1:])
-analyzeEclipsedNodeDistribution(sys.argv[1:])
-analyzeActiveRegistrations(sys.argv[1:])
+#analyzeEclipsedNodesOverTime(sys.argv[1:])
+#analyzeEclipsedNodeDistribution(sys.argv[1:])
+#analyzeActiveRegistrations(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
 plt.show()

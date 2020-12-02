@@ -1,13 +1,14 @@
 #!/bin/bash
 
 DEF_SIZE=1000
-DEF_TOPIC=20
-DEF_ZIPF=2
-DEF_BUCKET_SIZE=1
+DEF_TOPIC=4
+DEF_ZIPF=1
+DEF_BUCKET_SIZE=17
 DEF_BUCKET_ORDER=0
 
-SIZES='1000 5000 10000'
-TOPICS='1 5 20 60'
+#SIZES='1000 5000 10000'
+SIZES='1000 1500 2000 '
+TOPICS='1 4 20 60'
 ZIPFS='0.1 0.5 1 1.5'
 #ZIPFS=''
 BUCKET_SIZES='1 3 5 10'
@@ -32,13 +33,14 @@ do
 	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $BUCKET_SIZE/g" $OUT_CONFIG
 	sed  -i "s/^protocol.3kademlia.LOOKUP_BUCKET_ORDER .*$/protocol.3kademlia.LOOKUP_BUCKET_ORDER $BUCKET_ORDER/g" $OUT_CONFIG
 	
-#	./run.sh ./config/discv5ticket_search.cfg &> /dev/null
+	./run.sh $OUT_CONFIG &> /dev/null
 	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}
 	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}
 	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}
 	grep '^SIZE' $OUT_CONFIG
 done
 
+exit
 
 SIZE=$DEF_SIZE
 TOPIC=$DEF_TOPIC
