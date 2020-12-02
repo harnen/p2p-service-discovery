@@ -59,6 +59,8 @@ public class TurbulenceSingleTopic extends Turbulence{
 			((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
 			newKad.setProtocolID(kademliaid);  
 
+			System.out.println("Turbulence add "+node.getId());
+
 			// sort network
 			sortNet();
 			
@@ -70,7 +72,6 @@ public class TurbulenceSingleTopic extends Turbulence{
                 	k--;
                 	break;
                 }
-				//System.out.println("Adding node "+jKad.getNode().getId());
 				newKad.routingTable.addNeighbour(jKad.getNode().getId());
 			}
 			

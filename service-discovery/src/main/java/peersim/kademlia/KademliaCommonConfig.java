@@ -21,7 +21,9 @@ public class KademliaCommonConfig {
     public static int ADS_PER_QUEUE = 200; //the number of ads per topic queue
     public static int AD_LIFE_TIME = 250000; //life time of ads the topic table
     public static int ONE_UNIT_OF_TIME = 1; // smallest time value
-    public static int TOPIC_PEER_LIMIT = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
+    public static int TOPIC_PEER_LIMIT = 50/3; //how many high quality nodes do we want to find for each topic; after this number we stop
+    public static int MAX_SEARCH_HOPS = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
+
     public static int SEARCH_REFRESH = 0;
     public static int TICKET_REFRESH = 0;
     public static int TICKET_NEIGHBOURS = 0;

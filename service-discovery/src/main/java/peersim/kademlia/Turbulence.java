@@ -192,7 +192,7 @@ public class Turbulence implements Control {
 			remove = Network.get(CommonState.r.nextInt(Network.size()));
 		} while (remove == null || !remove.isUp() || remove.getKademliaProtocol().getNode().is_evil);
 
-		System.out.println("Removing node " + remove.getKademliaProtocol().getNode().getId()+ " with index: " + remove.getIndex());
+		System.out.println("Turbulence remove node " + remove.getKademliaProtocol().getNode().getId()+ " with index: " + remove.getIndex());
 		// remove node (set its state to DOWN)
 		remove.setFailState(Node.DOWN);
 

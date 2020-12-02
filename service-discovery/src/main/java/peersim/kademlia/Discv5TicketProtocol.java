@@ -408,7 +408,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		//logger.warning("Topic query reply "+ m.src.getId()+" "+lop.available_requests+" found "+found);
 
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.getTopic());		
-		int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
+		int required = Math.min(all/2, KademliaCommonConfig.TOPIC_PEER_LIMIT);
 		
 
 		if(!lop.finished && found >= required) {
@@ -416,13 +416,14 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			lop.finished = true;
 		}
 		
+		
 		while ((lop.available_requests > 0)) { // I can send a new find request
 			// get an available neighbour
-			//logger.warning("Topic query reply loop "+ m.src.getId()+" "+lop.available_requests+" found "+found);
-			if(lop.finished&&lop.available_requests< KademliaCommonConfig.ALPHA) {
+			//logger.warning("Topic query reply loop "+ m.src.getId()+" "+lop.available_requests+" found "+found+" "+all+" "+lop.nrHops);
+			if(!lop.finished&&lop.available_requests< KademliaCommonConfig.ALPHA) {
 				//logger.warning("Topic query reply return"+ m.src.getId()+" "+lop.available_requests+" found "+found);
 				return;
-			} else if (lop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
+			} else if (lop.finished||KademliaCommonConfig.MAX_SEARCH_HOPS==lop.nrHops) { // no new neighbour and no outstanding requests
 				// search operation finished
 				//logger.warning("Topic query reply alpha"+ m.src.getId()+" "+lop.available_requests+" found "+found);
 				operations.remove(lop.operationId);
@@ -436,7 +437,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				KademliaObserver.register_total.add(all);
 				KademliaObserver.register_ok.add(found);
 				//lop.visualize();
-									
+					
+				logger.warning("setLookupResult "+lop.getDiscoveredArray().size());
 				node.setLookupResult(lop.getDiscoveredArray());
 				if(printSearchTable)searchTables.get(lop.topic.getTopicID()).print();
 				
@@ -447,9 +449,63 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 					//logger.warning("Topic query reply neighbour not null "+ m.src.getId()+" "+lop.available_requests+" found "+found);
 					//if(!lop.finished) {
 					// send a new request only if we didn't find the node already
-					Message request = new Message(Message.MSG_REGISTER);
+					Message request = new Message(Message.MSG_TOPIC_QUERY);
 					request.operationId = lop.operationId;
-					request.type = Message.MSG_TOPIC_QUERY;
+					//request.type = Message.MSG_TOPIC_QUERY;
+					request.src = this.node;
+					request.body = lop.body;
+					request.dest = new KademliaNode(neighbour);
+	
+					if(request != null) {
+						lop.nrHops++;
+						logger.warning("Sending new requests");
+						sendMessage(request, neighbour, myPid);
+					}
+				} else {
+					//logger.warning("Topic query reply neighbour not null finished "+ this.node.getId()+" "+lop.available_requests+" found "+found);
+					//getNeighbour decreases available_requests, but we didn't send a message
+					lop.available_requests++;
+					return;
+				}
+					
+			} 
+		}
+		/*while ((lop.available_requests > 0)) { // I can send a new find request
+			// get an available neighbour
+			logger.warning("Topic query reply loop "+ m.src.getId()+" "+lop.available_requests+" found "+found+" "+lop.nrHops);
+			if(lop.finished&&lop.available_requests< KademliaCommonConfig.ALPHA) {
+				//logger.warning("Topic query reply return"+ m.src.getId()+" "+lop.available_requests+" found "+found);
+				return;
+			} else 
+				if (lop.finished&&lop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
+				// search operation finished
+				//logger.warning("Topic query reply alpha"+ m.src.getId()+" "+lop.available_requests+" found "+found);
+				operations.remove(lop.operationId);
+				//logger.warning("reporting operation " + lop.operationId);
+				KademliaObserver.reportOperation(lop);
+				//lop.visualize(); uncomment if you want to see visualization of the operation
+				if(!lop.finished) { 
+					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+				} 
+				//System.out.println("Writing stats");
+				KademliaObserver.register_total.add(all);
+				KademliaObserver.register_ok.add(found);
+				//lop.visualize();
+					
+				logger.warning("setLookupResult "+lop.getDiscoveredArray().size());
+				node.setLookupResult(lop.getDiscoveredArray());
+				if(printSearchTable)searchTables.get(lop.topic.getTopicID()).print();
+				
+				return;
+			} else {
+				BigInteger neighbour = lop.getNeighbour();
+				if (neighbour != null) {
+					//logger.warning("Topic query reply neighbour not null "+ m.src.getId()+" "+lop.available_requests+" found "+found);
+					//if(!lop.finished) {
+					// send a new request only if we didn't find the node already
+					Message request = new Message(Message.MSG_TOPIC_QUERY);
+					request.operationId = lop.operationId;
+					//request.type = Message.MSG_TOPIC_QUERY;
 					request.src = this.node;
 					request.body = lop.body;
 					request.dest = new KademliaNode(neighbour);
@@ -462,10 +518,11 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 					//logger.warning("Topic query reply neighbour not null finished "+ this.node.getId()+" "+lop.available_requests+" found "+found);
 					//getNeighbour decreases available_requests, but we didn't send a message
 					lop.available_requests++;
+					return;
 				}
 					
 			} 
-		}
+		}*/
 		
 	
 	}
