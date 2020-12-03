@@ -179,7 +179,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		transport.send(src, dest, m, destpid);
 		KademliaObserver.msg_sent.add(1);
 
-		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)|| (m.getType() == Message.MSG_TICKET_REQUEST) ) { 
+		if ( (m.getType() == Message.MSG_FIND) || (m.getType() == Message.MSG_REGISTER)|| (m.getType() == Message.MSG_TICKET_REQUEST) || (m.getType() == Message.MSG_TOPIC_QUERY)) { 
 			Timeout t = new Timeout(destId, m.id, m.operationId);
 			long latency = transport.getLatency(src, dest);
 
@@ -422,10 +422,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		while ((lop.available_requests > 0)) { // I can send a new find request
 			// get an available neighbour
 			//logger.warning("Topic query reply loop "+ m.src.getId()+" "+lop.available_requests+" found "+found+" "+all+" "+lop.nrHops);
-			if(!lop.finished&&lop.available_requests< KademliaCommonConfig.ALPHA) {
+			if(lop.available_requests < KademliaCommonConfig.ALPHA) {
 				//logger.warning("Topic query reply return"+ m.src.getId()+" "+lop.available_requests+" found "+found);
 				return;
-			} else if (lop.finished||KademliaCommonConfig.MAX_SEARCH_HOPS==lop.nrHops) { // no new neighbour and no outstanding requests
+			} else if ((lop.finished&&lop.available_requests==KademliaCommonConfig.ALPHA)||KademliaCommonConfig.MAX_SEARCH_HOPS==lop.nrHops) { // no new neighbour and no outstanding requests
 				// search operation finished
 				//logger.warning("Topic query reply alpha"+ m.src.getId()+" "+lop.available_requests+" found "+found);
 				operations.remove(lop.operationId);
@@ -440,7 +440,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 				KademliaObserver.register_ok.add(found);
 				//lop.visualize();
 					
-				logger.warning("setLookupResult "+lop.getDiscoveredArray().size());
+				//logger.warning("setLookupResult "+lop.getDiscoveredArray().size());
 				node.setLookupResult(lop.getDiscoveredArray());
 				if(printSearchTable)searchTables.get(lop.topic.getTopicID()).print();
 				
@@ -585,13 +585,14 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         	
        	for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
        		BigInteger[] neighbours = routingTable.getNeighbours(i);
-       		//logger.warning("Adding "+neighbours.length+" for distance "+i);
        		if(neighbours.length!=0) rou.addNeighbour(neighbours);
        	}
+       	
        	/*Message message = Message.makeInitFindNode(t.getTopicID());
    		message.timestamp = CommonState.getTime();
     		
    		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);*/
+       	
         if(printSearchTable)rou.print();
         sendTopicLookup(m,t,myPid);
  
@@ -876,18 +877,18 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             	ticketTables.get(((Timeout)event).topic.getTopicID()).removeNeighbour(((Timeout)event).nodeSrc);
             	break;
 
-			/*case Timeout.TIMEOUT: // timeout
-				Timeout t = (Timeout) event;
-				if (sentMsg.containsKey(t.msgID)) { // the response msg didn't arrived
-					System.out.println("Node " + this.kademliaNode.getId() + " received a timeout: " + t.msgID + " from: " + t.node);
+			case Timeout.TIMEOUT: // timeout
+				Timeout timeout = (Timeout) event;
+				if (sentMsg.containsKey(timeout.msgID)) { // the response msg didn't arrived
+					System.out.println("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: " + timeout.node);
 					// remove form sentMsg
-					sentMsg.remove(t.msgID);
+					sentMsg.remove(timeout.msgID);
 					// remove node from my routing table
-					this.routingTable.removeNeighbour(t.node);
+					//this.routingTable.removeNeighbour(t.node);
 					// remove from closestSet of find operation
-					this.fop.closestSet.remove(t.node);
+					//this.fop.closestSet.remove(t.node);
 				}
-				break;*/
+				break;
         }
     }
 	

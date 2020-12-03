@@ -73,13 +73,15 @@ public class TurbulenceSingleTopic extends Turbulence{
 			sortNet();
 			
 			for (int k = 0; k < 10; k++) {
-                int index = CommonState.r.nextInt(Network.size());
-                Node n  = Network.get(index);
-				KademliaProtocol jKad = (KademliaProtocol) n.getProtocol(kademliaid);
-                if(n.getFailState()==Node.DOWN||jKad==null) {
-                	k--;
-                	break;
-                }
+               
+				KademliaProtocol jKad; 
+				Node n;
+				do {
+					n =  Network.get(CommonState.r.nextInt(Network.size()));
+					jKad = (KademliaProtocol)n.getProtocol(kademliaid);
+			
+				} while(jKad==null||n.getFailState()==Node.DOWN);
+
 				newKad.routingTable.addNeighbour(jKad.getNode().getId());
 			}
 			
@@ -89,10 +91,10 @@ public class TurbulenceSingleTopic extends Turbulence{
 			Message registerMessage = generateRegisterMessage(topic);
 		    Message lookupMessage = generateTopicLookupMessage(topic);
 		    if(registerMessage != null) {
-			    int time = CommonState.r.nextInt(90000);
+			    //int time = CommonState.r.nextInt(90000);
 			    System.out.println("Topic " + topic + " will be registered by "+node.getId());
 			    EDSimulator.add(0, registerMessage, newNode, kademliaid);
-			    EDSimulator.add(0, lookupMessage, newNode, kademliaid);
+			    EDSimulator.add(1000, lookupMessage, newNode, kademliaid);
 
 		    }
 	    
