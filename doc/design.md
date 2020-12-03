@@ -37,7 +37,7 @@ particular topic is called the 'topic queue' because it functions like a FIFO qu
 limited length. The image below depicts a topic table containing three queues. The queue
 for topic `T₁` is at capacity.
 
-![topic table](./img/topic-queue-diagram.png)
+![topic table](./imgs/topic-queue-diagram.png)
 
 The queue size limit is implementation-defined. Implementations should place a global
 limit on the number of ads in the topic table regardless of the topic queue which contains
@@ -71,7 +71,7 @@ the node keeping it must wait until the registration window opens. The length of
 registration window is 10 seconds. The ticket becomes invalid after the registration
 window has passed.
 
-![ticket validity over time](./img/ticket-validity.png)
+![ticket validity over time](./imgs/ticket-validity.png)
 
 Since all ticket waiting times are assigned to expire when a slot in the queue opens, the
 advertisement medium may receive multiple valid tickets during the registration window and
