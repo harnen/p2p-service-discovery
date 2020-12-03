@@ -47,34 +47,49 @@ range or number of occurrences of the same node across queues, similar to limita
 
 ## Topic Advertisement
 
+All nodes act as advertisement media and keep a table of 'topic queues'. 
+This table stores the ads and they are stored during `target-ad-lifetime`. When the `target-ad-lifetime` expires, the ad is removed from the queue and new ads can be accepted.
+The table has a limit on the number of ads in the whole table, and also has a limit on the number of ads in each queue. 
+Ads move through the queue at a fixed rate. When the queue is full, and the last ad expires, a new ad can be stored at the beginning of the queue. An advertiser can only have a single ad in the queue, duplicate placements are rejected.
 In order to place an ad, the advertiser must present a valid ticket to the advertiser.
-
-Tickets are opaque objects issued by the advertisement medium. When the advertiser first tries to place an ad without a ticket, it receives an initial ticket and a 'waiting time' which it needs to spend. The advertiser must come back after the waiting time has elapsed and present the ticket again. When it does come back, it will either place the ad successfully or receive another ticket and waiting time.
-
-Enforcing this time limit prevents misuse of the topic index because any topic must be important enough to outweigh the cost of waiting. Imagine a group phone call: announcing the participants of the call using topic advertisement isn't a good use of the system because the topic exists only for a short time and will have very few participants. The waiting time prevents using the index for this purpose because the call might already be over before everyone could get registered.
-Also, it prevents attackers overflowing topic indexes by regulating registrations in case of spamming attacks.
-
-While tickets are opaque to advertisers, they are readable by the advertisement medium. The medium uses the ticket to store the cumulative waiting time, which is sum of all waiting times the advertiser spent. Whenever a ticket is presented and a new one issued in response, the cumulative waiting time is increased and carries over into the new ticket.
-
-All nodes act as advertisement media and keep a table of 'topic queues'. This table stores the ads. The table has a limit on the number of ads in the whole table, and also has a limit on the number of ads in each queue. Ads move through the queue at a fixed rate. When the queue is full, and the last ad expires, a new ad can be stored at the beginning of the queue. An advertiser can only have a single ad in the queue, duplicate placements are rejected.
 
 
 #### Ticket Registration
 
-Topic queues are subject to competition. To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time when multiple tickets are received but not enough room in the topic table for them.
-In addition to the ads, each queue also keeps the current 'best ticket', i.e. the ticket with the longest cumulative waiting time. When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.
+Tickets are opaque objects issued by the advertisement medium. 
+When the advertiser first tries to place an ad without a ticket, it receives an initial ticket and a 'waiting time' which it needs to spend. 
+The advertiser must come back after the waiting time has elapsed and present the ticket again. 
+When it does come back, it will either place the ad successfully or receive another ticket and waiting time.
+
+Enforcing this time limit prevents misuse of the topic index because any topic must be important enough to outweigh the cost of waiting. 
+Imagine a group phone call: announcing the participants of the call using topic advertisement isn't a good use of the system because the topic exists only for a short time and will have very few participants. 
+The waiting time prevents using the index for this purpose because the call might already be over before everyone could get registered.
+Also, it prevents attackers overflowing topic indexes by regulating registrations in case of spamming attacks.
+
+While tickets are opaque to advertisers, they are readable by the advertisement medium. 
+The medium uses the ticket to store the cumulative waiting time, which is sum of all waiting times the advertiser spent. 
+Whenever a ticket is presented and a new one issued in response, the cumulative waiting time is increased and carries over into the new ticket.
+Topic queues are subject to competition. 
+To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time when multiple tickets are received but not enough room in the topic table for them.
+In addition to the ads, each queue also keeps the current 'best ticket', i.e. the ticket with the longest cumulative waiting time. 
+When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.
 
 Tickets cannot be used beyond their lifetime. If the advertiser does not come back after the waiting time, all cumulative waiting time is lost and it needs to start over.
 
 To keep ticket traffic under control, an advertiser requesting a ticket for the first time gets a waiting time equal to the cumulative time of the current best ticket. For a placement attempt with a ticket, the new waiting time is assigned to be the best time minus the cumulative waiting time on the submitted ticket.
 
-The image below depicts a single ticket's validity over time. When the ticket is issued, the node keeping it must wait until the registration window opens. The length of the registration window is implementation dependent, but by default *10 seconds* is used. The ticket becomes invalid after the registration window has passed.
+The image below depicts a single ticket's validity over time. When the ticket is issued, the node keeping it must wait until the registration window opens. The length of the registration window is implementation dependent, but by default `10 seconds` is used. The ticket becomes invalid after the registration window has passed.
 
 ![ticket validity over time](./imgs/ticket-validity.png)
 
 #### Ticket Table
 
-The above description explains the storage and placement of ads on a single medium, but advertisers need to place ads redundantly on multiple nodes in order to be found. The advertiser keeps a 'ticket table' to track its ongoing placement attempts. This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. It is sufficient to use a small value of k such as k = 3. The ticket table is initialized and refreshed by performing lookups for the topic hash using the main node table.
+The above description explains the storage and placement of ads on a single medium, but advertisers need to place ads redundantly on multiple nodes in order to be found. 
+The advertiser keeps a 'ticket table' to track its ongoing placement attempts.
+This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. 
+It is sufficient to use a small value of k such as `k=3`. 
+
+*The ticket table is initialized and refreshed by performing lookups for the topic hash using the main node table*.
 
 For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
 
