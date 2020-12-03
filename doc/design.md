@@ -132,14 +132,12 @@ For search, estimation is less necessary and we should try to see how efficient 
 #### Search strategies
 
 For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. 
-In case not enough `TOPIC_PEER_LIMIT` results have been received for the first `ALPHA` lookups, additional  `ALPHA` parallel lookups are performed until reaching `TOPIC_PEER_LIMIT` or `MAX_LOOKUP_HOPS`.
+In case not enough `TOPIC_PEER_LIMIT` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `TOPIC_PEER_LIMIT` or `MAX_LOOKUP_HOPS`.
 We implemented and evaluated different search strategies in order to choose which nodes from which buckets ask first when performing a lookup.
 
 * Minimum bucket: A random node is picked from the non-empty bucket with the minimum distance to the topic hash.
 
-* Random: A random node is picked from a random bucket. This can be performed in two ways: 
-  1 - A random node is picked from all nodes in the table. 
-  2 - A random node is picked from a random bucket each time, till all buckets have been used.
+* Random: A random node is picked from a random bucket. This can be performed in two ways: 1) a random node is picked from all nodes in the table or 2) a random node is picked from a random bucket each time, till all buckets have been used.
 
 #### Bucket refresh
 
