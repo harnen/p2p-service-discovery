@@ -112,7 +112,9 @@ We should decide how to implement it.
 
 [Ticket vs No Ticket protocol comparison](doc/report/report.md)
 
-[Security report with sybil attacks](doc/security_report/report.md)
+[Security report comparing two discovery protocols](doc/security_report/report.md)
+
+[Security report for final protocol](doc/ticket_security_report/report.md)
 
 ## Resources 
 
