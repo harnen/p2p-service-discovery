@@ -85,23 +85,28 @@ The image below depicts a single ticket's validity over time. When the ticket is
 #### Ticket Table
 
 The above description explains the storage and placement of ads on a single medium, but advertisers need to place ads redundantly on multiple nodes in order to be found. 
-The advertiser keeps a 'ticket table' to track its ongoing placement attempts.
+
+The advertiser keeps a 'ticket table' per topic advertised to track its ongoing placement attempts.
 This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. 
 It is sufficient to use a small value of k such as `k=3`. 
-
-*The ticket table is initialized and refreshed by performing lookups for the topic hash using the main node table*.
-
-For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
-
-Nodes/tickets are removed from their ticket table bucket when the ad is placed successfully or the medium goes offline. The removed entry is replaced when the ticket table is refreshed by a lookup.
-
-The advertiser keeps a 'ticket table' to track its ongoing placement attempts. This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. It is sufficient to use a small value of k such as k = 3. The ticket table is initialized and refreshed by performing lookups for the topic hash using the main node table.
-
+In order to avoid having empty buckets, each k-bucket has a replacement list (backup nodes stored in a second list that are used when an empty solt in the k-bucket) with `replacements_size=10`
 For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
 
 Nodes/tickets are removed from their ticket table bucket when the ad is placed successfully or the medium goes offline. The removed entry is replaced when the ticket table is refreshed by a lookup.
 
 #### Bucket refresh
+
+Ticket table needs to be initialised and refreshed to fill up all the per-distance k-buckets in the 'ticket table'.
+Ideally, all k-buckets should be constantly full, meaning that the node has active registrations in 'advertising medium' in all distances to the topic hash.
+Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash my create and additional overhead that can be too expensive and create too much traffic in the network.
+To avoid that, initially, the 'ticket table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash'.
+In addition to that, every time a node sends a ticket request, the 'advertising medium' replies with the closest nodes to 'the topic hash' that it knows.
+This helps filling up k-buckets without sending additional lookups.
+Also, when performing topic searchs (sending lookups for specific topics), closest nodes to 'the topic hash' are attached in the response.
+
+There is also a refresh process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. 
+The refresh time used is `refresh_time=10 seconds`.
+When empty slots during the refresh process, they can be filled from the replacement list and, optionally, perform lookups to the topic hash in case is empty.
 
 ## Topic Search
 
