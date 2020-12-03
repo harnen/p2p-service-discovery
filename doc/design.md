@@ -60,6 +60,9 @@ While tickets are opaque to advertisers, they are readable by the advertisement 
 
 All nodes act as advertisement media and keep a table of 'topic queues'. This table stores the ads. The table has a limit on the number of ads in the whole table, and also has a limit on the number of ads in each queue. Ads move through the queue at a fixed rate. When the queue is full, and the last ad expires, a new ad can be stored at the beginning of the queue. An advertiser can only have a single ad in the queue, duplicate placements are rejected.
 
+
+#### Ticket Registration
+
 Topic queues are subject to competition. To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time. In addition to the ads, each queue also keeps the current 'best ticket', i.e. the ticket with the longest cumulative waiting time. When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.
 
 Tickets cannot be used beyond their lifetime. If the advertiser does not come back after the waiting time, all cumulative waiting time is lost and it needs to start over.
@@ -91,9 +94,15 @@ For every node stored in the ticket table, the advertiser attempts to place an a
 
 Nodes/tickets are removed from their ticket table bucket when the ad is placed successfully or the medium goes offline. The removed entry is replaced when the ticket table is refreshed by a lookup.
 
-#### Ticket Registration
-
 #### Ticket Table
+
+The above description explains the storage and placement of ads on a single medium, but advertisers need to place ads redundantly on multiple nodes in order to be found.
+
+The advertiser keeps a 'ticket table' to track its ongoing placement attempts. This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. It is sufficient to use a small value of k such as k = 3. The ticket table is initialized and refreshed by performing lookups for the topic hash using the main node table.
+
+For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
+
+Nodes/tickets are removed from their ticket table bucket when the ad is placed successfully or the medium goes offline. The removed entry is replaced when the ticket table is refreshed by a lookup.
 
 #### Bucket refresh
 
