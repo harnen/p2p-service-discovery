@@ -50,53 +50,21 @@ is already registered for a given topic fails. Implementations may impose other
 restrictions on the table, such as restrictions on the number of IP-addresses in a certain
 range or number of occurrences of the same node across queues.
 
-### Tickets
+### Advertisement Protocol
 
-Ads should remain in the queue for a constant amount of time, the `target-ad-lifetime`. To
-maintain this guarantee, new registrations are throttled and registrants must wait for a
-certain amount of time before they are admitted. When a node attempts to place an ad, it
-receives a 'ticket' which tells them how long they must wait before they will be accepted.
-It is up to the registrant node to keep the ticket and present it to the advertisement
-medium when the waiting time has elapsed.
+In order to place an ad, the advertiser must present a valid ticket to the advertiser.
 
-The waiting time constant is:
+Tickets are opaque objects issued by the advertisement medium. When the advertiser first tries to place an ad without a ticket, it receives an initial ticket and a 'waiting time' which it needs to spend. The advertiser must come back after the waiting time has elapsed and present the ticket again. When it does come back, it will either place the ad successfully or receive another ticket and waiting time.
 
-    target-ad-lifetime = 15min
+While tickets are opaque to advertisers, they are readable by the advertisement medium. The medium uses the ticket to store the cumulative waiting time, which is sum of all waiting times the advertiser spent. Whenever a ticket is presented and a new one issued in response, the cumulative waiting time is increased and carries over into the new ticket.
 
-The assigned waiting time for any registration attempt is determined according to the
-following rules:
+All nodes act as advertisement media and keep a table of 'topic queues'. This table stores the ads. The table has a limit on the number of ads in the whole table, and also has a limit on the number of ads in each queue. Ads move through the queue at a fixed rate. When the queue is full, and the last ad expires, a new ad can be stored at the beginning of the queue. An advertiser can only have a single ad in the queue, duplicate placements are rejected.
 
-- When the table is full, the waiting time is assigned based on the lifetime of the oldest
-  ad across the whole table, i.e. the registrant must wait for a table slot to become
-  available.
-- When the topic queue is full, the waiting time depends on the lifetime of the oldest ad
-  in the queue. The assigned time is `target-ad-lifetime - oldest-ad-lifetime` in this
-  case.
-- Otherwise the ad may be placed immediately.
+Topic queues are subject to competition. To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time. In addition to the ads, each queue also keeps the current 'best ticket', i.e. the ticket with the longest cumulative waiting time. When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.
 
-Tickets are opaque objects storing arbitrary information determined by the issuing node.
-While details of encoding and ticket validation are up to the implementation, tickets must
-contain enough information to verify that:
+Tickets cannot be used beyond their lifetime. If the advertiser does not come back after the waiting time, all cumulative waiting time is lost and it needs to start over.
 
-- The node attempting to use the ticket is the node which requested it.
-- The ticket is valid for a single topic only.
-- The ticket can only be used within the registration window.
-- The ticket can't be used more than once.
-
-Implementations may choose to include arbitrary other information in the ticket, such as
-the cumulative wait time spent by the advertiser. A practical way to handle tickets is to
-encrypt and authenticate them with a dedicated secret key:
-
-    ticket       = aesgcm_encrypt(ticket-key, ticket-nonce, ticket-pt, '')
-    ticket-pt    = [src-node-id, src-ip, topic, req-time, wait-time, cum-wait-time]
-    src-node-id  = node ID that requested the ticket
-    src-ip       = IP address that requested the ticket
-    topic        = the topic that ticket is valid for
-    req-time     = absolute time of REGTOPIC request
-    wait-time    = waiting time assigned when ticket was created
-    cum-wait     = cumulative waiting time of this node
-
-### Registration Window
+To keep ticket traffic under control, an advertiser requesting a ticket for the first time gets a waiting time equal to the cumulative time of the current best ticket. For a placement attempt with a ticket, the new waiting time is assigned to be the best time minus the cumulative waiting time on the submitted ticket.
 
 The image below depicts a single ticket's validity over time. When the ticket is issued,
 the node keeping it must wait until the registration window opens. The length of the
@@ -115,38 +83,12 @@ during the registration window. Whenever a new ticket is submitted, first determ
 validity and compare it against the current 'next ticket' to determine which of the two is
 better according to an implementation-defined metric such as the cumulative wait time
 stored in the ticket.
+The above description explains the storage and placement of ads on a single medium, but advertisers need to place ads redundantly on multiple nodes in order to be found.
 
-### Advertisement Protocol
+The advertiser keeps a 'ticket table' to track its ongoing placement attempts. This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. It is sufficient to use a small value of k such as k = 3. The ticket table is initialized and refreshed by performing lookups for the topic hash using the main node table.
 
-This section explains how the topic-related protocol messages are used to place an ad.
+For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
 
-Let us assume that node `A` provides topic `T`. It selects node `C` as advertisement
-medium and wants to register an ad, so that when node `B` (who is searching for topic `T`)
-asks `C`, `C` can return the registration entry of `A` to `B`.
+Nodes/tickets are removed from their ticket table bucket when the ad is placed successfully or the medium goes offline. The removed entry is replaced when the ticket table is refreshed by a lookup.
 
-Node `A` first attempts to register without a ticket by sending [REGTOPIC] to `C`.
-
-    A -> C  REGTOPIC [T, ""]
-
-`C` replies with a ticket and waiting time.
-
-    A <- C  TICKET [ticket, wait-time]
-
-Node `A` now waits for the duration of the waiting time. When the wait is over, `A` sends
-another registration request including the ticket. `C` does not need to remember its
-issued tickets since the ticket is authenticated and contains enough information for `C`
-to determine its validity.
-
-    A -> C  REGTOPIC [T, ticket]
-
-Node `C` replies with another ticket. Node `A` must keep this ticket in place of the
-earlier one, and must also be prepared to handle a confirmation call in case registration
-was successful.
-
-    A <- C  TICKET [ticket, wait-time]
-
-Node `C` waits for the registration window to end on the queue and selects `A` as the node
-which is registered. Node `C` places `A` into the topic queue for `T` and sends a
-[REGCONFIRMATION] response.
-
-    A <- C  REGCONFIRMATION [T]
+### Search Protocol
