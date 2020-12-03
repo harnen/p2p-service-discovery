@@ -31,11 +31,6 @@ The network size experiments provide a performance comparison between topologies
 
 Average discovery times.
 
-<p float="left">
-  <img src="./img/networkSize/DiscMinTime.png" width="450" />
-</p>
-
-Minimum discovery times.
 
 <p float="left">
   <img src="./img/networkSize/RegAvgTime.png" width="450" />
@@ -44,23 +39,11 @@ Minimum discovery times.
 Average registration times.
 
 <p float="left">
-  <img src="./img/networkSize/RegMinTime.png" width="450" />
-</p>
-
-Minimum registration times. 
-
-<p float="left">
   <img src="./img/networkSize/eclipsed_node_over_time.png" width="450" />
 </p>
 
 Eclipsed nodes over time.
 
-
-<p float="left">
-  <img src="./img/networkSize/malicious_discovered.png" width="450" />
-</p>
-
-Discovered malicious nodes in lookups.
 
 <p float="left">
   <img src="./img/networkSize/registration_origin.png" width="450" />
