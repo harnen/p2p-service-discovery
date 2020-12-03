@@ -101,7 +101,7 @@ We provide a set of configuration files in order to simulate different setups, p
 
 TBC
 
-## Service Discovery Proposition
+<!--## Service Discovery Proposition
 
 This is our proposition for topic registration and service discovery in Ethereum 2.0.
 
@@ -154,7 +154,7 @@ We should decide how to implement it.
 * Should nodes involved in a topic also keep information about other nodes in the topic? So that if you find one, you should be able to find others?
 * Should we have some replication? Or only rely on registrations performed during the random walk?
 * Should we use multiple hash functions (or different salt)? If we use different hash functions, we'd have different H(t) for the same topic. It i) provide necessary redundancy (if the node close to H(t) is down, we don't loose all the information) ii) we could easily perform parallel lookups (similar to alpha, but here, it would go to different instead of the same H(t)
-* Spamming more registration shouldn't result in more state created on different nodes - this is necessary to prevent spamming attacks.
+* Spamming more registration shouldn't result in more state created on different nodes - this is necessary to prevent spamming attacks.-->
 
 ### Simulation results
 
