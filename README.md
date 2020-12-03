@@ -47,7 +47,7 @@ The project is organised in three main milestones of the project together with t
 
 ## Discv5 Service Discovery Design
 
-[Security](doc/design.md)
+[Design](doc/design.md)
 
 ## Service Discovery Simulator
 
