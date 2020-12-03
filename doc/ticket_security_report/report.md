@@ -85,13 +85,9 @@ Minimum registration times.
 
 Eclipsed nodes over time.
 
-
 <p float="left">
-  <img src="./img/percentEvil/malicious_discovered.png" width="450" />
+  <img src="./img/percentEvil/registration_origin.png" width="450" />
 </p>
 
 Discovered malicious nodes in lookups.
 
-<p float="left">
-  <img src="./img/percentEvil/registration_origin.png" width="450" />
-</p>
