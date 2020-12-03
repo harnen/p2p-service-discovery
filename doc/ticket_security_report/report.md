@@ -3,10 +3,11 @@
 ## Setup
 
 
-The parameters used in the simulation are the following:
+The default parameters used in the simulation are the following:
 * Total simulation time: 1 hour
 * Turbulence: rate of turbulence is a function of network size. Every (Network size / Simulation time) seconds, a node addition or removal is triggered based on the following probabilities: probability(adding a node) = 0.25 probability(removing a non-malicious node) = 0.25 probability(doing nothing) = 0.5 and probability(removing malicious node) = 0.
 * Ratio of malicious to all nodes is 0.2.
+* Network size is 5K nodes unless otherwise stated.
 * Bucket size: 17 (for routing, ticket and search table).
 * Topic table: 100 per topic limit and 500 total limit.
 * Registration expiration time: 50seconds.
@@ -67,3 +68,47 @@ Discovered malicious nodes in lookups.
 
 Registration origin.
 
+## Percentage of Malicious Nodes Experiments
+
+In this section, we perform experiments for varying ratios of malicious nodes: 0.1, 0.2, 0.3, 0.4, and 0.5. 
+
+<p float="left">
+  <img src="./img/percentEvil/DiscAvgTime.png" width="450" />
+</p>
+
+Average discovery times.
+
+<p float="left">
+  <img src="./img/percentEvil/DiscMinTime.png" width="450" />
+</p>
+
+Minimum discovery times.
+
+<p float="left">
+  <img src="./img/percentEvil/RegAvgTime.png" width="450" />
+</p>
+
+Average registration times.
+
+<p float="left">
+  <img src="./img/percentEvil/RegMinTime.png" width="450" />
+</p>
+
+Minimum registration times. 
+
+<p float="left">
+  <img src="./img/percentEvil/eclipsed_node_over_time.png" width="450" />
+</p>
+
+Eclipsed nodes over time.
+
+
+<p float="left">
+  <img src="./img/percentEvil/malicious_discovered.png" width="450" />
+</p>
+
+Discovered malicious nodes in lookups.
+
+<p float="left">
+  <img src="./img/percentEvil/registration_origin.png" width="450" />
+</p>
