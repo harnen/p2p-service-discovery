@@ -143,7 +143,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
 		if(it.hasNext()) {
 			Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>) it.next();
 			int regNum = pair.getValue() * 1;
-			int queryNum = pair.getValue() * 1;
+			int queryNum = pair.getValue() * 3;
 			System.out.println("Topic " + pair.getKey() + " will be registered " + regNum + " times and queried " + queryNum + " times.");
 			
 			Topic t = new Topic(pair.getKey());
@@ -176,7 +176,7 @@ public class Discv5ProposalTrafficGenerator implements Control {
                 else
                     prot = evil_pid;
 
-				int time = 200000 + i * 10;
+				int time = 200000 + i * 1000;
 				if(m != null)
 					EDSimulator.add(time, m, start, prot);
 			}

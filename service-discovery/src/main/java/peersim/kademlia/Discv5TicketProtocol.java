@@ -343,7 +343,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         }
         else {
             //logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
-            logger.warning("Registration succesful for topic "+ticket.getTopic().topic+" at node " + m.src.getId() + " at dist "+ Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID()));
+            logger.info("Registration succesful for topic "+ticket.getTopic().topic+" at node " + m.src.getId() + " at dist "+ Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID()));
             KademliaObserver.addAcceptedRegistration(topic, this.node.getId(),m.src.getId());
             KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
 
@@ -369,8 +369,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[]  registrations = lookupBody.registrations;
 		//System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.available_requests);
-		//System.out.print("Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) + ": " +  m.src.getId() + " regs:" + registrations.length+ " neigh:"+neighbours.length + "-> ");
-		/*for(BigInteger neighbour: neighbours) {
+		/*System.out.print(" Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) + ": " +  m.src.getId() + " regs:" + registrations.length+ " neigh:"+neighbours.length + "-> ");
+		for(BigInteger neighbour: neighbours) {
 			System.out.print(Util.logDistance(neighbour, lop.topic.topicID) + ", ");
 		}
 		System.out.println();*/
@@ -412,7 +412,9 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		
 
 		if(!lop.finished && found >= required) {
-			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic);
+			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic + " after consulting " + lop.getUsedCount() + " nodes.");
+			//We should never use less than 2 hops
+			assert lop.getUsedCount() > 1;
 			lop.finished = true;
 		}
 		
@@ -458,7 +460,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	
 					if(request != null) {
 						lop.nrHops++;
-						logger.warning("Sending new requests");
+						//logger.warning("Sending new requests");
 						sendMessage(request, neighbour, myPid);
 					}
 				} else {
