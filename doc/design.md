@@ -96,7 +96,7 @@ Nodes/tickets are removed from their ticket table bucket when the ad is placed s
 
 #### Bucket refresh
 
-Ticket table needs to be initialised and refreshed to fill up all the per-distance k-buckets in the 'ticket table'.
+'Ticket table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
 Ideally, all k-buckets should be constantly full, meaning that the node has active registrations in 'advertising medium' in all distances to the topic hash.
 Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash my create and additional overhead that can be too expensive and create too much traffic in the network.
 To avoid that, initially, the 'ticket table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash'.
@@ -110,22 +110,46 @@ When empty slots during the refresh process, they can be filled from the replace
 
 ## Topic Search
 
-he purpose of placing ads is being discovered by searchers.
+The purpose of placing ads is being discovered by searchers.
 
-Searchers on a topic also keep a table, the 'search table'. Like the 'ticket table', this table also stores k-buckets of advertisement media by distance to the topic hash. The k factor of the search table should be relatively large in order to make the search efficient. Tickets are not required for search. The search table is initialized and refreshed by performing lookups for the topic hash on using the main node table.
+Searchers on a topic also keep a table, the 'search table'. 
+Like the 'ticket table', this table also stores k-buckets of advertisement media by distance to the topic hash, and a new 'search table' is created for each topic lookup.
+The k factor of the search table should be relatively large in order to make the search efficient.
+By default we use `k=16` similarly to the Kademlia DHT.
+Tickets are not required for search and nodes can not be added multiple times in the same k-bucket.
 
-To find ads, the searcher simply queries the nodes in the search table for ads. In order to find new results, bucket entries are replaced when the node fails to answer or when it answers with an empty list of ads. Bucket entries of the search table should also be replaced whenever the table is refreshed by a lookup.
+To find ads, the searcher simply queries the nodes in the search table for ads. In order to find new results, bucket entries are replaced when the node fails to answer or when it answers with an empty list of ads. 
+Bucket entries of the search table should also be replaced whenever the table is refreshed by a lookup.
 
-How does this deal with topic popularity?
+<!--How does this deal with topic popularity?
 In earlier research, we kept trying to estimate the 'radius' (i.e. popularity) of the topic in order to determine the advertisement media.
 
 I think the proposed advertisement algorithm will track popularity automatically because the cumulative waiting time required for placement just grows the closer you get to the topic hash. Nodes will keep trying to out-wait each other close to the center. Further away from the topic, waiting times will be more reasonable and everyone will be able to find their place there. When the topic shrinks, the required 'best time' will shrink also.
 
-For search, estimation is less necessary and we should try to see how efficient it is in the way specified above. I think it might just work out.
+For search, estimation is less necessary and we should try to see how efficient it is in the way specified above. I think it might just work out.-->
 
-Beyond the simple proposal
-There is a minor problem with the simple placement and search scheme outlined above: the nodes which are close to the topic hash will get a lot of traffic because they'll be in everyone's ticket and search tables. We previously tried to eliminate this problem using the concept of 'minimum radius'. It might work to use network density estimation for this. If we have a rough estimate on network size, we can determine a lower bound on the distance to the topic hash such that the number of nodes in the 'center' is > 256, for example.
 
-The log-distance based tables might not be precise enough to accurately track advertisement media. We could use the more precise tree-based k-bucket design (as used in BitTorrent DHT, for example) for these tables.
+#### Search strategies
 
-Another question is how well this system can cope with many different topics at the same time. @harnen's idea to prioritize ads based on the distance of the advertisement medium from the topic could be used for that. The general idea with the topic table system is that there is a global limit on the number of ads that can be stored across the entire DHT. When the limit is reached, the waiting times will just go up. It's a tradeoff. We need to explore this and set the parameters (especially the topic table limits) so the system will be usable with a large number of topics.
+For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. 
+In case not enough `TOPIC_PEER_LIMIT` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `TOPIC_PEER_LIMIT` or `MAX_LOOKUP_HOPS`.
+We implemented and evaluated different search strategies in order to choose which nodes from which buckets ask first when performing a lookup.
+
+* Minimum bucket: A random node is picked from the non-empty bucket with the minimum distance to the topic hash.
+
+* Random: A random node is picked from a random bucket. This can be performed in two ways: 1) a random node is picked from all nodes in the table or 2) a random node is picked from a random bucket each time, till all buckets have been used.
+
+#### Bucket refresh
+
+Similarly to 'ticket table', 'search table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
+Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash.
+Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash my create and additional overhead that can create too much traffic in the network.
+To avoid that, initially, 'search table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash'.
+In addition to that, every time a node sends a ticket request and when  performing topic searchs, the 'advertising medium' replies with the closest nodes to 'the topic hash' that it know, helping filling up k-buckets without sending additional lookups.
+
+There is also a refresh process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. 
+The refresh time used is `refresh_time=10 seconds`.
+When empty slots during the refresh process, they can be filled from the replacement list and, optionally, perform lookups to the topic hash in case is empty.
+
+<!--*The search table is initialized and refreshed by performing lookups for the topic hash on using the main node table.*-->
+
