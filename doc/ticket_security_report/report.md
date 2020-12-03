@@ -49,20 +49,20 @@ Average registration times.
 Minimum registration times. 
 
 <p float="left">
-  <img src="./img/networkSize/eclipsed_node_over_time" width="450" />
+  <img src="./img/networkSize/eclipsed_node_over_time.png" width="450" />
 </p>
 
 Eclipsed nodes over time.
 
 
 <p float="left">
-  <img src="./img/networkSize/malicious_discovered" width="450" />
+  <img src="./img/networkSize/malicious_discovered.png" width="450" />
 </p>
 
 Discovered malicious nodes in lookups.
 
 <p float="left">
-  <img src="./img/networkSize/registration_origin" width="450" />
+  <img src="./img/networkSize/registration_origin.png" width="450" />
 </p>
 
 Registration origin.
