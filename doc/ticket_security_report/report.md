@@ -61,23 +61,12 @@ In this section, we perform experiments for varying ratios of malicious nodes: 0
 
 Average discovery times.
 
-<p float="left">
-  <img src="./img/percentEvil/DiscMinTime.png" width="450" />
-</p>
-
-Minimum discovery times.
 
 <p float="left">
   <img src="./img/percentEvil/RegAvgTime.png" width="450" />
 </p>
 
-Average registration times.
-
-<p float="left">
-  <img src="./img/percentEvil/RegMinTime.png" width="450" />
-</p>
-
-Minimum registration times. 
+Average registration times. 
 
 <p float="left">
   <img src="./img/percentEvil/eclipsed_node_over_time.png" width="450" />
