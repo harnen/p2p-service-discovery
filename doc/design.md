@@ -91,4 +91,10 @@ For every node stored in the ticket table, the advertiser attempts to place an a
 
 Nodes/tickets are removed from their ticket table bucket when the ad is placed successfully or the medium goes offline. The removed entry is replaced when the ticket table is refreshed by a lookup.
 
+#### Ticket Registration
+
+#### Ticket Table
+
+#### Bucket refresh
+
 ### Search Protocol
