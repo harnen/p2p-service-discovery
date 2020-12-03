@@ -108,7 +108,7 @@ We should decide how to implement it.
 * Should we use multiple hash functions (or different salt)? If we use different hash functions, we'd have different H(t) for the same topic. It i) provide necessary redundancy (if the node close to H(t) is down, we don't loose all the information) ii) we could easily perform parallel lookups (similar to alpha, but here, it would go to different instead of the same H(t)
 * Spamming more registration shouldn't result in more state created on different nodes - this is necessary to prevent spamming attacks.-->
 
-### Simulation results
+## Simulation results
 
 [Ticket vs No Ticket protocol comparison](doc/report/report.md)
 
