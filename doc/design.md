@@ -131,16 +131,21 @@ For search, estimation is less necessary and we should try to see how efficient 
 
 #### Search strategies
 
-* Minimum bucket:
+For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. 
+In case not enough `TOPIC_PEER_LIMIT` results have been received for the first `ALPHA` lookups, additional  `ALPHA` parallel lookups are performed until reaching `TOPIC_PEER_LIMIT` or `MAX_LOOKUP_HOPS`.
+We implemented and evaluated different search strategies in order to choose which nodes from which buckets ask first when performing a lookup.
 
-* Random: neighbour from a random bucket
+* Minimum bucket: A random node is picked from the non-empty bucket with the minimum distance to the topic hash.
 
+* Random: A random node is picked from a random bucket. This can be performed in two ways: 
+  1 - A random node is picked from all nodes in the table. 
+  2 - A random node is picked from a random bucket each time, till all buckets have been used.
 
 #### Bucket refresh
 
 Similarly to 'ticket table',  'search table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
 Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash.
-Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash my create and additional overhead that can be too expensive and create too much traffic in the network.
+Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash my create and additional overhead that can create too much traffic in the network.
 To avoid that, initially, 'search table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash'.
 In addition to that, every time a node sends a ticket request and when  performing topic searchs, the 'advertising medium' replies with the closest nodes to 'the topic hash' that it know, helping filling up k-buckets without sending additional lookups.
 
