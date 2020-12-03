@@ -116,7 +116,7 @@ Searchers on a topic also keep a table, the 'search table'.
 Like the 'ticket table', this table also stores k-buckets of advertisement media by distance to the topic hash, and a new 'search table' is created for each topic lookup.
 The k factor of the search table should be relatively large in order to make the search efficient.
 By default we use `k=16` similarly to the Kademlia DHT.
-Tickets are not required for search and nodes can not be added multiple times after in the same k-bucket.
+Tickets are not required for search and nodes can not be added multiple times in the same k-bucket.
 
 To find ads, the searcher simply queries the nodes in the search table for ads. In order to find new results, bucket entries are replaced when the node fails to answer or when it answers with an empty list of ads. 
 Bucket entries of the search table should also be replaced whenever the table is refreshed by a lookup.
@@ -141,7 +141,7 @@ We implemented and evaluated different search strategies in order to choose whic
 
 #### Bucket refresh
 
-Similarly to 'ticket table',  'search table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
+Similarly to 'ticket table', 'search table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
 Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash.
 Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash my create and additional overhead that can create too much traffic in the network.
 To avoid that, initially, 'search table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash'.
