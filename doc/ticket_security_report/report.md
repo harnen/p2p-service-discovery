@@ -89,5 +89,4 @@ Eclipsed nodes over time.
   <img src="./img/percentEvil/registration_origin.png" width="450" />
 </p>
 
-Discovered malicious nodes in lookups.
-
+Registrations by good and malicious nodes.
