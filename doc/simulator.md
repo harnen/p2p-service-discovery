@@ -49,3 +49,9 @@ We provide a set of configuration files in order to simulate different setups, p
 ### Gathering statistics
 
 TBC
+
+### Simulation results
+
+[Ticket vs No Ticket protocol comparison](doc/report/report.md)
+
+[Security report with sybil attacks](doc/security_report/report.md)
