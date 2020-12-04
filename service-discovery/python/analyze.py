@@ -302,7 +302,7 @@ def analyzeOperations(dirs):
         print(df)
         
         print(df['used_hops'].mean())
-        ax2.bar(log_dir, df['used_hops'].mean(), yerr=df['used_hops'].std(), capsize=10)
+        ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
         ax2.set_title("Avg Lookup Hop Count")
 
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum())
