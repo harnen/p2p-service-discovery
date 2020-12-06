@@ -10,6 +10,7 @@ import java.util.TreeMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Arrays;
 import java.math.BigInteger;
 
 import com.google.common.collect.HashBasedTable; 
@@ -282,7 +283,7 @@ public class KademliaObserver implements Control {
     }
 	
 	public static void reportMsg(Message m, boolean sent) {
-
+        /* 
 		if (kadProtocol instanceof Discv5ProposalProtocol) {
             try {
                 String result = "";
@@ -334,7 +335,7 @@ public class KademliaObserver implements Control {
                 e.printStackTrace();
             }
 
-        }   
+        } */  
     }
 
     private void write_registration_stats() {
@@ -561,6 +562,9 @@ public class KademliaObserver implements Control {
             }
 
             for(int i = 0; i < Network.size(); i++) {
+				if( !(Network.get(i).isUp()) ) {
+                    continue;   
+                }
                 Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
 
@@ -607,6 +611,76 @@ public class KademliaObserver implements Control {
 
         return true;
     }
+
+    /**
+     * write the snapshot of average storage utilisation in the topic tables
+     * for each topic. 
+     * 
+     */
+    private void write_average_storage_utilisation_per_topic() {
+        
+        HashMap<String, Double> utilisations = new HashMap<String,Double>();
+        HashMap<Topic,Integer> topics;
+        
+
+        int numUpNodes = 0;
+        for(int i = 0; i < Network.size(); i++) {
+            Node node = Network.get(i);
+            if (!(node.isUp()))
+                continue;
+            numUpNodes += 1;
+            kadProtocol = node.getKademliaProtocol();
+            topics = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyTopic();
+
+            for (Topic t: topics.keySet()) {
+                int count = topics.get(t);
+                double util = ((double) count) / KademliaCommonConfig.ADS_PER_QUEUE;
+                if (utilisations.get(t.getTopic()) != null) {
+                    double total_util_so_far = utilisations.get(t.getTopic());
+                    utilisations.put(t.getTopic(), total_util_so_far + util);
+                }
+                else 
+                    utilisations.put(t.getTopic(), util);
+            }
+        }
+        if (utilisations.size() == 0)
+            return;
+
+        try {
+            String filename = this.logFolderName + "/" + "storage_utilisation.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            String[] keys = (String []) utilisations.keySet().toArray(new String[utilisations.size()]);
+            Arrays.sort(keys);
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                writer.write("# Average utilisation of storage per topic\n");
+                String title = "time";
+                for (String topic: keys) {
+                    title += "," + topic;
+                }
+                title += "\n";
+                writer.write(title);
+            }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+            writer.write("" + CommonState.getTime());
+            for (String topic: keys) {
+                double util = utilisations.get(topic) / numUpNodes;
+                writer.write("," + util);
+            }
+            writer.write("\n");
+            writer.close();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+            
+    }
+    
+
     /**
      * print the statistical snapshot of the current situation
      * 
@@ -709,6 +783,7 @@ public class KademliaObserver implements Control {
     	if(CommonState.getTime() > 3000000)
             write_node_info();
         write_registered_topics_timing();
+        write_average_storage_utilisation_per_topic();
         return false;
     }
 
