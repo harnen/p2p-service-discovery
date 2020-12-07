@@ -10,9 +10,13 @@ import array
 import sys
 import csv
 import math
+import os
 
 csv.field_size_limit(sys.maxsize)
 
+def extractAlphanumeric(InputString):
+    from string import ascii_letters, digits
+    return "".join([ch for ch in InputString if ch in (ascii_letters + digits)])
 
 def analyzeMessages(dirs):
     fig1, ax1 = plt.subplots()
@@ -59,11 +63,11 @@ def analyzeMessages(dirs):
     ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
     ax1.set_xlabel("Nodes")
     ax1.set_ylabel("#Messages")
-    fig1.savefig('messages_received.png')
+    fig1.savefig(OUTDIR + '/messages_received.png')
 
     
     ax2.legend()
-    fig2.savefig('messages_types.png')
+    fig2.savefig(OUTDIR + '/messages_types.png')
     
     #ax3.legend()
     #add line showing how the result should be
@@ -119,7 +123,7 @@ def analyzeActiveRegistrations(dirs):
         ax.set_xticklabels(topics)
         ax.legend()
 
-        plt.savefig('./plots/registration_origin.png')
+        plt.savefig(OUTDIR + '/registration_origin.png')
 
 def analyzeRegistrations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -151,7 +155,7 @@ def analyzeRegistrations(dirs):
     ax1.legend()
     ax2.legend()
     ax3.legend()
-    fig1.savefig('registrations_registrant.png')
+    fig1.savefig(OUTDIR + '/registrations_registrant.png')
     
     ax2.set_title('Registrations by registrar')
     ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
@@ -159,7 +163,7 @@ def analyzeRegistrations(dirs):
     ax2.set_ylim(bottom=0)
     ax1.set_xlabel("Nodes")
     ax1.set_ylabel("#Received registrations")
-    fig2.savefig('registrations_registrar.png')
+    fig2.savefig(OUTDIR + '/registrations_registrar.png')
     
     ax3.set_title('Registrations by topics (average)')
     ticks = sorted_table['topic'].values
@@ -167,7 +171,7 @@ def analyzeRegistrations(dirs):
     ax3.set_xticklabels(ticks)
 
     
-    fig3.savefig('registrations_topic.png')
+    fig3.savefig(OUTDIR + '/registrations_topic.png')
 
 def analyzeRegistrarDistribution(dirs):
     fig, ax1 = plt.subplots()
@@ -214,7 +218,7 @@ def analyzeRegistrarDistribution(dirs):
     print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Registrars")
-    fig.savefig('registrar_distribution.png')
+    fig.savefig(OUTDIR + '/registrar_distribution.png')
 
 def analyzeRegistrantDistribution(dirs):
     fig, ax1 = plt.subplots()
@@ -283,7 +287,7 @@ def analyzeRegistrantDistribution(dirs):
     print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Discovered Registrants")
-    fig.savefig('registrant_distribution.png')
+    fig.savefig(OUTDIR + '/registrant_distribution.png')
 
 def analyzeOperations(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -326,7 +330,7 @@ def analyzeOperations(dirs):
 
     ax2.legend()
     #ax3.legend()
-    fig2.savefig('lookup_hopcount.png')
+    fig2.savefig(OUTDIR + '/lookup_hopcount.png')
     #fig3.savefig('malicious_discovered.png')
 
 def analyzeEclipsedNodesOverTime(dirs):
@@ -341,7 +345,7 @@ def analyzeEclipsedNodesOverTime(dirs):
         ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
 
     ax1.legend()
-    plt.savefig('./plots/eclipsed_node_over_time.png')
+    plt.savefig(OUTDIR + '/eclipsed_node_over_time.png')
 
 def analyzeEclipsedNodeDistribution(dirs):
 
@@ -443,7 +447,7 @@ def analyzeEclipsedNodeDistribution(dirs):
     ax1.set_ylabel('Topics')
     ax1.set_xlabel('Node status')
 
-    plt.savefig('./plots/node_type_dist.png')
+    plt.savefig(OUTDIR + '/node_type_dist.png')
 
 def analyzeRegistrationTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -473,23 +477,51 @@ def analyzeRegistrationTime(dirs):
     ax3.legend()
     ax4.legend()
     ax5.legend()
-    fig2.savefig('min_time_register.png')
-    fig3.savefig('avg_time_register.png')
-    fig4.savefig('min_time_lookup.png')
-    fig5.savefig('avg_time_register')
+    fig2.savefig(OUTDIR + '/min_time_register.png')
+    fig3.savefig(OUTDIR + '/avg_time_register.png')
+    fig4.savefig(OUTDIR + '/min_time_lookup.png')
+    fig5.savefig(OUTDIR + '/avg_time_register')
+
+def analyzeStorageUtilisation(dirs):
+
+    for log_dir in dirs:
+        fig, ax = plt.subplots()
+        df = pd.read_csv(log_dir + '/storage_utilisation.csv')
+        topics = []
+        for column_name in df.columns:
+            if column_name == "time":
+                continue
+            topics.append(column_name)
+        log_dir1 = extractAlphanumeric(log_dir)
+        ax.set_title("Storage utilisation in " + log_dir1)
+        for topic in topics:
+            ax.plot(df['time'], df[topic], label=topic)
+        
+        ax.legend()
+        ax.set_ylabel('Average utilisation of storage space')
+        ax.set_xlabel('time (msec)')
+        plt.savefig(OUTDIR + '/storage_utilisation_' + log_dir1 + '.png')
+            
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
     exit(1)
 
+OUTDIR = './plots'
+if not os.path.exists(OUTDIR):
+    os.makedirs(OUTDIR)
+
 print('Will read logs from', sys.argv[1:])
-#analyzeMessages(sys.argv[1:])
+print('Plots will be saved in ', OUTDIR);
+
+analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
 analyzeRegistrarDistribution(sys.argv[1:])
-#analyzeEclipsedNodesOverTime(sys.argv[1:])
-#analyzeEclipsedNodeDistribution(sys.argv[1:])
-#analyzeActiveRegistrations(sys.argv[1:])
+analyzeEclipsedNodesOverTime(sys.argv[1:])
+analyzeActiveRegistrations(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
+analyzeStorageUtilisation(sys.argv[1:])
 #plt.show()
+#analyzeEclipsedNodeDistribution(sys.argv[1:])
