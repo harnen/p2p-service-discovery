@@ -215,10 +215,15 @@ public class Discv5TicketProtocol extends KademliaProtocol {
      */
     protected void handleRegister(Message m, int myPid) {
 		Ticket ticket = (Ticket) m.body;
-        topicTable.register_ticket(ticket, m);
+        long curr_time = CommonState.getTime();
+        boolean add_event = topicTable.register_ticket(ticket, m, curr_time);
     	//System.out.println("Register ticket at "+this.node.getId()+" for topic "+ticket.getTopic().getTopic());
 
-		
+        // Setup a timeout event for the registration decision
+        if (add_event) {
+            Timeout timeout = new Timeout(ticket.getTopic());
+            EDSimulator.add(curr_time + KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+        }
     }
 	
 	/**
@@ -262,12 +267,6 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
         long rtt_delay = 2*transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
         Ticket ticket = topicTable.getTicket(topic, advertiser, rtt_delay, curr_time);
-
-        // Setup a timeout event for the registration decision
-        if (ticket.getWaitTime() >= 0) {
-            Timeout timeout = new Timeout(topic);
-            EDSimulator.add(rtt_delay + ticket.getWaitTime() + KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
-        }
         // Send a response message with a ticket back to advertiser
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
 
@@ -414,7 +413,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		if(!lop.finished && found >= required) {
 			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic + " after consulting " + lop.getUsedCount() + " nodes.");
 			//We should never use less than 2 hops
-			assert lop.getUsedCount() > 1;
+			//assert lop.getUsedCount() > 1;
 			lop.finished = true;
 		}
 		

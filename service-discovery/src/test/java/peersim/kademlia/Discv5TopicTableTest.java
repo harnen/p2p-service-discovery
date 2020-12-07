@@ -65,7 +65,7 @@ public class Discv5TopicTableTest{
             Ticket ticket = table.getTicket(topic, advertiser, rtt_delay, curr_time);
             System.out.println("Waiting time: " + ticket.getWaitTime());
             assert(ticket.getWaitTime() == 0);
-            table.register_ticket(ticket, null);
+            table.register_ticket(ticket, null, curr_time);
             curr_time += 1;
         }
         
@@ -95,7 +95,7 @@ public class Discv5TopicTableTest{
             Ticket ticket = table.getTicket(topic, advertiser, rtt_delay, curr_time);
             System.out.println("Waiting time: " + ticket.getWaitTime());
             //assert(ticket.getWaitTime() == 0);
-            table.register_ticket(ticket, null);
+            table.register_ticket(ticket, null, curr_time);
             curr_time += 1;
         }
     }

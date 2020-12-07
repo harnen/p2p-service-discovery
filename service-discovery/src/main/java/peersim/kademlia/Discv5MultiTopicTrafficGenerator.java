@@ -44,6 +44,7 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
         super(prefix);
 		mintopicNum = Configuration.getInt(prefix + "." + PAR_MINTOPIC,1);
 		maxtopicNum = Configuration.getInt(prefix + "." + PAR_MAXTOPIC);
+        
 		zipf = new ZipfDistribution(maxtopicNum,exp);
 	}
 
@@ -69,8 +70,15 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 
                 // if the node is malicious, it targets only one topic
                 if (prot.getNode().is_evil) {
-                    t = prot.getTargetTopic();
-                    topicList[0] = t;
+                    if (attackTopicIndex == -1) {
+                        t = prot.getTargetTopic();
+                        topicList[0] = t;
+                    }
+                    else {
+                        topic = new String("t" + attackTopicIndex);
+                        topicList[0] = new Topic(topic);
+                        prot.setTargetTopic(topicList[0]);
+                    }
                     numTopics = 1;
                 } else {
                     numTopics = zipf.sample();

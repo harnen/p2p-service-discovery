@@ -32,11 +32,13 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	 */
 	private final static String PAR_ZIPF = "zipf";
 	private final static String PAR_TOPICNUM = "topicnum";
+    private final static String PAR_ATTACKTOPIC = "attackTopic";
 	//private final static String PAR_FREQ = "maxfreq";
 
 	protected boolean first = true;
 	private boolean second = false;
 
+    protected final int attackTopicIndex; //index of the topic attacked by all the malicious nodes
 	private static Integer topicCounter = 0;
 
 	protected ZipfDistribution zipf;
@@ -61,6 +63,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 		exp = Configuration.getDouble(prefix + "." + PAR_ZIPF);
 		topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
 		zipf = new ZipfDistribution(topicNum,exp);
+        attackTopicIndex = Configuration.getInt(prefix + "." + PAR_ATTACKTOPIC, -1);
 		pendingRegistrations = topicNum;
 		pendingLookups = topicNum;
 		/*topicList = new HashMap<String,Integer>();
