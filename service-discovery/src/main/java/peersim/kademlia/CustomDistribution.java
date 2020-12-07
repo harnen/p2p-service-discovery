@@ -21,6 +21,7 @@ public class CustomDistribution implements peersim.core.Control {
     private static final String PAR_EVIL_PROT = "evilProtocol";
     private static final String PAR_PERCENT_EVIL = "percentEvil";
     private static final String PAR_ID_DIST = "idDistribution";
+    private static final String PAR_ATTACK_TOPIC = "attackTopic";
 
     private final static String PAR_TOPICNUM = "topicnum";
     private final static String PAR_ZIPF = "zipf";
@@ -34,6 +35,7 @@ public class CustomDistribution implements peersim.core.Control {
     private ZipfDistribution zipf;
     private String idDist;
     private int[] subtract; 
+    private int attackTopicNo;
 
     public CustomDistribution(String prefix) {
         protocolID = Configuration.getPid(prefix + "." + PAR_PROT);
@@ -43,11 +45,19 @@ public class CustomDistribution implements peersim.core.Control {
         topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
         exp = Configuration.getDouble(prefix + "." + PAR_ZIPF, -1);
         idDist = Configuration.getString(prefix + "." + PAR_ID_DIST, KademliaCommonConfig.UNIFORM_ID_DISTRIBUTION);
+        attackTopicNo = Configuration.getInt(prefix + "." + PAR_ATTACK_TOPIC, -1);
         
         if (exp != -1)
             zipf = new ZipfDistribution(topicNum,exp);
         urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
         subtract = new int[this.topicNum];
+
+        if (attackTopicNo != -1) {
+            if (attackTopicNo > topicNum || topicNum < 1) {
+                System.out.println("Invalid attackTopicNo parameter" + attackTopicNo);
+                System.exit(1);
+            }
+        }
     }
 
     private BigInteger generate_non_uniform_id(int topicNo, Topic t) {
@@ -78,7 +88,12 @@ public class CustomDistribution implements peersim.core.Control {
             BigInteger id;
             KademliaNode node; 
             if (i < num_evil_nodes) {
-                int topicNo = zipf.sample();
+                int topicNo; 
+                if (this.attackTopicNo != -1)
+                    topicNo = this.attackTopicNo;
+                else 
+                    topicNo = zipf.sample();
+
                 String topic = new String("t"+topicNo);
                 Topic t = new Topic(topic);
                 if (idDist.equals(KademliaCommonConfig.NON_UNIFORM_ID_DISTRIBUTION)) {
