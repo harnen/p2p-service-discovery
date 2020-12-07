@@ -283,7 +283,7 @@ public class KademliaObserver implements Control {
     }
 	
 	public static void reportMsg(Message m, boolean sent) {
-        /* 
+        ///* 
 		if (kadProtocol instanceof Discv5ProposalProtocol) {
             try {
                 String result = "";
@@ -335,7 +335,7 @@ public class KademliaObserver implements Control {
                 e.printStackTrace();
             }
 
-        } */  
+        } //*/  
     }
 
     private void write_registration_stats() {
