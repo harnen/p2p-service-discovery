@@ -507,7 +507,7 @@ if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
     exit(1)
 
-OUTDIR = './plots'
+OUTDIR = './'
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
 
@@ -522,6 +522,6 @@ analyzeRegistrarDistribution(sys.argv[1:])
 analyzeEclipsedNodesOverTime(sys.argv[1:])
 analyzeActiveRegistrations(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
-analyzeStorageUtilisation(sys.argv[1:])
+#analyzeStorageUtilisation(sys.argv[1:])
 #plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
