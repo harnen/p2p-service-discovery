@@ -655,7 +655,6 @@ public class KademliaObserver implements Control {
             if (!myFile.exists()) {
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
-                writer.write("# Average utilisation of storage per topic\n");
                 String title = "time";
                 for (String topic: keys) {
                     title += "," + topic;
