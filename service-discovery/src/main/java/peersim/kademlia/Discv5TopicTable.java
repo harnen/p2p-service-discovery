@@ -22,17 +22,16 @@ public class Discv5TopicTable { // implements TopicTable {
     // Per-topic registration table
     private HashMap<Topic, ArrayDeque<TopicRegistration>> topicTable;
     // Competing tickets for each topic 
-    private HashMap<Topic, ArrayDeque<Ticket>> competingTickets;
+    private HashMap<Topic, ArrayList<Ticket>> competingTickets;
     // All topic advertisements ordered by registration
     private ArrayDeque<TopicRegistration> allAds;
-
     private HashMap<Topic, Long> nextDecisionTime;
 
     private Logger logger;
 
     public Discv5TopicTable() {
         topicTable = new HashMap<Topic, ArrayDeque<TopicRegistration>>(); 
-        competingTickets = new HashMap<Topic, ArrayDeque<Ticket>>();
+        competingTickets = new HashMap<Topic, ArrayList<Ticket>>();
         allAds = new ArrayDeque<TopicRegistration>();
         nextDecisionTime = new HashMap<Topic, Long>();
     }
@@ -70,35 +69,37 @@ public class Discv5TopicTable { // implements TopicTable {
         	if (curr_time - r.getTimestamp() >= this.adLifeTime) {
             	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic());
 	            TopicRegistration r_same = topicQ.pop(); 
+                //assert r_same.equals(r);
 				it.remove(); //removes from allAds
 
-        	    //TODO assert that r_same and r are the same registrations
 			}
 		}
     }
 
     private Ticket getBestTicket(Topic topic) {
-        ArrayDeque<Ticket> ticketQ = competingTickets.get(topic);
-        if (ticketQ == null) 
+        ArrayList<Ticket> ticketList = competingTickets.get(topic);
+        if (ticketList == null) 
             return null;
-        else if (ticketQ.size() > 0)
-            return ticketQ.getFirst();
-        else 
+        else if (ticketList.size() == 0) 
             return null;   
+        else {
+            Collections.sort(ticketList);
+            //assert ticketList.get(0).getCumWaitTime() >= ticketList.get(ticketList.size()-1).getCumWaitTime();
+            return ticketList.get(0);
+        }
     }
 
     private void add_to_competingTickets (Topic topic, Ticket ticket) {
-        ArrayDeque<Ticket> ticketQ = competingTickets.get(topic);
-        if (ticketQ == null) {
-            ArrayDeque<Ticket> newTicketQ = new ArrayDeque<Ticket>();
-            newTicketQ.add(ticket);
-            competingTickets.put(topic, newTicketQ);
+        ArrayList<Ticket> ticketList = competingTickets.get(topic);
+        if (ticketList == null) {
+            ArrayList<Ticket> newTicketList = new ArrayList<Ticket>();
+            newTicketList.add(ticket);
+            competingTickets.put(topic, newTicketList);
         }
         else {
-            if(!ticketQ.contains(ticket))
-                ticketQ.add(ticket);
+            if(!ticketList.contains(ticket))
+                ticketList.add(ticket);
         }
-
     }
 
     private long getWaitingTime(TopicRegistration reg, long curr_time) {
@@ -119,8 +120,8 @@ public class Discv5TopicTable { // implements TopicTable {
             //logger.warning("Ad already registered by this node");
             return -1;
         }
-        if (topicQ != null)
-            assert topicQ.size() <= this.adsPerQueue;
+        //if (topicQ != null)
+        //    assert topicQ.size() <= this.adsPerQueue;
 
         // compute the waiting time
         if (topicQ != null && topicQ.size() == this.adsPerQueue) {
@@ -137,6 +138,8 @@ public class Discv5TopicTable { // implements TopicTable {
             waiting_time = 0;
         }
 
+        //assert waiting_time <= this.adLifeTime && waiting_time >= 0;
+
         return waiting_time;
     }
     
@@ -144,7 +147,7 @@ public class Discv5TopicTable { // implements TopicTable {
         Topic ti = ticket.getTopic();
         Topic topic = new Topic(ti.topic);
         //topic.setHostID(this.hostID);
-
+        
         ticket.setMsg(m);
         add_to_competingTickets(topic, ticket);
 
@@ -170,8 +173,8 @@ public class Discv5TopicTable { // implements TopicTable {
         Topic topic = new Topic(ti.topic);
         //topic.setHostID(this.hostID);
         
-        ArrayDeque<Ticket> ticketQ = competingTickets.get(topic);
-        if (ticketQ == null) {
+        ArrayList<Ticket> ticketList = competingTickets.get(topic);
+        if (ticketList == null) {
             /*
             System.out.println("This should not happen");
             System.out.println("Lookup topic: " + topic.toString());
@@ -185,21 +188,20 @@ public class Discv5TopicTable { // implements TopicTable {
             System.out.println(result);
 	        //System.exit(-1);
             */
+            System.out.println("Error: no competing tickets for makeRegisterDecisionForTopic");
             return new Ticket[0];
         }    
-        if (ticketQ !=null && ticketQ.size() == 0) {
+        if (ticketList !=null && ticketList.size() == 0) {
             return new Ticket[0];
         }
 
-        Ticket bestTicket = ticketQ.getFirst();
         // list of tickets to respond with MSG_REGISTER_RESPONSE
-        ArrayList<Ticket> responseList = new ArrayList<Ticket>();
+        //ArrayList<Ticket> responseList = new ArrayList<Ticket>();
 
         //Register as many tickets as possible (subject to resource availability)
+        Collections.sort(ticketList);
         updateTopicTable(curr_time);
-		Iterator<Ticket> it = ticketQ.iterator();
-        while(it.hasNext()) {
-            Ticket ticket = it.next();
+        for(Ticket ticket: ticketList) {
             TopicRegistration reg = new TopicRegistration(ticket.getSrc(), topic, curr_time);
             reg.setTimestamp(curr_time);
             long waiting_time = getWaitingTime(reg, curr_time);
@@ -208,34 +210,23 @@ public class Discv5TopicTable { // implements TopicTable {
         	if(this.topicTable.get(reg.getTopic())!=null)
                 topicOccupancy = this.topicTable.get(reg.getTopic()).size();
             
-            //assert waiting_time != -1;
-
             if (waiting_time == -1) {
                 ticket.setRegistrationComplete(false);
                 ticket.setWaitTime(waiting_time);
-                it.remove();
-                responseList.add(ticket);
             }
             else if (waiting_time == 0 && topicOccupancy <adsPerQueue && this.allAds.size()<tableCapacity) {
                 register(reg);
                 ticket.setRegistrationComplete(true);
-                //ticket.setWaitTime(waiting_time);
-                it.remove();
-                responseList.add(ticket);
-                assert !ticketQ.contains(ticket);
             }
             else { //waiting_time > 0
-                assert waiting_time > 0;
                 waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
-                if (ticket.getReqTime() + ticket.getCumWaitTime()  <= curr_time) {
-                    ticket.updateWaitingTime(waiting_time);
-                    responseList.add(ticket);
-                }
+                ticket.updateWaitingTime(waiting_time);
                 ticket.setRegistrationComplete(false);
             }
         }
 
-        Ticket [] tickets = (Ticket []) responseList.toArray(new Ticket[responseList.size()]);
+        Ticket [] tickets = (Ticket []) ticketList.toArray(new Ticket[ticketList.size()]);
+        competingTickets.remove(topic);
         return tickets;
     }
 
@@ -255,20 +246,8 @@ public class Discv5TopicTable { // implements TopicTable {
             //already registered
             return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
         }
-        ArrayDeque<Ticket> ticketQ = competingTickets.get(topic);
         
-        Ticket best_ticket = null;
-        if (ticketQ != null && ticketQ.size() != 0)
-            best_ticket = ticketQ.getFirst();
-
-        if (best_ticket != null) {
-            long next_register_time = best_ticket.getReqTime() + best_ticket.getCumWaitTime();
-            waiting_time = (next_register_time - curr_time >= rtt_delay) ? next_register_time - curr_time - rtt_delay : 0;
-
-        }
-        else { // no best ticket exists
-            waiting_time = (waiting_time - rtt_delay > 0) ? waiting_time - rtt_delay : 0;
-        }
+        waiting_time = (waiting_time - rtt_delay > 0) ? waiting_time - rtt_delay : 0;
      
         return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
     }
@@ -283,7 +262,7 @@ public class Discv5TopicTable { // implements TopicTable {
         }
         else if (time > decisionTime)
         {
-            //nextDecisionTime.put(topic, new Long(decisionTime));
+            nextDecisionTime.put(topic, new Long(decisionTime));
             return true;
         }
         else if (time == decisionTime)
@@ -292,7 +271,6 @@ public class Discv5TopicTable { // implements TopicTable {
         {
             return true;
         }
-
     }
 
     public TopicRegistration[] getRegistration(Topic t){
@@ -368,6 +346,27 @@ public class Discv5TopicTable { // implements TopicTable {
         }
         
         return regByTopic;
+
+    }
+    
+    public HashMap<Topic,Integer> getCompetingTicketsbyTopic(){
+    	//System.out.println("Reg by topic");
+        HashMap<Topic,Integer> numOfCompetingTickets = new HashMap<Topic,Integer>();
+        for(Topic t: topicTable.keySet())
+        {
+        	ArrayList<Ticket> tickets = competingTickets.get(t);       
+            int size;
+            if (tickets == null)
+                size = 0;
+            else if (tickets.size() ==0)
+                size = 0;
+            else
+                size = tickets.size();
+      
+        	numOfCompetingTickets.put(t, size);
+        }
+        
+        return numOfCompetingTickets;
 
     }
     
