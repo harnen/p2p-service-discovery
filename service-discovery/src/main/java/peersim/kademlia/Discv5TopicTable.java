@@ -226,10 +226,10 @@ public class Discv5TopicTable { // implements TopicTable {
             else { //waiting_time > 0
                 assert waiting_time > 0;
                 waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
-                if (ticket.getReqTime() + ticket.getRTT() + ticket.getWaitTime() + KademliaCommonConfig.ONE_UNIT_OF_TIME  <= curr_time) {
+                if (ticket.getReqTime() + ticket.getCumWaitTime()  <= curr_time) {
+                    ticket.updateWaitingTime(waiting_time);
                     responseList.add(ticket);
                 }
-                ticket.updateWaitingTime(waiting_time);
                 ticket.setRegistrationComplete(false);
             }
         }
@@ -250,11 +250,9 @@ public class Discv5TopicTable { // implements TopicTable {
         //compute ticket waiting time
         long waiting_time = getWaitingTime(reg, curr_time);
 
-        Ticket ticket = new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
-        
         if (waiting_time == -1) {
             //already registered
-            return ticket;
+            return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
         }
         ArrayDeque<Ticket> ticketQ = competingTickets.get(topic);
         
@@ -265,15 +263,13 @@ public class Discv5TopicTable { // implements TopicTable {
         if (best_ticket != null) {
             long next_register_time = best_ticket.getReqTime() + best_ticket.getCumWaitTime();
             waiting_time = (next_register_time - curr_time >= rtt_delay) ? next_register_time - curr_time - rtt_delay : 0;
-            ticket.setWaitTime(waiting_time);
 
         }
         else { // no best ticket exists
             waiting_time = (waiting_time - rtt_delay > 0) ? waiting_time - rtt_delay : 0;
-            ticket.setWaitTime(waiting_time);
         }
      
-        return ticket;
+        return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
     }
 
     // Returns true if there is no makeRegisterDecisionForTopic scheduled for the topic at decision time
