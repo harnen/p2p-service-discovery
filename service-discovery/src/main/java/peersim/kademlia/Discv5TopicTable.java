@@ -213,6 +213,7 @@ public class Discv5TopicTable { // implements TopicTable {
             if (waiting_time == -1) {
                 ticket.setRegistrationComplete(false);
                 ticket.setWaitTime(waiting_time);
+                it.remove();
                 responseList.add(ticket);
             }
             else if (waiting_time == 0 && topicOccupancy <adsPerQueue && this.allAds.size()<tableCapacity) {
