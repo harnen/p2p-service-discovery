@@ -495,11 +495,11 @@ def analyzeStorageUtilisation(dirs):
         log_dir1 = extractAlphanumeric(log_dir)
         ax.set_title("Storage utilisation in " + log_dir1)
         for topic in topics:
-            ax.plot(df['time'], df[topic], label=topic)
+            ax.plot(df['time']/1000, df[topic], label=topic)
         
         ax.legend()
         ax.set_ylabel('Average utilisation of storage space')
-        ax.set_xlabel('time (msec)')
+        ax.set_xlabel('time (sec)')
         plt.savefig(OUTDIR + '/storage_utilisation_' + log_dir1 + '.png')
             
 
