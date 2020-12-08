@@ -222,7 +222,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         // Setup a timeout event for the registration decision
         if (add_event) {
             Timeout timeout = new Timeout(ticket.getTopic());
-            EDSimulator.add(curr_time + KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+            EDSimulator.add(KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
         }
     }
 	
@@ -334,7 +334,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
         if (ticket.isRegistrationComplete() == false) {
-        	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopicID() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
+        	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
             register.body = m.body;
@@ -808,6 +808,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		super.processEvent(myNode, myPid, event);
         Message m;
         
+        if(!myNode.isUp()) {
+            System.out.println("Removed nodes are receiving traffic");
+            System.exit(1);
+        }
 		
 		if(((SimpleEvent) event).getType() == Timeout.TIMEOUT) {
 			handleTimeout((Timeout) event, myPid);
