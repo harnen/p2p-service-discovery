@@ -795,8 +795,11 @@ public class KademliaObserver implements Control {
             Node node = Network.get(i);
             if (!(node.isUp()))
                 continue;
-            numUpNodes += 1;
             kadProtocol = node.getKademliaProtocol();
+            if (kadProtocol.getNode().is_evil)
+                continue;
+            
+            numUpNodes += 1;
             topics = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyTopic();
             //waitingTickets = ((Discv5TicketProtocol) kadProtocol).topicTable.getCompetingTicketsbyTopic();
 
