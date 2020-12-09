@@ -218,6 +218,7 @@ public class Discv5TopicTable { // implements TopicTable {
             else if (waiting_time == 0 && topicOccupancy <adsPerQueue && this.allAds.size()<tableCapacity) { //accepted ticket
                 register(reg);
                 ticket.setRegistrationComplete(true);
+                KademliaObserver.reportCumulativeTime(topic, ticket.getCumWaitTime());
             }
             else { //waiting_time > 0, reject (for now) due to space
                 waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
