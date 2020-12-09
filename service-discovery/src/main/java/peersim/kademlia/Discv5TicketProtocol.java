@@ -333,7 +333,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     protected void handleRegisterResponse(Message m, int myPid) {
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
-        if (ticket.isRegistrationComplete() == false) {
+        if (!ticket.isRegistrationComplete()) {
         	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
@@ -875,7 +875,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
                 break;
 
             case Timeout.REG_TIMEOUT:
-            	//logger.warning("Remove ticket table "+((Timeout)event).nodeSrc);
+            	logger.warning("Remove ticket table "+((Timeout)event).nodeSrc);
                 KademliaObserver.reportExpiredRegistration(((Timeout)event).topic, this.node.is_evil);
             	ticketTables.get(((Timeout)event).topic.getTopicID()).removeNeighbour(((Timeout)event).nodeSrc);
             	break;
@@ -883,7 +883,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			case Timeout.TIMEOUT: // timeout
 				Timeout timeout = (Timeout) event;
 				if (sentMsg.containsKey(timeout.msgID)) { // the response msg didn't arrived
-					System.out.println("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: " + timeout.node);
+					logger.warning("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: " + timeout.node);
 					// remove form sentMsg
 					sentMsg.remove(timeout.msgID);
 					// remove node from my routing table
@@ -922,6 +922,19 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		this.routingTable.refreshBuckets();
 		//this.routingTable.refreshBuckets(kademliaid, otherProtocolId);
 
+	}
+	
+	public void refreshBucket(TicketTable rou, BigInteger node, int distance) {
+	
+     	//BigInteger[] neighbours = routingTable.getNeighbours(Util.logDistance(rou.getTopicId(), this.node.getId()));
+        //rou.addNeighbour(neighbours);
+		logger.warning("Refreshing "+Util.logDistance(node, this.node.getId())+" "+distance);
+	    //for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
+	        	BigInteger[] neighbours = routingTable.getNeighbours(Util.logDistance(node, this.getNode().getId()));
+	        	rou.addNeighbour(neighbours);
+	      //  }
+	        
+       
 	}
 	
 	
