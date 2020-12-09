@@ -47,7 +47,7 @@ public class TurbulenceSingleTopic extends Turbulence{
 			for (int i = 0; i < Network.size(); ++i) 
 				if(Network.get(i).isUp())count++;
 			
-			System.out.println("Adding node " + count);
+			System.out.println(CommonState.getTime() +" Adding node " + count);
 
 
 			// get kademlia protocol of new node
@@ -72,7 +72,7 @@ public class TurbulenceSingleTopic extends Turbulence{
 			// sort network
 			sortNet();
 			
-			for (int k = 0; k < 10; k++) {
+			for (int k = 0; k < 250; k++) {
                
 				KademliaProtocol jKad; 
 				Node n;
@@ -85,14 +85,17 @@ public class TurbulenceSingleTopic extends Turbulence{
 				newKad.routingTable.addNeighbour(jKad.getNode().getId());
 			}
 			
+			
 		    String topic = new String("t"+zipf.sample());
 			node.setTopic(topic, newNode);
 
+		    Message initLookupMessage = generateTopicLookupMessage(topic);
 			Message registerMessage = generateRegisterMessage(topic);
 		    Message lookupMessage = generateTopicLookupMessage(topic);
 		    if(registerMessage != null) {
 			    //int time = CommonState.r.nextInt(90000);
 			    System.out.println("Topic " + topic + " will be registered by "+node.getId());
+			    EDSimulator.add(0, initLookupMessage, newNode, kademliaid);
 			    EDSimulator.add(0, registerMessage, newNode, kademliaid);
 			    EDSimulator.add(1000, lookupMessage, newNode, kademliaid);
 

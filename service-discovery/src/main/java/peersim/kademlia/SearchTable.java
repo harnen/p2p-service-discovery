@@ -126,11 +126,7 @@ public class SearchTable extends RoutingTable {
 			addNeighbour(n);
 			b.replacements.remove(n);
 		}
-		/*if(b.neighbours.size()>0) {
-			b.checkAndReplaceLast();
-			//return;
-		}*/
-		
+
 		if(b.neighbours.size()==0&&refresh) {
 			BigInteger randomNode = generateRandomNode(i);
 			protocol.sendLookup(randomNode, myPid);
@@ -138,6 +134,7 @@ public class SearchTable extends RoutingTable {
 		//print();
 
 	}
+
 	
 	public int getnBuckets() {
 		return nBuckets;

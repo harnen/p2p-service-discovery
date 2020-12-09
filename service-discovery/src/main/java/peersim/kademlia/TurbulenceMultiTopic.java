@@ -117,8 +117,11 @@ public class TurbulenceMultiTopic extends Turbulence{
                 //System.out.print(topicList.get(i)+" ");
 			    Message registerMessage = generateRegisterMessage(topicList.get(i));
 			    Message lookupMessage = generateTopicLookupMessage(topicList.get(i));
+			    Message initLookupMessage = generateTopicLookupMessage(topicList.get(i));
+
 			    if(registerMessage != null) {
 				    System.out.println("Topic " + topicList.get(i) + " will be registered by "+newKad.getNode().getId());
+				    EDSimulator.add(0, initLookupMessage, newNode, kademliaid);
 				    EDSimulator.add(0, registerMessage, newNode, kademliaid);
 				    EDSimulator.add(1000, lookupMessage, newNode, kademliaid);
 

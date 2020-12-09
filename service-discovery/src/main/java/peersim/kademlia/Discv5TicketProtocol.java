@@ -334,7 +334,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
         if (!ticket.isRegistrationComplete()) {
-        	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
+        	logger.info("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
             register.body = m.body;
@@ -368,9 +368,9 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[]  registrations = lookupBody.registrations;
 		//System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.available_requests);
-		System.out.print(" Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) + ": " +  m.src.getId() + " regs:" + registrations.length+ " neigh:"+neighbours.length + "-> ");
+		logger.info(" Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) + ": " +  m.src.getId() + " regs:" + registrations.length+ " neigh:"+neighbours.length + "-> ");
 		for(BigInteger neighbour: neighbours) {
-			System.out.print(Util.logDistance(neighbour, lop.topic.topicID) + ", ");
+			logger.info(Util.logDistance(neighbour, lop.topic.topicID) + ", ");
 		}
 		System.out.println();
 		

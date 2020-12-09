@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import peersim.kademlia.Util;
 
 import peersim.core.CommonState;
+import peersim.core.Node;
 import peersim.edsim.EDSimulator;
 
 public class TicketTable extends RoutingTable {
@@ -138,12 +139,22 @@ public class TicketTable extends RoutingTable {
 		
 		//logger.warning("Refreshing bucket "+i+" "+b.occupancy()+" "+b.replacements.size());
 
+		for(BigInteger n : b.neighbours) {
+			Node node = Util.nodeIdtoNode(n);
+			if(!node.isUp()){
+				removeNeighbour(n);
+			}
+		}
+		
 		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
 			//b.replace();
 			//Random rand = new Random();
 			BigInteger n = b.replacements.get(CommonState.r.nextInt(b.replacements.size()));
-			addNeighbour(n);
+			
+			Node node = Util.nodeIdtoNode(n);
+
+			if(node.isUp())addNeighbour(n);
 			b.replacements.remove(n);
 		}
 		

@@ -250,6 +250,25 @@ public class Turbulence implements Control {
 	}
 	
 	
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a random find node message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	protected Message generateFindNodeMessage(Topic topic) {
+		// existing active destination node
+		Node n = Network.get(CommonState.r.nextInt(Network.size()));
+		while (!n.isUp()) {
+			n = Network.get(CommonState.r.nextInt(Network.size()));
+		}
+
+		Message m = Message.makeInitFindNode(topic.getTopicID());
+		m.timestamp = CommonState.getTime();
+
+		return m;
+	}
+	
 
 	// ______________________________________________________________________________________________
 	public boolean execute() {
