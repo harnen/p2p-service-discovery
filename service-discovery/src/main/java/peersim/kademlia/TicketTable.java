@@ -62,9 +62,9 @@ public class TicketTable extends RoutingTable {
 		if(!pendingTickets.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
-				logger.warning("Adding node "+node+" to bucket "+getBucketNum(node)+" "+getBucket(node).occupancy());
+				//logger.warning("Adding node "+node+" to bucket "+getBucketNum(node)+" "+getBucket(node).occupancy());
 				//pendingTickets.put(node, null);
-				logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
+				//logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
 				protocol.sendTicketRequest(node,t,myPid);
 				return true;
 			} 
@@ -107,7 +107,7 @@ public class TicketTable extends RoutingTable {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
 		pendingTickets.remove(node);
 		getBucket(node).removeNeighbour(node);
-		logger.warning("Pending ticket Remove "+node+" "+getBucket(node).occupancy()+" "+getBucket(node).replacements.size()+" "+getBucketNum(node));
+		//logger.warning("Pending ticket Remove "+node+" "+getBucket(node).occupancy()+" "+getBucket(node).replacements.size()+" "+getBucketNum(node));
 
 		//logger.warning("Pending ticket remove "+node+" "+getBucket(node).occupancy());
 
@@ -136,7 +136,7 @@ public class TicketTable extends RoutingTable {
 		KBucket b = k_buckets[i];
 		//if(b.neighbours.size()<k)
 		
-		logger.warning("Refreshing bucket "+i+" "+b.occupancy()+" "+b.replacements.size());
+		//logger.warning("Refreshing bucket "+i+" "+b.occupancy()+" "+b.replacements.size());
 
 		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);

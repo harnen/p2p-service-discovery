@@ -926,13 +926,9 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	
 	public void refreshBucket(TicketTable rou, BigInteger node, int distance) {
 	
-     	//BigInteger[] neighbours = routingTable.getNeighbours(Util.logDistance(rou.getTopicId(), this.node.getId()));
-        //rou.addNeighbour(neighbours);
-		logger.warning("Refreshing "+Util.logDistance(node, this.node.getId())+" "+distance);
-	    //for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
-	        	BigInteger[] neighbours = routingTable.getNeighbours(Util.logDistance(node, this.getNode().getId()));
-	        	rou.addNeighbour(neighbours);
-	      //  }
+
+	      BigInteger[] neighbours = routingTable.getNeighbours(Util.logDistance(node, this.getNode().getId()));
+	      rou.addNeighbour(neighbours);
 	        
        
 	}
