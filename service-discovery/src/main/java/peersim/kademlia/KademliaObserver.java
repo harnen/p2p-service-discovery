@@ -108,6 +108,16 @@ public class KademliaObserver implements Control {
     private static HashMap<BigInteger,Integer> regByRegistrant;
     private static HashMap<BigInteger,Integer> regByRegistrar;
 
+    //Waiting times
+    private static HashMap<String, Long> waitingTimes = new HashMap<String, Long>();
+    private static HashMap<String, Integer> numOfReportedWaitingTimes = new HashMap<String, Integer>();
+    private static HashMap<String, Long> cumWaitingTimes = new HashMap<String, Long>();
+    private static HashMap<String, Integer> numOfReportedCumWaitingTimes = new HashMap<String, Integer>();
+    private static HashMap<String, Integer> numOfRejectedRegistrations = new HashMap<String, Integer> ();
+    String [] all_topics;
+    
+
+    private static HashMap<Integer, Integer> msgSent = new HashMap<Integer, Integer>();
 
     private static int avgCounter=0;
 
@@ -269,6 +279,44 @@ public class KademliaObserver implements Control {
         }
     }
 
+    // Report the cumulative waiting time for accepted tickets
+    public static void reportCumulativeTime(Topic topic, long time) {
+        Long totalCumWaitTime = cumWaitingTimes.get(topic.getTopic());
+        if (totalCumWaitTime == null)
+            cumWaitingTimes.put(topic.getTopic(), time);
+        else
+            cumWaitingTimes.put(topic.getTopic(), totalCumWaitTime+time);
+
+        Integer count = numOfReportedCumWaitingTimes.get(topic.getTopic());
+        if (count == null)
+            numOfReportedCumWaitingTimes.put(topic.getTopic(), 1);
+        else
+            numOfReportedCumWaitingTimes.put(topic.getTopic(), count+1);
+    }
+
+    public static void reportWaitingTime(Topic topic, long time) {
+        if (time == -1)
+        {
+            Integer rejected = numOfRejectedRegistrations.get(topic.getTopic());
+            if (rejected == null) 
+                numOfRejectedRegistrations.put(topic.getTopic(), 1);
+            else 
+                numOfRejectedRegistrations.put(topic.getTopic(), rejected + 1);
+            return;
+        }
+
+        Long totalWaitTime = waitingTimes.get(topic.getTopic());
+        Integer count = numOfReportedWaitingTimes.get(topic.getTopic());
+        if (count == null) {
+            waitingTimes.put(topic.getTopic(), time);
+            numOfReportedWaitingTimes.put(topic.getTopic(), 1);
+        }
+        else {
+            waitingTimes.put(topic.getTopic(), time+totalWaitTime);
+            numOfReportedWaitingTimes.put(topic.getTopic(), count+1);
+        }
+    }
+
     public static void reportExpiredRegistration(Topic t, boolean is_evil) {
         if (is_evil) {
             Integer num = activeRegistrationsByMalicious.get(t.getTopic());
@@ -281,9 +329,126 @@ public class KademliaObserver implements Control {
             activeRegistrations.put(t.getTopic(), num);
         }
     }
+
+    private static void accountMsg(Message m) {
+        Integer numMsg = msgSent.get(m.getType());
+        if (numMsg == null)
+            msgSent.put(m.getType(), 1);
+        else {
+            msgSent.put(m.getType(), numMsg+1);
+        }
+    }
+
+    private void write_waiting_times() {
+
+        if (waitingTimes.size() == 0)
+        {
+            return;
+        }
+        try {
+            String filename = this.logFolderName + "/" + "waiting_times.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                all_topics = (String []) waitingTimes.keySet().toArray(new String[waitingTimes.size()]);
+                Arrays.sort(all_topics);
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                String title = "time";
+                for (String topic: all_topics) {
+                    title += "," + topic + "_wait";
+                }
+                for (String topic: all_topics) {
+                    title += "," + topic + "_cumWait";
+                }
+                for (String topic: all_topics) {
+                    title += "," + topic + "_reject";
+                }
+                title += "\n";
+                writer.write(title);
+            }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+            writer.write("" + CommonState.getTime());
+            for (String topic: all_topics) {
+                Long totalWaitTime = waitingTimes.get(topic);
+                Integer numOfReported = numOfReportedWaitingTimes.get(topic);
+                if (numOfReported == null)
+                    writer.write(",0.0");   
+                else
+                {
+                    writer.write("," + totalWaitTime.doubleValue()/numOfReported.intValue());
+                }
+            }
+            for (String topic: all_topics) {
+                Long totalWaitTime = cumWaitingTimes.get(topic);
+                Integer numOfReported = numOfReportedCumWaitingTimes.get(topic);
+                if (numOfReported == null)
+                    writer.write(",0.0");   
+                else
+                {
+                    writer.write("," + totalWaitTime.doubleValue()/numOfReported.intValue());
+                }
+            }
+            for (String topic: all_topics) {
+                Integer rejected = numOfRejectedRegistrations.get(topic);
+                if (rejected == null)
+                    writer.write(",0");
+                else
+                    writer.write("," + rejected);
+            }
+            writer.write("\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        numOfReportedWaitingTimes.clear();
+        waitingTimes.clear();
+        numOfRejectedRegistrations.clear();
+        cumWaitingTimes.clear();
+        numOfReportedCumWaitingTimes.clear();
+    }
+
+    private void write_exchanged_msg_stats_over_time() {
+        int numMsgTypes = 12;
+        try {
+            String filename = this.logFolderName + "/" + "msg_stats.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                String title = "time";
+                for (int msgType=0; msgType<numMsgTypes; msgType++) {
+                    Message m = new Message(msgType);
+                    title += "," + m.messageTypetoString();
+                }
+                title += "\n";
+                writer.write(title);
+            }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+            writer.write("" + CommonState.getTime());
+            for (int msgType=0; msgType<numMsgTypes; msgType++) {
+                Integer count = msgSent.get(msgType);
+                if (count == null)
+                    count = 0;
+                writer.write("," + count);
+            }
+            writer.write("\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        msgSent.clear(); // = new HashMap<Integer, Integer>();
+    }
 	
 	public static void reportMsg(Message m, boolean sent) {
         ///* 
+        accountMsg(m);
 		if (kadProtocol instanceof Discv5ProposalProtocol) {
             try {
                 String result = "";
@@ -620,10 +785,12 @@ public class KademliaObserver implements Control {
     private void write_average_storage_utilisation_per_topic() {
         
         HashMap<String, Double> utilisations = new HashMap<String,Double>();
+        HashMap<String, Integer> ticketQLength = new HashMap<String,Integer>();
         HashMap<Topic,Integer> topics;
-        
+        HashMap<Topic, Integer> waitingTickets;
 
         int numUpNodes = 0;
+        int num_all_registrations = 0;
         for(int i = 0; i < Network.size(); i++) {
             Node node = Network.get(i);
             if (!(node.isUp()))
@@ -631,10 +798,21 @@ public class KademliaObserver implements Control {
             numUpNodes += 1;
             kadProtocol = node.getKademliaProtocol();
             topics = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyTopic();
+            //waitingTickets = ((Discv5TicketProtocol) kadProtocol).topicTable.getCompetingTicketsbyTopic();
+
+            int total_occupancy_topic_table = 0;
+            for (Topic t: topics.keySet()) {
+                total_occupancy_topic_table += topics.get(t);
+                num_all_registrations += topics.get(t);
+            }
 
             for (Topic t: topics.keySet()) {
                 int count = topics.get(t);
-                double util = ((double) count) / KademliaCommonConfig.ADS_PER_QUEUE;
+                double util;
+                if (total_occupancy_topic_table == KademliaCommonConfig.TOPIC_TABLE_CAP)
+                    util = 1.0;
+                else
+                    util = ((double) count) / KademliaCommonConfig.ADS_PER_QUEUE;
                 if (utilisations.get(t.getTopic()) != null) {
                     double total_util_so_far = utilisations.get(t.getTopic());
                     utilisations.put(t.getTopic(), total_util_so_far + util);
@@ -642,6 +820,16 @@ public class KademliaObserver implements Control {
                 else 
                     utilisations.put(t.getTopic(), util);
             }
+            /*
+            for (Topic t: topics.keySet()) {
+                int count = waitingTickets.get(t);
+                if (ticketQLength.get(t.getTopic()) != null) {
+                    int total_ticketQLength_so_far = ticketQLength.get(t.getTopic());
+                    ticketQLength.put(t.getTopic(), total_ticketQLength_so_far + count);
+                }
+                else 
+                    ticketQLength.put(t.getTopic(), count);
+            }*/
         }
         if (utilisations.size() == 0)
             return;
@@ -659,6 +847,12 @@ public class KademliaObserver implements Control {
                 for (String topic: keys) {
                     title += "," + topic;
                 }
+                /*
+                for (String topic: keys) {
+                    title += "," + topic+ "CompetingTickets";
+                }
+                */
+                title += ",overallUtil";
                 title += "\n";
                 writer.write(title);
             }
@@ -670,6 +864,13 @@ public class KademliaObserver implements Control {
                 double util = utilisations.get(topic) / numUpNodes;
                 writer.write("," + util);
             }
+            writer.write("," + ((double)num_all_registrations) / (numUpNodes*KademliaCommonConfig.TOPIC_TABLE_CAP));
+            /*
+            for (String topic: keys) {
+                //double averageQLength= ((double) ticketQLength.get(topic)) / numUpNodes;
+                writer.write("," + (int) ticketQLength.get(topic));
+            }
+            */
             writer.write("\n");
             writer.close();
             
@@ -784,6 +985,8 @@ public class KademliaObserver implements Control {
             write_node_info();
         write_registered_topics_timing();
         write_average_storage_utilisation_per_topic();
+        write_exchanged_msg_stats_over_time();
+        write_waiting_times();
         return false;
     }
 

@@ -210,19 +210,22 @@ public class Discv5TopicTable { // implements TopicTable {
         	if(this.topicTable.get(reg.getTopic())!=null)
                 topicOccupancy = this.topicTable.get(reg.getTopic()).size();
             
-            if (waiting_time == -1) {
+            if (waiting_time == -1) { 
+                // rejected because a registration from ticket src for topic already exists
                 ticket.setRegistrationComplete(false);
                 ticket.setWaitTime(waiting_time);
             }
-            else if (waiting_time == 0 && topicOccupancy <adsPerQueue && this.allAds.size()<tableCapacity) {
+            else if (waiting_time == 0 && topicOccupancy <adsPerQueue && this.allAds.size()<tableCapacity) { //accepted ticket
                 register(reg);
                 ticket.setRegistrationComplete(true);
+                KademliaObserver.reportCumulativeTime(topic, ticket.getCumWaitTime());
             }
-            else { //waiting_time > 0
+            else { //waiting_time > 0, reject (for now) due to space
                 waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
                 ticket.updateWaitingTime(waiting_time);
                 ticket.setRegistrationComplete(false);
             }
+            KademliaObserver.reportWaitingTime(topic, waiting_time);
         }
 
         Ticket [] tickets = (Ticket []) ticketList.toArray(new Ticket[ticketList.size()]);
@@ -244,6 +247,7 @@ public class Discv5TopicTable { // implements TopicTable {
 
         if (waiting_time == -1) {
             //already registered
+            KademliaObserver.reportWaitingTime(topic, waiting_time);
             return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
         }
         

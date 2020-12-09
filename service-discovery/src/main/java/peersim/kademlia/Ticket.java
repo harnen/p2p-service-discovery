@@ -34,7 +34,7 @@ public class Ticket implements Comparable<Ticket> {
         this.topic = topic;
         this.req_time = req_time;
         this.wait_time = wait_time;
-        this.cum_wait = wait_time;
+        this.cum_wait = wait_time + delay + KademliaCommonConfig.ONE_UNIT_OF_TIME;
         this.src = src;
         this.isRegistrationComplete = false;
         this.rtt_delay = delay;

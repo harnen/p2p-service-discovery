@@ -493,7 +493,7 @@ def analyzeStorageUtilisation(dirs):
                 continue
             topics.append(column_name)
         log_dir1 = extractAlphanumeric(log_dir)
-        ax.set_title("Storage utilisation in " + log_dir1)
+        ax.set_title("Storage utilisation over time in " + log_dir1)
         for topic in topics:
             ax.plot(df['time']/1000, df[topic], label=topic)
         
@@ -501,7 +501,67 @@ def analyzeStorageUtilisation(dirs):
         ax.set_ylabel('Average utilisation of storage space')
         ax.set_xlabel('time (sec)')
         plt.savefig(OUTDIR + '/storage_utilisation_' + log_dir1 + '.png')
-            
+
+
+# plot per-topic, average waiting times and number of rejected 
+def analyzeWaitingTimes(dirs):
+
+    for log_dir in dirs:
+        fig, ax1 = plt.subplots()
+        df = pd.read_csv(log_dir + '/waiting_times.csv')
+        topics = set()
+        for column_name in df.columns:
+            if column_name == "time":
+                continue
+            if 'wait' in column_name:
+                parts = column_name.split('_')
+                topics.add(parts[0])
+        log_dir1 = extractAlphanumeric(log_dir)
+        ax1.set_title("Average waiting times over time for " + log_dir1)
+        for topic in topics:
+            ax1.plot(df['time']/1000, df[topic+'_wait'], label=topic)
+        
+        ax1.legend()
+        ax1.set_ylabel('Waiting time in msec')
+        ax1.set_xlabel('time (sec)')
+        plt.savefig(OUTDIR + '/waiting_times_' + log_dir1 + '.png')
+        
+        fig, ax2 = plt.subplots()
+        ax2.set_title("Average cumulative waiting times over time for " + log_dir1)
+        for topic in topics:
+            ax2.plot(df['time']/1000, df[topic+'_cumWait'], label=topic)
+        ax2.legend()
+        ax2.set_ylabel('Cumulative waiting time in msec')
+        ax2.set_xlabel('time (sec)')
+        plt.savefig(OUTDIR + '/cumulative_waiting_times_' + log_dir1 + '.png')
+
+        fig, ax3 = plt.subplots()
+        ax3.set_title("Quantity of rejected ticket requests (already registered) over time for " + log_dir1)
+        for topic in topics:
+            ax3.plot(df['time']/1000, df[topic+'_reject'], label=topic)
+        ax3.legend()
+        ax3.set_ylabel('Number of ticket requests')
+        ax3.set_xlabel('time (sec)')
+        plt.savefig(OUTDIR + '/rejected_tickets_' + log_dir1 + '.png')
+
+def analyzeNumberOfMessages(dirs):
+
+    for log_dir in dirs:
+        fig, ax = plt.subplots()
+        df = pd.read_csv(log_dir + '/msg_stats.csv')
+        log_dir1 = extractAlphanumeric(log_dir)
+        ax.set_title("Exchanged messages over time for  " + log_dir1)
+        ax.plot(df['time']/1000, df['MSG_REGISTER'], label='reg')
+        ax.plot(df['time']/1000, df['MSG_REGISTER_RESPONSE'], label='reg_response')
+        ax.plot(df['time']/1000, df['MSG_TICKET_REQUEST'], label='ticket_req')
+        ax.plot(df['time']/1000, df['MSG_TICKET_RESPONSE'], label='ticket_response')
+        ax.plot(df['time']/1000, df['MSG_TOPIC_QUERY'], label='query')
+        ax.plot(df['time']/1000, df['MSG_TOPIC_QUERY_REPLY'], label='query_reply')
+
+        ax.legend()
+        ax.set_xlabel('time (sec)')
+        ax.set_ylabel('Number of exchanged regiser/response messages')
+        plt.savefig(OUTDIR + '/message_quantity_' + log_dir1 + '.png')
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
@@ -523,5 +583,7 @@ analyzeEclipsedNodesOverTime(sys.argv[1:])
 analyzeActiveRegistrations(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
 analyzeStorageUtilisation(sys.argv[1:])
+analyzeWaitingTimes(sys.argv[1:])
+analyzeNumberOfMessages(sys.argv[1:])
 #plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
