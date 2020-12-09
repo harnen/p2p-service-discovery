@@ -333,7 +333,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     protected void handleRegisterResponse(Message m, int myPid) {
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
-        if (ticket.isRegistrationComplete() == false) {
+        if (!ticket.isRegistrationComplete()) {
         	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
@@ -368,11 +368,11 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[]  registrations = lookupBody.registrations;
 		//System.out.println("Topic query reply for "+lop.operationId +" with " + registrations.length+ " replies "+lop.available_requests);
-		/*System.out.print(" Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) + ": " +  m.src.getId() + " regs:" + registrations.length+ " neigh:"+neighbours.length + "-> ");
+		System.out.print(" Asked node from dist:"+Util.logDistance(lop.topic.topicID, m.src.getId()) + ": " +  m.src.getId() + " regs:" + registrations.length+ " neigh:"+neighbours.length + "-> ");
 		for(BigInteger neighbour: neighbours) {
 			System.out.print(Util.logDistance(neighbour, lop.topic.topicID) + ", ");
 		}
-		System.out.println();*/
+		System.out.println();
 		
 		lop.elaborateResponse(neighbours);
 		lop.increaseReturned(m.src.getId());
@@ -883,7 +883,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 			case Timeout.TIMEOUT: // timeout
 				Timeout timeout = (Timeout) event;
 				if (sentMsg.containsKey(timeout.msgID)) { // the response msg didn't arrived
-					System.out.println("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: " + timeout.node);
+					logger.warning("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: " + timeout.node);
 					// remove form sentMsg
 					sentMsg.remove(timeout.msgID);
 					// remove node from my routing table
@@ -922,6 +922,15 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		this.routingTable.refreshBuckets();
 		//this.routingTable.refreshBuckets(kademliaid, otherProtocolId);
 
+	}
+	
+	public void refreshBucket(TicketTable rou, BigInteger node, int distance) {
+	
+
+	      BigInteger[] neighbours = routingTable.getNeighbours(Util.logDistance(node, this.getNode().getId()));
+	      rou.addNeighbour(neighbours);
+	        
+       
 	}
 	
 	

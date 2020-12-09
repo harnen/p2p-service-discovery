@@ -62,7 +62,7 @@ public class TicketTable extends RoutingTable {
 		if(!pendingTickets.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
-				//logger.warning("Adding node "+node+" to "+protocol.getNode().getId()+" "+(Util.logDistance(node,nodeId)-bucketMinDistance-1));
+				//logger.warning("Adding node "+node+" to bucket "+getBucketNum(node)+" "+getBucket(node).occupancy());
 				//pendingTickets.put(node, null);
 				//logger.warning("Sending ticket request to "+node+" from "+protocol.getNode().getId());
 				protocol.sendTicketRequest(node,t,myPid);
@@ -105,15 +105,14 @@ public class TicketTable extends RoutingTable {
 	// remove a neighbour from the correct k-bucket
 	public void removeNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
-		//logger.warning("Pending ticket remove "+node+" "+getBucket(node).occupancy());
 		pendingTickets.remove(node);
 		getBucket(node).removeNeighbour(node);
-		
+		//logger.warning("Pending ticket Remove "+node+" "+getBucket(node).occupancy()+" "+getBucket(node).replacements.size()+" "+getBucketNum(node));
+
 		//logger.warning("Pending ticket remove "+node+" "+getBucket(node).occupancy());
 
-		/*BigInteger[] replacements = new BigInteger[0];
-		getBucket(node).replacements.toArray(replacements);
-		addNeighbour(replacements);*/
+		//for(BigInteger b : getBucket(node).replacements)
+		//	addNeighbour(b);
 		//logger.warning("Node "+node+" removed at "+protocol.getNode().getId());
 		//System.out.println("Bucket remove "+bucket(node).occupancy());
 		
@@ -137,7 +136,7 @@ public class TicketTable extends RoutingTable {
 		KBucket b = k_buckets[i];
 		//if(b.neighbours.size()<k)
 		
-		//logger.warning("Ticket table "+i+" "+b.occupancy()+" "+b.replacements.size());
+		//logger.warning("Refreshing bucket "+i+" "+b.occupancy()+" "+b.replacements.size());
 
 		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
@@ -147,9 +146,15 @@ public class TicketTable extends RoutingTable {
 			addNeighbour(n);
 			b.replacements.remove(n);
 		}
+		
+		BigInteger randomNode = null;
 
+		if(b.replacements.size()==0||b.neighbours.size()==0) {
+			randomNode = generateRandomNode(i);
+			protocol.refreshBucket(this, randomNode,i);
+		}
 		if(b.neighbours.size()==0&&refresh) {
-			BigInteger randomNode = generateRandomNode(i);
+			//BigInteger randomNode = generateRandomNode(i);
 			protocol.sendLookup(randomNode, myPid);
 		}
 		
@@ -169,7 +174,9 @@ public class TicketTable extends RoutingTable {
 		System.out.println("Asked " + sum + " nodes.");
 	}
 	
-	
+	public BigInteger getTopicId() {
+		return nodeId;
+	}
 
 
 }
