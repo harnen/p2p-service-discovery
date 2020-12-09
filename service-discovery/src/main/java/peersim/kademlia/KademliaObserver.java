@@ -696,6 +696,7 @@ public class KademliaObserver implements Control {
             for(int i = 0; i < Network.size(); i++) {
             	
                 Node node = Network.get(i);
+                if(!node.isUp())continue;
                 kadProtocol = node.getKademliaProtocol();
                 
                 HashMap<Topic,Integer> topics = new HashMap<Topic,Integer>();
