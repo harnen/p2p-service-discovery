@@ -115,7 +115,7 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 					    int time = 0;
 					    System.out.println("Topic " + topicList[topicIndex-1].getTopic() + " will be registered by "+prot.getNode().getId()+" at "+time);
 					    EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
-					    EDSimulator.add(time+20000, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
+					    EDSimulator.add(time+2000, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
 
 				    }
 			    }

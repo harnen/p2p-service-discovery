@@ -182,12 +182,12 @@ public class KademliaObserver implements Control {
         }
     }
     
-    public static void addAcceptedRegistration(Topic t, BigInteger registrant,  BigInteger registrar) {
+    public static void addAcceptedRegistration(Topic t, BigInteger registrant,  BigInteger registrar, long waitingTime) {
     	String topic = t.getTopic();
         if(registeredTopics.containsKey(topic)){
         	HashMap<BigInteger,RegistrationLog> set = registeredTopics.get(topic);
         	if(set.containsKey(registrant)) {
-        		set.get(registrant).addRegistrar(registrar, CommonState.getTime());
+        		set.get(registrant).addRegistrar(registrar, CommonState.getTime(),waitingTime);
         	}	
         }
 
@@ -898,8 +898,8 @@ public class KademliaObserver implements Control {
             	
                 Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
-                if (!(node.isUp()))
-                    continue;
+                //if (!(node.isUp()))
+                //    continue;
                 HashMap<Topic,Integer> topics = new HashMap<Topic,Integer>();
                 
                 if(kadProtocol instanceof Discv5ProposalProtocol) {

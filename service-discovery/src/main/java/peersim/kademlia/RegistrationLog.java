@@ -8,6 +8,8 @@ public class RegistrationLog {
 
 	private BigInteger registrant;
 	private Map<BigInteger,Long> registered;
+	private Map<BigInteger,Long> registeredWaiting;
+
 	private long registrationInitTime;
 	private Map<BigInteger,Long> discovered;
 	
@@ -17,6 +19,7 @@ public class RegistrationLog {
 		this.registrant = node;
 		registered = new HashMap<BigInteger,Long>();
 		discovered = new HashMap<BigInteger,Long>();
+		registeredWaiting = new HashMap<BigInteger,Long>();
 		this.registrationInitTime = currTime;
 	}
 	
@@ -24,22 +27,23 @@ public class RegistrationLog {
 		return registrant;
 	}
 	
-	public void addRegistrar(BigInteger node, long currentTime) {
+	public void addRegistrar(BigInteger node, long currentTime, long waitingTime) {
 		registered.put(node,currentTime);
-		
+		registeredWaiting.put(node,waitingTime);
 	}
 	
 	public void addDiscovered(BigInteger node, long currentTime) {
-		discovered.put(node,currentTime);
+		//System.out.println("Add discovered "+currentTime+" "+registered.get(node));
+		if(registered.get(node)!=null)discovered.put(node,currentTime-registered.get(node));
 		
 	}
 	
 	public long getMinRegisterTime() {
 		long regTime=MAX_VALUE;
-		if(registered.size()>0) {
-			for(Long time : registered.values())
+		if(registeredWaiting.size()>0) {
+			for(Long time : registeredWaiting.values())
 				if (time.longValue()<regTime)regTime=time.longValue();
-			return regTime - registrationInitTime;
+			return regTime;
 		} else
 		return 0;
 	}
@@ -49,17 +53,17 @@ public class RegistrationLog {
 		if(discovered.size()>0) {
 			for(Long time : discovered.values())
 				if (time.longValue()<discTime)discTime=time.longValue();
-			return discTime - registrationInitTime;
+			return discTime;
 		} else
 			return 0;
 	}
 	
 	public long getAvgRegisterTime() {
 		long regTime=0;
-		if(registered.size()>0) {
-			for(Long time : registered.values())
-				regTime+=time.longValue() - registrationInitTime;
-			return regTime/registered.size();
+		if(registeredWaiting.size()>0) {
+			for(Long time : registeredWaiting.values())
+				regTime+=time.longValue();
+			return regTime/registeredWaiting.size();
 		} else
 			return 0;
 	}
@@ -68,7 +72,7 @@ public class RegistrationLog {
 		long discTime=0;
 		if(discovered.size()>0) {
 			for(Long time : discovered.values())
-				discTime+=time.longValue() - registrationInitTime;
+				discTime+=time.longValue();
 			return discTime/discovered.size();
 		} else
 			return 0;

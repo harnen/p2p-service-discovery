@@ -201,7 +201,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 					int time = 0;
 					System.out.println("Topic " + topic + " will be registered by "+prot.getNode().getId()+" at "+time);
 					EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
-					EDSimulator.add(time+20000, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
+					EDSimulator.add(time+2000, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
 
 				}
 				
