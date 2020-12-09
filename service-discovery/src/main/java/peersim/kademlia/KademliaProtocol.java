@@ -50,7 +50,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	final String PAR_BITS = "BITS";
 	final String PAR_NBUCKETS = "NBUCKETS";
 	final String PAR_REFRESHTIME = "REFRESH";
-
+	final String PAR_REPORT_MSG = "REPORT_MSG";
+	
 	private static final String PAR_TRANSPORT = "transport";
 	protected static String prefix = null;
 	protected UnreliableTransport transport;
@@ -138,6 +139,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		KademliaCommonConfig.BITS = Configuration.getInt(prefix + "." + PAR_BITS, KademliaCommonConfig.BITS);
 		KademliaCommonConfig.NBUCKETS = Configuration.getInt(prefix + "." + PAR_NBUCKETS, KademliaCommonConfig.NBUCKETS);
 		KademliaCommonConfig.REFRESHTIME = Configuration.getInt(prefix + "." + PAR_REFRESHTIME, KademliaCommonConfig.REFRESHTIME);
+		KademliaCommonConfig.REPORT_MSG_ACTIVATED = Configuration.getInt(prefix +"."+ PAR_REPORT_MSG,0);
 
 		_ALREADY_INSTALLED = true;
 	}
@@ -384,7 +386,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			if(m.getType() != Message.MSG_INIT_FIND && 
 				m.getType() != Message.MSG_INIT_TOPIC_LOOKUP &&
 				m.getType() != Message.MSG_INIT_REGISTER) {
-					KademliaObserver.reportMsg(m, false);
+					if(KademliaCommonConfig.REPORT_MSG_ACTIVATED==1)KademliaObserver.reportMsg(m, false);
 					//;//KademliaObserver.registerMsgReceived(this.node.getId(), m);
 			}
 		}

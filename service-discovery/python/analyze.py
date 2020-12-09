@@ -26,37 +26,41 @@ def analyzeMessages(dirs):
 
     for log_dir in dirs:
         print(log_dir)
-        df = pd.read_csv(log_dir + '/messages.csv')
-        
-        df['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label=log_dir)
-        
-        width=0.3
-        margin=width*i
-        #print(df['type'].value_counts().index)
-        if not (df.type == 'MSG_FIND').any():
-            new_row = { 'id':0, 'type':'MSG_FIND', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
-            df = df.append(new_row,ignore_index=True)
-        if not (df.type == 'MSG_TICKET_REQUEST').any():
-            new_row = { 'id':0, 'type':'MSG_TICKET_REQUEST', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
-            df = df.append(new_row,ignore_index=True)
-        if not (df.type == 'MSG_RESPONSE').any():
-            new_row = { 'id':0, 'type':'MSG_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
-            df = df.append(new_row,ignore_index=True)
-        if not (df.type == 'MSG_TICKET_RESPONSE').any():
-            new_row = { 'id':0, 'type':'MSG_TICKET_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
-            df = df.append(new_row,ignore_index=True)
-        table = df['type'].value_counts().sort_index()
-        print(table)
-        ax2.bar(np.arange(len(table.index))+margin,table.values,width=width, label=log_dir)
-        i = i+1
-        
+
+        try:
+            df = pd.read_csv(log_dir + '/messages.csv')
+
+            df['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label=log_dir)
+
+            width=0.3
+            margin=width*i
+            #print(df['type'].value_counts().index)
+            if not (df.type == 'MSG_FIND').any():
+                new_row = { 'id':0, 'type':'MSG_FIND', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
+                df = df.append(new_row,ignore_index=True)
+            if not (df.type == 'MSG_TICKET_REQUEST').any():
+                new_row = { 'id':0, 'type':'MSG_TICKET_REQUEST', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
+                df = df.append(new_row,ignore_index=True)
+            if not (df.type == 'MSG_RESPONSE').any():
+                new_row = { 'id':0, 'type':'MSG_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
+                df = df.append(new_row,ignore_index=True)
+            if not (df.type == 'MSG_TICKET_RESPONSE').any():
+                new_row = { 'id':0, 'type':'MSG_TICKET_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
+                df = df.append(new_row,ignore_index=True)
+            table = df['type'].value_counts().sort_index()
+            print(table)
+            ax2.bar(np.arange(len(table.index))+margin,table.values,width=width, label=log_dir)
+            i = i+1
+        except pd.errors.EmptyDataError:
+            print("messages file empty")
+            return
         #df['src'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message sent by node", label=log_dir)
 
-    
+
     ticks = table.index
     ax2.set_xticks(range(len(ticks)))
     ax2.set_xticklabels(ticks)
-    
+
     ax1.legend()
     #add line showing how the result should be
     ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
@@ -65,10 +69,10 @@ def analyzeMessages(dirs):
     ax1.set_ylabel("#Messages")
     fig1.savefig(OUTDIR + '/messages_received.png')
 
-    
+
     ax2.legend()
     fig2.savefig(OUTDIR + '/messages_types.png')
-    
+
     #ax3.legend()
     #add line showing how the result should be
     #ax3.plot([ax3.get_xlim()[0], ax3.get_xlim()[1]], [(ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
@@ -130,7 +134,7 @@ def analyzeRegistrations(dirs):
     fig1, ax1 = plt.subplots()
     fig2, ax2 = plt.subplots()
     fig3, ax3 = plt.subplots()
-    
+
     i=0
     for log_dir in dirs:
         print(log_dir)
@@ -156,7 +160,7 @@ def analyzeRegistrations(dirs):
     ax2.legend()
     ax3.legend()
     fig1.savefig(OUTDIR + '/registrations_registrant.png')
-    
+
     ax2.set_title('Registrations by registrar')
     ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
     ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
@@ -164,13 +168,13 @@ def analyzeRegistrations(dirs):
     ax1.set_xlabel("Nodes")
     ax1.set_ylabel("#Received registrations")
     fig2.savefig(OUTDIR + '/registrations_registrar.png')
-    
+
     ax3.set_title('Registrations by topics (average)')
     ticks = sorted_table['topic'].values
     ax3.set_xticks(range(len(ticks)))
     ax3.set_xticklabels(ticks)
 
-    
+
     fig3.savefig(OUTDIR + '/registrations_topic.png')
 
 def analyzeRegistrarDistribution(dirs):
@@ -304,7 +308,7 @@ def analyzeOperations(dirs):
         print(log_dir)
         df = pd.read_csv(log_dir + '/operations.csv')
         print(df)
-        
+
         print(df['used_hops'].mean())
         ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
         ax2.set_title("Avg Lookup Hop Count")
@@ -496,14 +500,14 @@ def analyzeStorageUtilisation(dirs):
         ax.set_title("Storage utilisation over time in " + log_dir1)
         for topic in topics:
             ax.plot(df['time']/1000, df[topic], label=topic)
-        
+
         ax.legend()
         ax.set_ylabel('Average utilisation of storage space')
         ax.set_xlabel('time (sec)')
         plt.savefig(OUTDIR + '/storage_utilisation_' + log_dir1 + '.png')
 
 
-# plot per-topic, average waiting times and number of rejected 
+# plot per-topic, average waiting times and number of rejected
 def analyzeWaitingTimes(dirs):
 
     for log_dir in dirs:
@@ -520,12 +524,12 @@ def analyzeWaitingTimes(dirs):
         ax1.set_title("Average waiting times over time for " + log_dir1)
         for topic in topics:
             ax1.plot(df['time']/1000, df[topic+'_wait'], label=topic)
-        
+
         ax1.legend()
         ax1.set_ylabel('Waiting time in msec')
         ax1.set_xlabel('time (sec)')
         plt.savefig(OUTDIR + '/waiting_times_' + log_dir1 + '.png')
-        
+
         fig, ax2 = plt.subplots()
         ax2.set_title("Average cumulative waiting times over time for " + log_dir1)
         for topic in topics:

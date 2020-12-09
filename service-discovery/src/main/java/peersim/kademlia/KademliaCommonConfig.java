@@ -47,7 +47,7 @@ public class KademliaCommonConfig {
     public static int LOOKUP_BUCKET_ORDER = RANDOM_BUCKET_ORDER;
     
     
-    
+    public static int REPORT_MSG_ACTIVATED = 0; 
     
 	/**
 	 * short information about current mspastry configuration
