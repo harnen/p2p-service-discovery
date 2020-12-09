@@ -139,12 +139,16 @@ public class TicketTable extends RoutingTable {
 		
 		//logger.warning("Refreshing bucket "+i+" "+b.occupancy()+" "+b.replacements.size());
 
+		List<BigInteger> toRemove = new ArrayList<BigInteger>();
 		for(BigInteger n : b.neighbours) {
 			Node node = Util.nodeIdtoNode(n);
 			if(!node.isUp()){
-				removeNeighbour(n);
+				toRemove.add(n);
 			}
 		}
+		
+		for(BigInteger n : toRemove)
+			removeNeighbour(n);
 		
 		while(b.neighbours.size()<k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
