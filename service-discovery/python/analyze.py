@@ -453,39 +453,39 @@ def analyzeEclipsedNodeDistribution(dirs):
 
     plt.savefig(OUTDIR + '/node_type_dist.png')
 
-def analyzeRegistrationTime(dirs):
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    fig1, ax1 = plt.subplots()
-    fig2, ax2 = plt.subplots()
-    fig3, ax3 = plt.subplots()
-    fig4, ax4 = plt.subplots()
-    fig5, ax5 = plt.subplots()
-
-    for log_dir in dirs:
-        print(log_dir)
-        data1 = genfromtxt(log_dir+'/registeredTopicsTime.csv',delimiter=',',names=['topic','registrant', 'times','regmintime','regavgtime','discmintime','discavgtime'])
-        ax1.plot(sorted(data1['times'],reverse=True),label=log_dir)
-        ax2.plot(sorted(data1['regmintime'],reverse=True),label=log_dir)
-        ax3.plot(sorted(data1['regavgtime'],reverse=True),label=log_dir)
-        ax4.plot(sorted(data1['discmintime'],reverse=True),label=log_dir)
-        ax5.plot(sorted(data1['discavgtime'],reverse=True),label=log_dir)
-
-
-    ax1.set_title('Total registrations by registrant')
-    ax2.set_title('Minimum time to register')
-    ax3.set_title('Average time to register')
-    ax4.set_title('Minimum time to discovery')
-    ax5.set_title('Average time to discovery')
-    ax1.legend()
-    ax2.legend()
-    ax3.legend()
-    ax4.legend()
-    ax5.legend()
-    fig1.savefig(OUTDIR + '/total_reg_by_registrant.png')
-    fig2.savefig(OUTDIR + '/min_time_register.png')
-    fig3.savefig(OUTDIR + '/avg_time_register.png')
-    fig4.savefig(OUTDIR + '/min_time_discovery.png')
-    fig5.savefig(OUTDIR + '/avg_time_discovery.png')
+# def analyzeRegistrationTime(dirs):
+#     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+#     fig1, ax1 = plt.subplots()
+#     fig2, ax2 = plt.subplots()
+#     fig3, ax3 = plt.subplots()
+#     fig4, ax4 = plt.subplots()
+#     fig5, ax5 = plt.subplots()
+#
+#     for log_dir in dirs:
+#         print(log_dir)
+#         data1 = genfromtxt(log_dir+'/registeredTopicsTime.csv',delimiter=',',names=['topic','registrant', 'times','regmintime','regavgtime','discmintime','discavgtime'])
+#         ax1.plot(sorted(data1['times'],reverse=True),label=log_dir)
+#         ax2.plot(sorted(data1['regmintime'],reverse=True),label=log_dir)
+#         ax3.plot(sorted(data1['regavgtime'],reverse=True),label=log_dir)
+#         ax4.plot(sorted(data1['discmintime'],reverse=True),label=log_dir)
+#         ax5.plot(sorted(data1['discavgtime'],reverse=True),label=log_dir)
+#
+#
+#     ax1.set_title('Total registrations by registrant')
+#     ax2.set_title('Minimum time to register')
+#     ax3.set_title('Average time to register')
+#     ax4.set_title('Minimum time to discovery')
+#     ax5.set_title('Average time to discovery')
+#     ax1.legend()
+#     ax2.legend()
+#     ax3.legend()
+#     ax4.legend()
+#     ax5.legend()
+#     fig1.savefig(OUTDIR + '/total_reg_by_registrant.png')
+#     fig2.savefig(OUTDIR + '/min_time_register.png')
+#     fig3.savefig(OUTDIR + '/avg_time_register.png')
+#     fig4.savefig(OUTDIR + '/min_time_discovery.png')
+#     fig5.savefig(OUTDIR + '/avg_time_discovery.png')
 
 def analyzeStorageUtilisation(dirs):
 
@@ -567,6 +567,70 @@ def analyzeNumberOfMessages(dirs):
         ax.set_xlabel('time (sec)')
         ax.set_ylabel('Number of exchanged regiser/response messages')
         plt.savefig(OUTDIR + '/message_quantity_' + log_dir1 + '.png')
+
+def analyzeRegistrationTime(dirs):
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    fig1, ax1 = plt.subplots()
+    fig2, ax2 = plt.subplots()
+    fig3, ax3 = plt.subplots()
+    fig4, ax4 = plt.subplots()
+    fig5, ax5 = plt.subplots()
+
+    for log_dir in dirs:
+        print(log_dir)
+        df = pd.read_csv(log_dir + '/registeredTopicsTime.csv')
+
+        if len(df['topic'].unique()) == 1:
+            ax1.plot(sorted(df['times_registered'].values,reverse=True))
+            ax2.plot(sorted(df['min_registration_time'].values,reverse=True))
+            ax3.plot(sorted(df['average_registration_time'].values,reverse=True))
+            ax4.plot(sorted(df['min_discovery_time'].values,reverse=True))
+            ax5.plot(sorted(df['average_discovery_time'].values,reverse=True))
+
+        else:
+            meantimes = {}
+            errtimes = {}
+            meanminreg = {}
+            errminreg = {}
+            meanavgreg = {}
+            erravgreg = {}
+            meanmindisc = {}
+            errmindisc = {}
+            meanavgdisc = {}
+            erravgdisc = {}
+            for topic in df['topic'].unique():
+                meantimes[topic] = df[df.topic == topic]['times_registered'].mean()
+                errtimes[topic] = df[df.topic == topic]['times_registered'].std()
+                meanminreg[topic] = df[df.topic == topic]['min_registration_time'].mean()
+                errminreg[topic] = df[df.topic == topic]['min_registration_time'].std()
+                meanavgreg[topic] = df[df.topic == topic]['average_registration_time'].mean()
+                erravgreg[topic] = df[df.topic == topic]['average_registration_time'].std()
+                meanmindisc[topic] = df[df.topic == topic]['min_discovery_time'].mean()
+                errmindisc[topic] = df[df.topic == topic]['min_discovery_time'].std()
+                meanavgdisc[topic] = df[df.topic == topic]['average_discovery_time'].mean()
+                erravgdisc[topic] = df[df.topic == topic]['average_discovery_time'].std()
+
+            ax1.bar(df['topic'].unique(), meantimes.values(),yerr=errtimes.values())
+            ax2.bar(df['topic'].unique(), meanminreg.values(),yerr=errminreg.values())
+            ax3.bar(df['topic'].unique(), meanavgreg.values(),yerr=erravgreg.values())
+            ax4.bar(df['topic'].unique(), meanmindisc.values())
+            ax5.bar(df['topic'].unique(), meanavgdisc.values(),yerr=erravgdisc.values())
+
+    ax1.set_title('Total registrations by registrant')
+    ax2.set_title('Minimum time to register')
+    ax3.set_title('Average time to register')
+    ax4.set_title('Minimum time to discovery')
+    ax5.set_title('Average time to discovery')
+    ax1.legend()
+    ax2.legend()
+    ax3.legend()
+    ax4.legend()
+    ax5.legend()
+    fig1.savefig(OUTDIR + '/total_reg_by_registrant.png')
+    fig2.savefig(OUTDIR + '/min_time_register.png')
+    fig3.savefig(OUTDIR + '/avg_time_register.png')
+    fig4.savefig(OUTDIR + '/min_time_discovery.png')
+    fig5.savefig(OUTDIR + '/avg_time_discovery.png')
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
