@@ -455,7 +455,7 @@ def analyzeEclipsedNodeDistribution(dirs):
 
 def analyzeRegistrationTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    #fig1, ax1 = plt.subplots()
+    fig1, ax1 = plt.subplots()
     fig2, ax2 = plt.subplots()
     fig3, ax3 = plt.subplots()
     fig4, ax4 = plt.subplots()
@@ -464,27 +464,28 @@ def analyzeRegistrationTime(dirs):
     for log_dir in dirs:
         print(log_dir)
         data1 = genfromtxt(log_dir+'/registeredTopicsTime.csv',delimiter=',',names=['topic','registrant', 'times','regmintime','regavgtime','discmintime','discavgtime'])
-        #ax1.plot(sorted(data1['times'],reverse=True),label=log_dir)
+        ax1.plot(sorted(data1['times'],reverse=True),label=log_dir)
         ax2.plot(sorted(data1['regmintime'],reverse=True),label=log_dir)
         ax3.plot(sorted(data1['regavgtime'],reverse=True),label=log_dir)
         ax4.plot(sorted(data1['discmintime'],reverse=True),label=log_dir)
         ax5.plot(sorted(data1['discavgtime'],reverse=True),label=log_dir)
 
 
-    #ax1.set_title('Total registrations by registrant')
+    ax1.set_title('Total registrations by registrant')
     ax2.set_title('Minimum time to register')
     ax3.set_title('Average time to register')
     ax4.set_title('Minimum time to discovery')
     ax5.set_title('Average time to discovery')
-    #ax1.legend()
+    ax1.legend()
     ax2.legend()
     ax3.legend()
     ax4.legend()
     ax5.legend()
+    fig1.savefig(OUTDIR + '/total_reg_by_registrant.png')
     fig2.savefig(OUTDIR + '/min_time_register.png')
     fig3.savefig(OUTDIR + '/avg_time_register.png')
-    fig4.savefig(OUTDIR + '/min_time_lookup.png')
-    fig5.savefig(OUTDIR + '/avg_time_register')
+    fig4.savefig(OUTDIR + '/min_time_discovery.png')
+    fig5.savefig(OUTDIR + '/avg_time_discovery.png')
 
 def analyzeStorageUtilisation(dirs):
 

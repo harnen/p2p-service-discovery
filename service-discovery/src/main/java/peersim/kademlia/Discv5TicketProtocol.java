@@ -342,8 +342,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         }
         else {
             //logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
-            logger.info("Registration succesful for topic "+ticket.getTopic().topic+" at node " + m.src.getId() + " at dist "+ Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID()));
-            KademliaObserver.addAcceptedRegistration(topic, this.node.getId(),m.src.getId());
+            logger.info("Registration succesful for topic "+ticket.getTopic().topic+" at node " + m.src.getId() + " at dist "+ Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID())+" "+ticket.getCumWaitTime());
+            KademliaObserver.addAcceptedRegistration(topic, this.node.getId(),m.src.getId(),ticket.getCumWaitTime());
             KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
 
         	if(KademliaCommonConfig.TICKET_REMOVE_AFTER_REG==0) {
@@ -394,7 +394,8 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 		//lop.decreaseRequests();	
 		for(TopicRegistration r: registrations) {
 			lop.addDiscovered(r.getNode());
-			KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
+			//KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
+			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
 
 		}
 

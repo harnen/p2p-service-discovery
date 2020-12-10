@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.util.HashSet;
 
 import peersim.config.Configuration;
+import peersim.core.CommonState;
 import peersim.core.Network;
 import peersim.core.Node;
 import peersim.edsim.EDSimulator;
@@ -266,7 +267,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 
         KademliaObserver.reportActiveRegistration(t,this.node.is_evil);
         
-        KademliaObserver.addAcceptedRegistration(t, this.node.getId(),m.src.getId());
+        KademliaObserver.addAcceptedRegistration(t, this.node.getId(),m.src.getId(),CommonState.getTime());
 
     }   
 
