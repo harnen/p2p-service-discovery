@@ -391,24 +391,28 @@ public class Discv5TopicTable { // implements TopicTable {
 
     }
     
-    public int getRegbyRegistrar(){
-        return allAds.size();
+    public HashMap<String, Integer> getRegbyRegistrar(){
+    	HashMap<String, Integer> topicOccupancy= new HashMap<String, Integer>();
+    	topicTable.forEach((key,value) -> topicOccupancy.put(key.getTopic(),value.size()));
+        return topicOccupancy;
     }
     
-    public HashMap<BigInteger,Integer> getRegbyRegistrant(){
-        HashMap<BigInteger,Integer> regByRegistrant = new HashMap<BigInteger,Integer>();
-    	 for(ArrayDeque<TopicRegistration> t: topicTable.values())
+    public HashMap<String, HashMap<BigInteger,Integer>> getRegbyRegistrant(){
+        HashMap<String, HashMap<BigInteger,Integer>> regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
+
+    	 for(Topic t: topicTable.keySet())
          {
-    		Object[] treg = t.toArray();
-   
+    		Object[] treg = topicTable.get(t).toArray();
+            HashMap<BigInteger,Integer> register = new HashMap<BigInteger,Integer>();
     		for(Object reg : treg)
     		{
     			int count=0;
-    			if(regByRegistrant.get(((TopicRegistration)reg).getNode().getId())!=null)count=regByRegistrant.get(((TopicRegistration)reg).getNode().getId());
+    			if(register.get(((TopicRegistration)reg).getNode().getId())!=null)count=register.get(((TopicRegistration)reg).getNode().getId());
     			count++;
-    			regByRegistrant.put(((TopicRegistration)reg).getNode().getId(),count);
+    			register.put(((TopicRegistration)reg).getNode().getId(),count);
     	    	//System.out.println("Table "+((TopicRegistration)reg).getNode().getId()+" "+count);
     		}
+    		regByRegistrant.put(t.getTopic(), register);
          }
         return regByRegistrant;
 
