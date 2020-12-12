@@ -29,8 +29,8 @@ public class KademliaCommonConfig {
     public static int TICKET_NEIGHBOURS = 0;
     public static int TICKET_BUCKET_SIZE = 3;
     public static int SEARCH_BUCKET_SIZE = 3;
-    public static int TICKET_TABLE_REPLACEMENTS=10;
-    public static int SEARCH_TABLE_REPLACEMENTS=10;
+    public static int TICKET_TABLE_REPLACEMENTS=0;
+    public static int SEARCH_TABLE_REPLACEMENTS=0;
     public static int TICKET_REMOVE_AFTER_REG=0;
     // Attack Types:
     public static String ATTACK_TYPE_TOPIC_SPAM = "TopicSpam";

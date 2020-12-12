@@ -274,6 +274,8 @@ public class Turbulence implements Control {
 	public boolean execute() {
 		// throw the dice
 		//System.out.println("Turbulence execute");
+		if(CommonState.getIntTime()>10000)
+			return false;
 		double dice = CommonState.r.nextDouble();
 		if (dice < p_idle)
 			return false;

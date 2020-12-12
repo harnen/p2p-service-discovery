@@ -88,9 +88,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	protected Message generateFindNodeMessage() {
 		// existing active destination node
 		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
+
         BigInteger dst = n.getKademliaProtocol().getNode().getId();
 
 		Message m = Message.makeInitFindNode(dst);
@@ -210,6 +208,16 @@ public class Discv5ZipfTrafficGenerator implements Control {
 			for (Map.Entry<String, Integer> i :n.entrySet()) 
 				System.out.println("Topic "+i.getKey()+" "+i.getValue()+" times");
 			first=false;
+		}
+		
+		for(int i = 0;i<Network.size();i++) 
+		{
+		//	for(int j = 0;j<3;j++) {
+				Node start = Network.get(i);
+				Message lookup = generateFindNodeMessage();
+				EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
+		//	}
+
 		}
 		
 		

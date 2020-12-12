@@ -908,9 +908,9 @@ public class KademliaObserver implements Control {
     public boolean execute() {
     	//System.out.println(CommonState.getTime()+" execute");
     	avgCounter++;
-        try {
-            FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
-            writer.write("host,topic,registrant,timestamp\n");
+        //try {
+           // FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
+           // writer.write("host,topic,registrant,timestamp\n");
 
             
             for(int i = 0; i < Network.size(); i++) {
@@ -935,8 +935,8 @@ public class KademliaObserver implements Control {
                 }
                 
                 if(kadProtocol instanceof Discv5ProposalProtocol) {
-                    String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
-                    writer.write(registrations);
+                    //String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
+                    //writer.write(registrations);
                     
                     /*//topic table registrations by registrar
                     int count=0;
@@ -1024,11 +1024,11 @@ public class KademliaObserver implements Control {
                 }*/
 
             }
-            writer.close();
+            /*writer.close();
         } catch (IOException e) {
 
             e.printStackTrace();
-        }
+        }*/
 
         write_registered_registrant_average();
         write_registered_topics_average();

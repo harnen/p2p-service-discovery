@@ -72,7 +72,7 @@ public class TurbulenceSingleTopic extends Turbulence{
 			// sort network
 			sortNet();
 			
-			for (int k = 0; k < 250; k++) {
+			for (int k = 0; k < 10; k++) {
                
 				KademliaProtocol jKad; 
 				Node n;
