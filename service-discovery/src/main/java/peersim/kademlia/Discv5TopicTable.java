@@ -11,6 +11,7 @@ import java.math.BigInteger;
 
 import peersim.kademlia.Topic;
 import peersim.kademlia.TopicRegistration;
+import peersim.core.CommonState;
 
 public class Discv5TopicTable { // implements TopicTable {
     
@@ -298,15 +299,29 @@ public class Discv5TopicTable { // implements TopicTable {
             return new TopicRegistration[0];
         }
       
-        List<TopicRegistration> result = new ArrayList<>();
+        //List<TopicRegistration> result = new ArrayList<>();
+        //int i=0;
         
-        int i=0;
-        for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<KademliaCommonConfig.K;i++)
-        	result.add(iter.next());
-        //for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<2;i++)
+        // Oldest to newest
+        //for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<KademliaCommonConfig.K;i++)
         //	result.add(iter.next());
         
-        return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
+        // Newest to oldest 
+        //Iterator<TopicRegistration> iter = topicQ.descendingIterator();
+        //while(iter.hasNext()) {
+            // do something with it.next()
+        //     result.add(iter.next());
+        //    i++;
+        //}
+
+        // Random selection of K results
+        TopicRegistration[] results = (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);
+        TopicRegistration[] final_results = new TopicRegistration[KademliaCommonConfig.K];
+        for (int i = 0; i < KademliaCommonConfig.K; i++) 
+            final_results[i] = results[CommonState.r.nextInt(results.length)];
+        
+        //return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
+        return final_results;
     }
     //TODO
     public String dumpRegistrations() {
