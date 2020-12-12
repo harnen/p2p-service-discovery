@@ -218,7 +218,29 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      *
      */
     protected void handleTicketRequest(Message m, int myPid) {
+        
         long curr_time = CommonState.getTime();
+		//System.out.println("Ticket request received from " + m.src.getId()+" in node "+this.node.getId());
+        Topic topic = (Topic) m.body;
+        KademliaNode advertiser = new KademliaNode(m.src); 
+        //System.out.println("TicketRequest handle "+topic.getTopic());
+		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
+        long rtt_delay = 2*transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
+        Ticket ticket = topicTable.getTicket(topic, advertiser, rtt_delay, curr_time);
+        // Send a response message with a ticket back to advertiser
+		BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
+		//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
+
+    	Message.TicketRequestBody body = new Message.TicketRequestBody(ticket, neighbours);
+		Message response  = new Message(Message.MSG_TICKET_RESPONSE, body);
+	
+        //Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
+		response.ackId = m.id; // set ACK number
+		response.operationId = m.operationId;
+        
+        sendMessage(response, m.src.getId(), myPid);
+
+        /*long curr_time = CommonState.getTime();
         Topic topic = (Topic) m.body;
         KademliaNode advertiser = new KademliaNode(m.src); 
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
@@ -237,7 +259,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 		response.ackId = m.id; // set ACK number
 		response.operationId = m.operationId;
         
-        sendMessage(response, m.src.getId(), myPid);
+        sendMessage(response, m.src.getId(), myPid);*/
     }
 
     /**
@@ -246,13 +268,15 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      *
      */
     protected void handleRegister(Message m, int myPid) {
+        super.handleRegister(m, myPid);
+        /*
 		Ticket ticket = (Ticket) m.body;
         ticket.setRegistrationComplete(true);
         
         Message response  = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
         response.ackId = ticket.getMsg().id;
         response.operationId = ticket.getMsg().operationId;
-        sendMessage(response, ticket.getSrc().getId(), myPid);
+        sendMessage(response, ticket.getSrc().getId(), myPid);*/
     }
 
 	/**
