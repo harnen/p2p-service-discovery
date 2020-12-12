@@ -189,7 +189,6 @@ public class Discv5TopicTable { // implements TopicTable {
             System.out.println(result);
 	        //System.exit(-1);
             */
-            System.out.println("Error: no competing tickets for makeRegisterDecisionForTopic");
             return new Ticket[0];
         }    
         if (ticketList !=null && ticketList.size() == 0) {
@@ -279,12 +278,13 @@ public class Discv5TopicTable { // implements TopicTable {
     }
 
     public TopicRegistration[] getRegistration(Topic t){
+        // TODO check: we might be returning expired registrations, we shoud update the table
         Topic topic = new Topic(t.topic);
-        //topic.setHostID(this.hostID);
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
 
-        if (topicQ == null) {
+        if (topicQ == null || topicQ.size()==0) {
             //TODO remove the check below: 
+            /*
     	    for(Topic ti: topicTable.keySet()) {
                 if (ti.getTopic() == topic.getTopic()) {
                     logger.warning("Error in topic table lookup !");
@@ -295,7 +295,7 @@ public class Discv5TopicTable { // implements TopicTable {
                     result += "\n";
                     //System.out.println(result);
                 }
-            }
+            }*/
             return new TopicRegistration[0];
         }
       
@@ -316,8 +316,10 @@ public class Discv5TopicTable { // implements TopicTable {
 
         // Random selection of K results
         TopicRegistration[] results = (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);
-        TopicRegistration[] final_results = new TopicRegistration[KademliaCommonConfig.K];
-        for (int i = 0; i < KademliaCommonConfig.K; i++) 
+        int result_len = KademliaCommonConfig.K > results.length ? results.length : KademliaCommonConfig.K;
+        TopicRegistration[] final_results = new TopicRegistration[result_len];
+
+        for (int i = 0; i < result_len; i++) 
             final_results[i] = results[CommonState.r.nextInt(results.length)];
         
         //return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
