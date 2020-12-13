@@ -308,8 +308,8 @@ public class Turbulence implements Control {
 	public boolean execute() {
 		// throw the dice
 		//System.out.println("Turbulence execute");
-		if(Network.size()>=200)
-			return false;
+		//if(Network.size()>=200)
+		//	return false;
 		double dice = CommonState.r.nextDouble();
 		if (dice < p_idle)
 			return false;

@@ -753,7 +753,7 @@ def analyzeRegistrationTime(dirs):
 
     ax1.set_title('Total # registrations by registrant')
     ax2.set_title('Time required for the first registration')
-    ax3.set_title('Time required for all registrations')
+    ax3.set_title('Average registration time per node')
     ax4.set_title('Time between registration to first time discovery')
 #    ax5.set_title('Average time to discovery')
 

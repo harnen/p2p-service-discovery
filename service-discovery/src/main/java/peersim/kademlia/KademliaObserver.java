@@ -673,12 +673,14 @@ public class KademliaObserver implements Control {
 	        for(String t : regByRegistrar.keySet()) {
 	        	for(BigInteger n : regByRegistrar.get(t).keySet()) {
 		        	//System.out.println("Re "+t.getTopic()+" "+regByRegistrar.get(t)/avgCounter);
-	        		writer.write(String.valueOf(t));
-		        	writer.write(",");
-		        	writer.write(String.valueOf(n));
-		        	writer.write(",");
-		        	writer.write(String.valueOf(regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)));
-		        	writer.write("\n");
+	        		if(avgCounter.get(n)!=null) {
+		        		writer.write(String.valueOf(t));
+			        	writer.write(",");
+			        	writer.write(String.valueOf(n));
+			        	writer.write(",");
+			        	writer.write(String.valueOf(regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)));
+			        	writer.write("\n");
+	        		}
 	        	}
 	        }
 	    	writer.close();
@@ -702,12 +704,14 @@ public class KademliaObserver implements Control {
 	        for(String t : regByRegistrant.keySet()) {
 	        	for(BigInteger n : regByRegistrant.get(t).keySet()) {
 		        	//System.out.println("Re "+t.getTopic()+" "+regByRegistrar.get(t)/avgCounter);
-	        		writer.write(String.valueOf(t));
-		        	writer.write(",");
-		        	writer.write(String.valueOf(n));
-		        	writer.write(",");
-		        	writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()/avgCounter.get(n)));
-		        	writer.write("\n");
+	        		if(avgCounter.get(n)!=null) {
+		        		writer.write(String.valueOf(t));
+			        	writer.write(",");
+			        	writer.write(String.valueOf(n));
+			        	writer.write(",");
+			        	writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()/avgCounter.get(n)));
+			        	writer.write("\n");
+	        		}
 	        	}
 	        }
 	        

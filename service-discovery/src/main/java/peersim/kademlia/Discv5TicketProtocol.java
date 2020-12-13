@@ -355,6 +355,10 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             	EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
         	} else {
             	ticketTables.get(ticket.getTopic().getTopicID()).removeNeighbour(m.src.getId());
+            	ticketTables.get(ticket.getTopic().getTopicID()).addRegisteredList(m.src.getId());
+         		Timeout timeout = new Timeout(ticket.getTopic(),m.src.getId());
+            	EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+   
         	}
         }
         
@@ -882,7 +886,11 @@ public class Discv5TicketProtocol extends KademliaProtocol {
             case Timeout.REG_TIMEOUT:
             	//logger.warning("Remove ticket table "+((Timeout)event).nodeSrc);
                 KademliaObserver.reportExpiredRegistration(((Timeout)event).topic, this.node.is_evil);
-            	ticketTables.get(((Timeout)event).topic.getTopicID()).removeNeighbour(((Timeout)event).nodeSrc);
+            	if(KademliaCommonConfig.TICKET_REMOVE_AFTER_REG==0) {
+            		ticketTables.get(((Timeout)event).topic.getTopicID()).removeNeighbour(((Timeout)event).nodeSrc);
+            	} else {
+            		ticketTables.get(((Timeout)event).topic.getTopicID()).removeRegisteredList(((Timeout)event).nodeSrc);
+            	}
             	break;
 
 			case Timeout.TIMEOUT: // timeout

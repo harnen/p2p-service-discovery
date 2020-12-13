@@ -32,6 +32,8 @@ public class TicketTable extends RoutingTable {
     
     HashMap<Integer, Integer> registeredPerDist;
     
+    private List<BigInteger> registeredNodes;
+
     
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
@@ -53,6 +55,7 @@ public class TicketTable extends RoutingTable {
 		
 		registeredPerDist = new HashMap<Integer, Integer>();
 
+		registeredNodes = new ArrayList<BigInteger>();
 		//System.out.println("New ticket table size "+k+" "+refresh);
 		
 		// TODO Auto-generated constructor stub
@@ -60,7 +63,7 @@ public class TicketTable extends RoutingTable {
 	
 	public boolean addNeighbour(BigInteger node) {
 		//logger.warning("addNeighbour");
-		if(!pendingTickets.contains(node)) {
+		if(!pendingTickets.contains(node)&&!registeredNodes.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
 				//logger.warning("Adding node "+node+" to bucket "+getBucketNum(node)+" "+getBucket(node).occupancy());
@@ -118,6 +121,8 @@ public class TicketTable extends RoutingTable {
 		//System.out.println("Bucket remove "+bucket(node).occupancy());
 		
 	}	
+	
+	
 	/**
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
@@ -168,13 +173,22 @@ public class TicketTable extends RoutingTable {
 			randomNode = generateRandomNode(i);
 			protocol.refreshBucket(this, randomNode,i);
 		}
+		
 		if(b.neighbours.size()==0&&refresh) {
 			//BigInteger randomNode = generateRandomNode(i);
 			protocol.sendLookup(randomNode, myPid);
 		}
 		
 	}
-		
+	
+	public void addRegisteredList(BigInteger node) {
+		registeredNodes.add(node);
+	}
+	
+	public void removeRegisteredList(BigInteger node) {
+		registeredNodes.remove(node);
+	}
+	
 	public void print() {
 		System.out.println("Ticket table:");
 		int sum = 0;

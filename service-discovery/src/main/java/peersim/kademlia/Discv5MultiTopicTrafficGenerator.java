@@ -32,19 +32,22 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 	 */
 	private final static String PAR_MINTOPIC = "mintopicnum";
 	private final static String PAR_MAXTOPIC = "maxtopicnum";
+    private final static String PAR_LOOKUPS = "randomlookups";
 
 	/**
 	 * MSPastry Protocol ID to act
 	 */
 	private final int mintopicNum;
 	private final int maxtopicNum;
-	
+	private final int randomLookups = 0;
+
 	// ______________________________________________________________________________________________
 	public Discv5MultiTopicTrafficGenerator(String prefix) {
         super(prefix);
 		mintopicNum = Configuration.getInt(prefix + "." + PAR_MINTOPIC,1);
 		maxtopicNum = Configuration.getInt(prefix + "." + PAR_MAXTOPIC);
-        
+        randomLookups = Configuration.getInt(prefix + "." + PAR_LOOKUPS, 0);
+
 		zipf = new ZipfDistribution(maxtopicNum,exp);
 	}
 
@@ -124,6 +127,18 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 			for (Map.Entry<String, Integer> i :n.entrySet()) 
 				System.out.println("Topic "+i.getKey()+" "+i.getValue()+" times");
 			first=false;
+		}  else if(randomLookups==1) {
+		
+			for(int i = 0;i<Network.size();i++) 
+			{
+				for(int j = 0;j<3;j++) {
+					Node start = Network.get(i);
+					Message lookup = generateFindNodeMessage();
+					EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
+				}
+	
+			}
+		
 		}
 		
 		
