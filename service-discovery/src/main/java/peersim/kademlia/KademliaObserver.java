@@ -119,7 +119,9 @@ public class KademliaObserver implements Control {
 
     private static HashMap<Integer, Integer> msgSent = new HashMap<Integer, Integer>();
 
-    private static int avgCounter=0;
+    private static HashMap<BigInteger, Integer> avgCounter;
+    
+    private static int simpCounter;
 
     /** Prefix to be printed in output */
     private String prefix;
@@ -151,6 +153,8 @@ public class KademliaObserver implements Control {
             regByTopic = new HashMap<Topic,Integer>();
             regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
             regByRegistrar = new HashMap<String, HashMap<BigInteger,Integer>>();
+            avgCounter = new HashMap<BigInteger, Integer>();
+            simpCounter=0;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -644,7 +648,7 @@ public class KademliaObserver implements Control {
 	        	//System.out.println("Topic "+t.getTopic()+" "+regByTopic.get(t)/avgCounter);
 	        	writer.write(t.topic);
 	        	writer.write(",");
-	        	writer.write(String.valueOf(regByTopic.get(t).intValue()/avgCounter));
+	        	writer.write(String.valueOf(regByTopic.get(t).intValue()/simpCounter));
 	        	writer.write("\n");
 	        }
 	    	writer.close();
@@ -673,7 +677,7 @@ public class KademliaObserver implements Control {
 		        	writer.write(",");
 		        	writer.write(String.valueOf(n));
 		        	writer.write(",");
-		        	writer.write(String.valueOf(regByRegistrar.get(t).get(n).intValue()/avgCounter));
+		        	writer.write(String.valueOf(regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)));
 		        	writer.write("\n");
 	        	}
 	        }
@@ -702,7 +706,7 @@ public class KademliaObserver implements Control {
 		        	writer.write(",");
 		        	writer.write(String.valueOf(n));
 		        	writer.write(",");
-		        	writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()/avgCounter));
+		        	writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()/avgCounter.get(n)));
 		        	writer.write("\n");
 	        	}
 	        }
@@ -907,18 +911,29 @@ public class KademliaObserver implements Control {
      */
     public boolean execute() {
     	//System.out.println(CommonState.getTime()+" execute");
-    	avgCounter++;
-        //try {
-           // FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
-           // writer.write("host,topic,registrant,timestamp\n");
+        try {
+            FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
+            writer.write("host,topic,registrant,timestamp\n");
 
-            
+            simpCounter++;
             for(int i = 0; i < Network.size(); i++) {
             	
                 Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
-                //if (!(node.isUp()))
-                //    continue;
+                if (!(node.isUp())) {
+                	for(String t : regByRegistrar.keySet()) {
+                		regByRegistrar.get(t).remove(kadProtocol.getNode().getId());
+                		regByRegistrant.get(t).remove(kadProtocol.getNode().getId());
+                	}
+                    continue;
+
+                }
+                int c=0;
+            	if(avgCounter.get(kadProtocol.getNode().getId())!=null) {
+            		c = avgCounter.get(kadProtocol.getNode().getId());
+            	}
+        		c++;
+            	avgCounter.put(kadProtocol.getNode().getId(), c);
                 HashMap<Topic,Integer> topics = new HashMap<Topic,Integer>();
                 
                 if(kadProtocol instanceof Discv5ProposalProtocol) {
@@ -934,34 +949,9 @@ public class KademliaObserver implements Control {
             		regByTopic.put(t, count);
                 }
                 
-                if(kadProtocol instanceof Discv5ProposalProtocol) {
-                    //String registrations = ((Discv5ProposalProtocol) kadProtocol).topicTable.dumpRegistrations();
-                    //writer.write(registrations);
-                    
-                    /*//topic table registrations by registrar
-                    int count=0;
-                    if(regByRegistrar.get(kadProtocol.getNode().getId())!=null) {
-                    	count = regByRegistrar.get(kadProtocol.getNode().getId());
-                    	count+=((Discv5ProposalProtocol) kadProtocol).topicTable.getRegbyRegistrar();
-                    }
-                    regByRegistrar.put(kadProtocol.getNode().getId(), count);
-                    
-                    //topic table registrations by registrant
-                    HashMap<BigInteger,Integer> tmpReg = ((Discv5ProposalProtocol) kadProtocol).topicTable.getRegbyRegistrant();
-                    for(BigInteger id : tmpReg.keySet())
-                    {             
-                    	count=0;
-                    	if(regByRegistrant.get(id)!=null) {
-                    		count = regByRegistrant.get(id);
-                    	}
-                    	count+=tmpReg.get(id);
-                    	regByRegistrant.put(id,count);
-                    }*/
-                    
-                }
                 if(kadProtocol instanceof Discv5TicketProtocol) {
-                    //String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
-                    //writer.write(registrations);
+                    String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
+                    writer.write(registrations);
                     
                     //topic table registrations by registrar
                     int count=0;
@@ -1024,11 +1014,11 @@ public class KademliaObserver implements Control {
                 }*/
 
             }
-            /*writer.close();
+            writer.close();
         } catch (IOException e) {
 
             e.printStackTrace();
-        }*/
+        }
 
         write_registered_registrant_average();
         write_registered_topics_average();

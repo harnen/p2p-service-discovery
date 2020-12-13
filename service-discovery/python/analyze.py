@@ -194,7 +194,7 @@ def analyzeRegistrarDistribution(dirs):
         stats = {}
 #        print(log_dir)
         dir_num = dirs.index(log_dir)
-        with open(log_dir + '/900000_registrations.csv', newline='') as csvfile:
+        with open(log_dir + '/1000000_registrations.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 node = row['host']
@@ -600,7 +600,7 @@ def analyzeRegistrations2(dirs):
         #    ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
             ax2.set_ylim(bottom=0)
             ax2.set_xlabel("Nodes")
-            ax2.set_ylabel("#Received registrations")
+            ax2.set_ylabel("#Accepted registrations")
             fig2.savefig(OUTDIR + '/registrations_registrar.png')
 
         else:
@@ -785,7 +785,7 @@ analyzeMessages(sys.argv[1:])
 analyzeRegistrations2(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
-#analyzeRegistrarDistribution(sys.argv[1:])
+analyzeRegistrarDistribution(sys.argv[1:])
 analyzeEclipsedNodesOverTime(sys.argv[1:])
 analyzeActiveRegistrations(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
