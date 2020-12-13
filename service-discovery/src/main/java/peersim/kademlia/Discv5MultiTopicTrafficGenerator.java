@@ -39,7 +39,7 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 	 */
 	private final int mintopicNum;
 	private final int maxtopicNum;
-	private final int randomLookups = 0;
+	private final int randomLookups;
 
 	// ______________________________________________________________________________________________
 	public Discv5MultiTopicTrafficGenerator(String prefix) {
@@ -131,11 +131,11 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 		
 			for(int i = 0;i<Network.size();i++) 
 			{
-				for(int j = 0;j<3;j++) {
+				//for(int j = 0;j<3;j++) {
 					Node start = Network.get(i);
 					Message lookup = generateFindNodeMessage();
 					EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
-				}
+				//}
 	
 			}
 		
