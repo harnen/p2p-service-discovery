@@ -216,11 +216,11 @@ public class Discv5ZipfTrafficGenerator implements Control {
 		
 			for(int i = 0;i<Network.size();i++) 
 			{
-				//for(int j = 0;j<3;j++) {
+				for(int j = 0;j<3;j++) {
 					Node start = Network.get(i);
 					Message lookup = generateFindNodeMessage();
 					EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
-				//}
+				}
 	
 			}
 		

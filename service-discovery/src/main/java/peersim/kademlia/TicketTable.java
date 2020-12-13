@@ -37,7 +37,21 @@ public class TicketTable extends RoutingTable {
     
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
-		super(nBuckets, k, maxReplacements);
+		super(nBuckets,k,maxReplacements);
+		/*super(0, 0, 0);
+		
+		k_buckets = new KBucket[nBuckets];
+		this.nBuckets = nBuckets;
+		this.k=k;
+		this.maxReplacements=maxReplacements;
+		bucketMinDistance = KademliaCommonConfig.BITS - nBuckets;
+		
+		int sbucket = k;
+		for (int i = 0; i < k_buckets.length; i++) {
+			//System.out.println("Creating bucket "+i+" size "+sbucket);
+			k_buckets[i] = new KBucket(this,sbucket,maxReplacements);
+			sbucket++;
+		}*/
 		
 		pendingTickets = new ArrayList<BigInteger>();
 
@@ -59,6 +73,41 @@ public class TicketTable extends RoutingTable {
 		//System.out.println("New ticket table size "+k+" "+refresh);
 		
 		// TODO Auto-generated constructor stub
+	}
+
+	public TicketTable(int nBuckets,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
+		
+		super(0, 0, 0);
+		k_buckets = new KBucket[nBuckets];
+		this.nBuckets = nBuckets;
+		this.maxReplacements=0;
+		bucketMinDistance = KademliaCommonConfig.BITS - nBuckets;
+		
+		this.k=3;
+		int sbucket = 3;
+		for (int i = 0; i < k_buckets.length; i++) {
+			System.out.println("Creating bucket "+i+" size "+sbucket);
+			k_buckets[i] = new KBucket(this,sbucket,maxReplacements);
+			if(i>10)sbucket++;
+		}
+		
+		pendingTickets = new ArrayList<BigInteger>();
+
+		this.protocol = protocol;
+		
+		this.t = t;
+		
+		this.nodeId = t.getTopicID();
+		
+		this.myPid = myPid;
+		
+		logger = Logger.getLogger(protocol.getNode().getId().toString());
+		
+		this.refresh = refresh;
+		
+		registeredPerDist = new HashMap<Integer, Integer>();
+
+		registeredNodes = new ArrayList<BigInteger>();
 	}
 	
 	public boolean addNeighbour(BigInteger node) {
@@ -155,7 +204,7 @@ public class TicketTable extends RoutingTable {
 		for(BigInteger n : toRemove)
 			removeNeighbour(n);
 		
-		while(b.neighbours.size()<k&&b.replacements.size()>0) {
+		while(b.neighbours.size()<b.k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
 			//b.replace();
 			//Random rand = new Random();

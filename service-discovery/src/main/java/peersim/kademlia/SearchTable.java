@@ -118,7 +118,7 @@ public class SearchTable extends RoutingTable {
 		int i = CommonState.r.nextInt(nBuckets);
 		KBucket b = k_buckets[i];
 		
-		while(b.neighbours.size()<k&&b.replacements.size()>0) {
+		while(b.neighbours.size()<b.k&&b.replacements.size()>0) {
 			//protocol.sendLookup(t, myPid);
 			//b.replace();
 			//Random rand = new Random();

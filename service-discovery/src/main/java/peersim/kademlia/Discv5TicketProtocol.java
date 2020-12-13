@@ -560,7 +560,11 @@ public class Discv5TicketProtocol extends KademliaProtocol {
         KademliaObserver.addTopicRegistration(t, this.node.getId());
 
         //TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
-        TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+        TicketTable rou;
+        if(KademliaCommonConfig.TICKET_BUCKET_SIZE==0)
+        	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+        else
+        	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
         rou.setNodeId(t.getTopicID());
         ticketTables.put(t.getTopicID(),rou);
         	
