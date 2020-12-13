@@ -270,11 +270,45 @@ public class Turbulence implements Control {
 	}
 	
 
+	public void addRandomConnections(Node iNode, int num) {
+		int sz = Network.size();
+	
+        KademliaProtocol iKad = iNode.getKademliaProtocol();
+
+		for (int k = 0; k < num; k++) {
+            int index = CommonState.r.nextInt(sz);
+			KademliaProtocol jKad = Network.get(index).getKademliaProtocol();
+
+			iKad.routingTable.addNeighbour(jKad.node.getId());
+		}
+		
+		
+	}
+	
+	public void addNearNodes(Node iNode, int num) {
+		// add other 50 near nodes
+		int sz = Network.size();
+		KademliaProtocol iKad = (KademliaProtocol) (iNode.getKademliaProtocol());
+		int i = iNode.getIndex();
+		int start = i;
+		if (i > sz - 50) {
+			start = sz - 25;
+		}
+		for (int k = 0; k < 50; k++) {
+			start = start++;
+			if (start > 0 && start < sz) {
+				KademliaProtocol jKad = (KademliaProtocol) (Network.get(start++).getKademliaProtocol());
+				iKad.routingTable.addNeighbour(jKad.node.getId());
+			}
+		}
+		
+	}
+	
 	// ______________________________________________________________________________________________
 	public boolean execute() {
 		// throw the dice
 		//System.out.println("Turbulence execute");
-		if(CommonState.getIntTime()>10000)
+		if(Network.size()>=200)
 			return false;
 		double dice = CommonState.r.nextDouble();
 		if (dice < p_idle)

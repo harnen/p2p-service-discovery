@@ -59,7 +59,7 @@ public class StateBuilder implements peersim.core.Control {
 			Node iNode = Network.get(i);
             KademliaProtocol iKad = iNode.getKademliaProtocol();
 
-			for (int k = 0; k < 100; k++) {
+			for (int k = 0; k < num; k++) {
                 int index = CommonState.r.nextInt(sz);
 				KademliaProtocol jKad = Network.get(index).getKademliaProtocol();
 
