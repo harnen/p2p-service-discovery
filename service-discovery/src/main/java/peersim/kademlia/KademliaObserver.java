@@ -921,10 +921,12 @@ public class KademliaObserver implements Control {
                 Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
                 if (!(node.isUp())) {
-                	for(String t : regByRegistrar.keySet()) {
+                	for(String t : regByRegistrar.keySet()) 
                 		regByRegistrar.get(t).remove(kadProtocol.getNode().getId());
+                	
+                	for(String t: regByRegistrant.keySet())
                 		regByRegistrant.get(t).remove(kadProtocol.getNode().getId());
-                	}
+
                     continue;
 
                 }
