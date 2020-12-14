@@ -69,6 +69,7 @@ public class Discv5TopicTable { // implements TopicTable {
     		TopicRegistration r = it.next();
         	if (curr_time - r.getTimestamp() >= this.adLifeTime) {
             	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic());
+	            //TopicRegistration r_same = topicQ.pop(); 
 	            topicQ.pop(); 
                 //assert r_same.equals(r);
 				it.remove(); //removes from allAds
@@ -142,6 +143,11 @@ public class Discv5TopicTable { // implements TopicTable {
         //assert waiting_time <= this.adLifeTime && waiting_time >= 0;
 
         return waiting_time;
+    }
+
+    public double topicTableUtilisation() {
+     
+       return ((double) this.allAds.size())/this.tableCapacity;
     }
     
     public boolean register_ticket(Ticket ticket, Message m, long curr_time) {
