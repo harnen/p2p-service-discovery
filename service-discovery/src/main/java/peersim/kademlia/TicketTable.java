@@ -160,6 +160,10 @@ public class TicketTable extends RoutingTable {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
 		pendingTickets.remove(node);
 		getBucket(node).removeNeighbour(node);
+		
+		int i = Util.logDistance(nodeId, node) - bucketMinDistance - 1;
+		BigInteger randomNode = generateRandomNode(i);
+		protocol.refreshBucket(this, randomNode,i);
 		//logger.warning("Pending ticket Remove "+node+" "+getBucket(node).occupancy()+" "+getBucket(node).replacements.size()+" "+getBucketNum(node));
 
 		//logger.warning("Pending ticket remove "+node+" "+getBucket(node).occupancy());
@@ -218,7 +222,7 @@ public class TicketTable extends RoutingTable {
 		
 		BigInteger randomNode = null;
 
-		if(b.replacements.size()==0||b.neighbours.size()==0) {
+		if(b.replacements.size()==0||b.neighbours.size()<b.k) {
 			randomNode = generateRandomNode(i);
 			protocol.refreshBucket(this, randomNode,i);
 		}

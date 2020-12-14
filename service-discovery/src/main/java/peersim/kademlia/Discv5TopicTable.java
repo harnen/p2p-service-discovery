@@ -69,7 +69,7 @@ public class Discv5TopicTable { // implements TopicTable {
     		TopicRegistration r = it.next();
         	if (curr_time - r.getTimestamp() >= this.adLifeTime) {
             	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic());
-	            TopicRegistration r_same = topicQ.pop(); 
+	            topicQ.pop(); 
                 //assert r_same.equals(r);
 				it.remove(); //removes from allAds
 
