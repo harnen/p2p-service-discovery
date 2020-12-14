@@ -128,7 +128,7 @@ public class KBucket implements Cloneable {
 		//System.out.println("Replace node "+neighbours.get(neighbours.size()-1)+" at "+CommonState.getTime());
         KademliaProtocol remote = node.getKademliaProtocol();
 
-		remote.routingTable.sendToFront(rTable.nodeId);
+        if(remote.routingTable!=null)remote.routingTable.sendToFront(rTable.nodeId);
 		
 		//System.out.println("checkAndReplaceLast "+remote.getNode().getId()+" at "+CommonState.getTime()+" at "+rTable.nodeId);
 

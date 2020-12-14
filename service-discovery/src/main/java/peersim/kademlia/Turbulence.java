@@ -194,26 +194,28 @@ public class Turbulence implements Control {
 
 		System.out.println("Turbulence remove node " + remove.getKademliaProtocol().getNode().getId()+ " with index: " + remove.getIndex());
 		// remove node (set its state to DOWN)
-		remove.setFailState(Node.DOWN);
+		remove.setFailState(Node.DEAD);
 
 		//Ethclient
 		KademliaNode kadNode = remove.getKademliaProtocol().getNode();
-		List<KademliaNode> incoming = kadNode.getIncomingConnections();
-		List<KademliaNode> outgoing = kadNode.getOutgoingConnections();
-		for(KademliaNode kad : incoming)
-		{
-			//Node n = Util.nodeIdtoNode(addr);
-			//KademliaNode kad = n.getKademliaProtocol().getNode();
-			kad.deleteOutgoingConnection(kadNode);
-			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
-		}
-		
-		for(KademliaNode kad : outgoing)
-		{
-			//Node n = Util.nodeIdtoNode(addr);
-			//KademliaNode kad = n.getKademliaProtocol().getNode();
-			kad.deleteIncomingConnection(kadNode);
-			//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
+		if(kadNode!=null) {
+			List<KademliaNode> incoming = kadNode.getIncomingConnections();
+			List<KademliaNode> outgoing = kadNode.getOutgoingConnections();
+			for(KademliaNode kad : incoming)
+			{
+				//Node n = Util.nodeIdtoNode(addr);
+				//KademliaNode kad = n.getKademliaProtocol().getNode();
+				kad.deleteOutgoingConnection(kadNode);
+				//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
+			}
+			
+			for(KademliaNode kad : outgoing)
+			{
+				//Node n = Util.nodeIdtoNode(addr);
+				//KademliaNode kad = n.getKademliaProtocol().getNode();
+				kad.deleteIncomingConnection(kadNode);
+				//System.out.println("Kad rm node "+((KademliaProtocol)(remove.getProtocol(kademliaid))).getNode().getId()+" conn "+kad.getId()+" at "+CommonState.getTime());
+			}
 		}
 		
 		return false;
@@ -308,7 +310,7 @@ public class Turbulence implements Control {
 	public boolean execute() {
 		// throw the dice
 		//System.out.println("Turbulence execute");
-		//if(Network.size()>=200)
+		//if(CommonState.getTime()<100000)
 		//	return false;
 		double dice = CommonState.r.nextDouble();
 		if (dice < p_idle)

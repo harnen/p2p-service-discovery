@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import peersim.config.Configuration;
+import peersim.core.Cleanable;
 import peersim.core.CommonState;
 import peersim.core.Network;
 import peersim.core.Node;
@@ -32,7 +33,7 @@ import peersim.kademlia.KademliaNode;
 import peersim.kademlia.Message;
 import peersim.kademlia.TicketTable;
 
-public class Discv5TicketProtocol extends KademliaProtocol {
+public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 
     /**
 	 * Topic table of this node
@@ -557,7 +558,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
 
     	//restore the IF statement
-        KademliaObserver.addTopicRegistration(t, this.node.getId());
+    	KademliaObserver.addTopicRegistration(t, this.node.getId());
 
         //TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
         TicketTable rou;
@@ -818,6 +819,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
     public void processEvent(Node myNode, int myPid, Object event) {
         
 		//this.discv5id = myPid;
+    	if(topicTable==null)return;
 		super.processEvent(myNode, myPid, event);
         Message m;
         
@@ -889,7 +891,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 
             case Timeout.REG_TIMEOUT:
             	//logger.warning("Remove ticket table "+((Timeout)event).nodeSrc);
-                KademliaObserver.reportExpiredRegistration(((Timeout)event).topic, this.node.is_evil);
+            	KademliaObserver.reportExpiredRegistration(((Timeout)event).topic, this.node.is_evil);
             	if(KademliaCommonConfig.TICKET_REMOVE_AFTER_REG==0) {
             		ticketTables.get(((Timeout)event).topic.getTopicID()).removeNeighbour(((Timeout)event).nodeSrc);
             	} else {
@@ -930,6 +932,7 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	public void refreshBuckets() {
 		//System.out.println("Ticket protocol refreshbuckets");
 		//System.out.print(topicTable.dumpRegistrations());
+		if(topicTable==null)return;
 		for(TicketTable ttable : ticketTables.values())
 			ttable.refreshBuckets();
 		for(SearchTable stable : searchTables.values())
@@ -948,6 +951,16 @@ public class Discv5TicketProtocol extends KademliaProtocol {
 	      rou.addNeighbour(neighbours);
 	        
        
+	}
+	
+	public void onKill()
+	{
+		//System.out.println("Node removed");
+		topicTable = null;
+		ticketTables=null;
+		searchTables=null;
+		routingTable=null;
+		operations=null;
 	}
 	
 	
