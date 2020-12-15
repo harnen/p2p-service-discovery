@@ -133,49 +133,69 @@ def analyzeRegistrations(dirs):
 #    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig1, ax1 = plt.subplots()
     fig2, ax2 = plt.subplots()
-    fig3, ax3 = plt.subplots()
+#    fig3, ax3 = plt.subplots()
 
-    i=0
+
     for log_dir in dirs:
-#        print(log_dir)
-        data1 = genfromtxt(log_dir+'/registeredRegistrant.csv',delimiter=',',names=['x', 'y'])
-        ax1.plot(sorted(data1['y'],reverse=True),label=log_dir)
-        data2 = genfromtxt(log_dir+'/registeredRegistrar.csv',delimiter=',',names=['x', 'y'])
-        ax2.plot(sorted(data2['y'],reverse=True),label=log_dir)
-        width=0.3
-        margin=width*i
-        table = pd.read_csv(log_dir + '/registeredTopics.csv')
-        sorted_table = table.sort_values(by='count',ascending=False)
-        ax3.bar(np.arange(len(sorted_table['count'].values))+margin,sorted_table['count'].values,width=width, label=log_dir)
-        i=i+1
+        df = pd.read_csv(log_dir + '/registeredRegistrant.csv')
+        df2 = pd.read_csv(log_dir + '/registeredRegistrar.csv')
 
-    ax1.set_title('Registrations by registrant')
-    #add line showing how the result should be
-    ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
-    ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
-    ax1.set_ylim(bottom=0)
-    ax1.set_xlabel("Nodes")
-    ax1.set_ylabel("#placed registrations")
-    ax1.legend()
-    ax2.legend()
-    ax3.legend()
-    fig1.savefig(OUTDIR + '/registrations_registrant.png')
+    if len(df['topic'].unique()) > 1:
 
-    ax2.set_title('Registrations by registrar')
-    ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
-    ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
-    ax2.set_ylim(bottom=0)
-    ax1.set_xlabel("Nodes")
-    ax1.set_ylabel("#Received registrations")
-    fig2.savefig(OUTDIR + '/registrations_registrar.png')
+        data={}
+        data2={}
+#        print(df)
+        for index, row in df.iterrows():
+            #print(index,row['topic'],row['nodeId'],row['count'])
+            if row['nodeId'] in data:
+                count = data[row['nodeId']] + row ['count']
+                #print(count)
+                data[row['nodeId']] = count
+            else :
+                data[row['nodeId']] = row['count']
+            #print(index, ': ', row['topic'], 'has', row['nodeid'], 'calories',row['count'])
+        #for item in data.items():
+        #    print(item)
+        for index, row in df2.iterrows():
+            #print(index,row['topic'],row['nodeId'],row['count'])
+            if row['nodeId'] in data2:
+                count = data2[row['nodeId']] + row ['count']
+                #print(count)
+                data2[row['nodeId']] = count
+            else :
+                data2[row['nodeId']] = row['count']
 
-    ax3.set_title('Registrations by topics (average)')
-    ticks = sorted_table['topic'].values
-    ax3.set_xticks(range(len(ticks)))
-    ax3.set_xticklabels(ticks)
+        #print(data.values())
+        ax1.plot(sorted(data.values(),reverse=True))
+        ax2.plot(sorted(data2.values(),reverse=True))
+
+        ax1.set_title('Registrations by registrant')
+        #add line showing how the result should be
+    #    ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+    #    ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
+        ax1.set_ylim(bottom=0)
+        ax1.set_xlabel("Nodes")
+        ax1.set_ylabel("#placed registrations")
+        ax1.legend()
+        ax2.legend()
+    #    ax3.legend()
+        fig1.savefig(OUTDIR + '/registrations_registrant_total.png')
+
+        ax2.set_title('Registrations by registrar')
+#        ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+#        ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
+        ax2.set_ylim(bottom=0)
+        ax1.set_xlabel("Nodes")
+        ax1.set_ylabel("#accepted registrations")
+        fig2.savefig(OUTDIR + '/registrations_registrar_total.png')
+
+#    ax3.set_title('Registrations by topics (average)')
+#    ticks = sorted_table['topic'].values
+#    ax3.set_xticks(range(len(ticks)))
+#    ax3.set_xticklabels(ticks)
 
 
-    fig3.savefig(OUTDIR + '/registrations_topic.png')
+#    fig3.savefig(OUTDIR + '/registrations_topic.png')
 
 def analyzeRegistrarDistribution(dirs):
     fig, ax1 = plt.subplots()
@@ -503,6 +523,8 @@ def analyzeStorageUtilisation(dirs):
             ax.plot(df['time']/1000, df[topic], label=topic)
 
         ax.legend()
+#        ax.set_xlim([10000,None])
+
         ax.set_ylabel('Average utilisation of storage space')
         ax.set_xlabel('time (sec)')
         plt.savefig(OUTDIR + '/storage_utilisation_' + log_dir1 + '.png')
@@ -586,7 +608,7 @@ def analyzeRegistrations2(dirs):
 
             ax1.set_title('Registrations by registrant')
             #ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
-            ax1.axhline(y = 50, color = 'r', linestyle = '-')
+            ax1.axhline(y = 16, color = 'r', linestyle = '-')
         #    ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
             ax1.set_ylim(bottom=0)
             ax1.set_xlabel("Nodes")
@@ -594,7 +616,7 @@ def analyzeRegistrations2(dirs):
             fig1.savefig(OUTDIR + '/registrations_registrant.png')
 
             ax2.set_title('Registrations by registrar')
-            ax1.axhline(y = 50, color = 'r', linestyle = '-')
+            ax2.axhline(y = 16, color = 'r', linestyle = '-')
 
         #    ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
         #    ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
@@ -781,11 +803,12 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 
-analyzeMessages(sys.argv[1:])
+#analyzeMessages(sys.argv[1:])
+analyzeRegistrations(sys.argv[1:])
 analyzeRegistrations2(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
-#analyzeRegistrarDistribution(sys.argv[1:])
+analyzeRegistrarDistribution(sys.argv[1:])
 analyzeEclipsedNodesOverTime(sys.argv[1:])
 analyzeActiveRegistrations(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
