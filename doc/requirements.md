@@ -32,5 +32,5 @@ Under the assumption listed above, we target to achieve the following goals:
 
 ## G6/G7
 <p float="left">
-  <img src="./imgs/g6.png" width="450" />
+  <img src="./imgs/g7.png" width="450" />
 </p>
