@@ -6,195 +6,133 @@ DEF_ZIPF=1
 DEF_BUCKET_SIZE=17
 DEF_BUCKET_ORDER=0
 DEF_TOPIC_LIMIT=17
+DEF_TICKET_TABLE_BUCKET_SIZE=16
+DEF_SEARCH_TABLE_BUCKET_SIZE=16
 
-#SIZES='1000 5000 10000'
-SIZES='1000 1500 2000'
+SIZES='1000 2000 3000'
+#SIZES='100 150 200'
 TOPICS='1 4 20 60'
 ZIPFS='0.1 0.5 1 1.5'
 #ZIPFS=''
 BUCKET_SIZES='1 3 5 10'
 BUCKET_ORDERS='0 1 2'
-TOPIC_LIMITS='17 50 1000'
+TOPIC_LIMITS='4 17 50 1000'
+TICKET_TABLE_BUCKET_SIZES='1 3 16'
+SEARCH_TABLE_BUCKET_SIZES='1 3 16'
 
 IN_CONFIG='config/final.cfg'
 OUT_CONFIG='config/tmp.cfg'
 
 
-SIZE=$DEF_SIZE
-TOPIC=$DEF_TOPIC
-ZIPF=$DEF_ZIPF
-BUCKET_SIZE=$DEF_BUCKET_SIZE
-BUCKET_ORDER=$DEF_BUCKET_ORDER
-TOPIC_LIMIT=$DEF_TOPIC_LIMIT
-rm -rf logs/*
+function restore_def(){
+	SIZE=$DEF_SIZE
+	TOPIC=$DEF_TOPIC
+	ZIPF=$DEF_ZIPF
+	BUCKET_SIZE=$DEF_BUCKET_SIZE
+	BUCKET_ORDER=$DEF_BUCKET_ORDER
+	TOPIC_LIMIT=$DEF_TOPIC_LIMIT
+	TICKET_TABLE_BUCKET_SIZE=$DEF_TICKET_TABLE_BUCKET_SIZE
+	SEARCH_TABLE_BUCKET_SIZE=$DEF_SEARCH_TABLE_BUCKET_SIZE
+	rm -rf logs/*
+}
+
+function run_sim(){
+	cp $IN_CONFIG $OUT_CONFIG
+	sed  -i "s/^SIZE .*$/SIZE $SIZE/g" $OUT_CONFIG 
+	sed  -i "s/^control.0traffic.maxtopicnum .*$/control.0traffic.maxtopicnum $TOPIC/g" $OUT_CONFIG
+	sed  -i "s/^control.0traffic.zipf .*$/control.0traffic.zipf $ZIPF/g"  $OUT_CONFIG
+	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $BUCKET_SIZE/g" $OUT_CONFIG
+	sed  -i "s/^protocol.3kademlia.LOOKUP_BUCKET_ORDER .*$/protocol.3kademlia.LOOKUP_BUCKET_ORDER $BUCKET_ORDER/g" $OUT_CONFIG
+	sed  -i "s/^protocol.3kademlia.ADS_PER_QUEUE .*$/protocol.3kademlia.ADS_PER_QUEUE $TOPIC_LIMIT/g" $OUT_CONFIG
+	sed  -i "s/^protocol.3kademlia.TICKET_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.TICKET_TABLE_BUCKET_SIZE $TICKET_TABLE_BUCKET_SIZE/g" $OUT_CONFIG
+	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $SEARCH_TABLE_BUCKET_SIZE/g" $OUT_CONFIG
+	
+	./run.sh $OUT_CONFIG &> /dev/null
+	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}
+	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}
+	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}
+}
+
+function clean(){
+	rm logs/*.csv logs/*.cfg
+	python3 python/analyze.py logs/*
+	mkdir -p $1_results
+	mv *.png $1_results
+}
+
+
+
+restore_def
 for SIZE in $SIZES
 do
 	echo running size $SIZE
-	cp $IN_CONFIG $OUT_CONFIG
-	sed  -i "s/^SIZE .*$/SIZE $SIZE/g" $OUT_CONFIG 
-	sed  -i "s/^control.0traffic.maxtopicnum .*$/control.0traffic.maxtopicnum $TOPIC/g" $OUT_CONFIG
-	sed  -i "s/^control.0traffic.zipf .*$/control.0traffic.zipf $ZIPF/g"  $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $BUCKET_SIZE/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.LOOKUP_BUCKET_ORDER .*$/protocol.3kademlia.LOOKUP_BUCKET_ORDER $BUCKET_ORDER/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.ADS_PER_QUEUE .*$/protocol.3kademlia.ADS_PER_QUEUE $TOPIC_LIMIT/g" $OUT_CONFIG
-	
-	./run.sh $OUT_CONFIG &> /dev/null
-	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
+	run_sim
 	grep '^SIZE' $OUT_CONFIG
 done
-rm logs/*.csv logs/*.cfg
-python3 python/analyze.py logs/*
-mkdir -p size_results
-mv *.png size_results
+clean size
 
-
-
-SIZE=$DEF_SIZE
-TOPIC=$DEF_TOPIC
-ZIPF=$DEF_ZIPF
-BUCKET_SIZE=$DEF_BUCKET_SIZE
-BUCKET_ORDER=$DEF_BUCKET_ORDER
-TOPIC_LIMIT=$DEF_TOPIC_LIMIT
-rm -rf logs/*
+restore_def
 for TOPIC in $TOPICS
 do
 	echo running topic $TOPIC
-	cp $IN_CONFIG $OUT_CONFIG
-	sed  -i "s/^SIZE .*$/SIZE $SIZE/g" $OUT_CONFIG 
-	sed  -i "s/^control.0traffic.maxtopicnum .*$/control.0traffic.maxtopicnum $TOPIC/g" $OUT_CONFIG
-	sed  -i "s/^control.0traffic.zipf .*$/control.0traffic.zipf $ZIPF/g"  $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $BUCKET_SIZE/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.LOOKUP_BUCKET_ORDER .*$/protocol.3kademlia.LOOKUP_BUCKET_ORDER $BUCKET_ORDER/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.ADS_PER_QUEUE .*$/protocol.3kademlia.ADS_PER_QUEUE $TOPIC_LIMIT/g" $OUT_CONFIG
-	
-	./run.sh $OUT_CONFIG &> /dev/null
-	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
+	run_sim
 	grep '^control.0traffic.maxtopicnum' $OUT_CONFIG
 done
-rm logs/*.csv logs/*.cfg
-python3 python/analyze.py logs/*
-mkdir -p topic_results
-mv *.png topic_results
+clean topic
 
-SIZE=$DEF_SIZE
-TOPIC=$DEF_TOPIC
-ZIPF=$DEF_ZIPF
-BUCKET_SIZE=$DEF_BUCKET_SIZE
-BUCKET_ORDER=$DEF_BUCKET_ORDER
-TOPIC_LIMIT=$DEF_TOPIC_LIMIT
-rm -rf logs/*
+restore_def
 for ZIPF in $ZIPFS
 do
 	echo Running zipf $ZIPF
-	cp $IN_CONFIG $OUT_CONFIG
-	sed  -i "s/^SIZE .*$/SIZE $SIZE/g" $OUT_CONFIG 
-	sed  -i "s/^control.0traffic.maxtopicnum .*$/control.0traffic.maxtopicnum $TOPIC/g" $OUT_CONFIG
-	sed  -i "s/^control.0traffic.zipf .*$/control.0traffic.zipf $ZIPF/g"  $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $BUCKET_SIZE/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.LOOKUP_BUCKET_ORDER .*$/protocol.3kademlia.LOOKUP_BUCKET_ORDER $BUCKET_ORDER/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.ADS_PER_QUEUE .*$/protocol.3kademlia.ADS_PER_QUEUE $TOPIC_LIMIT/g" $OUT_CONFIG
-	
-	./run.sh $OUT_CONFIG &> /dev/null
-	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
+	run_sim
 	grep '^control.0traffic.zipf' $OUT_CONFIG
 done
-rm logs/*.csv logs/*.cfg
-python3 python/analyze.py logs/*
-mkdir -p zipf_results
-mv *.png zipf_results
+clean zipf
 
-SIZE=$DEF_SIZE
-TOPIC=$DEF_TOPIC
-ZIPF=$DEF_ZIPF
-BUCKET_SIZE=$DEF_BUCKET_SIZE
-BUCKET_ORDER=$DEF_BUCKET_ORDER
-TOPIC_LIMIT=$DEF_TOPIC_LIMIT
-rm -rf logs/*
+restore_def
 for BUCKET_SIZE in $BUCKET_SIZES
 do
 	echo Running bucket size: $BUCKET_SIZE
-	cp $IN_CONFIG $OUT_CONFIG
-	sed  -i "s/^SIZE .*$/SIZE $SIZE/g" $OUT_CONFIG 
-	sed  -i "s/^control.0traffic.maxtopicnum .*$/control.0traffic.maxtopicnum $TOPIC/g" $OUT_CONFIG
-	sed  -i "s/^control.0traffic.zipf .*$/control.0traffic.zipf $ZIPF/g"  $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $BUCKET_SIZE/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.LOOKUP_BUCKET_ORDER .*$/protocol.3kademlia.LOOKUP_BUCKET_ORDER $BUCKET_ORDER/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.ADS_PER_QUEUE .*$/protocol.3kademlia.ADS_PER_QUEUE $TOPIC_LIMIT/g" $OUT_CONFIG
-	
-	./run.sh $OUT_CONFIG &> /dev/null
-	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
+	run_sim
 	grep '^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE' $OUT_CONFIG
 done
-rm logs/*.csv logs/*.cfg
-python3 python/analyze.py logs/*
-mkdir -p bucket_results
-mv *.png bucket_results
+clean bucket
 
 
-SIZE=$DEF_SIZE
-TOPIC=$DEF_TOPIC
-ZIPF=$DEF_ZIPF
-BUCKET_SIZE=$DEF_BUCKET_SIZE
-BUCKET_ORDER=$DEF_BUCKET_ORDER
-TOPIC_LIMIT=$DEF_TOPIC_LIMIT
-rm -rf logs/*
+restore_def
 for BUCKET_ORDER in $BUCKET_ORDERS
 do
 	echo Running bucket order: $BUCKET_ORDER
-	cp $IN_CONFIG $OUT_CONFIG
-	sed  -i "s/^SIZE .*$/SIZE $SIZE/g" $OUT_CONFIG 
-	sed  -i "s/^control.0traffic.maxtopicnum .*$/control.0traffic.maxtopicnum $TOPIC/g" $OUT_CONFIG
-	sed  -i "s/^control.0traffic.zipf .*$/control.0traffic.zipf $ZIPF/g"  $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $BUCKET_SIZE/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.LOOKUP_BUCKET_ORDER .*$/protocol.3kademlia.LOOKUP_BUCKET_ORDER $BUCKET_ORDER/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.ADS_PER_QUEUE .*$/protocol.3kademlia.ADS_PER_QUEUE $TOPIC_LIMIT/g" $OUT_CONFIG
-	
-	./run.sh $OUT_CONFIG &> /dev/null
-	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
+	run_sim
 	grep '^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE' $OUT_CONFIG
 done
-rm logs/*.csv logs/*.cfg
-python3 python/analyze.py logs/*
-mkdir -p order_results
-mv *.png order_results
+clean order
 
 
-SIZE=$DEF_SIZE
-TOPIC=$DEF_TOPIC
-ZIPF=$DEF_ZIPF
-BUCKET_SIZE=$DEF_BUCKET_SIZE
-BUCKET_ORDER=$DEF_BUCKET_ORDER
-TOPIC_LIMIT=$DEF_TOPIC_LIMIT
-rm -rf logs/*
+restore_def
 for TOPIC_LIMIT in $TOPIC_LIMITS
 do
 	echo Running topic per queue limit: $TOPIC_LIMIT
-	cp $IN_CONFIG $OUT_CONFIG
-	sed  -i "s/^SIZE .*$/SIZE $SIZE/g" $OUT_CONFIG 
-	sed  -i "s/^control.0traffic.maxtopicnum .*$/control.0traffic.maxtopicnum $TOPIC/g" $OUT_CONFIG
-	sed  -i "s/^control.0traffic.zipf .*$/control.0traffic.zipf $ZIPF/g"  $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $BUCKET_SIZE/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.LOOKUP_BUCKET_ORDER .*$/protocol.3kademlia.LOOKUP_BUCKET_ORDER $BUCKET_ORDER/g" $OUT_CONFIG
-	sed  -i "s/^protocol.3kademlia.ADS_PER_QUEUE .*$/protocol.3kademlia.ADS_PER_QUEUE $TOPIC_LIMIT/g" $OUT_CONFIG
-	
-	./run.sh $OUT_CONFIG &> /dev/null
-	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
-	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}
+	run_sim
 	grep '^protocol.3kademlia.ADS_PER_QUEUE' $OUT_CONFIG
 done
-rm logs/*.csv logs/*.cfg
-python3 python/analyze.py logs/*
-mkdir -p queue_size_results
-mv *.png queue_size_results
+clean queue_size
 
+
+restore_def
+for TICKET_TABLE_BUCKET_SIZE in $TICKET_TABLE_BUCKET_SIZE
+do
+	echo TICKET_TABLE_BUCKET_SIZE: $TICKET_TABLE_BUCKET_SIZE
+	run_sim
+	grep '^protocol.3kademlia.TICKET_TABLE_BUCKET_SIZE' $OUT_CONFIG
+done
+clean ttbs
+
+restore_def
+for SEARCH_TABLE_BUCKET_SIZE in $SEARCH_TABLE_BUCKET_SIZES
+do
+	echo Running SEARCH_TABLE_BUCKET_SIZE: $TOPIC_LIMIT
+	run_sim
+	grep '^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE' $OUT_CONFIG
+done
+clean stbs
