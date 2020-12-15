@@ -36,6 +36,8 @@ import peersim.util.IncrementalStats;
 public class KademliaObserver implements Control {
     
     private static final String PAR_RANGE_EXPERIMENT = "rangeExperiment";
+    private static final String PAR_STEP = "step";
+    
 
     private String logFolderName; 
     private String parameterName;
@@ -118,12 +120,15 @@ public class KademliaObserver implements Control {
     private static int ticket_request_to_evil_nodes = 0;
     private static int ticket_request_to_good_nodes = 0;
     
-
-    private static HashMap<Integer, Integer> msgSent = new HashMap<Integer, Integer>();
+    private static HashMap<BigInteger, Integer> msgReceivedByNodes = new HashMap<BigInteger, Integer>();
+    private static HashMap<Integer, Integer> msgSentPerType = new HashMap<Integer, Integer>();
+    private static HashMap<String, Integer> registerOverhead = new HashMap<String, Integer>();
+    private static HashMap<String, Integer> numberOfRegistrations = new HashMap<String, Integer>();
 
     private static HashMap<BigInteger, Integer> avgCounter;
     
     private static int simpCounter;
+    private static int observerStep;
 
     /** Prefix to be printed in output */
     private String prefix;
@@ -132,6 +137,7 @@ public class KademliaObserver implements Control {
 
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
+        this.observerStep = Configuration.getInt(prefix + "." + PAR_STEP);
         this.parameterName = Configuration.getString(prefix + "." + PAR_RANGE_EXPERIMENT, "");
         if (!this.parameterName.isEmpty())
             this.parameterValue = Configuration.getDouble(prefix + "." + PAR_RANGE_EXPERIMENT, -1);
@@ -140,7 +146,7 @@ public class KademliaObserver implements Control {
             this.logFolderName = "./logs";
         else
             this.logFolderName = this.parameterName + "-" + String.valueOf(this.parameterValue);
-
+        
         File directory = new File(this.logFolderName);
         if (! directory.exists()){
             directory.mkdir();
@@ -196,6 +202,11 @@ public class KademliaObserver implements Control {
         		set.get(registrant).addRegistrar(registrar, CommonState.getTime(),waitingTime);
         	}	
         }
+        Integer count = numberOfRegistrations.get(topic);
+        if (count == null)
+            numberOfRegistrations.put(topic, 1);
+        else
+            numberOfRegistrations.put(topic, count+1);
 
    }
     
@@ -337,19 +348,38 @@ public class KademliaObserver implements Control {
     }
 
     private static void accountMsg(Message m) {
-        Integer numMsg = msgSent.get(m.getType());
+        Integer numMsg = msgSentPerType.get(m.getType());
         if (numMsg == null)
-            msgSent.put(m.getType(), 1);
+            msgSentPerType.put(m.getType(), 1);
         else {
-            msgSent.put(m.getType(), numMsg+1);
+            msgSentPerType.put(m.getType(), numMsg+1);
         }
         if (m.getType() == Message.MSG_REGISTER || m.getType() == Message.MSG_TICKET_REQUEST) {
             if(m.dest.is_evil) 
                 ticket_request_to_evil_nodes++;
             else
                 ticket_request_to_good_nodes++;
+
+            Topic topic = null;
+            if(m.getType() == Message.MSG_REGISTER){
+                Ticket t = (Ticket) m.body;
+                topic = t.getTopic();
+            }
+            else 
+                topic = (Topic) m.body;
+                
+            Integer count = registerOverhead.get(topic.getTopic());
+            if (count == null)
+                registerOverhead.put(topic.getTopic(), 1);
+            else
+                registerOverhead.put(topic.getTopic(), count+1);
         }
 
+        Integer count = msgReceivedByNodes.get(m.dest.getId());
+        if (count == null) 
+            msgReceivedByNodes.put(m.dest.getId(), 1);
+        else
+            msgReceivedByNodes.put(m.dest.getId(), count+1);
     }
 
     private void write_waiting_times() {
@@ -445,7 +475,7 @@ public class KademliaObserver implements Control {
             }
             writer.write("" + CommonState.getTime());
             for (int msgType=0; msgType<numMsgTypes; msgType++) {
-                Integer count = msgSent.get(msgType);
+                Integer count = msgSentPerType.get(msgType);
                 if (count == null)
                     count = 0;
                 writer.write("," + count);
@@ -470,14 +500,15 @@ public class KademliaObserver implements Control {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        msgSent.clear(); // = new HashMap<Integer, Integer>();
+        msgSentPerType.clear(); // = new HashMap<Integer, Integer>();
         ticket_request_to_evil_nodes = 0;
         ticket_request_to_good_nodes = 0;
     }
+
 	
 	public static void reportMsg(Message m, boolean sent) {
         accountMsg(m);
-        ///* 
+        /* 
 		if (kadProtocol instanceof Discv5ProposalProtocol) {
             try {
                 String result = "";
@@ -529,7 +560,61 @@ public class KademliaObserver implements Control {
                 e.printStackTrace();
             }
 
-        } //*/  
+        } */  
+    }
+
+    private void write_msg_received_by_nodes() {
+
+        try {
+            String filename = this.logFolderName + "/" + "msg_received.csv";
+            FileWriter writer = new FileWriter(filename);
+
+            String title = "Node,numMsg\n";
+            writer.write(title);
+            for (BigInteger id : msgReceivedByNodes.keySet()) {
+                Integer numMsgs = msgReceivedByNodes.get(id);
+                writer.write(String.valueOf(id) + "," + numMsgs + "\n");
+            }
+            // Put the topic hashes in the bottom of the file
+            for (Topic t: regByTopic.keySet()) {
+                writer.write(t.getTopicID() + ",0\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void write_register_overhead() {
+
+        try {
+            String filename = this.logFolderName + "/" + "register_overhead.csv";
+            FileWriter writer = new FileWriter(filename);
+            Arrays.sort(all_topics);
+            String title = "";
+            for (String topic: all_topics) {
+                    title += topic + ",";
+            }
+            title += "overall\n";
+            writer.write(title);
+            
+            int totalMsgs = 0;
+            int totalnoReg = 0;
+            for (String topic: all_topics) {
+                Integer noMsg = registerOverhead.get(topic);
+                Integer noReg = numberOfRegistrations.get(topic);
+                totalMsgs += noMsg;
+                totalnoReg += noReg;
+                double overhead = ((double) noMsg) / noReg;
+                writer.write(overhead + ",");
+            }
+            writer.write("" + ((double) totalMsgs)/totalnoReg);
+            writer.write("\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
     }
 
     private void write_registration_stats() {
@@ -1078,6 +1163,11 @@ public class KademliaObserver implements Control {
         write_average_storage_utilisation_per_topic();
         write_exchanged_msg_stats_over_time();
         write_waiting_times();
+        if ( CommonState.getEndTime() <= (this.observerStep + CommonState.getTime()) ) {
+            // Last execute cycle of the experiment 
+            write_msg_received_by_nodes();
+            write_register_overhead();
+        }
         return false;
     }
 
