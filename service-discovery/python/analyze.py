@@ -812,6 +812,79 @@ def analyzeRegistrationTime(dirs):
     fig4.savefig(OUTDIR + '/min_time_discovery.png')
 #    fig5.savefig(OUTDIR + '/avg_time_discovery.png')
 
+
+def analyzeMessageReceivedByNodes(dirs):
+
+    for log_dir in dirs:
+        me = extractAlphanumeric(log_dir)
+        x_vals = []
+        y_vals = []
+        topics = {}
+        
+        logdirname = extractAlphanumeric(log_dir)
+        with open(log_dir + 'msg_received.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if 't' in row['numMsg']:
+                    topics[row['Node']] = row['numMsg']
+                else:
+                    y_vals.append(int(row['numMsg']))
+                    x_vals.append(row['Node'])
+
+            sorted_y_vals = sorted(y_vals)
+            fig, ax = plt.subplots()
+            ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=logdirname, linestyle=":")
+            #for topic in topics:
+            #    plt.axvline(x=topic, color='b', label=topics[topic])
+            ax.legend()
+            ax.set_xticks([])
+            #ax.set_yticks(ax.get_yticks()[::100])
+            ax.set_xticklabels([])
+            ax.set_ylabel('Number of received messages')
+            ax.set_xlabel('Nodes')
+                   
+            ax.set_title('Message received by node')
+    plt.savefig(OUTDIR + '/messages_received')
+
+def analyzeRegistrationOverhead(dirs):
+    num_xvalues = len(dirs)
+    width = 0.5
+    i = 0    
+    ncol = 0
+    numOfTopics = 0
+    topics = []
+    for log_dir in dirs:
+        logdirname = extractAlphanumeric(log_dir)
+        with open(log_dir + 'register_overhead.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            ncols = len(next(reader)) # Read first line and count columns
+            numOfTopics = int(ncols-1)
+            topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
+            topics.append('overall')
+            
+        x_values = [x for x in range(5, ncols*5+1, 5)]
+        y_values = []
+        with open(log_dir + 'register_overhead.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                for topic in topics:
+                    y_values.append(float(row[topic]))
+                    xs = [x-width*i for x in x_values]
+        print('y_values: ', y_values)
+        print('x_values: ', xs)        
+        fig, ax = plt.subplots()
+        #ax.legend()
+        rects1 = ax.bar(xs, y_values, width, label=logdirname)
+        i = i + 1
+        
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('Number of Ticket/Register Requests until Registration')
+    ax.set_title('Overhead of registrations')
+    ax.set_xticks(x_values)
+    ax.set_xticklabels(topics)
+
+    plt.savefig(OUTDIR + '/registration_overhead.png')
+
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
     exit(1)
@@ -835,5 +908,8 @@ analyzeRegistrationTime(sys.argv[1:])
 analyzeStorageUtilisation(sys.argv[1:])
 analyzeWaitingTimes(sys.argv[1:])
 analyzeNumberOfMessages(sys.argv[1:])
+
+analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
+analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
 #plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
