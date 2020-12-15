@@ -329,8 +329,25 @@ def analyzeOperations(dirs):
         df = pd.read_csv(log_dir + '/operations.csv')
 #        print(df)
 
-        print(df['used_hops'].mean())
-        ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
+        for topic in df['topic'].unique():
+            print(topic)
+
+        meantimes={}
+        errtimes={}
+        for topic in df['topic'].unique():
+            meantimes[topic] = df[df.topic == topic]['returned_hops'].mean()
+            errtimes[topic] = df[df.topic == topic]['returned_hops'].std()
+
+        mean={}
+        err={}
+        for key in sorted(meantimes.keys()) :
+            mean[key] = meantimes[key]
+        for key in sorted(errtimes.keys()) :
+            err[key] = errtimes[key]
+        ax2.bar(mean.keys(), mean.values(),yerr=err.values())
+
+        print(df['returned_hops'].mean())
+#        ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
         ax2.set_title("Avg Lookup Hop Count")
 
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum())
@@ -608,7 +625,7 @@ def analyzeRegistrations2(dirs):
 
             ax1.set_title('Registrations by registrant')
             #ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
-            ax1.axhline(y = 16, color = 'r', linestyle = '-')
+    #        ax1.axhline(y = 16, color = 'r', linestyle = '-')
         #    ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
             ax1.set_ylim(bottom=0)
             ax1.set_xlabel("Nodes")
@@ -616,7 +633,7 @@ def analyzeRegistrations2(dirs):
             fig1.savefig(OUTDIR + '/registrations_registrant.png')
 
             ax2.set_title('Registrations by registrar')
-            ax2.axhline(y = 16, color = 'r', linestyle = '-')
+    #        ax2.axhline(y = 16, color = 'r', linestyle = '-')
 
         #    ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
         #    ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
@@ -691,17 +708,20 @@ def analyzeRegistrations2(dirs):
             fig3.savefig(OUTDIR + '/registrations_registrant_bar.png')
             fig4.savefig(OUTDIR + '/registrations_registrar_bar.png')
 
-        table = pd.read_csv(log_dir + '/registeredTopics.csv')
-        sorted_table = table.sort_values(by='count',ascending=False)
-        ax3.bar(np.arange(len(sorted_table['count'].values)),sorted_table['count'].values, label=log_dir)
+
+    fig5, ax5 = plt.subplots()
+
+    table = pd.read_csv(log_dir + '/registeredTopics.csv')
+    sorted_table = table.sort_values(by='count',ascending=False)
+    ax5.bar(np.arange(len(sorted_table['count'].values)),sorted_table['count'].values, label=log_dir)
 
 
-    ax3.set_title('Registrations by topics (average)')
+    ax5.set_title('Registrations by topics (average)')
     ticks = sorted_table['topic'].values
-    ax3.set_xticks(range(len(ticks)))
-    ax3.set_xticklabels(ticks)
+    ax5.set_xticks(range(len(ticks)))
+    ax5.set_xticklabels(ticks)
 
-    fig3.savefig(OUTDIR + '/registrations_topic.png')
+    fig5.savefig(OUTDIR + '/registrations_topic.png')
 
 def analyzeRegistrationTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -803,7 +823,7 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 
-#analyzeMessages(sys.argv[1:])
+analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
 analyzeRegistrations2(sys.argv[1:])
 analyzeOperations(sys.argv[1:])

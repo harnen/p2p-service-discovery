@@ -112,20 +112,21 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 			    	//prot.getNode().setCallBack(this,start,topicList[topicIndex-1]);
 				    Message registerMessage = generateRegisterMessage(topicList[topicIndex-1].getTopic());
 				    Message lookupMessage = generateTopicLookupMessage(topicList[topicIndex-1].getTopic());
-                    System.out.println();
+                    //System.out.println();
 				    if(registerMessage != null) {
 					    //int time = CommonState.r.nextInt(900000);
 						int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
 					    //int time = 0;
 					    System.out.println("Topic " + topicList[topicIndex-1].getTopic() + " will be registered by "+prot.getNode().getId()+" at "+time);
 					    EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
-					    EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME+time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
+					    EDSimulator.add((KademliaCommonConfig.AD_LIFE_TIME)+time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
 
 				    }
 			    }
             }
 			for (Map.Entry<String, Integer> i :n.entrySet()) 
 				System.out.println("Topic "+i.getKey()+" "+i.getValue()+" times");
+			
 			first=false;
 		}  else if(randomLookups==1) {
 		

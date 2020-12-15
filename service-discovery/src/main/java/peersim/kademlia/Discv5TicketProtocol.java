@@ -418,7 +418,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.getTopic());		
 		int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
-		
+		//int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
 
 		if(!lop.finished && found >= required) {
 			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic + " after consulting " + lop.getUsedCount() + " nodes.");

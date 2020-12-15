@@ -267,7 +267,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
 	 * @return Message
 	 */
 	protected Message generateTopicLookupMessage(String topic) {
-		//System.out.println("New lookup message "+topic);
+		System.out.println("New lookup message "+topic);
 
 		Topic t = new Topic(topic);
 		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
