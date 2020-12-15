@@ -72,19 +72,8 @@ public class TurbulenceSingleTopic extends Turbulence{
 			// sort network
 			sortNet();
 			
-			for (int k = 0; k < 250; k++) {
-               
-				KademliaProtocol jKad; 
-				Node n;
-				do {
-					n =  Network.get(CommonState.r.nextInt(Network.size()));
-					jKad = (KademliaProtocol)n.getProtocol(kademliaid);
-			
-				} while(jKad==null||n.getFailState()==Node.DOWN);
-
-				newKad.routingTable.addNeighbour(jKad.getNode().getId());
-			}
-			
+			addRandomConnections(newNode,50);
+			addNearNodes(newNode,50);
 			
 		    String topic = new String("t"+zipf.sample());
 			node.setTopic(topic, newNode);

@@ -33,6 +33,8 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	private final static String PAR_ZIPF = "zipf";
 	private final static String PAR_TOPICNUM = "topicnum";
     private final static String PAR_ATTACKTOPIC = "attackTopic";
+    private final static String PAR_LOOKUPS = "randomlookups";
+
 	//private final static String PAR_FREQ = "maxfreq";
 
 	protected boolean first = true;
@@ -57,13 +59,15 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	
 	private int counter = 0;
 	private int lastRegistered = 0;
-	
+	private int randomLookups = 0;
 	// ______________________________________________________________________________________________
 	public Discv5ZipfTrafficGenerator(String prefix) {
 		exp = Configuration.getDouble(prefix + "." + PAR_ZIPF);
 		topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
 		zipf = new ZipfDistribution(topicNum,exp);
         attackTopicIndex = Configuration.getInt(prefix + "." + PAR_ATTACKTOPIC, -1);
+        randomLookups = Configuration.getInt(prefix + "." + PAR_LOOKUPS, 0);
+
 		pendingRegistrations = topicNum;
 		pendingLookups = topicNum;
 		/*topicList = new HashMap<String,Integer>();
@@ -88,9 +92,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	protected Message generateFindNodeMessage() {
 		// existing active destination node
 		Node n = Network.get(CommonState.r.nextInt(Network.size()));
-		while (!n.isUp()) {
-			n = Network.get(CommonState.r.nextInt(Network.size()));
-		}
+
         BigInteger dst = n.getKademliaProtocol().getNode().getId();
 
 		Message m = Message.makeInitFindNode(dst);
@@ -197,11 +199,11 @@ public class Discv5ZipfTrafficGenerator implements Control {
 				Message lookupMessage = generateTopicLookupMessage(t.getTopic());
 
 				if(registerMessage != null) {
-					//int time = CommonState.r.nextInt(900000);
-					int time = 0;
+					int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
+					//int time = 0;
 					System.out.println("Topic " + topic + " will be registered by "+prot.getNode().getId()+" at "+time);
 					EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
-					EDSimulator.add(time+2000, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
+					EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME+time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
 
 				}
 				
@@ -210,9 +212,19 @@ public class Discv5ZipfTrafficGenerator implements Control {
 			for (Map.Entry<String, Integer> i :n.entrySet()) 
 				System.out.println("Topic "+i.getKey()+" "+i.getValue()+" times");
 			first=false;
+		} else if(randomLookups==1) {
+		
+			for(int i = 0;i<Network.size();i++) 
+			{
+				for(int j = 0;j<3;j++) {
+					Node start = Network.get(i);
+					Message lookup = generateFindNodeMessage();
+					EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
+				}
+	
+			}
+		
 		}
-		
-		
 		return false;
 		
 	}

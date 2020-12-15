@@ -32,19 +32,22 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 	 */
 	private final static String PAR_MINTOPIC = "mintopicnum";
 	private final static String PAR_MAXTOPIC = "maxtopicnum";
+    private final static String PAR_LOOKUPS = "randomlookups";
 
 	/**
 	 * MSPastry Protocol ID to act
 	 */
 	private final int mintopicNum;
 	private final int maxtopicNum;
-	
+	private final int randomLookups;
+
 	// ______________________________________________________________________________________________
 	public Discv5MultiTopicTrafficGenerator(String prefix) {
         super(prefix);
 		mintopicNum = Configuration.getInt(prefix + "." + PAR_MINTOPIC,1);
 		maxtopicNum = Configuration.getInt(prefix + "." + PAR_MAXTOPIC);
-        
+        randomLookups = Configuration.getInt(prefix + "." + PAR_LOOKUPS, 0);
+
 		zipf = new ZipfDistribution(maxtopicNum,exp);
 	}
 
@@ -109,20 +112,34 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 			    	//prot.getNode().setCallBack(this,start,topicList[topicIndex-1]);
 				    Message registerMessage = generateRegisterMessage(topicList[topicIndex-1].getTopic());
 				    Message lookupMessage = generateTopicLookupMessage(topicList[topicIndex-1].getTopic());
-                    System.out.println();
+                    //System.out.println();
 				    if(registerMessage != null) {
 					    //int time = CommonState.r.nextInt(900000);
-					    int time = 0;
+						int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
+					    //int time = 0;
 					    System.out.println("Topic " + topicList[topicIndex-1].getTopic() + " will be registered by "+prot.getNode().getId()+" at "+time);
 					    EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
-					    EDSimulator.add(time+2000, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
+					    EDSimulator.add((KademliaCommonConfig.AD_LIFE_TIME)+time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
 
 				    }
 			    }
             }
 			for (Map.Entry<String, Integer> i :n.entrySet()) 
 				System.out.println("Topic "+i.getKey()+" "+i.getValue()+" times");
+			
 			first=false;
+		}  else if(randomLookups==1) {
+		
+			for(int i = 0;i<Network.size();i++) 
+			{
+				for(int j = 0;j<3;j++) {
+					Node start = Network.get(i);
+					Message lookup = generateFindNodeMessage();
+					EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
+				}
+	
+			}
+		
 		}
 		
 		

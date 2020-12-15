@@ -11,6 +11,7 @@ import java.math.BigInteger;
 
 import peersim.kademlia.Topic;
 import peersim.kademlia.TopicRegistration;
+import peersim.core.CommonState;
 
 public class Discv5TopicTable { // implements TopicTable {
     
@@ -68,7 +69,8 @@ public class Discv5TopicTable { // implements TopicTable {
     		TopicRegistration r = it.next();
         	if (curr_time - r.getTimestamp() >= this.adLifeTime) {
             	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic());
-	            TopicRegistration r_same = topicQ.pop(); 
+	            //TopicRegistration r_same = topicQ.pop(); 
+	            topicQ.pop(); 
                 //assert r_same.equals(r);
 				it.remove(); //removes from allAds
 
@@ -142,6 +144,11 @@ public class Discv5TopicTable { // implements TopicTable {
 
         return waiting_time;
     }
+
+    public double topicTableUtilisation() {
+     
+       return ((double) this.allAds.size())/this.tableCapacity;
+    }
     
     public boolean register_ticket(Ticket ticket, Message m, long curr_time) {
         Topic ti = ticket.getTopic();
@@ -188,7 +195,6 @@ public class Discv5TopicTable { // implements TopicTable {
             System.out.println(result);
 	        //System.exit(-1);
             */
-            System.out.println("Error: no competing tickets for makeRegisterDecisionForTopic");
             return new Ticket[0];
         }    
         if (ticketList !=null && ticketList.size() == 0) {
@@ -278,12 +284,13 @@ public class Discv5TopicTable { // implements TopicTable {
     }
 
     public TopicRegistration[] getRegistration(Topic t){
+        // TODO check: we might be returning expired registrations, we shoud update the table
         Topic topic = new Topic(t.topic);
-        //topic.setHostID(this.hostID);
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
 
-        if (topicQ == null) {
+        if (topicQ == null || topicQ.size()==0) {
             //TODO remove the check below: 
+            /*
     	    for(Topic ti: topicTable.keySet()) {
                 if (ti.getTopic() == topic.getTopic()) {
                     logger.warning("Error in topic table lookup !");
@@ -294,19 +301,35 @@ public class Discv5TopicTable { // implements TopicTable {
                     result += "\n";
                     //System.out.println(result);
                 }
-            }
+            }*/
             return new TopicRegistration[0];
         }
       
-        List<TopicRegistration> result = new ArrayList<>();
+        //List<TopicRegistration> result = new ArrayList<>();
+        //int i=0;
         
-        int i=0;
-        for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<KademliaCommonConfig.K;i++)
-        	result.add(iter.next());
-        //for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<2;i++)
+        // Oldest to newest
+        //for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<KademliaCommonConfig.K;i++)
         //	result.add(iter.next());
         
-        return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
+        // Newest to oldest 
+        //Iterator<TopicRegistration> iter = topicQ.descendingIterator();
+        //while(iter.hasNext()) {
+            // do something with it.next()
+        //     result.add(iter.next());
+        //    i++;
+        //}
+
+        // Random selection of K results
+        TopicRegistration[] results = (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);
+        int result_len = KademliaCommonConfig.K > results.length ? results.length : KademliaCommonConfig.K;
+        TopicRegistration[] final_results = new TopicRegistration[result_len];
+
+        for (int i = 0; i < result_len; i++) 
+            final_results[i] = results[CommonState.r.nextInt(results.length)];
+        
+        //return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
+        return final_results;
     }
     //TODO
     public String dumpRegistrations() {
@@ -374,24 +397,28 @@ public class Discv5TopicTable { // implements TopicTable {
 
     }
     
-    public int getRegbyRegistrar(){
-        return allAds.size();
+    public HashMap<String, Integer> getRegbyRegistrar(){
+    	HashMap<String, Integer> topicOccupancy= new HashMap<String, Integer>();
+    	topicTable.forEach((key,value) -> topicOccupancy.put(key.getTopic(),value.size()));
+        return topicOccupancy;
     }
     
-    public HashMap<BigInteger,Integer> getRegbyRegistrant(){
-        HashMap<BigInteger,Integer> regByRegistrant = new HashMap<BigInteger,Integer>();
-    	 for(ArrayDeque<TopicRegistration> t: topicTable.values())
+    public HashMap<String, HashMap<BigInteger,Integer>> getRegbyRegistrant(){
+        HashMap<String, HashMap<BigInteger,Integer>> regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
+
+    	 for(Topic t: topicTable.keySet())
          {
-    		Object[] treg = t.toArray();
-   
+    		Object[] treg = topicTable.get(t).toArray();
+            HashMap<BigInteger,Integer> register = new HashMap<BigInteger,Integer>();
     		for(Object reg : treg)
     		{
     			int count=0;
-    			if(regByRegistrant.get(((TopicRegistration)reg).getNode().getId())!=null)count=regByRegistrant.get(((TopicRegistration)reg).getNode().getId());
+    			if(register.get(((TopicRegistration)reg).getNode().getId())!=null)count=register.get(((TopicRegistration)reg).getNode().getId());
     			count++;
-    			regByRegistrant.put(((TopicRegistration)reg).getNode().getId(),count);
+    			register.put(((TopicRegistration)reg).getNode().getId(),count);
     	    	//System.out.println("Table "+((TopicRegistration)reg).getNode().getId()+" "+count);
     		}
+    		regByRegistrant.put(t.getTopic(), register);
          }
         return regByRegistrant;
 
