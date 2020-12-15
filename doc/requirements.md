@@ -27,3 +27,10 @@ Under the assumption listed above, we target to achieve the following goals:
 * **G8** - the number of total registrations per topic is proportional to the popularity of the topic (the number of registrants).
 * **G9** - the protocol should be resistant to network dynamic (nodes joining leaving)
 * **G10** - the protocol should be resistant to various attacks lanched by malicious nodes (**A6**) @Onur: shall we extend it here?
+
+### Results
+
+## G6/G7
+<p float="left">
+  <img src="./imgs/g6.png" width="450" />
+</p>
