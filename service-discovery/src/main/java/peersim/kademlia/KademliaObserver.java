@@ -354,20 +354,16 @@ public class KademliaObserver implements Control {
         else {
             msgSentPerType.put(m.getType(), numMsg+1);
         }
-        if (m.getType() == Message.MSG_REGISTER || m.getType() == Message.MSG_TICKET_REQUEST) {
+        if (m.getType() == Message.MSG_REGISTER) {
             if(m.dest.is_evil) 
                 ticket_request_to_evil_nodes++;
             else
                 ticket_request_to_good_nodes++;
 
             Topic topic = null;
-            if(m.getType() == Message.MSG_REGISTER){
-                Ticket t = (Ticket) m.body;
-                topic = t.getTopic();
-            }
-            else 
-                topic = (Topic) m.body;
-                
+            Ticket t = (Ticket) m.body;
+            topic = t.getTopic();
+            
             Integer count = registerOverhead.get(topic.getTopic());
             if (count == null)
                 registerOverhead.put(topic.getTopic(), 1);
@@ -577,7 +573,7 @@ public class KademliaObserver implements Control {
             }
             // Put the topic hashes in the bottom of the file
             for (Topic t: regByTopic.keySet()) {
-                writer.write(t.getTopicID() + ",0\n");
+                writer.write(t.getTopicID() + "," + t.getTopic() + "\n");
             }
             writer.close();
         } catch (IOException e) {
@@ -947,10 +943,10 @@ public class KademliaObserver implements Control {
                 for (Topic t: topics.keySet()) {
                     int count = topics.get(t);
                     double util;
-                    if (total_occupancy_topic_table == KademliaCommonConfig.TOPIC_TABLE_CAP)
-                        util = 1.0;
-                    else
-                        util = ((double) count) / KademliaCommonConfig.ADS_PER_QUEUE;
+                    //if (total_occupancy_topic_table == KademliaCommonConfig.TOPIC_TABLE_CAP)
+                    //    util = 1.0;
+                    //else
+                    util = ((double) count) / KademliaCommonConfig.ADS_PER_QUEUE;
                     if (utilisations.get(t.getTopic()) != null) {
                         double total_util_so_far = utilisations.get(t.getTopic());
                         utilisations.put(t.getTopic(), total_util_so_far + util);
