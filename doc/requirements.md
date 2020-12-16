@@ -22,11 +22,10 @@ Under the assumption listed above, we target to achieve the following goals:
 * **G3** - the load (in terms of sent and received messages) should be equally distributed across all the nodes regardless of their ID and location in the network
 * **G4** - the registration operation should be efficient in terms of time (fast) for all the registrants
 * **G5** - the registration operation should be efficient in terms of overhead (low amount of sent/received messages) for all the registrants
-* **G6** - the lookup operation should be efficient in terms of time (fast) for all the query nodes
-* **G7** - the lookup operation should be efficient in terms of overhead (low amount of sent/received messages) for all the query nodes
-* **G8** - the number of total registrations per topic is proportional to the popularity of the topic (the number of registrants).
-* **G9** - the protocol should be resistant to network dynamic (nodes joining leaving)
-* **G10** - the protocol should be resistant to various attacks lanched by malicious nodes (**A6**) @Onur: shall we extend it here?
+* **G6** - the lookup operation should be efficient in terms of time (fast) and messages sent (hop count) for all the query nodes
+* **G7** - All node should be able to place registrations and be discovered independently of the topic popularity (the number of registrants).
+* **G8** - the protocol should be resistant to network dynamic (nodes joining leaving)
+* **G9** - the protocol should be resistant to various attacks lanched by malicious nodes (**A6**) @Onur: shall we extend it here?
 
 ### Results
 
