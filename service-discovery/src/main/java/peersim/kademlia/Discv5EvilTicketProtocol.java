@@ -109,12 +109,35 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
     protected void handleInitRegisterTopic(Message m, int myPid) {
         Topic t = (Topic) m.body;
         
-        logger.warning("In handleInitRegister of EVIL node");
+        logger.warning("In handleInitRegister of EVIL "+t.getTopic()+" "+t.getTopicID()+" "+Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_BUCKET_SIZE, KademliaCommonConfig.TICKET_BUCKET_SIZE));
         // Fill up the evilTopicTable only with other malicious nodes
         
     	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K)) {
-            super.handleInitRegisterTopic(m, myPid);
+    	 	//Topic t = (Topic) m.body;
+        	
+        	logger.warning("handleInitRegisterTopic "+t.getTopic()+" "+t.getTopicID()+" "+KademliaCommonConfig.TICKET_BUCKET_SIZE);
+
+
+        	//restore the IF statement
+        	KademliaObserver.addTopicRegistration(t, this.node.getId());
+
+            //TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
+            TicketTable rou;
+            if(KademliaCommonConfig.TICKET_BUCKET_SIZE==0)
+            	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+            else
+            	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,16,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+            rou.setNodeId(t.getTopicID());
+            ticketTables.put(t.getTopicID(),rou);
+            	
+            for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
+            	BigInteger[] neighbours = routingTable.getNeighbours(i);
+            	rou.addNeighbour(neighbours);
+            }
+            if(printSearchTable)rou.print();
             return;
+            //Register messages are automatically sent when adding Neighbours
+            
     	}
         
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
