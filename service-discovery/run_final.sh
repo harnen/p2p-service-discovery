@@ -41,6 +41,7 @@ function restore_def(){
 
 function run_sim(){
 	cp $IN_CONFIG $OUT_CONFIG
+    dos2unix $OUT_CONFIG
 	sed  -i "s/^SIZE .*$/SIZE $SIZE/g" $OUT_CONFIG 
 	sed  -i "s/^control.0traffic.maxtopicnum .*$/control.0traffic.maxtopicnum $TOPIC/g" $OUT_CONFIG
 	sed  -i "s/^control.0traffic.zipf .*$/control.0traffic.zipf $ZIPF/g"  $OUT_CONFIG
