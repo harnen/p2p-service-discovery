@@ -381,7 +381,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		for(BigInteger neighbour: neighbours) {
 			logger.info(Util.logDistance(neighbour, lop.topic.topicID) + ", ");
 		}
-		System.out.println();
+		//System.out.println();
 		
 		lop.elaborateResponse(neighbours);
 		lop.increaseReturned(m.src.getId());
@@ -417,8 +417,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		//logger.warning("Topic query reply "+ m.src.getId()+" "+lop.available_requests+" found "+found);
 
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.getTopic());		
-		int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
-		//int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
+		//int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
+		int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
 
 		if(!lop.finished && found >= required) {
 			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic + " after consulting " + lop.getUsedCount() + " nodes.");
@@ -442,7 +442,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 				KademliaObserver.reportOperation(lop);
 				//lop.visualize(); uncomment if you want to see visualization of the operation
 				if(!lop.finished) { 
-					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic + " after consulting " + lop.getUsedCount() + " nodes.");
 				} 
 				//System.out.println("Writing stats");
 				KademliaObserver.register_total.add(all);

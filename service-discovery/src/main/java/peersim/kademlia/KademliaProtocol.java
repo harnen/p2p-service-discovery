@@ -386,7 +386,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			if(m.getType() != Message.MSG_INIT_FIND && 
 				m.getType() != Message.MSG_INIT_TOPIC_LOOKUP &&
 				m.getType() != Message.MSG_INIT_REGISTER) {
-					if(KademliaCommonConfig.REPORT_MSG_ACTIVATED==1)KademliaObserver.reportMsg(m, false);
+					//if(KademliaCommonConfig.REPORT_MSG_ACTIVATED==1)
+                    KademliaObserver.reportMsg(m, false);
 					//;//KademliaObserver.registerMsgReceived(this.node.getId(), m);
 			}
 		}
