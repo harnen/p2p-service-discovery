@@ -30,12 +30,13 @@ function restore_def(){
 	SIZE=$DEF_SIZE
 	TOPIC=$DEF_TOPIC
 	ZIPF=$DEF_ZIPF
-	SPAM_OPT=$DEF_SPAM
 	BUCKET_SIZE=$DEF_BUCKET_SIZE
 	BUCKET_ORDER=$DEF_BUCKET_ORDER
 	TOPIC_LIMIT=$DEF_TOPIC_LIMIT
 	TICKET_TABLE_BUCKET_SIZE=$DEF_TICKET_TABLE_BUCKET_SIZE
 	SEARCH_TABLE_BUCKET_SIZE=$DEF_SEARCH_TABLE_BUCKET_SIZE
+	SPAM_OPT=$DEF_SPAM
+
 	rm -rf logs/*
 }
 
@@ -52,9 +53,9 @@ function run_sim(){
 	sed  -i "s/^protocol.3kademlia.TICKET_REMOVE_AFTER_REG .*$/protocol.3kademlia.TICKET_REMOVE_AFTER_REG $SPAM_OPT/g" $OUT_CONFIG
 	
 	./run.sh $OUT_CONFIG &> /dev/null
-	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}
-	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}
-	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}
+	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}_spam${SPAM_OPT}
+	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}_spam${SPAM_OPT}
+	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}_spam${SPAM_OPT}
 }
 
 function clean(){
@@ -64,26 +65,6 @@ function clean(){
 	mv *.png $1_results
 }
 
-
-
-restore_def
-for SIZE in $SIZES
-do
-	echo running size $SIZE
-	run_sim
-	grep '^SIZE' $OUT_CONFIG
-done
-clean size
-
-restore_def
-for TOPIC in $TOPICS
-do
-	echo running topic $TOPIC
-	run_sim
-	grep '^control.0traffic.maxtopicnum' $OUT_CONFIG
-done
-clean topic
-
 restore_def
 for ZIPF in $ZIPFS
 do
@@ -92,51 +73,3 @@ do
 	grep '^control.0traffic.zipf' $OUT_CONFIG
 done
 clean zipf
-
-restore_def
-for BUCKET_SIZE in $BUCKET_SIZES
-do
-	echo Running bucket size: $BUCKET_SIZE
-	run_sim
-	grep '^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE' $OUT_CONFIG
-done
-clean bucket
-
-
-restore_def
-for BUCKET_ORDER in $BUCKET_ORDERS
-do
-	echo Running bucket order: $BUCKET_ORDER
-	run_sim
-	grep '^protocol.3kademlia.LOOKUP_BUCKET_ORDER' $OUT_CONFIG
-done
-clean order
-
-
-restore_def
-for TOPIC_LIMIT in $TOPIC_LIMITS
-do
-	echo Running topic per queue limit: $TOPIC_LIMIT
-	run_sim
-	grep '^protocol.3kademlia.ADS_PER_QUEUE' $OUT_CONFIG
-done
-clean queue_size
-
-
-restore_def
-for TICKET_TABLE_BUCKET_SIZE in $TICKET_TABLE_BUCKET_SIZE
-do
-	echo TICKET_TABLE_BUCKET_SIZE: $TICKET_TABLE_BUCKET_SIZE
-	run_sim
-	grep '^protocol.3kademlia.TICKET_TABLE_BUCKET_SIZE' $OUT_CONFIG
-done
-clean ttbs
-
-restore_def
-for SEARCH_TABLE_BUCKET_SIZE in $SEARCH_TABLE_BUCKET_SIZES
-do
-	echo Running SEARCH_TABLE_BUCKET_SIZE: $TOPIC_LIMIT
-	run_sim
-	grep '^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE' $OUT_CONFIG
-done
-clean stbs
