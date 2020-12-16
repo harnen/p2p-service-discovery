@@ -78,15 +78,15 @@ public class TurbulenceSingleTopic extends Turbulence{
 		    String topic = new String("t"+zipf.sample());
 			node.setTopic(topic, newNode);
 
-		    Message initLookupMessage = generateTopicLookupMessage(topic);
+		    Message initLookupMessage = generateFindNodeMessage(new Topic(topic));
 			Message registerMessage = generateRegisterMessage(topic);
 		    Message lookupMessage = generateTopicLookupMessage(topic);
 		    if(registerMessage != null) {
 			    //int time = CommonState.r.nextInt(90000);
 			    System.out.println("Topic " + topic + " will be registered by "+node.getId());
 			    EDSimulator.add(0, initLookupMessage, newNode, kademliaid);
-			    EDSimulator.add(0, registerMessage, newNode, kademliaid);
-			    EDSimulator.add(1000, lookupMessage, newNode, kademliaid);
+			    EDSimulator.add(10000, registerMessage, newNode, kademliaid);
+			    EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, lookupMessage, newNode, kademliaid);
 
 		    }
 	    

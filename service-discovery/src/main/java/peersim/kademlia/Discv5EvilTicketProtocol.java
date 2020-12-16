@@ -74,6 +74,8 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             System.out.println("Attacker type Malicious Registrar");
         else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM))
             System.out.println("Attacker type Topic Spam");
+        else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K))
+            System.out.println("Attacker type K");
         else {
             System.out.println("Invalid attacker type");
             System.exit(1);
@@ -109,6 +111,12 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         
         logger.warning("In handleInitRegister of EVIL node");
         // Fill up the evilTopicTable only with other malicious nodes
+        
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K)) {
+            super.handleInitRegisterTopic(m, myPid);
+            return;
+    	}
+        
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
             first = false;
             logger.info("Filling up the topic table with malicious entries");
@@ -185,6 +193,11 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      *            the sender Pid
      */
     protected void handleTopicQuery(Message m, int myPid) {
+    	
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K)) {
+            super.handleTopicQuery(m, myPid);
+            return;
+    	}
         if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM))
             super.handleTopicQuery(m, myPid);
 
@@ -219,6 +232,10 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      */
     protected void handleTicketRequest(Message m, int myPid) {
         
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K)) {
+            super.handleTicketRequest(m, myPid);
+            return;
+    	}
         long curr_time = CommonState.getTime();
 		//System.out.println("Ticket request received from " + m.src.getId()+" in node "+this.node.getId());
         Topic topic = (Topic) m.body;
@@ -289,6 +306,11 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 	 *            the sender Pid
 	 */
 	protected void handleFind(Message m, int myPid, int dist) {
+		
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K)) {
+            super.handleFind(m, myPid,dist);
+            return;
+    	}
 		// get the ALPHA closest node to destNode
         this.evilRoutingTable.setNodeId(this.node.getId());
 		BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(dist);

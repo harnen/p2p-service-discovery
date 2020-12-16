@@ -324,6 +324,7 @@ def analyzeOperations(dirs):
     total_malicious_list = []
     total_discovered_list = []
 
+    i=0
     for log_dir in dirs:
 #        print(log_dir)
         df = pd.read_csv(log_dir + '/operations.csv')
@@ -344,12 +345,16 @@ def analyzeOperations(dirs):
             mean[key] = meantimes[key]
         for key in sorted(errtimes.keys()) :
             err[key] = errtimes[key]
-        ax2.bar(mean.keys(), mean.values(),yerr=err.values())
 
+        width=0.3
+        margin=width*i
+        ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+        i = i+1
         print(df['returned_hops'].mean())
 #        ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
         ax2.set_title("Avg Lookup Hop Count")
-
+        ax2.set_xticks(range(len(mean.keys())))
+        ax2.set_xticklabels(mean.keys())
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum())
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['discovered'].sum())
         total_malicious = df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum()

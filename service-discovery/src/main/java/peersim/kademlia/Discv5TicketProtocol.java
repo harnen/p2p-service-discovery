@@ -554,7 +554,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     protected void handleInitRegisterTopic(Message m, int myPid) {
     	Topic t = (Topic) m.body;
     	
-    	logger.warning("handleInitRegisterTopic "+t.getTopic()+" "+t.getTopicID());
+    	logger.warning("handleInitRegisterTopic "+t.getTopic()+" "+t.getTopicID()+" "+KademliaCommonConfig.TICKET_BUCKET_SIZE);
 
 
     	//restore the IF statement
