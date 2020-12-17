@@ -297,6 +297,7 @@ def analyzeRegistrantDistribution(dirs):
     #ax1.tick_params(bottom=False,
     #            labelbottom=False)
     topics = set()
+    topicIDs = {}
 
     colors = ['red', 'green', 'blue', 'orange']
     x = []
@@ -325,6 +326,9 @@ def analyzeRegistrantDistribution(dirs):
                         #continue
                         discovered = row['discovered_list'].split()
                     topic = row['topic']
+                    topicID = row['topicID']
+                    if(topic not in topicIDs):
+                        topicIDs[topic] = topicID
                     topics.add(topic)
                     for node in discovered:
                         if node not in stats:
@@ -348,7 +352,12 @@ def analyzeRegistrantDistribution(dirs):
                         y.append(topic_index + dir_num*0.3)
                         c.append(colors[dir_num])
                         s.append(stats[node][topic])
-    
+    #mark topic hashes
+    for topic in topicIDs:
+        topicID = int(topicIDs[topic])
+        topic_index = sorted(topics).index(topic)
+        ax1.scatter(topicID,topic_index, s=100,marker='|',color='black',linewidths=1)
+
     ax1.scatter(x, y, c=c, s=s)
     ax1.scatter(x_nondiscovered, y_nondiscovered, c=c_nondiscovered, s=s_nondiscovered, marker = 'x')
     legend_elements = []
