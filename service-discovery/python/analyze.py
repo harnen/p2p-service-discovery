@@ -294,8 +294,8 @@ def analyzeRegistrarDistribution(dirs):
 
 def analyzeRegistrantDistribution(dirs):
     fig, ax1 = plt.subplots()
-    #ax1.tick_params(bottom=False,
-    #            labelbottom=False)
+    ax1.tick_params(bottom=False,
+                labelbottom=False)
     topics = set()
     topicIDs = {}
 
@@ -323,9 +323,10 @@ def analyzeRegistrantDistribution(dirs):
                     stats[node] = {}
                 if topic not in stats[node]:
                     stats[node][topic] = 0
-
+        
         with open(log_dir + '/operations.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
+            max_size = 0
             for row in reader:
                 if row['type'] == 'LookupOperation' or row['type'] == 'LookupTicketOperation':
                     assert (row['topic'] != '')
@@ -341,6 +342,8 @@ def analyzeRegistrantDistribution(dirs):
                         if topic not in stats[node]:
                             stats[node][topic] = 0
                         stats[node][topic] += 1
+                        if(stats[node][topic] > max_size):
+                            max_size = stats[node][topic]
         
 
             for node in stats:
@@ -350,7 +353,7 @@ def analyzeRegistrantDistribution(dirs):
                         x_nondiscovered.append(int(node))
                         y_nondiscovered.append(topic_index + dir_num*0.3)
                         c_nondiscovered.append(colors[dir_num])
-                        s_nondiscovered.append(1000)
+                        s_nondiscovered.append(max_size*5)
                         
                     else:
                         x.append(int(node))
@@ -364,13 +367,20 @@ def analyzeRegistrantDistribution(dirs):
         ax1.scatter(topicID,topic_index, s=100,marker='|',color='black',linewidths=1)
 
     ax1.scatter(x, y, c=c, s=s)
+    ax1.set_yticks(np.arange(len(topics)))
+    ax1.set_yticklabels(sorted(topics))
     ax1.scatter(x_nondiscovered, y_nondiscovered, c=c_nondiscovered, s=s_nondiscovered, marker = 'x')
     legend_elements = []
     for log_dir in dirs:
         dir_num = dirs.index(log_dir)
         color = colors[dir_num]
         legend_elements.append(Line2D([0], [0], marker='o', color=color, label=log_dir,
-                          markerfacecolor=color, markersize=15))
+                          markerfacecolor=color, markersize=10))
+
+    legend_elements.append(Line2D([0], [0], marker='x', color='black', label='Non-discovered registrants',
+                          markerfacecolor='black', markersize=10))    
+    legend_elements.append(Line2D([0], [0], marker='|', color='black', label='Topic hash',
+                          markerfacecolor='black', markersize=10))
 #    print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Discovered Registrants")
@@ -1013,5 +1023,5 @@ analyzeRegistrantDistribution(sys.argv[1:])
 
 #analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
 #analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
-#plt.show()
+plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
