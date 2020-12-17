@@ -239,6 +239,8 @@ public class KademliaObserver implements Control {
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
                 result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID + "\n";
             } else if (op instanceof RegisterOperation) {
+            	System.out.println("register operation reported");
+            	System.exit(1);
                 result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  + "," + "," + ((RegisterOperation)op).topic.topic + "," + ((LookupOperation)op).topic.topicID + "\n";
             } else {
             	;//result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  + "," + "," + "\n";

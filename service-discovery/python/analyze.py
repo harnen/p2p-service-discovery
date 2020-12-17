@@ -314,6 +314,16 @@ def analyzeRegistrantDistribution(dirs):
         stats = {}
 #        print(log_dir)
         dir_num = dirs.index(log_dir)
+        with open(log_dir + '/registeredRegistrant.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                topic = row['topic']
+                node = row['nodeId']
+                if node not in stats:
+                    stats[node] = {}
+                if topic not in stats[node]:
+                    stats[node][topic] = 0
+
         with open(log_dir + '/operations.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
@@ -337,13 +347,14 @@ def analyzeRegistrantDistribution(dirs):
                             stats[node][topic] = 0
                         if row['type'] != 'RegisterOperation':
                             stats[node][topic] += 1
+        
 
             for node in stats:
                 for topic in stats[node]:
                     topic_index = sorted(topics).index(topic)
                     if(stats[node][topic] == 0):
                         x_nondiscovered.append(int(node))
-                        y_nondiscovered.append(topic_index + 0.15 + dir_num*0.3)
+                        y_nondiscovered.append(topic_index + dir_num*0.3)
                         c_nondiscovered.append(colors[dir_num])
                         s_nondiscovered.append(1000)
                         
