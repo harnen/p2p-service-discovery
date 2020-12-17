@@ -269,7 +269,7 @@ def analyzeRegistrarDistribution(dirs):
                 topic = row['topic']
                 topics.append(topic)
                 dir_nums.append(dir_num)
-                x.append(node)
+                x.append(int(node))
                 c.append(colors[dir_num])
 
     counter = 0
@@ -294,8 +294,8 @@ def analyzeRegistrarDistribution(dirs):
 
 def analyzeRegistrantDistribution(dirs):
     fig, ax1 = plt.subplots()
-    ax1.tick_params(bottom=False,
-                labelbottom=False)
+    #ax1.tick_params(bottom=False,
+    #            labelbottom=False)
     topics = set()
 
     colors = ['red', 'green', 'blue', 'orange']
@@ -334,22 +334,23 @@ def analyzeRegistrantDistribution(dirs):
                         if row['type'] != 'RegisterOperation':
                             stats[node][topic] += 1
 
-
             for node in stats:
                 for topic in stats[node]:
                     topic_index = sorted(topics).index(topic)
                     if(stats[node][topic] == 0):
-                        x_nondiscovered.append(node)
+                        x_nondiscovered.append(int(node))
                         y_nondiscovered.append(topic_index + 0.15 + dir_num*0.3)
                         c_nondiscovered.append(colors[dir_num])
                         s_nondiscovered.append(1000)
+                        
                     else:
-                        x.append(node)
+                        x.append(int(node))
                         y.append(topic_index + dir_num*0.3)
                         c.append(colors[dir_num])
                         s.append(stats[node][topic])
+    
     ax1.scatter(x, y, c=c, s=s)
-    scatter = ax1.scatter(x_nondiscovered, y_nondiscovered, c=c_nondiscovered, s=s_nondiscovered, marker = 'x')
+    ax1.scatter(x_nondiscovered, y_nondiscovered, c=c_nondiscovered, s=s_nondiscovered, marker = 'x')
     legend_elements = []
     for log_dir in dirs:
         dir_num = dirs.index(log_dir)
@@ -795,12 +796,12 @@ def analyzeRegistrationTime(dirs):
     fig2, ax2 = plt.subplots()
     fig3, ax3 = plt.subplots()
     fig4, ax4 = plt.subplots()
-#    fig5, ax5 = plt.subplots()
+    #fig5, ax5 = plt.subplots()
 
     i=0
     width=0.3
     for log_dir in dirs:
-#        print(log_dir)
+        #print(log_dir)
         df = pd.read_csv(log_dir + '/registeredTopicsTime.csv')
 
         if len(df['topic'].unique()) == 1:
@@ -808,7 +809,7 @@ def analyzeRegistrationTime(dirs):
             ax2.plot(sorted(df['min_registration_time'].values,reverse=True))
             ax3.plot(sorted(df['average_registration_time'].values,reverse=True))
             ax4.plot(sorted(df['min_discovery_time'].values,reverse=True))
-#            ax5.plot(sorted(df['average_discovery_time'].values,reverse=True))
+            #ax5.plot(sorted(df['average_discovery_time'].values,reverse=True))
 
         else:
             meantimes = {}
@@ -819,8 +820,8 @@ def analyzeRegistrationTime(dirs):
             erravgreg = {}
             meanmindisc = {}
             errmindisc = {}
-#            meanavgdisc = {}
-#            erravgdisc = {}
+            #meanavgdisc = {}
+            #erravgdisc = {}
             for topic in df['topic'].unique():
                 meantimes[topic] = df[df.topic == topic]['times_registered'].mean()/1000
                 errtimes[topic] = df[df.topic == topic]['times_registered'].std()/1000
@@ -986,12 +987,12 @@ print('Plots will be saved in ', OUTDIR);
 #analyzeRegistrations(sys.argv[1:])
 #analyzeRegistrations2(sys.argv[1:])
 #analyzeOperations(sys.argv[1:])
-#analyzeRegistrantDistribution(sys.argv[1:])
+analyzeRegistrantDistribution(sys.argv[1:])
 #analyzeRegistrarDistribution(sys.argv[1:])
 #analyzeEclipsedNodesOverTime(sys.argv[1:])
 #analyzeActiveRegistrations(sys.argv[1:])
 #analyzeActiveRegistrationsMalicious(sys.argv[1:])
-analyzeRegistrationTime(sys.argv[1:])
+#analyzeRegistrationTime(sys.argv[1:])
 #analyzeStorageUtilisation(sys.argv[1:])
 #analyzeWaitingTimes(sys.argv[1:])
 #analyzeNumberOfMessages(sys.argv[1:])
