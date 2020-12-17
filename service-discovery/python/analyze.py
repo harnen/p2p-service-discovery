@@ -327,14 +327,9 @@ def analyzeRegistrantDistribution(dirs):
         with open(log_dir + '/operations.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                if row['type'] == 'LookupOperation' or row['type'] == 'LookupTicketOperation' or row['type'] == 'RegisterOperation':
+                if row['type'] == 'LookupOperation' or row['type'] == 'LookupTicketOperation':
                     assert (row['topic'] != '')
-                    if(row['type'] == 'RegisterOperation'):
-                        discovered = []
-                        discovered.append(row['src'])
-                    else:
-                        #continue
-                        discovered = row['discovered_list'].split()
+                    discovered = row['discovered_list'].split()
                     topic = row['topic']
                     topicID = row['topicID']
                     if(topic not in topicIDs):
@@ -345,8 +340,7 @@ def analyzeRegistrantDistribution(dirs):
                             stats[node] = {}
                         if topic not in stats[node]:
                             stats[node][topic] = 0
-                        if row['type'] != 'RegisterOperation':
-                            stats[node][topic] += 1
+                        stats[node][topic] += 1
         
 
             for node in stats:
