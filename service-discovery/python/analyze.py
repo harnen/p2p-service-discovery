@@ -299,7 +299,7 @@ def analyzeRegistrantDistribution(dirs):
     topics = set()
     topicIDs = {}
 
-    colors = ['red', 'green', 'blue', 'orange']
+    colors = ['sandybrown', 'green', 'blue', 'orange', 'darkviolet']
     x = []
     y = []
     s = []
@@ -309,16 +309,24 @@ def analyzeRegistrantDistribution(dirs):
     y_nondiscovered = []
     s_nondiscovered = []
     c_nondiscovered = []
+    registrants_per_topic = {}
+    discovered_per_topic = {}
 
+    global_max = 0
     for log_dir in dirs:
         stats = {}
 #        print(log_dir)
         dir_num = dirs.index(log_dir)
+        print("dir_num", dir_num)
         with open(log_dir + '/registeredRegistrant.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 topic = row['topic']
                 node = row['nodeId']
+                if topic not in registrants_per_topic:
+                    registrants_per_topic[topic] = set()
+                registrants_per_topic[topic].add(node)
+
                 if node not in stats:
                     stats[node] = {}
                 if topic not in stats[node]:
@@ -344,32 +352,40 @@ def analyzeRegistrantDistribution(dirs):
                         stats[node][topic] += 1
                         if(stats[node][topic] > max_size):
                             max_size = stats[node][topic]
+                        if(stats[node][topic] > global_max):
+                            global_max = stats[node][topic]
         
-
             for node in stats:
                 for topic in stats[node]:
                     topic_index = sorted(topics).index(topic)
                     if(stats[node][topic] == 0):
                         x_nondiscovered.append(int(node))
                         y_nondiscovered.append(topic_index + dir_num*0.3)
-                        c_nondiscovered.append(colors[dir_num])
-                        s_nondiscovered.append(max_size*5)
-                        
+                        c_nondiscovered.append('red')
+                        s_nondiscovered.append(max_size*3)
                     else:
                         x.append(int(node))
                         y.append(topic_index + dir_num*0.3)
-                        c.append(colors[dir_num])
+                        c.append(colors[topic_index])
                         s.append(stats[node][topic])
+                        if topic not in discovered_per_topic:
+                            discovered_per_topic[topic] = set()
+                        discovered_per_topic[topic].add(node)
     #mark topic hashes
     for topic in topicIDs:
         topicID = int(topicIDs[topic])
         topic_index = sorted(topics).index(topic)
-        ax1.scatter(topicID,topic_index, s=100,marker='|',color='black',linewidths=1)
+        ax1.scatter(topicID,topic_index, s=global_max*2, marker='X',color='black',linewidths=1)
+        all = registrants_per_topic[topic].union(discovered_per_topic[topic])
+        #print("Topic ", topic, "has", len(registrants_per_topic[topic]), "reported registrants.")
+        print("Topic ", topic, "has", len(all), "all registrants.")
+        #print("Topic ", topic, "has", len(discovered_per_topic[topic]), "discovered registrants.")
+        print("Topic ", topic, "has", len(discovered_per_topic[topic])/len(all), "ratio discovered/all.")
 
     ax1.scatter(x, y, c=c, s=s)
     ax1.set_yticks(np.arange(len(topics)))
     ax1.set_yticklabels(sorted(topics))
-    ax1.scatter(x_nondiscovered, y_nondiscovered, c=c_nondiscovered, s=s_nondiscovered, marker = 'x')
+    #ax1.scatter(x_nondiscovered, y_nondiscovered, c=c_nondiscovered, s=s_nondiscovered, marker = '|')
     legend_elements = []
     for log_dir in dirs:
         dir_num = dirs.index(log_dir)
@@ -377,9 +393,9 @@ def analyzeRegistrantDistribution(dirs):
         legend_elements.append(Line2D([0], [0], marker='o', color=color, label=log_dir,
                           markerfacecolor=color, markersize=10))
 
-    legend_elements.append(Line2D([0], [0], marker='x', color='black', label='Non-discovered registrants',
+    legend_elements.append(Line2D([0], [0], marker='|', color='red', label='Non-discovered registrants',
                           markerfacecolor='black', markersize=10))    
-    legend_elements.append(Line2D([0], [0], marker='|', color='black', label='Topic hash',
+    legend_elements.append(Line2D([0], [0], marker='X', color='black', label='Topic hash',
                           markerfacecolor='black', markersize=10))
 #    print(legend_elements)
     ax1.legend(handles=legend_elements)
