@@ -824,6 +824,7 @@ def analyzeRegistrationTime(dirs):
 
     i=0
     width=0.3
+    labels = ['NoSpam','Spam']
     for log_dir in dirs:
         #print(log_dir)
         df = pd.read_csv(log_dir + '/registeredTopicsTime.csv')
@@ -861,27 +862,27 @@ def analyzeRegistrationTime(dirs):
             mean={}
             err={}
             margin=width*i
-            i=i+1
             for key in sorted(meantimes.keys()) :
                 mean[key] = meantimes[key]
             for key in sorted(errtimes.keys()) :
                 err[key] = errtimes[key]
-            ax1.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+            ax1.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
             for key in sorted(meanminreg.keys()) :
                 mean[key] = meanminreg[key]
             for key in sorted(errminreg.keys()) :
                 err[key] = errminreg[key]
-            ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+            ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
             for key in sorted(meanavgreg.keys()) :
                 mean[key] = meanavgreg[key]
             for key in sorted(erravgreg.keys()) :
                 err[key] = erravgreg[key]
-            ax3.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+            ax3.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
             for key in sorted(meanmindisc.keys()) :
                 mean[key] = meanmindisc[key]
             for key in sorted(errmindisc.keys()) :
                 err[key] = errmindisc[key]
-            ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+            ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
+            i=i+1
 #            ax5.bar(df['topic'].unique(), meanavgdisc.values(),yerr=erravgdisc.values())
             ax1.legend()
             ax2.legend()
@@ -1021,12 +1022,12 @@ print('Plots will be saved in ', OUTDIR);
 #analyzeEclipsedNodesOverTime(sys.argv[1:])
 #analyzeActiveRegistrations(sys.argv[1:])
 #analyzeActiveRegistrationsMalicious(sys.argv[1:])
-#analyzeRegistrationTime(sys.argv[1:])
+analyzeRegistrationTime(sys.argv[1:])
 #analyzeStorageUtilisation(sys.argv[1:])
 #analyzeWaitingTimes(sys.argv[1:])
 #analyzeNumberOfMessages(sys.argv[1:])
 
 #analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
-analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
-plt.show()
+#analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
+#plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
