@@ -381,6 +381,7 @@ def analyzeRegistrantDistribution(dirs):
         print("Topic ", topic, "has", len(all), "all registrants.")
         #print("Topic ", topic, "has", len(discovered_per_topic[topic]), "discovered registrants.")
         print("Topic ", topic, "has", len(discovered_per_topic[topic])/len(all), "ratio discovered/all.")
+        ax1.annotate(str("%.2f" % (100*len(discovered_per_topic[topic])/len(all))) + "% registrants discovered", xy=(1000, topic_index+0.1), xytext=(10001, topic_index+0.11), fontsize=12)
 
     ax1.scatter(x, y, c=c, s=s)
     ax1.set_yticks(np.arange(len(topics)))
@@ -390,7 +391,7 @@ def analyzeRegistrantDistribution(dirs):
     for log_dir in dirs:
         dir_num = dirs.index(log_dir)
         color = colors[dir_num]
-        legend_elements.append(Line2D([0], [0], marker='o', color=color, label=log_dir,
+        legend_elements.append(Line2D([0], [0], marker='o', color=color, label="Discovered registrants",
                           markerfacecolor=color, markersize=10))
 
     legend_elements.append(Line2D([0], [0], marker='|', color='red', label='Non-discovered registrants',
@@ -399,7 +400,7 @@ def analyzeRegistrantDistribution(dirs):
                           markerfacecolor='black', markersize=10))
 #    print(legend_elements)
     ax1.legend(handles=legend_elements)
-    ax1.set_title("Discovered Registrants")
+    ax1.set_title("Discovered Registrants ID Distribution - NoSpam/Random")
     fig.savefig(OUTDIR + '/registrant_distribution.png')
 
 def analyzeOperations(dirs):
