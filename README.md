@@ -116,7 +116,7 @@ We should decide how to implement it.
 
 [Security report for final protocol](doc/ticket_security_report/report.md)-->
 
-Link to the pdf
+[Evaluation results](doc/FinalReport.pdf)
 
 ## Resources 
 
