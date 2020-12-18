@@ -398,6 +398,7 @@ def analyzeOperations(dirs):
     total_discovered_list = []
 
     i=0
+    labels=['ClosestDiscance','RandomBucket','AllBuckets']
     for log_dir in dirs:
 #        print(log_dir)
         df = pd.read_csv(log_dir + '/operations.csv')
@@ -421,11 +422,11 @@ def analyzeOperations(dirs):
 
 #        print(np.arange(len(mean.keys())))
 #        print(mean.values())
-        ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+        ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
         i = i+1
 #        print(df['returned_hops'].mean())
 #        ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
-        ax2.set_title("Avg Lookup Hop Count")
+        ax2.set_title("Avg Lookup Hop Count Spam")
         ax2.set_xticks(range(len(mean.keys())))
         ax2.set_xticklabels(mean.keys())
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum())
@@ -1016,13 +1017,13 @@ print('Plots will be saved in ', OUTDIR);
 #analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
 #analyzeRegistrations2(sys.argv[1:])
-#analyzeOperations(sys.argv[1:])
+analyzeOperations(sys.argv[1:])
 #analyzeRegistrantDistribution(sys.argv[1:])
 #analyzeRegistrarDistribution(sys.argv[1:])
 #analyzeEclipsedNodesOverTime(sys.argv[1:])
 #analyzeActiveRegistrations(sys.argv[1:])
 #analyzeActiveRegistrationsMalicious(sys.argv[1:])
-analyzeRegistrationTime(sys.argv[1:])
+#analyzeRegistrationTime(sys.argv[1:])
 #analyzeStorageUtilisation(sys.argv[1:])
 #analyzeWaitingTimes(sys.argv[1:])
 #analyzeNumberOfMessages(sys.argv[1:])
