@@ -112,7 +112,7 @@ Also, when performing topic searchs (sending lookups for specific topics), close
 There is also a refresh bucket process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. 
 The refresh time used is `refresh_time=10 seconds`.
 When empty slots during the refresh process, they can be filled from the local DHT table list, optionally, perform lookups to the topic hash in case is empty.
-Also, all nodes in the bucket are pinged to check they are still alived. In case they are not, tickets are removed from the table and replaced with new nodes.
+Also, all nodes in the bucket are pinged to check they are still alive. In case they are not, tickets are removed from the table and replaced with new nodes.
 
 ## Topic Search
 
@@ -138,12 +138,14 @@ For search, estimation is less necessary and we should try to see how efficient 
 #### Search strategies
 
 For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. 
-In case not enough `TOPIC_PEER_LIMIT` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `TOPIC_PEER_LIMIT` or `MAX_LOOKUP_HOPS`.
+In case not enough `LOOKUP_LIMIT=50` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `LOOKUP_LIMIT` or `MAX_LOOKUP_HOPS=50`.
 We implemented and evaluated different search strategies in order to choose which nodes from which buckets ask first when performing a lookup.
 
-* Minimum bucket: A random node is picked from the non-empty bucket with the minimum distance to the topic hash.
+* Minimum bucket: A random node is picked from the first non-empty bucket starting with the minimum distance to the topic hash bucket.
 
-* Random: A random node is picked from a random bucket. This can be performed in two ways: 1) a random node is picked from all nodes in the table or 2) a random node is picked from a random bucket each time, till all buckets have been used.
+* Random: A random node is picked from a random bucket every time.
+
+* All buckets: A random node is picked from a bucket following a round-robin approach. It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list.
 
 #### Bucket refresh
 
@@ -155,7 +157,8 @@ In addition to that, every time a node sends a ticket request and when  performi
 
 There is also a refresh process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. 
 The refresh time used is `refresh_time=10 seconds`.
-When empty slots during the refresh process, they can be filled from the replacement list and, optionally, perform lookups to the topic hash in case is empty.
+When empty slots during the refresh process, optionally, lookups are performed to the topic hash in case is empty.
+Also, the last node in the bucket is pinged to check it is still alive. In case it is not, it is removed from the table.
 
 <!--*The search table is initialized and refreshed by performing lookups for the topic hash on using the main node table.*-->
 
