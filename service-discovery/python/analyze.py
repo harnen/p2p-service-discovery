@@ -323,7 +323,7 @@ def analyzeRegistrantDistribution(dirs):
                     stats[node] = {}
                 if topic not in stats[node]:
                     stats[node][topic] = 0
-        
+
         with open(log_dir + '/operations.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             max_size = 0
@@ -344,7 +344,7 @@ def analyzeRegistrantDistribution(dirs):
                         stats[node][topic] += 1
                         if(stats[node][topic] > max_size):
                             max_size = stats[node][topic]
-        
+
 
             for node in stats:
                 for topic in stats[node]:
@@ -354,7 +354,7 @@ def analyzeRegistrantDistribution(dirs):
                         y_nondiscovered.append(topic_index + dir_num*0.3)
                         c_nondiscovered.append(colors[dir_num])
                         s_nondiscovered.append(max_size*5)
-                        
+
                     else:
                         x.append(int(node))
                         y.append(topic_index + dir_num*0.3)
@@ -378,7 +378,7 @@ def analyzeRegistrantDistribution(dirs):
                           markerfacecolor=color, markersize=10))
 
     legend_elements.append(Line2D([0], [0], marker='x', color='black', label='Non-discovered registrants',
-                          markerfacecolor='black', markersize=10))    
+                          markerfacecolor='black', markersize=10))
     legend_elements.append(Line2D([0], [0], marker='|', color='black', label='Topic hash',
                           markerfacecolor='black', markersize=10))
 #    print(legend_elements)
@@ -923,6 +923,9 @@ def analyzeRegistrationTime(dirs):
 
 def analyzeMessageReceivedByNodes(dirs):
 
+    fig, ax = plt.subplots()
+    i=0
+    labels=['NoSpam','Spam']
     for log_dir in dirs:
         me = extractAlphanumeric(log_dir)
         x_vals = []
@@ -936,22 +939,23 @@ def analyzeMessageReceivedByNodes(dirs):
                 if 't' in row['numMsg']:
                     topics[row['Node']] = row['numMsg']
                 else:
-                    y_vals.append(int(row['numMsg']))
+                    y_vals.append(int(row['numMsg'])/36000)
                     x_vals.append(row['Node'])
 
             sorted_y_vals = sorted(y_vals)
-            fig, ax = plt.subplots()
-            ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=logdirname, linestyle=":")
+            ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=labels[i])
+            i=i+1
             #for topic in topics:
             #    plt.axvline(x=topic, color='b', label=topics[topic])
-            ax.legend()
-            ax.set_xticks([])
-            #ax.set_yticks(ax.get_yticks()[::100])
-            ax.set_xticklabels([])
-            ax.set_ylabel('Number of received messages')
-            ax.set_xlabel('Nodes')
+    ax.legend()
+    ax.set_xticks([])
+    #ax.set_yticks(ax.get_yticks()[::100])
+    ax.set_xticklabels([])
+    ax.set_ylabel('Number of received messages/sec')
+    ax.set_xlabel('Nodes')
 
-            ax.set_title('Message received by node')
+    ax.set_title('Message received by node')
+
     plt.savefig(OUTDIR + '/messages_received')
 
 def analyzeRegistrationOverhead(dirs):
@@ -962,6 +966,7 @@ def analyzeRegistrationOverhead(dirs):
     ncol = 0
     numOfTopics = 0
     topics = []
+    labels=['NoSpam','Spam']
     for log_dir in dirs:
         logdirname = extractAlphanumeric(log_dir)
 #        print(logdirname)
@@ -985,7 +990,7 @@ def analyzeRegistrationOverhead(dirs):
         #ax.legend()
         margin=width*i
         print(np.arange(len(topics)))
-        ax.bar(np.arange(len(topics))+margin, y_values, width, label=logdirname)
+        ax.bar(np.arange(len(topics))+margin, y_values, width, label=labels[i])
         i = i + 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
@@ -1011,7 +1016,7 @@ print('Plots will be saved in ', OUTDIR);
 #analyzeRegistrations(sys.argv[1:])
 #analyzeRegistrations2(sys.argv[1:])
 #analyzeOperations(sys.argv[1:])
-analyzeRegistrantDistribution(sys.argv[1:])
+#analyzeRegistrantDistribution(sys.argv[1:])
 #analyzeRegistrarDistribution(sys.argv[1:])
 #analyzeEclipsedNodesOverTime(sys.argv[1:])
 #analyzeActiveRegistrations(sys.argv[1:])
@@ -1022,6 +1027,6 @@ analyzeRegistrantDistribution(sys.argv[1:])
 #analyzeNumberOfMessages(sys.argv[1:])
 
 #analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
-#analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
+analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
 plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
