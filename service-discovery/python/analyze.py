@@ -331,7 +331,7 @@ def analyzeRegistrantDistribution(dirs):
                     stats[node] = {}
                 if topic not in stats[node]:
                     stats[node][topic] = 0
-        
+
         with open(log_dir + '/operations.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             max_size = 0
@@ -415,6 +415,7 @@ def analyzeOperations(dirs):
     total_discovered_list = []
 
     i=0
+    labels=['ClosestDiscance','RandomBucket','AllBuckets']
     for log_dir in dirs:
 #        print(log_dir)
         df = pd.read_csv(log_dir + '/operations.csv')
@@ -438,11 +439,11 @@ def analyzeOperations(dirs):
 
 #        print(np.arange(len(mean.keys())))
 #        print(mean.values())
-        ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+        ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
         i = i+1
 #        print(df['returned_hops'].mean())
 #        ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
-        ax2.set_title("Avg Lookup Hop Count")
+        ax2.set_title("Avg Lookup Hop Count Spam")
         ax2.set_xticks(range(len(mean.keys())))
         ax2.set_xticklabels(mean.keys())
         print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum())
@@ -841,6 +842,7 @@ def analyzeRegistrationTime(dirs):
 
     i=0
     width=0.3
+    labels = ['NoSpam','Spam']
     for log_dir in dirs:
         #print(log_dir)
         df = pd.read_csv(log_dir + '/registeredTopicsTime.csv')
@@ -878,27 +880,27 @@ def analyzeRegistrationTime(dirs):
             mean={}
             err={}
             margin=width*i
-            i=i+1
             for key in sorted(meantimes.keys()) :
                 mean[key] = meantimes[key]
             for key in sorted(errtimes.keys()) :
                 err[key] = errtimes[key]
-            ax1.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+            ax1.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
             for key in sorted(meanminreg.keys()) :
                 mean[key] = meanminreg[key]
             for key in sorted(errminreg.keys()) :
                 err[key] = errminreg[key]
-            ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+            ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
             for key in sorted(meanavgreg.keys()) :
                 mean[key] = meanavgreg[key]
             for key in sorted(erravgreg.keys()) :
                 err[key] = erravgreg[key]
-            ax3.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+            ax3.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
             for key in sorted(meanmindisc.keys()) :
                 mean[key] = meanmindisc[key]
             for key in sorted(errmindisc.keys()) :
                 err[key] = errmindisc[key]
-            ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+            ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
+            i=i+1
 #            ax5.bar(df['topic'].unique(), meanavgdisc.values(),yerr=erravgdisc.values())
             ax1.legend()
             ax2.legend()
@@ -940,6 +942,9 @@ def analyzeRegistrationTime(dirs):
 
 def analyzeMessageReceivedByNodes(dirs):
 
+    fig, ax = plt.subplots()
+    i=0
+    labels=['NoSpam','Spam']
     for log_dir in dirs:
         me = extractAlphanumeric(log_dir)
         x_vals = []
@@ -953,22 +958,23 @@ def analyzeMessageReceivedByNodes(dirs):
                 if 't' in row['numMsg']:
                     topics[row['Node']] = row['numMsg']
                 else:
-                    y_vals.append(int(row['numMsg']))
+                    y_vals.append(int(row['numMsg'])/36000)
                     x_vals.append(row['Node'])
 
             sorted_y_vals = sorted(y_vals)
-            fig, ax = plt.subplots()
-            ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=logdirname, linestyle=":")
+            ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=labels[i])
+            i=i+1
             #for topic in topics:
             #    plt.axvline(x=topic, color='b', label=topics[topic])
-            ax.legend()
-            ax.set_xticks([])
-            #ax.set_yticks(ax.get_yticks()[::100])
-            ax.set_xticklabels([])
-            ax.set_ylabel('Number of received messages')
-            ax.set_xlabel('Nodes')
+    ax.legend()
+    ax.set_xticks([])
+    #ax.set_yticks(ax.get_yticks()[::100])
+    ax.set_xticklabels([])
+    ax.set_ylabel('Number of received messages/sec')
+    ax.set_xlabel('Nodes')
 
-            ax.set_title('Message received by node')
+    ax.set_title('Message received by node')
+
     plt.savefig(OUTDIR + '/messages_received')
 
 def analyzeRegistrationOverhead(dirs):
@@ -979,6 +985,7 @@ def analyzeRegistrationOverhead(dirs):
     ncol = 0
     numOfTopics = 0
     topics = []
+    labels=['NoSpam','Spam']
     for log_dir in dirs:
         logdirname = extractAlphanumeric(log_dir)
 #        print(logdirname)
@@ -1002,7 +1009,7 @@ def analyzeRegistrationOverhead(dirs):
         #ax.legend()
         margin=width*i
         print(np.arange(len(topics)))
-        ax.bar(np.arange(len(topics))+margin, y_values, width, label=logdirname)
+        ax.bar(np.arange(len(topics))+margin, y_values, width, label=labels[i])
         i = i + 1
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
@@ -1027,8 +1034,8 @@ print('Plots will be saved in ', OUTDIR);
 #analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
 #analyzeRegistrations2(sys.argv[1:])
-#analyzeOperations(sys.argv[1:])
-analyzeRegistrantDistribution(sys.argv[1:])
+analyzeOperations(sys.argv[1:])
+#analyzeRegistrantDistribution(sys.argv[1:])
 #analyzeRegistrarDistribution(sys.argv[1:])
 #analyzeEclipsedNodesOverTime(sys.argv[1:])
 #analyzeActiveRegistrations(sys.argv[1:])
@@ -1040,5 +1047,5 @@ analyzeRegistrantDistribution(sys.argv[1:])
 
 #analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
 #analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
-plt.show()
+#plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
