@@ -96,21 +96,23 @@ In this project we evaluated two different approaches to remove tickets from tic
 * Removing the ticket after the registration lifetime expired: In this case we remove a ticket from the table, not after this registration has taken place, but after the registration has expired. This way we control the number of active registration, bounded to the number of buckets * bucket size.
 * Removing the ticket once the registration is successful: This approach removes the ticket as soon as the registration has complete. This way the number of ongoing registrations is much bigger and only depends on the time required to place a registration, that will cause the bucket space keeps occupied and no other registrations can take place meanwhile. This approach implies more registrations and thereofore more overhead, but a better distribution of registration placed, especially for non popular topics and node with identifiers distant from topic id.
 
+Every node removed from the table is automatically replaced by another node from the local routing table (Kademlia DHT Table) with the same distance to the topic hash id.
 
 
 #### Bucket refresh
 
 'Ticket table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
 Ideally, all k-buckets should be constantly full, meaning that the node has active registrations in 'advertising medium' in all distances to the topic hash.
-Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash my create and additional overhead that can be too expensive and create too much traffic in the network.
+Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash may create and additional overhead that can be too expensive and create too much traffic in the network.
 To avoid that, initially, the 'ticket table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash'.
 In addition to that, every time a node sends a ticket request, the 'advertising medium' replies with the closest nodes to 'the topic hash' that it knows.
 This helps filling up k-buckets without sending additional lookups.
 Also, when performing topic searchs (sending lookups for specific topics), closest nodes to 'the topic hash' are attached in the response.
 
-There is also a refresh process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. 
+There is also a refresh bucket process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. 
 The refresh time used is `refresh_time=10 seconds`.
-When empty slots during the refresh process, they can be filled from the replacement list and, optionally, perform lookups to the topic hash in case is empty.
+When empty slots during the refresh process, they can be filled from the local DHT table list, optionally, perform lookups to the topic hash in case is empty.
+Also, all nodes in the bucket are pinged to check they are still alived. In case they are not, tickets are removed from the table and replaced with new nodes.
 
 ## Topic Search
 
