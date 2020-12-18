@@ -110,11 +110,13 @@ We should decide how to implement it.
 
 ## Simulation results
 
-[Ticket vs No Ticket protocol comparison](doc/report/report.md)
+<!--[Ticket vs No Ticket protocol comparison](doc/report/report.md)
 
 [Security report comparing two discovery protocols](doc/security_report/report.md)
 
-[Security report for final protocol](doc/ticket_security_report/report.md)
+[Security report for final protocol](doc/ticket_security_report/report.md)-->
+
+Link to the pdf
 
 ## Resources 
 
