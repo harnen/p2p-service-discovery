@@ -6,7 +6,7 @@ Using FINDNODE queries with appropriately chosen targets, the entire DHT can be 
 When building a distributed application, it is often desirable to restrict the search to participants which provide a certain service. 
 A simple solution to this problem would be to simply split up the network and require participation in many smaller application-specific networks. 
 However, such networks are hard to bootstrap and also more vulnerable to attacks which could isolate nodes.
-To this end, in Discv5 Topics are introduced. This way a single network can support multiple services advertisement differentiated by a Topic index.
+To this end, in Discv5 Topics are introduced. Topics can be considered as identifiers for a specific service. This way a single network can support multiple services advertisement at the same time differentiated by a Topic index. Any user of the network can be used to participate in the service discovery, even if it does not support the service, making it more resilient and efficient for non popular topics, compared with having independent service discovery networks for each topic.
 
 The topic advertisement subsystem indexes participants by their provided services. 
 A node's provided services are identified by arbitrary strings called 'topics'. 
@@ -89,10 +89,14 @@ The above description explains the storage and placement of ads on a single medi
 The advertiser keeps a 'ticket table' per topic advertised to track its ongoing placement attempts.
 This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. 
 It is sufficient to use a small value of k such as `k=3`. 
-In order to avoid having empty buckets, each k-bucket has a replacement list (backup nodes stored in a second list that are used when an empty solt in the k-bucket) with `replacements_size=10`
+For this table no replacement list is used, different from the Kademlia routing table.
 For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
 
-Nodes/tickets are removed from their ticket table bucket when the ad is placed successfully or the medium goes offline. The removed entry is replaced when the ticket table is refreshed by a lookup.
+In this project we evaluated two different approaches to remove tickets from ticket table:
+* Removing the ticket after the registration lifetime expired: In this case we remove a ticket from the table, not after this registration has taken place, but after the registration has expired. This way we control the number of active registration, bounded to the number of buckets * bucket size.
+* Removing the ticket once the registration is successful: This approach removes the ticket as soon as the registration has complete. This way the number of ongoing registrations is much bigger and only depends on the time required to place a registration, that will cause the bucket space keeps occupied and no other registrations can take place meanwhile. This approach implies more registrations and thereofore more overhead, but a better distribution of registration placed, especially for non popular topics and node with identifiers distant from topic id.
+
+
 
 #### Bucket refresh
 
