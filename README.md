@@ -1,4 +1,4 @@
-# Research project on Service Discovery in Ethereum 2.0 (Discv5)
+# Research project on Service Discovery in Ethereum 2.0 (continuation of [this project](https://github.com/harnen/p2p-service-discovery))
 
 ## Overview
  
