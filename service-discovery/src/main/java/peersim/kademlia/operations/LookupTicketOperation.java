@@ -29,7 +29,6 @@ public class LookupTicketOperation extends LookupOperation {
 		ArrayList<BigInteger> neighbours = new ArrayList<BigInteger>();
 		int tries=0;
 		while((neighbours.size() == 0)&&(tries<sTable.getnBuckets())) {
-			//int distance = ThreadLocalRandom.current().nextInt(KademliaCommonConfig.BITS-sTable.getnBuckets(),KademliaCommonConfig.BITS);
 			int distance = KademliaCommonConfig.BITS - CommonState.r.nextInt(sTable.getnBuckets());
 			tries++;
 			Collections.addAll(neighbours, sTable.getNeighbours(distance));
@@ -64,7 +63,6 @@ public class LookupTicketOperation extends LookupOperation {
 		BigInteger res = null;
 		ArrayList<BigInteger> neighbours = null;
 		
-		//System.out.println("LOOKUP_BUCKET_ORDER "+KademliaCommonConfig.LOOKUP_BUCKET_ORDER);
 		switch(KademliaCommonConfig.LOOKUP_BUCKET_ORDER) {
 			case KademliaCommonConfig.RANDOM_BUCKET_ORDER:
 				neighbours = getRandomBucketNeighbours();
@@ -78,7 +76,6 @@ public class LookupTicketOperation extends LookupOperation {
 		}
 		
 		if(neighbours.size() != 0) {
-			//res = neighbours.get(ThreadLocalRandom.current().nextInt(neighbours.size()));
 			res = neighbours.get(CommonState.r.nextInt(neighbours.size()));
 			
 			//We should never get the same neighbour twice
@@ -86,10 +83,7 @@ public class LookupTicketOperation extends LookupOperation {
 		}
 		
 		if(res!=null) {
-			//System.out.println("Searching to node "+res);
 			sTable.removeNeighbour(res);
-			//returned.add(res);
-			//increaseUsed(res);
 			available_requests--;
 		}else {
 			System.out.println("Returning null");

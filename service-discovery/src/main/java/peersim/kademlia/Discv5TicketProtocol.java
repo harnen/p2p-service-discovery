@@ -141,8 +141,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         // TODO: remove the assert later
 	    //assert(src == this.node);
 
-		//System.out.println(this.kademliaNode.getId() + " (" + m + "/" + m.id + ") -> " + destId);
-
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
         long network_delay = transport.getLatency(src, dest);
         EDSimulator.add(network_delay+delay, m, dest, destpid); 
@@ -201,15 +199,10 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         
         for (Ticket ticket : tickets) {
             Message m = ticket.getMsg();
-            /*if (ticket.isRegistrationComplete()) {
-                //handleFind(m, myPid, Util.logDistance(ticket.getTopic().getTopicID(), this.node.getId()));
-            }
-            else {*/
-                Message response  = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
-                response.ackId = m.id;
-                response.operationId = m.operationId;
-                sendMessage(response, ticket.getSrc().getId(), myPid);
-           // }
+            Message response  = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
+            response.ackId = m.id;
+            response.operationId = m.operationId;
+            sendMessage(response, ticket.getSrc().getId(), myPid);
         }
     }
     
@@ -222,7 +215,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		Ticket ticket = (Ticket) m.body;
         long curr_time = CommonState.getTime();
         boolean add_event = topicTable.register_ticket(ticket, m, curr_time);
-    	//System.out.println("Register ticket at "+this.node.getId()+" for topic "+ticket.getTopic().getTopic());
 
         // Setup a timeout event for the registration decision
         if (add_event) {
@@ -246,15 +238,12 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 		
-		//System.out.println("Topic query received at node "+this.node.getId()+" "+registrations.length+" "+neighbours.length);
-
 		Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
 		Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
 		response.operationId = m.operationId;
 		response.src = this.node;
 		response.ackId = m.id; 
 		logger.info(" responds with TOPIC_QUERY_REPLY");
-		//System.out.println(" responds with TOPIC_QUERY_REPLY");
 		sendMessage(response, m.src.getId(), myPid);
     
     }
@@ -302,27 +291,19 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         }
         if(KademliaCommonConfig.TICKET_NEIGHBOURS==1) {  
         	
-			//System.out.println("Ticket new node received  "+body.neighbours.length+" nodes");
-
         	for(BigInteger node: body.neighbours)
         		routingTable.addNeighbour(node);
         	
         	TicketTable ttable = ticketTables.get(t.getTopic().getTopicID());
         	if(ttable!=null) {
-        		//for(BigInteger node : body.neighbours)
-        		//	System.out.println("Ticket new node received distance "+Util.logDistance(node, t.getTopic().getTopicID()));
         		ttable.addNeighbour(body.neighbours);
         	}
          	SearchTable stable = searchTables.get(t.getTopic().getTopicID());
         	if(stable!=null)stable.addNeighbour(body.neighbours);
    	
         }
-    	//System.out.println("handleTicketResponse from " + m.src.getId()+" waiting time "+t.getWaitTime()+" "+this.node.getId());
-
-    	//System.out.println("handleTicketResponse from " + m.src.getId()+" waiting time "+t.getWaitTime()+" "+this.node.getId());
 
         ticketTables.get(t.getTopic().getTopicID()).addTicket(m,t);
-        //scheduleSendMessage(register, m.src.getId(), myPid, t.getWaitTime());
     }
 
 	/**
@@ -346,7 +327,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
             scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
         }
         else {
-            //logger.warning("Registration succesful for topic "+ticket.getTopic().getTopicID()+" at node "+m.src.getId());
             logger.info("Registration succesful for topic "+ticket.getTopic().topic+" at node " + m.src.getId() + " at dist "+ Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID())+" "+ticket.getCumWaitTime());
             KademliaObserver.addAcceptedRegistration(topic, this.node.getId(),m.src.getId(),ticket.getCumWaitTime());
             KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
@@ -363,11 +343,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         	}
         }
         
-        //ticketTables.get(ticket.getTopic().getTopicID()).print();
     }
     
 	protected void handleTopicQueryReply(Message m, int myPid) {
-		//System.out.println("Topic query reply");
 		LookupTicketOperation lop = (LookupTicketOperation) this.operations.get(m.operationId);
 		if (lop == null) {
 			return;
@@ -381,7 +359,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		for(BigInteger neighbour: neighbours) {
 			logger.info(Util.logDistance(neighbour, lop.topic.topicID) + ", ");
 		}
-		//System.out.println();
 		
 		lop.elaborateResponse(neighbours);
 		lop.increaseReturned(m.src.getId());
@@ -389,7 +366,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 
 		for(SearchTable st : searchTables.values()) {
 			st.addNeighbour(neighbours);
-			//System.out.println("Received neighbours dist:" + Util.logDistance(neighbour, lop.topic.getTopicID()));
 		}
 		
 		
@@ -400,22 +376,14 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 				tt.addNeighbour(neighbour);
 		}
 	
-		//lop.decreaseRequests();	
 		for(TopicRegistration r: registrations) {
 			lop.addDiscovered(r.getNode());
-			//KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
 
 		}
 
-		//System.out.println("Topic query reply received for "+lop.topic.getTopic()+" "+this.getNode().getId()+" "+lop.discoveredCount()+" "+lop.getUsedCount()+" "+lop.getReturnedCount());
-		//if(registrations.length==0) searchTable.get(lop.topic.getTopicID()).removeNeighbour(m.src.getId());
-
-		
 		int found = lop.discoveredCount();
 		
-		//logger.warning("Topic query reply "+ m.src.getId()+" "+lop.available_requests+" found "+found);
-
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.getTopic());		
 		//int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
 		int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
@@ -430,26 +398,17 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		
 		while ((lop.available_requests > 0)) { // I can send a new find request
 			// get an available neighbour
-			//logger.warning("Topic query reply loop "+ m.src.getId()+" "+lop.available_requests+" found "+found+" "+all+" "+lop.nrHops);
 			if(lop.available_requests < KademliaCommonConfig.ALPHA) {
-				//logger.warning("Topic query reply return"+ m.src.getId()+" "+lop.available_requests+" found "+found);
 				return;
 			} else if ((lop.finished&&lop.available_requests==KademliaCommonConfig.ALPHA)||KademliaCommonConfig.MAX_SEARCH_HOPS==lop.nrHops) { // no new neighbour and no outstanding requests
 				// search operation finished
-				//logger.warning("Topic query reply alpha"+ m.src.getId()+" "+lop.available_requests+" found "+found);
 				operations.remove(lop.operationId);
-				//logger.warning("reporting operation " + lop.operationId);
 				KademliaObserver.reportOperation(lop);
-				//lop.visualize(); uncomment if you want to see visualization of the operation
 				if(!lop.finished) { 
 					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic + " after consulting " + lop.getUsedCount() + " nodes.");
 				} 
-				//System.out.println("Writing stats");
 				KademliaObserver.register_total.add(all);
 				KademliaObserver.register_ok.add(found);
-				//lop.visualize();
-					
-				//logger.warning("setLookupResult "+lop.getDiscoveredArray().size());
 				node.setLookupResult(lop.getDiscoveredArray());
 				if(printSearchTable)searchTables.get(lop.topic.getTopicID()).print();
 				
@@ -457,84 +416,25 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 			} else {
 				BigInteger neighbour = lop.getNeighbour();
 				if (neighbour != null) {
-					//logger.warning("Topic query reply neighbour not null "+ m.src.getId()+" "+lop.available_requests+" found "+found);
-					//if(!lop.finished) {
+
 					// send a new request only if we didn't find the node already
 					Message request = new Message(Message.MSG_TOPIC_QUERY);
 					request.operationId = lop.operationId;
-					//request.type = Message.MSG_TOPIC_QUERY;
 					request.src = this.node;
 					request.body = lop.body;
 					request.dest = new KademliaNode(neighbour);
 	
 					if(request != null) {
 						lop.nrHops++;
-						//logger.warning("Sending new requests");
 						sendMessage(request, neighbour, myPid);
 					}
 				} else {
-					//logger.warning("Topic query reply neighbour not null finished "+ this.node.getId()+" "+lop.available_requests+" found "+found);
-					//getNeighbour decreases available_requests, but we didn't send a message
-					lop.available_requests++;
+						lop.available_requests++;
 					return;
 				}
 					
 			} 
 		}
-		/*while ((lop.available_requests > 0)) { // I can send a new find request
-			// get an available neighbour
-			logger.warning("Topic query reply loop "+ m.src.getId()+" "+lop.available_requests+" found "+found+" "+lop.nrHops);
-			if(lop.finished&&lop.available_requests< KademliaCommonConfig.ALPHA) {
-				//logger.warning("Topic query reply return"+ m.src.getId()+" "+lop.available_requests+" found "+found);
-				return;
-			} else 
-				if (lop.finished&&lop.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
-				// search operation finished
-				//logger.warning("Topic query reply alpha"+ m.src.getId()+" "+lop.available_requests+" found "+found);
-				operations.remove(lop.operationId);
-				//logger.warning("reporting operation " + lop.operationId);
-				KademliaObserver.reportOperation(lop);
-				//lop.visualize(); uncomment if you want to see visualization of the operation
-				if(!lop.finished) { 
-					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
-				} 
-				//System.out.println("Writing stats");
-				KademliaObserver.register_total.add(all);
-				KademliaObserver.register_ok.add(found);
-				//lop.visualize();
-					
-				logger.warning("setLookupResult "+lop.getDiscoveredArray().size());
-				node.setLookupResult(lop.getDiscoveredArray());
-				if(printSearchTable)searchTables.get(lop.topic.getTopicID()).print();
-				
-				return;
-			} else {
-				BigInteger neighbour = lop.getNeighbour();
-				if (neighbour != null) {
-					//logger.warning("Topic query reply neighbour not null "+ m.src.getId()+" "+lop.available_requests+" found "+found);
-					//if(!lop.finished) {
-					// send a new request only if we didn't find the node already
-					Message request = new Message(Message.MSG_TOPIC_QUERY);
-					request.operationId = lop.operationId;
-					//request.type = Message.MSG_TOPIC_QUERY;
-					request.src = this.node;
-					request.body = lop.body;
-					request.dest = new KademliaNode(neighbour);
-	
-					if(request != null) {
-						lop.nrHops++;
-						sendMessage(request, neighbour, myPid);
-					}
-				} else {
-					//logger.warning("Topic query reply neighbour not null finished "+ this.node.getId()+" "+lop.available_requests+" found "+found);
-					//getNeighbour decreases available_requests, but we didn't send a message
-					lop.available_requests++;
-					return;
-				}
-					
-			} 
-		}*/
-		
 	
 	}
 	
@@ -625,25 +525,11 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     public void sendTopicLookup(Message m,Topic t,int myPid) {
     	
 		KademliaObserver.lookup_total.add(1);
-		
-		//Topic t = (Topic) m.body;
-		//logger.warning("Send topic lookup for topic "+this.node.getId()+" "+t.getTopic());
 
 		LookupTicketOperation lop = new LookupTicketOperation(this.node.getId(), this.searchTables.get(t.getTopicID()), m.timestamp, t);
 		lop.body = m.body;
 		operations.put(lop.operationId, lop);
 	
-		/*int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
-		BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
-		
-		
-		if(neighbours.length<KademliaCommonConfig.ALPHA)
-			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
-		
-		lop.elaborateResponse(neighbours);
-		lop.available_requests = KademliaCommonConfig.ALPHA;*/
-	
-		// set message operation id
 		m.operationId = lop.operationId;
 		m.type = Message.MSG_TOPIC_QUERY;
 		m.src = this.node;
@@ -659,63 +545,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 			}
 		}
 		
-    	/*KademliaObserver.lookup_total.add(1);
-		
-        LookupOperation lop = new LookupOperation(this.node.getId(), m.timestamp, t);
-		operations.put(lop.operationId, lop);
-
-		//BigInteger[] neighbours = this.routingTable.getNeighbours((BigInteger) m.body, this.node.getId());
-		//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance((BigInteger) t.getTopicID(), this.node.getId()));
-		
-        //if(neighbours.length<KademliaCommonConfig.K)
-		BigInteger[] neighbours = new BigInteger[0];
-		int tried=0,sent=0;
-		//System.out.println("Neighbours for distance "+neighbours.length);
-		
-		
-		// set message operation id
-		m.operationId = lop.operationId;
-		m.type = Message.MSG_TOPIC_QUERY;
-		m.src = this.node;
-		//lop.available_requests = KademliaCommonConfig.ALPHA;
-
-		//lop.elaborateResponse(neighbours);
-	
-		//lop.available_requests = 0;
-		while(tried<KademliaCommonConfig.NBUCKETS&&sent<KademliaCommonConfig.ALPHA) {
-			int distance = CommonState.r.nextInt(KademliaCommonConfig.NBUCKETS);
-			//System.out.println("Distance "+distance);
-			int tries=0;
-			while((neighbours.length==0)&&(tries<KademliaCommonConfig.NBUCKETS)) {
-				//System.out.println("Distance "+distance);
-				distance = CommonState.r.nextInt(KademliaCommonConfig.NBUCKETS);
-				tries++;
-				if(lop.isUsed(distance))continue;
-				//System.out.println("Distance "+distance);
-				neighbours = this.searchTable.get(t.getTopicID()).getNeighbours(distance);
-				//System.out.println("Distance "+distance+" "+neighbours.length);
-			}
-			lop.addUsed(distance);
-			lop.elaborateResponse(neighbours);
-			//lop.addUsed(distance);
-			//System.out.println("Neighbours for distance "+distance+" "+neighbours.length);
-			tried++;
-			if(neighbours.length!=0) {
-				BigInteger node = neighbours[CommonState.r.nextInt(neighbours.length)];
-				sendMessage(m.copy(), node, myPid);
-				lop.increaseRequests();
-				this.searchTable.get(t.getTopicID()).removeNeighbour(node);
-				//System.out.println("Send topic lookup id "+lop.operationId+" "+lop.availableRequests());
-				sent++;
-			}
-	
-		}*/
-		
-		/*if(sent<KademliaCommonConfig.ALPHA) {
-			System.out.println("Sent only "+sent +" lookups");
-		} else {
-			System.out.println("Sent "+sent +" lookups");	
-		}*/
 		
     	
     }
@@ -766,25 +595,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
  		
  		//System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
  		sendMessage(m,top.getNeighbour(),myPid);
- 		
- 		//Timeout timeout = new Timeout(t,m.src.getId());
-        //EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
 
-
- 		// send ALPHA messages
- 		/*for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
- 			BigInteger nextNode = top.getNeighbour();
- 			if (nextNode != null) {
-                 Message ticket_request = m.copy();
-                 sendMessage(ticket_request,nextNode,myPid);
-                 //scheduleSendMessage(ticket_request, nextNode, myPid, 0); 
- 				top.nrHops++;
- 			}
- 			else {
- 				System.err.println("In register Returned neighbor is NUll !");
- 				//System.exit(-1);
- 			}
- 		}*/
    }
 
 	private void handleTimeout(Timeout t, int myPid){
@@ -905,10 +716,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 					logger.warning("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: " + timeout.node);
 					// remove form sentMsg
 					sentMsg.remove(timeout.msgID);
-					// remove node from my routing table
-					//this.routingTable.removeNeighbour(t.node);
-					// remove from closestSet of find operation
-					//this.fop.closestSet.remove(t.node);
+					
 				}
 				break;
         }
@@ -930,8 +738,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	 * 
 	 */
 	public void refreshBuckets() {
-		//System.out.println("Ticket protocol refreshbuckets");
-		//System.out.print(topicTable.dumpRegistrations());
+
 		if(topicTable==null)return;
 		for(TicketTable ttable : ticketTables.values())
 			ttable.refreshBuckets();

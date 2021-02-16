@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 
-import peersim.kademlia.Discv5ProposalTopicTable;
 import peersim.kademlia.UniformRandomGenerator;
 import peersim.core.CommonState;
 import peersim.config.ParsedProperties;
