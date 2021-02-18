@@ -304,21 +304,6 @@ public class Discv5TopicTable { // implements TopicTable {
             }*/
             return new TopicRegistration[0];
         }
-      
-        //List<TopicRegistration> result = new ArrayList<>();
-        //int i=0;
-        
-        // Oldest to newest
-        //for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<KademliaCommonConfig.K;i++)
-        //	result.add(iter.next());
-        
-        // Newest to oldest 
-        //Iterator<TopicRegistration> iter = topicQ.descendingIterator();
-        //while(iter.hasNext()) {
-            // do something with it.next()
-        //     result.add(iter.next());
-        //    i++;
-        //}
 
         // Random selection of K results
         TopicRegistration[] results = (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);

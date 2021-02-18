@@ -10,40 +10,28 @@ import peersim.edsim.EDSimulator;
 import java.math.BigInteger;
 import java.util.List;
 
-/**
- * This control generates random search traffic from nodes to random destination node.
- * 
- * @author Daniele Furlan, Maurizio Bonani
- * @version 1.0
- */
 
 // ______________________________________________________________________________________________
-public class EthClient implements Control {
+public class Client implements Control {
 
-	// ______________________________________________________________________________________________
-	/**
-	 * MSPastry Protocol to act
-	 */
+
 	private final static String PAR_PROT = "protocol";
 
 	private boolean first = true;
 
-	//private int topicCounter = 0;
 	
 	private int connections=0;
 	
 	private static final int MAXCONNECTIONS=50;
 	
 	UniformRandomGenerator urg;
-	/**
-	 * MSPastry Protocol ID to act
-	 */
+
 	private final int pid;
 
 	
 	private List<BigInteger> buffer;
 	// ______________________________________________________________________________________________
-	public EthClient(String prefix) {
+	public Client(String prefix) {
 		pid = Configuration.getPid(prefix + "." + PAR_PROT);
 		urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 

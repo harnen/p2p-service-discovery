@@ -34,8 +34,6 @@ public class SearchTable extends RoutingTable {
 		
 		super(nBuckets, k, maxReplacements);
 		
-		//pendingTickets = new ArrayList<BigInteger>();
-
 		this.protocol = protocol;
 		
 		this.t = t;
@@ -43,29 +41,22 @@ public class SearchTable extends RoutingTable {
 		this.nodeId = t.getTopicID();
 		
 		this.myPid = myPid;
-		
-		//this.pendingLookup = true;
-		
+				
 		this.refresh = refresh;
 		
 		removedPerDist = new HashMap<Integer, Integer>();
 		
 		added = new HashSet<BigInteger>();
-		
-		//System.out.println("New search table size "+k+" "+refresh);
 
-		// TODO Auto-generated constructor stub
 	}
 	
 	// add a neighbour to the correct k-bucket
 	public boolean addNeighbour(BigInteger node) {
 		boolean result = false;
 		if(!added.contains(node)) {
-			//System.out.println("Adding "+Util.logDistance(nodeId, node)+" "+node);
 			result = super.addNeighbour(node);
-			//don't add the same node multiple time
+
 			if(result) {
-				//System.out.println("Added "+node);
 				added.add(node);
 			}
 		}
@@ -80,26 +71,14 @@ public class SearchTable extends RoutingTable {
 			addNeighbour(dest);
 		}
 		
-		/*if(pendingLookup) {
-			pendingLookup = false;
-
-        	Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
-    		m.timestamp = CommonState.getTime();
-			protocol.sendTopicLookup(m, t, myPid);
-		}*/
-
 	}
 
 
 	// remove a neighbour from the correct k-bucket
 	public void removeNeighbour(BigInteger node) {
-		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
-		//pendingTickets.remove(node);
+	
 		getBucket(node).removeNeighbour(node);
-		/*BigInteger[] replacements = new BigInteger[0];
-		getBucket(node).replacements.toArray(replacements);
-		System.out.println("remove neighbour "+node+" "+Util.logDistance(nodeId, node)+" adding "+replacements.length+" replacements.");
-		addNeighbour(replacements);*/
+		
 		int dist = Util.logDistance(nodeId, node);
 		if(!removedPerDist.containsKey(dist)){
 			removedPerDist.put(dist, 1);
@@ -107,21 +86,18 @@ public class SearchTable extends RoutingTable {
 			removedPerDist.put(dist, removedPerDist.get(dist) + 1);
 		}
 	}	
+	
 	/**
 	 * Check nodes and replace buckets with valid nodes from replacement list
 	 * 
 	 */
 	public void refreshBuckets() {
-		//System.out.println("Refresh bucket");
-		//Random rnd= new Random();
-		//for(int i=0;i<nBuckets;i++) {
+		
 		int i = CommonState.r.nextInt(nBuckets);
 		KBucket b = k_buckets[i];
 		
 		while(b.neighbours.size()<b.k&&b.replacements.size()>0) {
-			//protocol.sendLookup(t, myPid);
-			//b.replace();
-			//Random rand = new Random();
+			
 			BigInteger n = b.replacements.get(CommonState.r.nextInt(b.replacements.size()));
 			addNeighbour(n);
 			b.replacements.remove(n);
@@ -131,7 +107,6 @@ public class SearchTable extends RoutingTable {
 			BigInteger randomNode = generateRandomNode(i);
 			protocol.sendLookup(randomNode, myPid);
 		}
-		//print();
 
 	}
 

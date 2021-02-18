@@ -70,16 +70,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 
 		pendingRegistrations = topicNum;
 		pendingLookups = topicNum;
-		/*topicList = new HashMap<String,Integer>();
-		
-		for(int i=1; i <= topicNum; i++) {
-			int times=zipf.sample();
-			//topicList.put(new String("t"+i),new Integer(times));
-			topicList.put(new String("t"+i),new Integer(i));
-		}
-		//topicList.put(new String("t"+1),new Integer(20));
-		
-		it = topicList.entrySet().iterator();*/
+
 
 	}
 
