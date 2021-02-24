@@ -82,12 +82,11 @@ public class Discv5TrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
-		//first = false;
 		if(!first){
 			return false;
 		}
-		//first = false;
-		//System.out.println("Discv5 Traffic generator called");
+		first = false;
+		System.out.println("Discv5 Traffic generator called");
 		Node start;
 		do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
@@ -97,10 +96,11 @@ public class Discv5TrafficGenerator implements Control {
 		EDSimulator.add(0, generateRegisterMessage(), start, pid);
 		
 		// send topic lookup message
-        do {
+        /*do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
 		} while ((start == null) || (!start.isUp()));
-        EDSimulator.add(1, generateTopicLookupMessage(), start, pid);
+        EDSimulator.add(1, generateTopicLookupMessage(), start, pid);*/
+		
 
 		return false;
 	}

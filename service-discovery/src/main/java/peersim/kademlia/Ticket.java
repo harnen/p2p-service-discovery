@@ -26,11 +26,16 @@ public class Ticket implements Comparable<Ticket> {
 
     // rtt delay from source (advertiser) to destination (advertisement medium)
     private long rtt_delay;
+    
+    // indicates whether the local queue was full 
+    //(it's to distinguish between cases where the queue is full for this
+    //particular topic rather than globally
+    boolean topicQueueFull;
 
     // Message that registered the ticket
     Message m;
 
-    public Ticket(Topic topic, long req_time, long wait_time, KademliaNode src, long delay) {
+    public Ticket(Topic topic, long req_time, long wait_time, KademliaNode src, long delay, boolean topicQueueFull) {
         this.topic = topic;
         this.req_time = req_time;
         this.wait_time = wait_time;
@@ -38,6 +43,7 @@ public class Ticket implements Comparable<Ticket> {
         this.src = src;
         this.isRegistrationComplete = false;
         this.rtt_delay = delay;
+        this.topicQueueFull = topicQueueFull;
     }
 
     public void setMsg(Message m) {

@@ -266,7 +266,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         // Send a response message with a ticket back to advertiser
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
 
-    	Message.TicketRequestBody body = new Message.TicketRequestBody(ticket, neighbours);
+    	Message.TicketReplyBody body = new Message.TicketReplyBody(ticket, neighbours);
 		Message response  = new Message(Message.MSG_TICKET_RESPONSE, body);
 	
         //Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
@@ -282,7 +282,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
      *
      */
     private void handleTicketResponse(Message m, int myPid) {
-		Message.TicketRequestBody body = (Message.TicketRequestBody) m.body;
+		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
 		
         Ticket t = body.ticket;
         if (t.getWaitTime() == -1) 
@@ -575,7 +575,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	}
 	
    public void sendTicketRequest(BigInteger dest,Topic t,int myPid) {
-    	Log.warn("Sending ticket request to " + t.topic);
+    	logger.warning("Sending ticket request to " + dest + " for topic " + t.topic);
         TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
  		top.body = t;
  		operations.put(top.operationId, top);

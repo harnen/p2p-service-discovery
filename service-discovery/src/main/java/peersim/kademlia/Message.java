@@ -281,11 +281,11 @@ public class Message extends SimpleEvent {
 		}
 	}
 	
-	static class TicketRequestBody{
+	static class TicketReplyBody{
 		public final Ticket ticket;
 		public final BigInteger[] neighbours;
 
-		public TicketRequestBody(Ticket ticket, BigInteger[] neighbours) {
+		public TicketReplyBody(Ticket ticket, BigInteger[] neighbours) {
 			this.ticket = ticket;
 			this.neighbours = neighbours;
 		}
