@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.sun.tools.sjavac.Log;
+
 import peersim.kademlia.Topic;
 import peersim.kademlia.operations.LookupTicketOperation;
 import peersim.kademlia.operations.Operation;
@@ -455,25 +457,22 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     	Topic t = (Topic) m.body;
     	
     	logger.warning("handleInitRegisterTopic "+t.getTopic()+" "+t.getTopicID()+" "+KademliaCommonConfig.TICKET_BUCKET_SIZE);
-
-
     	//restore the IF statement
     	KademliaObserver.addTopicRegistration(t, this.node.getId());
 
-        //TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
-        TicketTable rou;
+        TicketTable tt;
         if(KademliaCommonConfig.TICKET_BUCKET_SIZE==0)
-        	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+        	tt = new TicketTable(KademliaCommonConfig.NBUCKETS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
         else
-        	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
-        rou.setNodeId(t.getTopicID());
-        ticketTables.put(t.getTopicID(),rou);
+        	tt = new TicketTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+        tt.setNodeId(t.getTopicID());
+        ticketTables.put(t.getTopicID(),tt);
         	
         for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
         	BigInteger[] neighbours = routingTable.getNeighbours(i);
-        	rou.addNeighbour(neighbours);
+        	tt.addNeighbour(neighbours);
         }
-        if(printSearchTable)rou.print();
+        if(printSearchTable)tt.print();
         //Register messages are automatically sent when adding Neighbours
         
 
@@ -576,7 +575,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	}
 	
    public void sendTicketRequest(BigInteger dest,Topic t,int myPid) {
-    	
+    	Log.warn("Sending ticket request to " + t.topic);
         TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
  		top.body = t;
  		operations.put(top.operationId, top);

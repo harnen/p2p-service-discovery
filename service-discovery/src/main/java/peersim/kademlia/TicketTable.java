@@ -96,7 +96,7 @@ public class TicketTable extends RoutingTable {
 	
 	public boolean addNeighbour(BigInteger node) {
 
-		if(!pendingTickets.contains(node)&&!registeredNodes.contains(node)) {
+		if(!pendingTickets.contains(node) && !registeredNodes.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
 				protocol.sendTicketRequest(node,t,myPid);
