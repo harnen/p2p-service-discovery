@@ -50,6 +50,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	 */
     private HashMap<BigInteger,SearchTable> searchTables;
     
+    
+    protected HashMap<Ticket,BackoffService> registrationFailed;
+    
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 	final String PAR_ADS_PER_QUEUE = "ADS_PER_QUEUE";
 	final String PAR_AD_LIFE_TIME = "AD_LIFE_TIME";
@@ -62,7 +65,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	final String PAR_TICKET_REMOVE_AFTER_REG = "TICKET_REMOVE_AFTER_REG";
 	final String PAR_TICKET_TABLE_REPLACEMENTS = "TICKET_TABLE_REPLACEMENTS";
 	final String PAR_SEARCH_TABLE_REPLACEMENTS = "SEARCH_TABLE_REPLACEMENTS";
-
+	final String PAR_MAX_REGISTRATION_TRIES = "MAX_REGISTRATION_TRIES";
+	
 	boolean printSearchTable=false;
 	/**
 	 * Replicate this object by returning an identical copy.<br>
@@ -86,6 +90,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         this.topicTable = new Discv5TopicTable();
         ticketTables = new HashMap<BigInteger,TicketTable>();
         searchTables = new HashMap<BigInteger,SearchTable>();
+        registrationFailed = new HashMap<Ticket,BackoffService>();
     }
 	
 	/**
@@ -110,7 +115,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		KademliaCommonConfig.TICKET_REMOVE_AFTER_REG = Configuration.getInt(prefix + "." + PAR_TICKET_REMOVE_AFTER_REG, KademliaCommonConfig.TICKET_REMOVE_AFTER_REG);
 		KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS = Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_REPLACEMENTS, KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS);
 		KademliaCommonConfig.SEARCH_TABLE_REPLACEMENTS = Configuration.getInt(prefix + "." + PAR_SEARCH_TABLE_REPLACEMENTS, KademliaCommonConfig.SEARCH_TABLE_REPLACEMENTS);
-
+		KademliaCommonConfig.MAX_REGISTRATION_TRIES = Configuration.getInt(prefix + "." + PAR_MAX_REGISTRATION_TRIES, KademliaCommonConfig.MAX_REGISTRATION_TRIES);
 		super._init();
 	}
 
@@ -324,7 +329,18 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
             register.body = m.body;
-            scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
+            
+            BackoffService backoff = registrationFailed.get(ticket);
+            if(backoff==null){
+            	backoff = new BackoffService(KademliaCommonConfig.AD_LIFE_TIME,KademliaCommonConfig.MAX_REGISTRATION_TRIES);
+            	backoff.registrationFailed();
+            } else {
+            	backoff.registrationFailed();
+            }
+            
+            scheduleSendMessage(register, m.src.getId(), myPid, backoff.getTimeToWait());
+
+            
         }
         else {
             logger.info("Registration succesful for topic "+ticket.getTopic().topic+" at node " + m.src.getId() + " at dist "+ Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID())+" "+ticket.getCumWaitTime());
