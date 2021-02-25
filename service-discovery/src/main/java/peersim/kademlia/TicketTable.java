@@ -2,6 +2,7 @@ package peersim.kademlia;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 //import java.util.Random;
@@ -33,6 +34,9 @@ public class TicketTable extends RoutingTable {
     HashMap<Integer, Integer> registeredPerDist;
     
     private List<BigInteger> registeredNodes;
+    
+    private int lastAskedBucket;
+    private int triesWithinBucket;
 
     
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
@@ -56,6 +60,8 @@ public class TicketTable extends RoutingTable {
 		registeredPerDist = new HashMap<Integer, Integer>();
 
 		registeredNodes = new ArrayList<BigInteger>();
+		
+		lastAskedBucket = KademliaCommonConfig.BITS;
 		
 	}
 
@@ -99,7 +105,6 @@ public class TicketTable extends RoutingTable {
 		if(!pendingTickets.contains(node) && !registeredNodes.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
-				protocol.sendTicketRequest(node,t,myPid);
 				return true;
 			} 
 		}
@@ -112,6 +117,23 @@ public class TicketTable extends RoutingTable {
 			addNeighbour(node);
 		}
 	}
+	
+	public BigInteger getNeighbour() {
+		BigInteger res = null;
+		
+		while(lastAskedBucket > bucketMinDistance && triesWithinBucket >= super.bucketAtDistance(lastAskedBucket).occupancy()) {
+			lastAskedBucket--;
+			triesWithinBucket = 0;
+		}
+		if(lastAskedBucket > bucketMinDistance) {
+			res = super.bucketAtDistance(lastAskedBucket).neighbours.get(triesWithinBucket);
+			triesWithinBucket++;
+		}
+		System.out.println("returning neighbour " + triesWithinBucket + " from bucket " + lastAskedBucket);
+		return res;
+		//protocol.sendTicketRequest(node,t,myPid);
+	}
+	
 
 	public void addTicket(Message m,Ticket ticket) {
 

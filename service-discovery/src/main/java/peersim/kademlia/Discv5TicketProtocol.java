@@ -65,7 +65,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	final String PAR_TICKET_TABLE_REPLACEMENTS = "TICKET_TABLE_REPLACEMENTS";
 	final String PAR_SEARCH_TABLE_REPLACEMENTS = "SEARCH_TABLE_REPLACEMENTS";
 
-	boolean printSearchTable=false;
+	boolean printSearchTable=true;
 	/**
 	 * Replicate this object by returning an identical copy.<br>
 	 * It is called by the initializer and do not fill any particular field.
@@ -472,7 +472,13 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         	BigInteger[] neighbours = routingTable.getNeighbours(i);
         	tt.addNeighbour(neighbours);
         }
-        if(printSearchTable)tt.print();
+        if(printSearchTable) tt.print();
+        
+        BigInteger res = null;
+        do {
+        	res = tt.getNeighbour();
+        	System.out.println("Got neighbour " + res);
+        }while(res != null);
         //Register messages are automatically sent when adding Neighbours
         
 
