@@ -37,6 +37,8 @@ public class TicketTable extends RoutingTable {
     
     private int lastAskedBucket;
     private int triesWithinBucket;
+    
+    public int available_requests = KademliaCommonConfig.ALPHA;
 
     
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
