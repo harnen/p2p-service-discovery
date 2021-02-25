@@ -33,7 +33,7 @@ public class TicketTable extends RoutingTable {
     HashMap<Integer, Integer> registeredPerDist;
     
     private List<BigInteger> registeredNodes;
-
+    
     
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
