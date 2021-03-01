@@ -617,7 +617,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
  		m.operationId = top.operationId;
  		m.src = this.node;
  		
- 		//System.out.println("Send ticket request to "+dest+" for topic "+t.getTopic());
+ 		logger.warning("Send ticket request to "+dest+" for topic "+t.getTopic());
  		sendMessage(m,top.getNeighbour(),myPid);
 
    }

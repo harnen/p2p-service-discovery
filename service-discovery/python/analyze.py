@@ -67,7 +67,7 @@ def analyzeMessages(dirs):
     ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=8)
     ax1.set_xlabel("Nodes")
     ax1.set_ylabel("#Messages")
-    fig1.savefig(OUTDIR + '/messages_received.png')
+    fig1.savefig(OUTDIR + '/messages_received2.png')
 
 
     ax2.legend()
@@ -354,7 +354,7 @@ def analyzeRegistrantDistribution(dirs):
                             max_size = stats[node][topic]
                         if(stats[node][topic] > global_max):
                             global_max = stats[node][topic]
-        
+
             for node in stats:
                 for topic in stats[node]:
                     topic_index = sorted(topics).index(topic)
@@ -395,7 +395,7 @@ def analyzeRegistrantDistribution(dirs):
                           markerfacecolor=color, markersize=10))
 
     legend_elements.append(Line2D([0], [0], marker='|', color='red', label='Non-discovered registrants',
-                          markerfacecolor='black', markersize=10))    
+                          markerfacecolor='black', markersize=10))
     legend_elements.append(Line2D([0], [0], marker='X', color='black', label='Topic hash',
                           markerfacecolor='black', markersize=10))
 #    print(legend_elements)
@@ -1031,10 +1031,10 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 
-#analyzeMessages(sys.argv[1:])
+analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
 #analyzeRegistrations2(sys.argv[1:])
-analyzeOperations(sys.argv[1:])
+#analyzeOperations(sys.argv[1:])
 #analyzeRegistrantDistribution(sys.argv[1:])
 #analyzeRegistrarDistribution(sys.argv[1:])
 #analyzeEclipsedNodesOverTime(sys.argv[1:])
