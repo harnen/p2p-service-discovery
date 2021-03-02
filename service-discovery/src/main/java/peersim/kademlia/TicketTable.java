@@ -37,6 +37,8 @@ public class TicketTable extends RoutingTable {
     
     private int lastAskedBucket;
     private int triesWithinBucket;
+    private int seenFull = 0;
+    private int seenNotFull = 0; 
     
     public int available_requests = KademliaCommonConfig.ALPHA;
 
@@ -122,6 +124,12 @@ public class TicketTable extends RoutingTable {
 	
 	public BigInteger getNeighbour() {
 		BigInteger res = null;
+		
+		if(!shallContinueRegistration()) {
+			System.out.println("Decided not to continue registration anymore");
+			this.available_requests = -KademliaCommonConfig.ALPHA;
+			return null;
+		}
 		
 		while(lastAskedBucket > bucketMinDistance && triesWithinBucket >= super.bucketAtDistance(lastAskedBucket).occupancy()) {
 			lastAskedBucket--;
@@ -239,6 +247,24 @@ public class TicketTable extends RoutingTable {
 	
 	public BigInteger getTopicId() {
 		return nodeId;
+	}
+	
+	public boolean shallContinueRegistration() {
+		if( (seenFull + seenNotFull) < KademliaCommonConfig.ALPHA) return true;
+		
+		int toss = CommonState.r.nextInt(seenFull + seenNotFull);
+		if(toss < seenFull) {
+			return false;
+		}
+		return true;
+	}
+
+	public void reportResponse(Ticket ticket) {
+		if(ticket.topicQueueFull) {
+			seenFull++;
+		}else {
+			seenNotFull++;
+		}
 	}
 
 

@@ -283,13 +283,15 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
      */
     private void handleTicketResponse(Message m, int myPid) {
 		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
-		System.out.println("Got response!");
         Ticket ticket = body.ticket;
+        System.out.println("Got response! Is topic queue full?" + ticket.topicQueueFull);
         Topic topic = ticket.getTopic();
+        TicketTable tt = ticketTables.get(topic.getTopicID());
+        tt.reportResponse(ticket);
         if (ticket.getWaitTime() == -1) 
         {   
             logger.warning("Attempted to re-register topic on the same node");
-            ticketTables.get(ticket.getTopic().getTopicID()).removeNeighbour(m.src.getId());
+            tt.removeNeighbour(m.src.getId());
             return;
         }
         if(KademliaCommonConfig.TICKET_NEIGHBOURS==1) {  
@@ -297,16 +299,16 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         	for(BigInteger node: body.neighbours)
         		routingTable.addNeighbour(node);
         	
-        	TicketTable ttable = ticketTables.get(topic.getTopicID());
-        	if(ttable!=null) {
-        		ttable.addNeighbour(body.neighbours);
+        	
+        	if(tt!=null) {
+        		tt.addNeighbour(body.neighbours);
         	}
-         	SearchTable stable = searchTables.get(topic.getTopicID());
-        	if(stable!=null)stable.addNeighbour(body.neighbours);
+         	SearchTable st = searchTables.get(topic.getTopicID());
+        	if(st != null) st.addNeighbour(body.neighbours);
         	
    	
         }
-        TicketTable tt = ticketTables.get(topic.getTopicID());
+     
         tt.addTicket(m,ticket);
         tt.available_requests++;
         
