@@ -1000,7 +1000,7 @@ print('Plots will be saved in ', OUTDIR);
 #analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
 #analyzeRegistrations2(sys.argv[1:])
-analyzeOperations(sys.argv[1:])
+#analyzeOperations(sys.argv[1:])
 #analyzeRegistrantDistribution(sys.argv[1:])
 #analyzeRegistrarDistribution(sys.argv[1:])
 #analyzeEclipsedNodesOverTime(sys.argv[1:])
@@ -1012,6 +1012,6 @@ analyzeOperations(sys.argv[1:])
 #analyzeNumberOfMessages(sys.argv[1:])
 
 #analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
-#analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
+analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
 #plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
