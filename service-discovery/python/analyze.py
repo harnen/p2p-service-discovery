@@ -910,7 +910,7 @@ def analyzeMessageReceivedByNodes(dirs):
 
     fig, ax = plt.subplots()
     i=0
-    labels=['NoSpam','Spam']
+    labels=dirs
     for log_dir in dirs:
         me = extractAlphanumeric(log_dir)
         x_vals = []

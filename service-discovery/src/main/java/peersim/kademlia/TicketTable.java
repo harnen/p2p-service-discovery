@@ -250,13 +250,17 @@ public class TicketTable extends RoutingTable {
 	}
 	
 	public boolean shallContinueRegistration() {
-		if( (seenFull + seenNotFull) < KademliaCommonConfig.ALPHA) return true;
+		return true;
+		/*if( (seenFull + seenNotFull) < KademliaCommonConfig.ALPHA) {
+			return true;
+		}
 		
 		int toss = CommonState.r.nextInt(seenFull + seenNotFull);
+		System.out.println("Flipping coin. seenFull: " + seenFull + " seenNotFull: " + seenNotFull + " toss: " + toss);
 		if(toss < seenFull) {
 			return false;
 		}
-		return true;
+		return true;*/
 	}
 
 	public void reportResponse(Ticket ticket) {

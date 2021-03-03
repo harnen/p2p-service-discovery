@@ -106,8 +106,16 @@ public class Discv5TopicTable { // implements TopicTable {
     
     private boolean isTopicQueueFull(Topic topic) {
     	ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
-    	if (topicQ != null && topicQ.size() == this.adsPerQueue) return true;
-    	
+    	if (topicQ != null) {
+    		System.out.println("topicQ: " + topicQ.size() + "/" + this.adsPerQueue);
+    		if(topicQ.size() == this.adsPerQueue) return true;
+    	}else {
+    		System.out.println("Topic queue is null");
+    		for(Topic t: topicTable.keySet()) {
+    			System.out.println(t);
+    		}
+    		
+    	}
     	return false;
     }
 
@@ -249,7 +257,7 @@ public class Discv5TopicTable { // implements TopicTable {
     public Ticket getTicket(Topic t, KademliaNode advertiser, long rtt_delay, long curr_time) {
         Topic topic = new Topic(t.topic);
         //topic.setHostID(this.hostID);
-        // System.out.println("Get ticket "+topic.getTopic());
+        System.out.println("Get ticket "+topic.getTopic() + " " + this.hostID);
         TopicRegistration reg = new TopicRegistration(advertiser, topic, curr_time);
 
         //update the topic table (remove expired advertisements)
