@@ -68,8 +68,15 @@ public class TicketTable extends RoutingTable {
 		bucketMinDistance = KademliaCommonConfig.BITS - nBuckets;
 		
 		this.k=3;
-		for (int i = 0; i < k_buckets.length; i++) {
+		/*for (int i = 0; i < k_buckets.length; i++) {
 			k_buckets[i] = new KBucket(this,k,maxReplacements);
+		}*/
+		
+		int sbucket = 3;
+		for (int i = 0; i < k_buckets.length; i++) {
+			System.out.println("Creating bucket "+i+" size "+sbucket);
+			k_buckets[i] = new KBucket(this,sbucket,maxReplacements);
+			if(i>10)sbucket++;
 		}
 		
 		pendingTickets = new ArrayList<BigInteger>();
@@ -97,7 +104,7 @@ public class TicketTable extends RoutingTable {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
 				protocol.sendTicketRequest(node,t,myPid);
-				addRegisteredList(node);
+				//addRegisteredList(node);
 				return true;
 			} 
 		}

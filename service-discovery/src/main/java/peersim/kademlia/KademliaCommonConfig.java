@@ -26,6 +26,7 @@ public class KademliaCommonConfig {
     public static int MAX_SEARCH_HOPS = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
     public static int BACKOFF_SERVICE = 1;
     
+    public static int REG_WINDOW = 10000;
     public static int SEARCH_REFRESH = 0;
     public static int TICKET_REFRESH = 0;
     public static int TICKET_NEIGHBOURS = 0;

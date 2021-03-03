@@ -158,8 +158,10 @@ public class KademliaObserver implements Control {
         }
         
 		try {
-			msgWriter = new FileWriter(this.logFolderName + "/" + "messages.csv");
-			msgWriter.write("id,type,src,dst,topic,sent/received\n");
+			if(reportMsg==1) {
+				msgWriter = new FileWriter(this.logFolderName + "/" + "messages.csv");
+				msgWriter.write("id,type,src,dst,topic,sent/received\n");
+			}
 			opWriter = new FileWriter(this.logFolderName + "/" + "operations.csv");
             opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,topic,topicID\n");
             regByTopic = new HashMap<Topic,Integer>();

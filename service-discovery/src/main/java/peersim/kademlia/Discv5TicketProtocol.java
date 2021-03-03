@@ -265,7 +265,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		//System.out.println("Ticket request received from " + m.src.getId()+" in node "+this.node.getId());
         Topic topic = (Topic) m.body;
         KademliaNode advertiser = new KademliaNode(m.src); 
-        logger.warning("TicketRequest handle "+m.src);
+        //logger.warning("TicketRequest handle "+m.src);
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
         long rtt_delay = 2*transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
         Ticket ticket = topicTable.getTicket(topic, advertiser, rtt_delay, curr_time);
@@ -274,7 +274,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 
     	Message.TicketRequestBody body = new Message.TicketRequestBody(ticket, neighbours);
 		Message response  = new Message(Message.MSG_TICKET_RESPONSE, body);
-	
+
         //Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
 		response.ackId = m.id; // set ACK number
 		response.operationId = m.operationId;
@@ -294,7 +294,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         if (t.getWaitTime() == -1) 
         {   
             logger.warning("Attempted to re-register topic on the same node "+m.src.getId());
-            //ticketTables.get(t.getTopic().getTopicID()).removeNeighbour(m.src.getId());
+            ticketTables.get(t.getTopic().getTopicID()).removeNeighbour(m.src.getId());
             return;
         }
         if(KademliaCommonConfig.TICKET_NEIGHBOURS==1) {  
@@ -333,24 +333,26 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
             register.operationId = m.operationId;
             register.body = m.body;
             
-            if(KademliaCommonConfig.BACKOFF_SERVICE==1) {
-	            BackoffService backoff = registrationFailed.get(ticket);
-	            if(backoff==null){
-	            	backoff = new BackoffService(KademliaCommonConfig.AD_LIFE_TIME,KademliaCommonConfig.MAX_REGISTRATION_RETRIES);
-	            	backoff.registrationFailed();
-	            } else {
-	            	backoff.registrationFailed();
-	            }
-	            
-	            scheduleSendMessage(register, m.src.getId(), myPid, backoff.getTimeToWait());
+            BackoffService backoff = registrationFailed.get(ticket);
+            if(backoff==null){
+            	backoff = new BackoffService(KademliaCommonConfig.AD_LIFE_TIME,KademliaCommonConfig.MAX_REGISTRATION_RETRIES);
+            	backoff.registrationFailed();
+            	registrationFailed.put(ticket,backoff);
             } else {
-	            scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
-	
+            	backoff.registrationFailed();
             }
+            logger.warning("Registration failed "+KademliaCommonConfig.BACKOFF_SERVICE+" "+backoff.getTimesFailed() +" backing off "+ +backoff.getTimeToWait()+" "+backoff.shouldRetry()+" "+ticket.getWaitTime());
+            
+            if(KademliaCommonConfig.BACKOFF_SERVICE==1) {
+	            if(backoff.shouldRetry())scheduleSendMessage(register, m.src.getId(), myPid, backoff.getTimeToWait());
+            } else {
+            	if(backoff.shouldRetry())
+            		scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
+            }
+    		//scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
 
             
-        }
-        else {
+        } else {
             logger.info("Registration succesful for topic "+ticket.getTopic().topic+" at node " + m.src.getId() + " at dist "+ Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID())+" "+ticket.getCumWaitTime());
             KademliaObserver.addAcceptedRegistration(topic, this.node.getId(),m.src.getId(),ticket.getCumWaitTime());
             KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
