@@ -104,7 +104,7 @@ public class TicketTable extends RoutingTable {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
 				protocol.sendTicketRequest(node,t,myPid);
-				//addRegisteredList(node);
+				addRegisteredList(node);
 				return true;
 			} 
 		}
