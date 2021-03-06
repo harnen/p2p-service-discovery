@@ -500,7 +500,7 @@ public class KademliaObserver implements Control {
 	                result += ((Topic) m.body).topic +"," ;
 	            }
 	            else if(m.getType() == Message.MSG_REGISTER) {
-	                result += ((Ticket) m.body).getTopic() + ",";
+	                result += ((Ticket) m.body).getTopic() + ","+Util.logDistance(((Ticket) m.body).getTopic().getTopicID(), m.dest.getId())+",";
 	            }else {
 	                result += ",";
 	            }

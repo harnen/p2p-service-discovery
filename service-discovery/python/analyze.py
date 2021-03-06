@@ -23,14 +23,16 @@ def analyzeMessages(dirs):
     fig2, ax2 = plt.subplots()
     #fig3, ax3 = plt.subplots()
     i=0
+    fig3, ax3 = plt.subplots()
 
     for log_dir in dirs:
 #        print(log_dir)
 
         try:
             df = pd.read_csv(log_dir + '/messages.csv')
-
+            df2 = df.loc[(df['type'] == 'MSG_TICKET_REQUEST') | (df['type'] == 'MSG_TICKET_RESPONSE') | (df['type'] == 'MSG_REGISTER') | (df['type'] == 'MSG_REGISTER_RESPONSE')]
             df['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label=log_dir)
+            df2['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label=log_dir)
 
             width=0.3
             margin=width*i
@@ -62,12 +64,19 @@ def analyzeMessages(dirs):
     ax2.set_xticklabels(ticks)
 
     ax1.legend()
+    ax3.legend()
     #add line showing how the result should be
     ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
     ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=8)
     ax1.set_xlabel("Nodes")
     ax1.set_ylabel("#Messages")
     fig1.savefig(OUTDIR + '/messages_received2.png')
+
+    ax3.plot([ax3.get_xlim()[0], ax3.get_xlim()[1]], [(ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+    ax3.text(ax3.get_xlim()[1]*0.8, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, "optimal", size=8)
+    ax3.set_xlabel("Nodes")
+    ax3.set_ylabel("#Messages")
+    fig3.savefig(OUTDIR + '/messages_received_onlyreg.png')
 
 
     ax2.legend()
@@ -1046,20 +1055,20 @@ print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 
 analyzeMessages(sys.argv[1:])
-analyzeRegistrations(sys.argv[1:])
-analyzeRegistrations2(sys.argv[1:])
-analyzeOperations(sys.argv[1:])
-analyzeRegistrantDistribution(sys.argv[1:])
-analyzeRegistrarDistribution(sys.argv[1:])
-analyzeEclipsedNodesOverTime(sys.argv[1:])
-analyzeActiveRegistrations(sys.argv[1:])
-analyzeActiveRegistrationsMalicious(sys.argv[1:])
-analyzeRegistrationTime(sys.argv[1:])
-analyzeStorageUtilisation(sys.argv[1:])
-analyzeWaitingTimes(sys.argv[1:])
+#analyzeRegistrations(sys.argv[1:])
+#analyzeRegistrations2(sys.argv[1:])
+#analyzeOperations(sys.argv[1:])
+#analyzeRegistrantDistribution(sys.argv[1:])
+#analyzeRegistrarDistribution(sys.argv[1:])
+#analyzeEclipsedNodesOverTime(sys.argv[1:])
+#analyzeActiveRegistrations(sys.argv[1:])
+#analyzeActiveRegistrationsMalicious(sys.argv[1:])
+#analyzeRegistrationTime(sys.argv[1:])
+#analyzeStorageUtilisation(sys.argv[1:])
+#analyzeWaitingTimes(sys.argv[1:])
 analyzeNumberOfMessages(sys.argv[1:])
 
-analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
-analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
+#analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
+#analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
 #plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
