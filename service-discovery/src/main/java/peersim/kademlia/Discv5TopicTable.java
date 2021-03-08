@@ -104,11 +104,11 @@ public class Discv5TopicTable { // implements TopicTable {
         }
     }
     
-    private boolean isTopicQueueFull(Topic topic) {
+    private int topicQueueOccupancy(Topic topic) {
     	ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
     	if (topicQ != null) {
     		System.out.println("topicQ: " + topicQ.size() + "/" + this.adsPerQueue);
-    		if(topicQ.size() == this.adsPerQueue) return true;
+    		return topicQ.size();
     	}else {
     		System.out.println("Topic queue is null");
     		for(Topic t: topicTable.keySet()) {
@@ -116,7 +116,7 @@ public class Discv5TopicTable { // implements TopicTable {
     		}
     		
     	}
-    	return false;
+    	return 0;
     }
 
     private long getWaitingTime(TopicRegistration reg, long curr_time) {
@@ -265,17 +265,17 @@ public class Discv5TopicTable { // implements TopicTable {
 
         //compute ticket waiting time
         long waiting_time = getWaitingTime(reg, curr_time);
-        boolean queueIsFull = isTopicQueueFull(t);
+        int queueOccupancy = topicQueueOccupancy(t);
         
         if (waiting_time == -1) {
             //already registered
             KademliaObserver.reportWaitingTime(topic, waiting_time);
-            return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueIsFull);
+            return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
         }
         
         waiting_time = (waiting_time - rtt_delay > 0) ? waiting_time - rtt_delay : 0;
      
-        return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueIsFull);
+        return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
     }
 
     // Returns true if there is no makeRegisterDecisionForTopic scheduled for the topic at decision time

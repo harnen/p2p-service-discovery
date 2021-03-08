@@ -37,7 +37,7 @@ public class TicketTable extends RoutingTable {
     
     private int lastAskedBucket;
     private int triesWithinBucket;
-    private int seenFull = 0;
+    private List<Integer> seenOccupancy;
     private int seenNotFull = 0; 
     
     public int available_requests = KademliaCommonConfig.ALPHA;
@@ -66,6 +66,8 @@ public class TicketTable extends RoutingTable {
 		registeredNodes = new ArrayList<BigInteger>();
 		
 		lastAskedBucket = KademliaCommonConfig.BITS;
+		
+		seenOccupancy = new ArrayList<Integer>();
 		
 	}
 
@@ -250,25 +252,29 @@ public class TicketTable extends RoutingTable {
 	}
 	
 	public boolean shallContinueRegistration() {
-		return true;
-		/*if( (seenFull + seenNotFull) < KademliaCommonConfig.ALPHA) {
+		//return true;
+		int windowSize = 1;//KademliaCommonConfig.ALPHA;
+		if(seenOccupancy.size() < windowSize) {
 			return true;
 		}
 		
-		int toss = CommonState.r.nextInt(seenFull + seenNotFull);
-		System.out.println("Flipping coin. seenFull: " + seenFull + " seenNotFull: " + seenNotFull + " toss: " + toss);
-		if(toss < seenFull) {
+		int sumOccupancy = 0;
+		int sumSpace = windowSize * KademliaCommonConfig.ADS_PER_QUEUE;
+		for(int i = (seenOccupancy.size() - windowSize); i < seenOccupancy.size(); i++) {
+		    sumOccupancy += seenOccupancy.get(i);
+		}
+		
+		
+		int toss = CommonState.r.nextInt(sumSpace);
+		System.out.println("Flipping coin. sumSpace: " + sumSpace + " seenOccupancy: " + seenOccupancy + " toss: " + toss);
+		if(toss < sumOccupancy) {
 			return false;
 		}
-		return true;*/
+		return true;
 	}
 
 	public void reportResponse(Ticket ticket) {
-		if(ticket.topicQueueFull) {
-			seenFull++;
-		}else {
-			seenNotFull++;
-		}
+		seenOccupancy.add(ticket.topicOccupancy);
 	}
 
 

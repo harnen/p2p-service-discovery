@@ -284,7 +284,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     private void handleTicketResponse(Message m, int myPid) {
 		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
         Ticket ticket = body.ticket;
-        System.out.println("Got response! Is topic queue full?" + ticket.topicQueueFull);
+        System.out.println("Got response! Is topic queue full?" + ticket.topicOccupancy);
         Topic topic = ticket.getTopic();
         TicketTable tt = ticketTables.get(topic.getTopicID());
         tt.reportResponse(ticket);
