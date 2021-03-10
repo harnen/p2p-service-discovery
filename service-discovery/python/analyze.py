@@ -918,7 +918,7 @@ def analyzeMessageReceivedByNodes(dirs):
         topics = {}
 
         logdirname = extractAlphanumeric(log_dir)
-        with open(log_dir + 'msg_received.csv', newline='') as csvfile:
+        with open(log_dir + '/msg_received.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 if 't' in row['numMsg']:

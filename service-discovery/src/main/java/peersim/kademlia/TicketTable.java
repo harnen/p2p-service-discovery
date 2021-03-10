@@ -252,9 +252,9 @@ public class TicketTable extends RoutingTable {
 	}
 	
 	public boolean shallContinueRegistration() {
-		//return true;
-		int windowSize = 1;//KademliaCommonConfig.ALPHA;
-		if(seenOccupancy.size() < windowSize) {
+		return true;
+		/*int windowSize = 1;//seenOccupancy.size();//3;//KademliaCommonConfig.ALPHA;
+		if(seenOccupancy.size() < windowSize || windowSize == 0) {
 			return true;
 		}
 		
@@ -270,7 +270,7 @@ public class TicketTable extends RoutingTable {
 		if(toss < sumOccupancy) {
 			return false;
 		}
-		return true;
+		return true;*/
 	}
 
 	public void reportResponse(Ticket ticket) {
