@@ -47,6 +47,9 @@ public class KademliaCommonConfig {
     public static final int ALL_BUCKET_ORDER = 2;
     public static int LOOKUP_BUCKET_ORDER = RANDOM_BUCKET_ORDER;
     
+    public static int STOP_REGISTER_WINDOW_SIZE = 3;
+    public static int STOP_REGISTER_MIN_REGS = 3;
+    
     
     public static int REPORT_MSG_ACTIVATED = 0; 
     

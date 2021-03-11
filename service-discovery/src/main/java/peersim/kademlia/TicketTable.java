@@ -252,9 +252,9 @@ public class TicketTable extends RoutingTable {
 	}
 	
 	public boolean shallContinueRegistration() {
-		return true;
-		/*int windowSize = 1;//seenOccupancy.size();//3;//KademliaCommonConfig.ALPHA;
-		if(seenOccupancy.size() < windowSize || windowSize == 0) {
+		int windowSize = Math.min(seenOccupancy.size(), KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE);
+		//System.out.println("STOP_REGISTER_WINDOW_SISZE: " + KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE + " STOP_REGISTER_MIN_REGS: " + KademliaCommonConfig.STOP_REGISTER_MIN_REGS + " windowsSize:" + windowSize);
+		if(seenOccupancy.size() < KademliaCommonConfig.STOP_REGISTER_MIN_REGS || windowSize == 0) {
 			return true;
 		}
 		
@@ -266,11 +266,11 @@ public class TicketTable extends RoutingTable {
 		
 		
 		int toss = CommonState.r.nextInt(sumSpace);
-		System.out.println("Flipping coin. sumSpace: " + sumSpace + " seenOccupancy: " + seenOccupancy + " toss: " + toss);
+		//System.out.println("Flipping coin. sumSpace: " + sumSpace + " seenOccupancy: " + seenOccupancy + " toss: " + toss);
 		if(toss < sumOccupancy) {
 			return false;
 		}
-		return true;*/
+		return true;
 	}
 
 	public void reportResponse(Ticket ticket) {
