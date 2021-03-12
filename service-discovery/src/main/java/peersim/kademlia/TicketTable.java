@@ -68,11 +68,9 @@ public class TicketTable extends RoutingTable {
 		bucketMinDistance = KademliaCommonConfig.BITS - nBuckets;
 		
 		this.k=3;
-		int sbucket = 3;
+		
 		for (int i = 0; i < k_buckets.length; i++) {
-			System.out.println("Creating bucket "+i+" size "+sbucket);
-			k_buckets[i] = new KBucket(this,sbucket,maxReplacements);
-			if(i>10)sbucket++;
+			k_buckets[i] = new KBucket(this,k,maxReplacements);
 		}
 		
 		pendingTickets = new ArrayList<BigInteger>();
