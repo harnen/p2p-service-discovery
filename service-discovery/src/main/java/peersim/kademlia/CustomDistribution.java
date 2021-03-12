@@ -26,16 +26,16 @@ public class CustomDistribution implements peersim.core.Control {
     private final static String PAR_TOPICNUM = "topicnum";
     private final static String PAR_ZIPF = "zipf";
     
-    private int protocolID;
-    private int evilProtocolID;
-    private double percentEvil;
-    private UniformRandomGenerator urg;
-    private final int topicNum;
-    private final double exp;
-    private ZipfDistribution zipf;
-    private String idDist;
-    private int[] subtract; 
-    private int attackTopicNo;
+    protected int protocolID;
+    protected int evilProtocolID;
+    protected double percentEvil;
+    protected UniformRandomGenerator urg;
+    protected final int topicNum;
+    protected final double exp;
+    protected ZipfDistribution zipf;
+    protected String idDist;
+    protected int[] subtract; 
+    protected int attackTopicNo;
 
     public CustomDistribution(String prefix) {
         protocolID = Configuration.getPid(prefix + "." + PAR_PROT);
@@ -60,7 +60,7 @@ public class CustomDistribution implements peersim.core.Control {
         }
     }
 
-    private BigInteger generate_non_uniform_id(int topicNo, Topic t) {
+    protected BigInteger generate_non_uniform_id(int topicNo, Topic t) {
         int amountToSubstract = subtract[topicNo-1];
         subtract[topicNo-1] += 1;
         String str = String.valueOf(amountToSubstract); 

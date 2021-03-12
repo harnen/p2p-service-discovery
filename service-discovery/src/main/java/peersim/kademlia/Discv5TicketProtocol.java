@@ -575,7 +575,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	}
 	
    public void sendTicketRequest(BigInteger dest,Topic t,int myPid) {
-    	Log.warn("Sending ticket request to " + t.topic);
+    	//Log.warn("Sending ticket request to " + t.topic);
         TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
  		top.body = t;
  		operations.put(top.operationId, top);
