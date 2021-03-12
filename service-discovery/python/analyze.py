@@ -25,7 +25,7 @@ def analyzeMessages(dirs):
     i=0
 
     for log_dir in dirs:
-#        print(log_dir)
+        #print(log_dir)
 
         try:
             df = pd.read_csv(log_dir + '/messages.csv')
@@ -48,7 +48,7 @@ def analyzeMessages(dirs):
                 new_row = { 'id':0, 'type':'MSG_TICKET_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
                 df = df.append(new_row,ignore_index=True)
             table = df['type'].value_counts().sort_index()
-#            print(table)
+
             ax2.bar(np.arange(len(table.index))+margin,table.values,width=width, label=log_dir)
             i = i+1
         except pd.errors.EmptyDataError:
@@ -94,7 +94,7 @@ def analyzeActiveRegistrations(dirs):
             reader = csv.DictReader(csvfile)
             ncol = len(next(reader)) # Read first line and count columns
             numOfTopics = int((ncol-1)/2)
- #           print('Number of topics: ', numOfTopics)
+            #print('Number of topics: ', numOfTopics)
             topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
             for topic in topics:
                 normal_registration_count_per_topic[topic] = 0
@@ -139,7 +139,7 @@ def analyzeActiveRegistrationsMalicious(dirs):
             reader = csv.DictReader(csvfile)
             ncol = len(next(reader)) # Read first line and count columns
             numOfTopics = int((ncol-1)/2)
-#            print('Number of topics: ', numOfTopics)
+            #print('Number of topics: ', numOfTopics)
             topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
             for topic in topics:
                 normal_registration_count_per_topic[topic] = 0
@@ -177,10 +177,10 @@ def analyzeActiveRegistrationsMalicious(dirs):
         plt.savefig(OUTDIR + '/registration_origin_withmalicious.png')
 
 def analyzeRegistrations(dirs):
-#    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
     fig1, ax1 = plt.subplots()
     fig2, ax2 = plt.subplots()
-#    fig3, ax3 = plt.subplots()
+    #fig3, ax3 = plt.subplots()
 
     for log_dir in dirs:
         df = pd.read_csv(log_dir + '/registeredRegistrant.csv')
@@ -217,8 +217,8 @@ def analyzeRegistrations(dirs):
 
     ax1.set_title('Registrations by registrant')
     #add line showing how the result should be
-#    ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
-#    ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
+    #ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+    #ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
     ax1.set_ylim(bottom=0)
     ax1.set_xlabel("Nodes")
     ax1.set_ylabel("#placed registrations")
@@ -226,24 +226,24 @@ def analyzeRegistrations(dirs):
     ax2.set_ylabel("#Accepted registrations")
     ax1.legend()
     ax2.legend()
-#    ax3.legend()
+    #ax3.legend()
     fig1.savefig(OUTDIR + '/registrations_registrant_total.png')
 
     ax2.set_title('Registrations by registrar')
-#        ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
-#        ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
+    #ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+    #ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
     ax2.set_ylim(bottom=0)
     ax1.set_xlabel("Nodes")
     ax1.set_ylabel("#accepted registrations")
     fig2.savefig(OUTDIR + '/registrations_registrar_total.png')
 
-#    ax3.set_title('Registrations by topics (average)')
-#    ticks = sorted_table['topic'].values
-#    ax3.set_xticks(range(len(ticks)))
-#    ax3.set_xticklabels(ticks)
+    #    ax3.set_title('Registrations by topics (average)')
+    #    ticks = sorted_table['topic'].values
+    #    ax3.set_xticks(range(len(ticks)))
+    #    ax3.set_xticklabels(ticks)
 
 
-#    fig3.savefig(OUTDIR + '/registrations_topic.png')
+    #    fig3.savefig(OUTDIR + '/registrations_topic.png')
 
 def analyzeRegistrarDistribution(dirs):
     fig, ax1 = plt.subplots()
@@ -260,7 +260,7 @@ def analyzeRegistrarDistribution(dirs):
 
     for log_dir in dirs:
         stats = {}
-#        print(log_dir)
+        #print(log_dir)
         dir_num = dirs.index(log_dir)
         with open(log_dir + '/1000000_registrations.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
@@ -315,7 +315,7 @@ def analyzeRegistrantDistribution(dirs):
     global_max = 0
     for log_dir in dirs:
         stats = {}
-#        print(log_dir)
+        #print(log_dir)
         dir_num = dirs.index(log_dir)
         print("dir_num", dir_num)
         with open(log_dir + '/registeredRegistrant.csv', newline='') as csvfile:
@@ -398,13 +398,13 @@ def analyzeRegistrantDistribution(dirs):
                           markerfacecolor='black', markersize=10))    
     legend_elements.append(Line2D([0], [0], marker='X', color='black', label='Topic hash',
                           markerfacecolor='black', markersize=10))
-#    print(legend_elements)
+    #print(legend_elements)
     ax1.legend(handles=legend_elements)
     ax1.set_title("Discovered Registrants ID Distribution - NoSpam/Random")
     fig.savefig(OUTDIR + '/registrant_distribution.png')
 
 def analyzeOperations(dirs):
-#    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig2, ax2 = plt.subplots()
     #fig3, ax3 = plt.subplots()
 
@@ -417,9 +417,9 @@ def analyzeOperations(dirs):
     i=0
     labels=['ClosestDiscance','RandomBucket','AllBuckets']
     for log_dir in dirs:
-#        print(log_dir)
+        #print(log_dir)
         df = pd.read_csv(log_dir + '/operations.csv')
-#        print(df)
+        #print(df)
 
         meantimes={}
         errtimes={}
@@ -437,12 +437,12 @@ def analyzeOperations(dirs):
         width=0.3
         margin=width*i
 
-#        print(np.arange(len(mean.keys())))
-#        print(mean.values())
+        #print(np.arange(len(mean.keys())))
+        #print(mean.values())
         ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
         i = i+1
-#        print(df['returned_hops'].mean())
-#        ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
+        #print(df['returned_hops'].mean())
+        #ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
         ax2.set_title("Avg Lookup Hop Count Spam")
         ax2.set_xticks(range(len(mean.keys())))
         ax2.set_xticklabels(mean.keys())
@@ -455,7 +455,7 @@ def analyzeOperations(dirs):
         x_vals.append(x_val)
         x_val += 3
 
-#    print('x_vals: ', x_vals)
+    #print('x_vals: ', x_vals)
     width = 1.0  # the width of the bars
     x_values = [x-width/2 for x in x_vals]
     #ax3.bar(x_values, total_malicious_list, width, label='Malicious')
@@ -471,12 +471,12 @@ def analyzeOperations(dirs):
     #fig3.savefig('malicious_discovered.png')
 
 def analyzeEclipsedNodesOverTime(dirs):
-#    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
     colors = ['red', 'green', 'blue']
 
     for log_dir in dirs:
-#        print(log_dir)
+    #print(log_dir)
         df = pd.read_csv(log_dir + '/eclipse_counts.csv')
         ax1.set_title("Number of eclipsed nodes over time")
         ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
@@ -567,8 +567,8 @@ def analyzeEclipsedNodeDistribution(dirs):
     #ax1.set_yticks([])
     topics_list = [id_to_short[x] for x in topics]
     tick_labels = ['topic'+str(x) for x in range(1, len(topics_list)+1)]
-#    print('Tick labels: ', tick_labels)
-#    print('topics_list: ', topics_list)
+    #print('Tick labels: ', tick_labels)
+    #print('topics_list: ', topics_list)
     ax1.set_yticks(sorted(topics_list))
     ax1.set_yticklabels(tick_labels)
     ax1.scatter(x, y, color=c, marker='o')
@@ -586,39 +586,6 @@ def analyzeEclipsedNodeDistribution(dirs):
 
     plt.savefig(OUTDIR + '/node_type_dist.png')
 
-# def analyzeRegistrationTime(dirs):
-#     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-#     fig1, ax1 = plt.subplots()
-#     fig2, ax2 = plt.subplots()
-#     fig3, ax3 = plt.subplots()
-#     fig4, ax4 = plt.subplots()
-#     fig5, ax5 = plt.subplots()
-#
-#     for log_dir in dirs:
-#         print(log_dir)
-#         data1 = genfromtxt(log_dir+'/registeredTopicsTime.csv',delimiter=',',names=['topic','registrant', 'times','regmintime','regavgtime','discmintime','discavgtime'])
-#         ax1.plot(sorted(data1['times'],reverse=True),label=log_dir)
-#         ax2.plot(sorted(data1['regmintime'],reverse=True),label=log_dir)
-#         ax3.plot(sorted(data1['regavgtime'],reverse=True),label=log_dir)
-#         ax4.plot(sorted(data1['discmintime'],reverse=True),label=log_dir)
-#         ax5.plot(sorted(data1['discavgtime'],reverse=True),label=log_dir)
-#
-#
-#     ax1.set_title('Total registrations by registrant')
-#     ax2.set_title('Minimum time to register')
-#     ax3.set_title('Average time to register')
-#     ax4.set_title('Minimum time to discovery')
-#     ax5.set_title('Average time to discovery')
-#     ax1.legend()
-#     ax2.legend()
-#     ax3.legend()
-#     ax4.legend()
-#     ax5.legend()
-#     fig1.savefig(OUTDIR + '/total_reg_by_registrant.png')
-#     fig2.savefig(OUTDIR + '/min_time_register.png')
-#     fig3.savefig(OUTDIR + '/avg_time_register.png')
-#     fig4.savefig(OUTDIR + '/min_time_discovery.png')
-#     fig5.savefig(OUTDIR + '/avg_time_discovery.png')
 
 def analyzeStorageUtilisation(dirs):
 
@@ -636,12 +603,11 @@ def analyzeStorageUtilisation(dirs):
             ax.plot(df['time']/1000, df[topic], label=topic)
 
         ax.legend()
-#        ax.set_xlim([10000,None])
+        #ax.set_xlim([10000,None])
 
         ax.set_ylabel('Average utilisation of storage space')
         ax.set_xlabel('time (sec)')
         plt.savefig(OUTDIR + '/storage_utilisation_' + log_dir1 + '.png')
-
 
 # plot per-topic, average waiting times and number of rejected
 def analyzeWaitingTimes(dirs):
@@ -716,12 +682,12 @@ def analyzeRegistrations2(dirs):
             fig3, ax3 = plt.subplots()
             fig4, ax4 = plt.subplots()
 
-    j=0;
+    j=0
     for log_dir in dirs:
         df = pd.read_csv(log_dir + '/registeredRegistrant.csv')
         df2 = pd.read_csv(log_dir + '/registeredRegistrar.csv')
 
-#        print(sorted(df['count'].values,reverse=True))
+        #print(sorted(df['count'].values,reverse=True))
         if len(df['topic'].unique()) == 1:
 
             ax1.plot(sorted(df['count'].values,reverse=True))
@@ -788,9 +754,9 @@ def analyzeRegistrations2(dirs):
                 errregistrant[topic] = df[df.topic == topic]['count'].std()
                 meanregistrar[topic] = df2[df2.topic == topic]['count'].mean()
                 errregistrar[topic] = df2[df2.topic == topic]['count'].std()
-#                meanavgdisc[topic] = df[df.topic == topic]['average_discovery_time'].mean()
-#                erravgdisc[topic] = df[df.topic == topic]['average_discovery_time'].std()
-#            print(meantimes)
+                #meanavgdisc[topic] = df[df.topic == topic]['average_discovery_time'].mean()
+                #erravgdisc[topic] = df[df.topic == topic]['average_discovery_time'].std()
+                #print(meantimes)
             mean={}
             err={}
             width=0.3
@@ -874,9 +840,9 @@ def analyzeRegistrationTime(dirs):
                 erravgreg[topic] = df[df.topic == topic]['average_registration_time'].std()/1000
                 meanmindisc[topic] = df[df.topic == topic]['min_discovery_time'].mean()/1000
                 errmindisc[topic] = df[df.topic == topic]['min_discovery_time'].std()/1000
-#                meanavgdisc[topic] = df[df.topic == topic]['average_discovery_time'].mean()
-#                erravgdisc[topic] = df[df.topic == topic]['average_discovery_time'].std()
-#            print(meantimes)
+                #meanavgdisc[topic] = df[df.topic == topic]['average_discovery_time'].mean()
+                #erravgdisc[topic] = df[df.topic == topic]['average_discovery_time'].std()
+                #print(meantimes)
             mean={}
             err={}
             margin=width*i
@@ -901,7 +867,7 @@ def analyzeRegistrationTime(dirs):
                 err[key] = errmindisc[key]
             ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
             i=i+1
-#            ax5.bar(df['topic'].unique(), meanavgdisc.values(),yerr=erravgdisc.values())
+            #ax5.bar(df['topic'].unique(), meanavgdisc.values(),yerr=erravgdisc.values())
             ax1.legend()
             ax2.legend()
             ax3.legend()
@@ -911,7 +877,7 @@ def analyzeRegistrationTime(dirs):
     ax2.set_title('Time required for the first registration')
     ax3.set_title('Average registration time per node')
     ax4.set_title('Time between registration to first time discovery')
-#    ax5.set_title('Average time to discovery')
+    #ax5.set_title('Average time to discovery')
     ax1.set_xticks(np.arange(len(mean.keys())))
     ax1.set_xticklabels(mean.keys())
     ax2.set_xticks(np.arange(len(mean.keys())))
@@ -932,19 +898,19 @@ def analyzeRegistrationTime(dirs):
     ax2.set_ylabel("Time (sec)")
     ax3.set_ylabel("Time (sec)")
     ax4.set_ylabel("Time (sec)")
-#    ax5.legend()
+    #ax5.legend()
     fig1.savefig(OUTDIR + '/total_reg_by_registrant.png')
     fig2.savefig(OUTDIR + '/min_time_register.png')
     fig3.savefig(OUTDIR + '/avg_time_register.png')
     fig4.savefig(OUTDIR + '/min_time_discovery.png')
-#    fig5.savefig(OUTDIR + '/avg_time_discovery.png')
+    #fig5.savefig(OUTDIR + '/avg_time_discovery.png')
 
 
 def analyzeMessageReceivedByNodes(dirs):
 
     fig, ax = plt.subplots()
     i=0
-    labels=['NoSpam','Spam']
+    labels=dirs
     for log_dir in dirs:
         me = extractAlphanumeric(log_dir)
         x_vals = []
@@ -952,7 +918,7 @@ def analyzeMessageReceivedByNodes(dirs):
         topics = {}
 
         logdirname = extractAlphanumeric(log_dir)
-        with open(log_dir + 'msg_received.csv', newline='') as csvfile:
+        with open(log_dir + '/msg_received.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 if 't' in row['numMsg']:
@@ -988,7 +954,7 @@ def analyzeRegistrationOverhead(dirs):
     labels=['NoSpam','Spam']
     for log_dir in dirs:
         logdirname = extractAlphanumeric(log_dir)
-#        print(logdirname)
+        #print(logdirname)
         with open(log_dir + '/register_overhead.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             ncols = len(next(reader)) # Read first line and count columns
@@ -1004,8 +970,8 @@ def analyzeRegistrationOverhead(dirs):
                 for topic in topics:
                     y_values.append(float(row[topic]))
                     xs = [x-width*i for x in x_values]
-#        print('y_values: ', y_values)
-#        print('x_values: ', xs)
+        #print('y_values: ', y_values)
+        #print('x_values: ', xs)
         #ax.legend()
         margin=width*i
         print(np.arange(len(topics)))
@@ -1034,7 +1000,7 @@ print('Plots will be saved in ', OUTDIR);
 #analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
 #analyzeRegistrations2(sys.argv[1:])
-analyzeOperations(sys.argv[1:])
+#analyzeOperations(sys.argv[1:])
 #analyzeRegistrantDistribution(sys.argv[1:])
 #analyzeRegistrarDistribution(sys.argv[1:])
 #analyzeEclipsedNodesOverTime(sys.argv[1:])
@@ -1046,6 +1012,6 @@ analyzeOperations(sys.argv[1:])
 #analyzeNumberOfMessages(sys.argv[1:])
 
 #analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
-#analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
-#plt.show()
+analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
+plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])

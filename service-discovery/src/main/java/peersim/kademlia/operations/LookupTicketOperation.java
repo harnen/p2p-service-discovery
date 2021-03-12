@@ -89,9 +89,6 @@ public class LookupTicketOperation extends LookupOperation {
 			System.out.println("Returning null");
 		}
 		
-		
-		
-		
 		return res;
 	}
 	
