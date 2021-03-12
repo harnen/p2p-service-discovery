@@ -522,7 +522,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     }
     
     public void sendTopicLookup(Message m,Topic t,int myPid) {
-    	
 		KademliaObserver.lookup_total.add(1);
 
 		LookupTicketOperation lop = new LookupTicketOperation(this.node.getId(), this.searchTables.get(t.getTopicID()), m.timestamp, t);
@@ -575,7 +574,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	}
 	
    public void sendTicketRequest(BigInteger dest,Topic t,int myPid) {
-    	//Log.warn("Sending ticket request to " + t.topic);
+    	logger.warning("Sending ticket request to " + t.topic);
         TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
  		top.body = t;
  		operations.put(top.operationId, top);
