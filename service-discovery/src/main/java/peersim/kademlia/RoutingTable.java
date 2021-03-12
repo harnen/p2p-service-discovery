@@ -25,17 +25,14 @@ public class RoutingTable implements Cloneable {
 	protected BigInteger nodeId = null;
 
 	// k-buckets
-	//protected TreeMap<Integer, KBucket> k_buckets = null;
 	protected KBucket k_buckets[];
 
 	protected int nBuckets,k,maxReplacements;
-	//protected KademliaProtocol prot;
 	// ______________________________________________________________________________________________
 	/**
 	 * instanciates a new empty routing table with the specified size
 	 */
 	public RoutingTable(int nBuckets, int k, int maxReplacements) {
-		// initialize k-bukets
 		k_buckets = new KBucket[nBuckets];
 		this.nBuckets = nBuckets;
 		this.k=k;
@@ -45,7 +42,6 @@ public class RoutingTable implements Cloneable {
 			k_buckets[i] = new KBucket(this,k,maxReplacements);
 		}
 
-		//this.prot=prot;
 	}
 
 	public int containsNode(BigInteger id){
@@ -61,7 +57,6 @@ public class RoutingTable implements Cloneable {
 	// add a neighbour to the correct k-bucket
 	public boolean addNeighbour(BigInteger node) {
 		// get the lenght of the longest common prefix (correspond to the correct k-bucket)
-		//System.out.println("Bucket add node "+node+" in "+nodeId+" at bucket "+Util.logDistance(nodeId, node));
 		if(node.compareTo(nodeId)==0) return false;
 			
 		return getBucket(node).addNeighbour(node);
@@ -79,14 +74,12 @@ public class RoutingTable implements Cloneable {
 		BigInteger[] result = new BigInteger[0];
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
 		resultList.addAll(bucketAtDistance(dist).neighbours);
-		//System.out.println("Getneighbours "+resultList.size());
+
 		if(resultList.size()<k && (dist+1)<=256) {
-			//System.out.println("Getneighbours "+resultList.size());
 			resultList.addAll(bucketAtDistance(dist+1).neighbours);
 			while(resultList.size()>k)resultList.remove(resultList.size()-1);
 		}
 		if(resultList.size()<k& (dist-1)>=0) {
-			//System.out.println("Getneighbours "+resultList.size());
 			resultList.addAll(bucketAtDistance(dist-1).neighbours);
 			while(resultList.size()>k)resultList.remove(resultList.size()-1);
 		}
@@ -132,15 +125,13 @@ public class RoutingTable implements Cloneable {
 	 * 
 	 */
 	public void refreshBuckets() {
-		//System.out.println("Routingtable refreshBuckkets "+CommonState.getTime());
-		//Random rnd= new Random();
-		//for(int i=0;i<nBuckets;i++) {
+
 		KBucket b = k_buckets[CommonState.r.nextInt(nBuckets)];
 		if(b.neighbours.size()>0) {
 			b.checkAndReplaceLast();
 			return;
 		}
-		//}
+
 	}
 	
 	public Set<BigInteger> getAllNeighbours(){
@@ -160,7 +151,6 @@ public class RoutingTable implements Cloneable {
 	
 	
 	public KBucket getBucket(BigInteger node) {
-		//return bucketAtDistance(Util.prefixLen(nodeId, node));
 		return bucketAtDistance(Util.logDistance(nodeId, node));
 	}
 
@@ -173,11 +163,11 @@ public class RoutingTable implements Cloneable {
 	}
 	
 	protected KBucket bucketAtDistance(int distance) {
+		
 		if (distance <= bucketMinDistance) {
-			//System.out.println("bucket at distance "+distance+" "+bucketMinDistance+" "+0);
 			return k_buckets[0];
 		}
-		//System.out.println("bucket at distance "+bucketMinDistance+" "+distance+" "+(distance - bucketMinDistance - 1));
+		
 		return k_buckets[distance - bucketMinDistance - 1];
 	}
 	
@@ -188,42 +178,36 @@ public class RoutingTable implements Cloneable {
 	protected BigInteger generateRandomNode(int b) {
 		
 		BigInteger randNode;
-		//do {
-			UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
-			BigInteger rand = urg.generate();
-			String rand2 = Util.put0(rand);
-			
-			int distance = b + this.bucketMinDistance + 1;
-				
-			int prefixlen = (KademliaCommonConfig.BITS - distance);
-			
-			String nodeId2 = Util.put0(nodeId);
-			
-			String randomString = "";
-			//System.out.println(nodeId2+" "+prefixlen+" "+b+" "+distance);
-			//System.out.println(rand2);
-			if(prefixlen>0) {
-				if(nodeId2.charAt(prefixlen)==rand2.charAt(prefixlen)) {
-					if(Integer.parseInt(nodeId2.substring(prefixlen-1,prefixlen))==0) {
-						randomString = nodeId2.substring(0,prefixlen).concat("1");
-					} else {
-						randomString = nodeId2.substring(0,prefixlen).concat("0");
-					}
-					randomString = randomString.concat(rand2.substring(prefixlen+1,rand2.length()));
-				//logger.warning(randomString);
-				} else 
-					randomString = nodeId2.substring(0,prefixlen).concat(rand2.substring(prefixlen,rand2.length()));
-			//logger.warning(randomString);
-				randNode = new BigInteger(randomString,2);
 
-			} else {
-				randNode = rand;
-			}
+		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
+		BigInteger rand = urg.generate();
+		String rand2 = Util.put0(rand);
+				
+		int distance = b + this.bucketMinDistance + 1;
+					
+		int prefixlen = (KademliaCommonConfig.BITS - distance);
+				
+		String nodeId2 = Util.put0(nodeId);
+				
+		String randomString = "";
+
+		if(prefixlen>0) {
+			if(nodeId2.charAt(prefixlen)==rand2.charAt(prefixlen)) {
+				if(Integer.parseInt(nodeId2.substring(prefixlen-1,prefixlen))==0) {
+					randomString = nodeId2.substring(0,prefixlen).concat("1");
+				} else {
+					randomString = nodeId2.substring(0,prefixlen).concat("0");
+				}
+				randomString = randomString.concat(rand2.substring(prefixlen+1,rand2.length()));
+			} else 
+				randomString = nodeId2.substring(0,prefixlen).concat(rand2.substring(prefixlen,rand2.length()));
 			
-			//logger.warning("Distance "+Util.logDistance(randNode, b));
-			
-		//}while(Util.logDistance(randNode, nodeId)!=b);
-		
+			randNode = new BigInteger(randomString,2);
+
+		} else {
+			randNode = rand;
+		}
+				
 		return randNode;
 	}
 	

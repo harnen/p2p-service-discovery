@@ -94,12 +94,10 @@ public class DnsListDistribution implements peersim.core.Control {
 				
 			((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
 			i++;
-
 	    }
 		
 		while(i<Network.size())
 			Network.remove(i);
-
 
 		return false;
 	}

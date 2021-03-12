@@ -32,7 +32,6 @@ public class TurbulenceSingleTopic extends Turbulence{
 			exp = Configuration.getDouble(prefix + "." + PAR_ZIPF);
 			topicNum = Configuration.getInt(prefix + "." + PAR_TOPICNUM,1);
 			zipf = new ZipfDistribution(topicNum,exp);
-			// TODO Auto-generated constructor stub
 		}
 
 		public boolean add() {
@@ -82,7 +81,6 @@ public class TurbulenceSingleTopic extends Turbulence{
 			Message registerMessage = generateRegisterMessage(topic);
 		    Message lookupMessage = generateTopicLookupMessage(topic);
 		    if(registerMessage != null) {
-			    //int time = CommonState.r.nextInt(90000);
 			    System.out.println("Topic " + topic + " will be registered by "+node.getId());
 			    EDSimulator.add(0, initLookupMessage, newNode, kademliaid);
 			    EDSimulator.add(10000, registerMessage, newNode, kademliaid);
@@ -90,7 +88,6 @@ public class TurbulenceSingleTopic extends Turbulence{
 
 		    }
 	    
-            //System.out.println();
 
 			return false;
 		}

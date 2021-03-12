@@ -103,6 +103,21 @@ public class Discv5TopicTable { // implements TopicTable {
                 ticketList.add(ticket);
         }
     }
+    
+    private int topicQueueOccupancy(Topic topic) {
+    	ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
+    	if (topicQ != null) {
+    		System.out.println("topicQ: " + topicQ.size() + "/" + this.adsPerQueue);
+    		return topicQ.size();
+    	}else {
+    		System.out.println("Topic queue is null");
+    		for(Topic t: topicTable.keySet()) {
+    			System.out.println(t);
+    		}
+    		
+    	}
+    	return 0;
+    }
 
     private long getWaitingTime(TopicRegistration reg, long curr_time) {
         //System.out.println("Get Waiting time "+reg.getTopic().getTopic());
@@ -242,7 +257,7 @@ public class Discv5TopicTable { // implements TopicTable {
     public Ticket getTicket(Topic t, KademliaNode advertiser, long rtt_delay, long curr_time) {
         Topic topic = new Topic(t.topic);
         //topic.setHostID(this.hostID);
-        // System.out.println("Get ticket "+topic.getTopic());
+        System.out.println("Get ticket "+topic.getTopic() + " " + this.hostID);
         TopicRegistration reg = new TopicRegistration(advertiser, topic, curr_time);
 
         //update the topic table (remove expired advertisements)
@@ -250,16 +265,17 @@ public class Discv5TopicTable { // implements TopicTable {
 
         //compute ticket waiting time
         long waiting_time = getWaitingTime(reg, curr_time);
-
+        int queueOccupancy = topicQueueOccupancy(t);
+        
         if (waiting_time == -1) {
             //already registered
             KademliaObserver.reportWaitingTime(topic, waiting_time);
-            return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
+            return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
         }
         
         waiting_time = (waiting_time - rtt_delay > 0) ? waiting_time - rtt_delay : 0;
      
-        return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
+        return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
     }
 
     // Returns true if there is no makeRegisterDecisionForTopic scheduled for the topic at decision time
@@ -304,21 +320,6 @@ public class Discv5TopicTable { // implements TopicTable {
             }*/
             return new TopicRegistration[0];
         }
-      
-        //List<TopicRegistration> result = new ArrayList<>();
-        //int i=0;
-        
-        // Oldest to newest
-        //for(Iterator<TopicRegistration> iter=topicQ.iterator();iter.hasNext()&&i<KademliaCommonConfig.K;i++)
-        //	result.add(iter.next());
-        
-        // Newest to oldest 
-        //Iterator<TopicRegistration> iter = topicQ.descendingIterator();
-        //while(iter.hasNext()) {
-            // do something with it.next()
-        //     result.add(iter.next());
-        //    i++;
-        //}
 
         // Random selection of K results
         TopicRegistration[] results = (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);

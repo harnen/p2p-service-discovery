@@ -28,6 +28,9 @@ public class Discv5TrafficGenerator implements Control {
 	private boolean first = true;
 
 	private int topicCounter = 0;
+	
+	private int counter = 0;
+	private int limit = 1;
 
 	/**
 	 * MSPastry Protocol ID to act
@@ -67,7 +70,7 @@ public class Discv5TrafficGenerator implements Control {
 	 * @return Message
 	 */
 	private Message generateRegisterMessage() {
-		Topic topic = new Topic("t" + Integer.toString(this.topicCounter++));
+		Topic topic = new Topic("t" + Integer.toString(0));
 		Message m = Message.makeRegister(topic);
 		m.timestamp = CommonState.getTime();
 		//System.out.println("Topic id "+topic.topicID);
@@ -82,12 +85,12 @@ public class Discv5TrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
-		//first = false;
-		if(!first){
+		if(counter >= limit){
 			return false;
 		}
+		counter++;
 		//first = false;
-		//System.out.println("Discv5 Traffic generator called");
+		System.out.println("Discv5 Traffic generator called");
 		Node start;
 		do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
@@ -97,10 +100,11 @@ public class Discv5TrafficGenerator implements Control {
 		EDSimulator.add(0, generateRegisterMessage(), start, pid);
 		
 		// send topic lookup message
-        do {
+        /*do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));
 		} while ((start == null) || (!start.isUp()));
-        EDSimulator.add(1, generateTopicLookupMessage(), start, pid);
+        EDSimulator.add(1, generateTopicLookupMessage(), start, pid);*/
+		
 
 		return false;
 	}

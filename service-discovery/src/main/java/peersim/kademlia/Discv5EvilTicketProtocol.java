@@ -271,7 +271,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 		BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
 		//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
 
-    	Message.TicketRequestBody body = new Message.TicketRequestBody(ticket, neighbours);
+    	Message.TicketReplyBody body = new Message.TicketReplyBody(ticket, neighbours);
 		Message response  = new Message(Message.MSG_TICKET_RESPONSE, body);
 	
         //Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
