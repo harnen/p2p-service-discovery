@@ -201,7 +201,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     private void makeRegisterDecision(Topic topic, int myPid) {
 
         long curr_time = CommonState.getTime();
-        Ticket [] tickets = this.topicTable.makeRegisterDecisionForTopic(topic, curr_time);
+        Ticket [] tickets = this.topicTable.makeRegisterDecision(curr_time);
         
         for (Ticket ticket : tickets) {
             Message m = ticket.getMsg();
