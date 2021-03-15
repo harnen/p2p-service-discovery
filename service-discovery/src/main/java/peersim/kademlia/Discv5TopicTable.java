@@ -1,6 +1,7 @@
 package peersim.kademlia;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -190,67 +191,59 @@ public class Discv5TopicTable { // implements TopicTable {
         this.allAds.add(reg);
     }
     
-    public Ticket [] makeRegisterDecisionForTopic(Topic ti, long curr_time) {   
-        nextDecisionTime.remove(ti);
-        Topic topic = new Topic(ti.topic);
-        //topic.setHostID(this.hostID);
-        
-        ArrayList<Ticket> ticketList = competingTickets.get(topic);
-        if (ticketList == null) {
-            /*
-            System.out.println("This should not happen");
-            System.out.println("Lookup topic: " + topic.toString());
-            System.out.println("My HostID: " + this.hostID);
-    	    String result = "Topic in TicketList: ";
-    	    for(Topic t: competingTickets.keySet()) {
-                result += t.toString();
-                System.out.println("Comparison: " + topic.compareTo(t));
-                System.out.println("Equality check: " + topic.equals(t));
-            }
-            System.out.println(result);
-	        //System.exit(-1);
-            */
-            return new Ticket[0];
-        }    
-        if (ticketList !=null && ticketList.size() == 0) {
+    public Ticket [] makeRegisterDecision(long curr_time) {   
+        // Determine which topics are up for decision
+        HashSet<Topic> topicSet = new HashSet<Topic>();
+        for (Topic topic : this.competingTickets.keySet()) {
+            ArrayList<Ticket> tickets = this.competingTickets.get(topic);
+            if (tickets != null && !tickets.isEmpty())
+                topicSet.add(topic);
+        }
+        if (topicSet.isEmpty()) {
             return new Ticket[0];
         }
 
         // list of tickets to respond with MSG_REGISTER_RESPONSE
         //ArrayList<Ticket> responseList = new ArrayList<Ticket>();
 
-        //Register as many tickets as possible (subject to resource availability)
+        ArrayList<Ticket> ticketList = new ArrayList<Ticket>();
+        for (Topic topic : topicSet) {
+            ArrayList<Ticket> tickets = this.competingTickets.get(topic);
+            ticketList.addAll(tickets);
+            nextDecisionTime.remove(topic);
+            competingTickets.remove(topic);
+        }
         Collections.sort(ticketList);
         updateTopicTable(curr_time);
+
+        //Register as many tickets as possible (subject to availability of space in the table)
         for(Ticket ticket: ticketList) {
-            TopicRegistration reg = new TopicRegistration(ticket.getSrc(), topic, curr_time);
+            TopicRegistration reg = new TopicRegistration(ticket.getSrc(), ticket.getTopic(), curr_time);
             reg.setTimestamp(curr_time);
             long waiting_time = getWaitingTime(reg, curr_time);
 
         	int topicOccupancy = 0;
-        	if(this.topicTable.get(reg.getTopic())!=null)
+            if(this.topicTable.get(reg.getTopic())!=null)
                 topicOccupancy = this.topicTable.get(reg.getTopic()).size();
-            
+        
             if (waiting_time == -1) { 
                 // rejected because a registration from ticket src for topic already exists
                 ticket.setRegistrationComplete(false);
                 ticket.setWaitTime(waiting_time);
             }
-            else if (waiting_time == 0 && topicOccupancy <adsPerQueue && this.allAds.size()<tableCapacity) { //accepted ticket
+            else if ( (waiting_time == 0) && (topicOccupancy < adsPerQueue) && (this.allAds.size() < tableCapacity) ) { //accepted ticket
                 register(reg);
                 ticket.setRegistrationComplete(true);
-                KademliaObserver.reportCumulativeTime(topic, ticket.getCumWaitTime());
+                KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime());
             }
             else { //waiting_time > 0, reject (for now) due to space
                 waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
                 ticket.updateWaitingTime(waiting_time);
                 ticket.setRegistrationComplete(false);
             }
-            KademliaObserver.reportWaitingTime(topic, waiting_time);
+            KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time);
         }
-
         Ticket [] tickets = (Ticket []) ticketList.toArray(new Ticket[ticketList.size()]);
-        competingTickets.remove(topic);
         return tickets;
     }
 
