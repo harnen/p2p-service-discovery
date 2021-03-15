@@ -43,7 +43,7 @@ public class Discv5TopicTableTest{
             System.out.println("Current time: " + curr_time);
             if (i>0 && i%2 ==0) {
                 System.out.println("Making decision for topic: " + topic);
-                Ticket [] tickets = table.makeRegisterDecisionForTopic(topic, curr_time);
+                Ticket [] tickets = table.makeRegisterDecision(curr_time);
                 for (Ticket t:tickets) {
                     if (t.isRegistrationComplete()) {
                         successful_ticket = t;
@@ -73,7 +73,7 @@ public class Discv5TopicTableTest{
             System.out.println("Current time: " + curr_time);
             if (i>0 && i%2 ==0) {
                 System.out.println("Making decision for topic: " + topic);
-                Ticket [] tickets = table.makeRegisterDecisionForTopic(topic, curr_time);
+                Ticket [] tickets = table.makeRegisterDecision(curr_time);
                 for (Ticket t:tickets) {
                     if (t.isRegistrationComplete()) {
                         successful_ticket = t;
