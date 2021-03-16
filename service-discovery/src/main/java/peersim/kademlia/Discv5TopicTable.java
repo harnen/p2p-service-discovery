@@ -16,20 +16,20 @@ import peersim.core.CommonState;
 
 public class Discv5TopicTable { // implements TopicTable {
     
-    private int tableCapacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
+    protected int tableCapacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
     private int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
-    private int adLifeTime = KademliaCommonConfig.AD_LIFE_TIME;
+    protected int adLifeTime = KademliaCommonConfig.AD_LIFE_TIME;
     private BigInteger hostID;
 
     // Per-topic registration table
-    private HashMap<Topic, ArrayDeque<TopicRegistration>> topicTable;
+    protected HashMap<Topic, ArrayDeque<TopicRegistration>> topicTable;
     // Competing tickets for each topic 
-    private HashMap<Topic, ArrayList<Ticket>> competingTickets;
+    protected HashMap<Topic, ArrayList<Ticket>> competingTickets;
     // All topic advertisements ordered by registration
-    private ArrayDeque<TopicRegistration> allAds;
+    protected ArrayDeque<TopicRegistration> allAds;
     private HashMap<Topic, Long> nextDecisionTime;
 
-    private Logger logger;
+    protected Logger logger;
 
     public Discv5TopicTable() {
         topicTable = new HashMap<Topic, ArrayDeque<TopicRegistration>>(); 
@@ -64,7 +64,7 @@ public class Discv5TopicTable { // implements TopicTable {
         this.adsPerQueue = qSize;
     }
 
-    private void updateTopicTable(long curr_time) {
+    protected void updateTopicTable(long curr_time) {
 		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
@@ -120,7 +120,7 @@ public class Discv5TopicTable { // implements TopicTable {
     	return 0;
     }
 
-    private long getWaitingTime(TopicRegistration reg, long curr_time) {
+    protected long getWaitingTime(TopicRegistration reg, long curr_time) {
         //System.out.println("Get Waiting time "+reg.getTopic().getTopic());
 
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
@@ -191,7 +191,7 @@ public class Discv5TopicTable { // implements TopicTable {
         this.allAds.add(reg);
     }
     
-    public Ticket [] makeRegisterDecision(long curr_time) {   
+    protected Ticket [] makeRegisterDecision(long curr_time) {   
         // Determine which topics are up for decision
         HashSet<Topic> topicSet = new HashSet<Topic>();
         for (Topic topic : this.competingTickets.keySet()) {
@@ -247,7 +247,7 @@ public class Discv5TopicTable { // implements TopicTable {
         return tickets;
     }
 
-    public Ticket getTicket(Topic t, KademliaNode advertiser, long rtt_delay, long curr_time) {
+    protected Ticket getTicket(Topic t, KademliaNode advertiser, long rtt_delay, long curr_time) {
         Topic topic = new Topic(t.topic);
         //topic.setHostID(this.hostID);
         System.out.println("Get ticket "+topic.getTopic() + " " + this.hostID);
