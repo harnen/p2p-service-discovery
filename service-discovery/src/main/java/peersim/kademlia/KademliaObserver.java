@@ -160,7 +160,7 @@ public class KademliaObserver implements Control {
 		try {
 			if(reportMsg==1) {
 				msgWriter = new FileWriter(this.logFolderName + "/" + "messages.csv");
-				msgWriter.write("id,type,src,dst,topic,sent/received\n");
+				msgWriter.write("id,type,src,dst,topic,bucket,waiting_time,sent/received\n");
 			}
 			opWriter = new FileWriter(this.logFolderName + "/" + "operations.csv");
             opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,topic,topicID\n");
@@ -497,12 +497,21 @@ public class KademliaObserver implements Control {
 	            if(m.src == null) return; //ignore init messages
 	            result += m.id + "," + m.messageTypetoString() +"," + m.src.getId() + "," + m.dest.getId() + ",";
 	            if(m.getType() == Message.MSG_TOPIC_QUERY) {
-	                result += ((Topic) m.body).topic +"," ;
+	                result += ((Topic) m.body).topic +",,," ;
 	            }
 	            else if(m.getType() == Message.MSG_REGISTER) {
-	                result += ((Ticket) m.body).getTopic() + ","+Util.logDistance(((Ticket) m.body).getTopic().getTopicID(), m.dest.getId())+",";
-	            }else {
-	                result += ",";
+	            	int dist = Util.logDistance(((Ticket) m.body).getTopic().getTopicID(), m.dest.getId());
+	            	if (dist<240)dist=240;
+	                result += ((Ticket) m.body).getTopic() + ","+dist+",,";
+	            }else if(m.getType() == Message.MSG_REGISTER_RESPONSE){
+	            	Ticket ticket = (Ticket) m.body;
+	            	if(ticket.isRegistrationComplete())
+	            		result += ticket.getTopic() + ",,"+"-1"+",";
+	            	else
+	            		result += ticket.getTopic() + ",,"+ticket.getWaitTime()+",";
+
+	        	} else {
+	                result += ",,,";
 	            }
 	            if(sent) {
 	                result += "sent\n";
