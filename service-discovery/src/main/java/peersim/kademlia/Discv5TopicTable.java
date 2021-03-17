@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.Collections;
 import java.math.BigInteger;
+import java.util.Random;
 
 import peersim.kademlia.Topic;
 import peersim.kademlia.TopicRegistration;
@@ -29,6 +30,9 @@ public class Discv5TopicTable { // implements TopicTable {
     private HashMap<Topic, Long> nextDecisionTime;
 
     private Logger logger;
+    
+	private final Random random = new Random();
+
 
     public Discv5TopicTable() {
         topicTable = new HashMap<Topic, ArrayDeque<TopicRegistration>>(); 
@@ -230,6 +234,13 @@ public class Discv5TopicTable { // implements TopicTable {
                 waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
                 ticket.updateWaitingTime(waiting_time);
                 ticket.setRegistrationComplete(false);
+                /*if(ticketList.size()>=KademliaCommonConfig.MAX_TICKETS) {
+	                int set = random.nextInt(2);
+	                if(set==1) {
+	                    ticket.setWaitTime(-2);
+	                }
+                }*/
+                
             }
             KademliaObserver.reportWaitingTime(topic, waiting_time);
         }

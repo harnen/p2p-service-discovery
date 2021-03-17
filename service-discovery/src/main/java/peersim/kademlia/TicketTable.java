@@ -33,7 +33,9 @@ public class TicketTable extends RoutingTable {
     HashMap<Integer, Integer> registeredPerDist;
     
     private List<BigInteger> registeredNodes;
-
+    
+    private int[]	 activeRegistrations;
+    
     
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
@@ -57,6 +59,8 @@ public class TicketTable extends RoutingTable {
 
 		registeredNodes = new ArrayList<BigInteger>();
 		
+		
+		activeRegistrations = new int[nBuckets];
 	}
 
 	public TicketTable(int nBuckets,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
@@ -94,10 +98,23 @@ public class TicketTable extends RoutingTable {
 	
 	public boolean addNeighbour(BigInteger node) {
 
+		
+		logger.info("Adding neighbour "+bucketWithRegs()+" "+KademliaCommonConfig.MAX_REG_BUCKETS+" "+Util.logDistance(nodeId, node)+" "+(Util.logDistance(nodeId, node) - bucketMinDistance - 1)+" "+(nBuckets-KademliaCommonConfig.MAX_REG_BUCKETS));
+		if(bucketWithRegs()>=KademliaCommonConfig.MAX_REG_BUCKETS&&KademliaCommonConfig.MAX_REG_BUCKETS>0) {
+			int dist = Util.logDistance(nodeId, node);
+			int bucket;
+			if(dist<=bucketMinDistance)bucket = 0;
+			else bucket = dist - bucketMinDistance - 1;
+			if(bucket<(nBuckets-KademliaCommonConfig.MAX_REG_BUCKETS)) {
+				logger.info("Return false");
+				return false;
+			}
+		}
 		if(!pendingTickets.contains(node)&&!registeredNodes.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
 				protocol.sendTicketRequest(node,t,myPid);
+				addRegisteredList(node);
 				return true;
 			} 
 		}
@@ -213,6 +230,35 @@ public class TicketTable extends RoutingTable {
 	
 	public BigInteger getTopicId() {
 		return nodeId;
+	}
+	
+	public void acceptedReg(BigInteger node) {
+		
+		int dist = Util.logDistance(nodeId, node);
+		int bucket;
+		if(dist<=bucketMinDistance)bucket = 0;
+		else bucket = dist - bucketMinDistance - 1;
+		activeRegistrations[bucket]++;
+		
+	}
+	
+	public void expiredReg(BigInteger node) {
+		
+		int dist = Util.logDistance(nodeId, node);
+		int bucket;
+		if(dist<=bucketMinDistance)bucket = 0;
+		else bucket = dist - bucketMinDistance - 1;
+		if(activeRegistrations[bucket]>0)activeRegistrations[bucket]--;
+		
+	}
+	
+	public int bucketWithRegs() {
+		
+		int regs=0;
+		for(int i:activeRegistrations) 
+			if(i>0)regs++;
+		
+		return regs;
 	}
 
 

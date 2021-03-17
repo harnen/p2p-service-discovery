@@ -186,7 +186,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			routingTable.addNeighbour(neighbour);
 		
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
-			logger.warning("Found node " + op.destNode);
+			logger.info("Found node " + op.destNode);
 			op.finished = true;
 			//node.setLookupResult(op.getNeighboursList());
 			KademliaObserver.find_ok.add(1);

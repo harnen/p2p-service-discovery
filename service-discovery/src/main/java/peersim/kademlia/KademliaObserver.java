@@ -37,7 +37,8 @@ public class KademliaObserver implements Control {
     
     private static final String PAR_RANGE_EXPERIMENT = "rangeExperiment";
     private static final String PAR_STEP = "step";
-    
+    private static final String PAR_REPORT_MSG = "reportMsg";
+    private static final String PAR_REPORT_REG = "reportReg";
 
     private String logFolderName; 
     private String parameterName;
@@ -129,7 +130,8 @@ public class KademliaObserver implements Control {
     
     private static int simpCounter;
     private static int observerStep;
-
+    private static int reportMsg;
+    private static int reportReg;
     /** Prefix to be printed in output */
     private String prefix;
 
@@ -139,6 +141,9 @@ public class KademliaObserver implements Control {
 		this.prefix = prefix;
         this.observerStep = Configuration.getInt(prefix + "." + PAR_STEP);
         this.parameterName = Configuration.getString(prefix + "." + PAR_RANGE_EXPERIMENT, "");
+        this.reportMsg = Configuration.getInt(prefix +"." +PAR_REPORT_MSG,1);
+        this.reportReg = Configuration.getInt(prefix +"." +PAR_REPORT_REG,1);
+
         if (!this.parameterName.isEmpty())
             this.parameterValue = Configuration.getDouble(prefix + "." + PAR_RANGE_EXPERIMENT, -1);
         
@@ -153,10 +158,11 @@ public class KademliaObserver implements Control {
         }
         
 		try {
-			msgWriter = new FileWriter(this.logFolderName + "/" + "messages.csv");
-			msgWriter.write("id,type,src,dst,topic,sent/received\n");
+			if(reportMsg==1) {
+				msgWriter = new FileWriter(this.logFolderName + "/" + "messages.csv");
+				msgWriter.write("id,type,src,dst,topic,bucket,waiting_time,sent/received\n");
+			}
 			opWriter = new FileWriter(this.logFolderName + "/" + "operations.csv");
-			//opWriter.write("id,type,src,dst,hops,malicious,discovered,discovered_list,topic\n");
             opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,topic,topicID\n");
             regByTopic = new HashMap<Topic,Integer>();
             regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
@@ -485,6 +491,41 @@ public class KademliaObserver implements Control {
 	
 	public static void reportMsg(Message m, boolean sent) {
         accountMsg(m);
+        if(reportMsg==1) {
+	        try {
+	            String result = "";
+	            if(m.src == null) return; //ignore init messages
+	            result += m.id + "," + m.messageTypetoString() +"," + m.src.getId() + "," + m.dest.getId() + ",";
+	            if(m.getType() == Message.MSG_TOPIC_QUERY) {
+	                result += ((Topic) m.body).topic +",,," ;
+	            }
+	            else if(m.getType() == Message.MSG_REGISTER) {
+	            	int dist = Util.logDistance(((Ticket) m.body).getTopic().getTopicID(), m.dest.getId());
+	            	if (dist<240)dist=240;
+	                result += ((Ticket) m.body).getTopic() + ","+dist+",,";
+	            }else if(m.getType() == Message.MSG_REGISTER_RESPONSE){
+	            	Ticket ticket = (Ticket) m.body;
+	            	if(ticket.isRegistrationComplete())
+	            		result += ticket.getTopic() + ",,"+"-1"+",";
+	            	else
+	            		result += ticket.getTopic() + ",,"+ticket.getWaitTime()+",";
+
+	        	} else {
+	                result += ",,,";
+	            }
+	            if(sent) {
+	                result += "sent\n";
+	            }
+	            else {
+	                result += "received\n";
+	            }
+	            msgWriter.write(result);
+	            msgWriter.flush();
+	        } catch (IOException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+	        }
+        }
     }
 
     private void write_msg_received_by_nodes() {
@@ -930,8 +971,6 @@ public class KademliaObserver implements Control {
     public boolean execute() {
     	//System.out.println(CommonState.getTime()+" execute");
         try {
-            FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
-            writer.write("host,topic,registrant,timestamp\n");
 
             simpCounter++;
             for(int i = 0; i < Network.size(); i++) {
@@ -968,8 +1007,14 @@ public class KademliaObserver implements Control {
                 }
                 
                 if(kadProtocol instanceof Discv5TicketProtocol) {
-                    String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
-                    writer.write(registrations);
+                	if(reportReg==1) {
+                        FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
+                        writer.write("host,topic,registrant,timestamp\n");
+	                    String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
+	                    writer.write(registrations);
+	                    writer.close();
+
+                	}
                     
                     //topic table registrations by registrar
                     int count=0;
@@ -1015,7 +1060,6 @@ public class KademliaObserver implements Control {
 
 
             }
-            writer.close();
         } catch (IOException e) {
 
             e.printStackTrace();

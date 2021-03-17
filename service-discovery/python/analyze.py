@@ -21,16 +21,35 @@ def extractAlphanumeric(InputString):
 def analyzeMessages(dirs):
     fig1, ax1 = plt.subplots()
     fig2, ax2 = plt.subplots()
-    #fig3, ax3 = plt.subplots()
     i=0
+    fig3, ax3 = plt.subplots()
+    fig4, ax4 = plt.subplots()
 
     for log_dir in dirs:
 #        print(log_dir)
 
         try:
             df = pd.read_csv(log_dir + '/messages.csv')
+            df['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label='Total')
 
-            df['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label=log_dir)
+            df2 = df.loc[(df['type'] == 'MSG_TICKET_REQUEST')]
+            df2['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label='MSG_TICKET_REQUEST')
+            df2 = df.loc[(df['type'] == 'MSG_FIND')]
+            df2['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label='MSG_FIND')
+            df2 = df.loc[(df['type'] == 'MSG_RESPONSE')]
+            df2['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label='MSG_RESPONSE')
+            df2 = df.loc[(df['type'] == 'MSG_TICKET_RESPONSE')]
+            df2['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label='MSG_TICKET_RESPONSE')
+            df2 = df.loc[(df['type'] == 'MSG_REGISTER')]
+            df2['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label='MSG_REGISTER')
+            df2 = df.loc[(df['type'] == 'MSG_REGISTER_RESPONSE')]
+            df2['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label='MSG_REGISTER_RESPONSE')
+            df2 = df.loc[(df['type'] == 'MSG_TOPIC_QUERY')]
+            df2['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label='MSG_TOPIC_QUERY')
+            df2 = df.loc[(df['type'] == 'MSG_TOPIC_QUERY_REPLY')]
+            df2['dst'].value_counts().plot(ax=ax1, kind='line', xticks=[], title="Message received by node", label='MSG_TOPIC_QUERY_REPLY')
+
+
 
             width=0.3
             margin=width*i
@@ -48,8 +67,74 @@ def analyzeMessages(dirs):
                 new_row = { 'id':0, 'type':'MSG_TICKET_RESPONSE', 'src':0, 'dst':0, 'topic':'NaN', 'sent/received':'NaN'}
                 df = df.append(new_row,ignore_index=True)
             table = df['type'].value_counts().sort_index()
-#            print(table)
+            print(table)
+
             ax2.bar(np.arange(len(table.index))+margin,table.values,width=width, label=log_dir)
+
+            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & ((df['bucket'] == 254)| (df['bucket'] == 255)| (df['bucket'] == 256))]
+            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='256-254')
+            print(df3['dst'].value_counts())
+            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & ((df['bucket'] == 251) | (df['bucket'] == 252)| (df['bucket'] == 253))]
+            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='253-251')
+            print(df3['dst'].value_counts())
+            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & ((df['bucket'] == 248)| (df['bucket'] == 249)| (df['bucket'] == 250))]
+            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='250-248')
+            print(df3['dst'].value_counts())
+            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & ((df['bucket'] == 245)| (df['bucket'] == 246)| (df['bucket'] == 247))]
+            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='247-245')
+            print(df3['dst'].value_counts())
+            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & ((df['bucket'] == 242) | (df['bucket'] == 243) | (df['bucket'] == 244))]
+            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='244-242')
+            print(df3['dst'].value_counts())
+            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & ((df['bucket'] == 239) | (df['bucket'] == 240) | (df['bucket'] == 241))]
+            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='241-239')
+            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 253) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='253')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 252) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='252')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 251) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='251')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 250) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='250')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 249) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='249')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 248) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='248')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 247) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='247')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 246) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='246')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 245) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='245')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 244) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='244')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 243) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='243')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 242) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='242')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 241) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='241')
+#            print(df3['dst'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 240) ]
+#            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='240')
+
+            df3 = df.loc[(df['type'] == 'MSG_REGISTER_RESPONSE') & (df['waiting_time'] != -1)]
+            df3['waiting_time'].value_counts().plot(ax=ax4, kind='line', xticks=[], title="Register responses waiting times", label='Total')
+            print(df3['waiting_time'].value_counts())
+
             i = i+1
         except pd.errors.EmptyDataError:
             print("messages file empty")
@@ -62,6 +147,7 @@ def analyzeMessages(dirs):
     ax2.set_xticklabels(ticks)
 
     ax1.legend()
+    ax3.legend()
     #add line showing how the result should be
     ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
     ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=8)
@@ -69,9 +155,21 @@ def analyzeMessages(dirs):
     ax1.set_ylabel("#Messages")
     fig1.savefig(OUTDIR + '/messages_received.png')
 
+#    ax3.plot([ax3.get_xlim()[0], ax3.get_xlim()[1]], [(ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
+#    ax3.text(ax3.get_xlim()[1]*0.8, (ax3.get_ylim()[1] - ax3.get_ylim()[0]) / 2, "optimal", size=8)
+    ax3.set_xlabel("Nodes")
+    ax3.set_ylabel("#Messages")
+    fig3.savefig(OUTDIR + '/messages_received_bucket.png')
+
+    ax4.set_xlabel("Messages")
+    ax4.set_ylabel("Waiting times")
+    fig4.savefig(OUTDIR + '/messages_waiting_times.png')
+
 
     ax2.legend()
     fig2.savefig(OUTDIR + '/messages_types.png')
+
+
 
     #ax3.legend()
     #add line showing how the result should be
@@ -258,39 +356,45 @@ def analyzeRegistrarDistribution(dirs):
     dir_nums = []
     c = []
 
-    for log_dir in dirs:
-        stats = {}
-#        print(log_dir)
-        dir_num = dirs.index(log_dir)
-        with open(log_dir + '/1000000_registrations.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                node = row['host']
-                topic = row['topic']
-                topics.append(topic)
-                dir_nums.append(dir_num)
-                x.append(int(node))
-                c.append(colors[dir_num])
+    try:
+        for log_dir in dirs:
+            stats = {}
+    #        print(log_dir)
+            dir_num = dirs.index(log_dir)
+            with open(log_dir + '/1000000_registrations.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    node = row['host']
+                    topic = row['topic']
+                    topics.append(topic)
+                    dir_nums.append(dir_num)
+                    x.append(int(node))
+                    c.append(colors[dir_num])
 
-    counter = 0
-    topics_set = set(topics)
-    for topic in topics:
-        topic_index = sorted(topics_set).index(topic)
-        dir_offset = dir_nums[counter]*0.3
-        y.append(topic_index + dir_offset)
-        counter += 1
+        counter = 0
+        topics_set = set(topics)
+        for topic in topics:
+            topic_index = sorted(topics_set).index(topic)
+            dir_offset = dir_nums[counter]*0.3
+            y.append(topic_index + dir_offset)
+            counter += 1
 
-    scatter = ax1.scatter(x, y, c=c)
-    legend_elements = []
-    for log_dir in dirs:
-        dir_num = dirs.index(log_dir)
-        color = colors[dir_num]
-        legend_elements.append(Line2D([0], [0], marker='o', color=color, label=log_dir,
-                          markerfacecolor=color, markersize=15))
-    print(legend_elements)
-    ax1.legend(handles=legend_elements)
-    ax1.set_title("Registrars")
-    fig.savefig(OUTDIR + '/registrar_distribution.png')
+        scatter = ax1.scatter(x, y, c=c)
+        legend_elements = []
+        for log_dir in dirs:
+            dir_num = dirs.index(log_dir)
+            color = colors[dir_num]
+            legend_elements.append(Line2D([0], [0], marker='o', color=color, label=log_dir,
+                              markerfacecolor=color, markersize=15))
+        print(legend_elements)
+        ax1.legend(handles=legend_elements)
+        ax1.set_title("Registrars")
+        fig.savefig(OUTDIR + '/registrar_distribution.png')
+    except FileNotFoundError:
+        print("file not found")
+        return
+
+
 
 def analyzeRegistrantDistribution(dirs):
     fig, ax1 = plt.subplots()
@@ -354,7 +458,7 @@ def analyzeRegistrantDistribution(dirs):
                             max_size = stats[node][topic]
                         if(stats[node][topic] > global_max):
                             global_max = stats[node][topic]
-        
+
             for node in stats:
                 for topic in stats[node]:
                     topic_index = sorted(topics).index(topic)
@@ -395,7 +499,7 @@ def analyzeRegistrantDistribution(dirs):
                           markerfacecolor=color, markersize=10))
 
     legend_elements.append(Line2D([0], [0], marker='|', color='red', label='Non-discovered registrants',
-                          markerfacecolor='black', markersize=10))    
+                          markerfacecolor='black', markersize=10))
     legend_elements.append(Line2D([0], [0], marker='X', color='black', label='Topic hash',
                           markerfacecolor='black', markersize=10))
 #    print(legend_elements)
@@ -942,83 +1046,91 @@ def analyzeRegistrationTime(dirs):
 
 def analyzeMessageReceivedByNodes(dirs):
 
-    fig, ax = plt.subplots()
-    i=0
-    labels=['NoSpam','Spam']
-    for log_dir in dirs:
-        me = extractAlphanumeric(log_dir)
-        x_vals = []
-        y_vals = []
-        topics = {}
+    try:
+        fig, ax = plt.subplots()
+        i=0
+        labels=['NoSpam','Spam']
+        for log_dir in dirs:
+            me = extractAlphanumeric(log_dir)
+            x_vals = []
+            y_vals = []
+            topics = {}
 
-        logdirname = extractAlphanumeric(log_dir)
-        with open(log_dir + 'msg_received.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if 't' in row['numMsg']:
-                    topics[row['Node']] = row['numMsg']
-                else:
-                    y_vals.append(int(row['numMsg'])/36000)
-                    x_vals.append(row['Node'])
+            logdirname = extractAlphanumeric(log_dir)
+            with open(log_dir + '/msg_received.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    if 't' in row['numMsg']:
+                        topics[row['Node']] = row['numMsg']
+                    else:
+                        y_vals.append(int(row['numMsg'])/36000)
+                        x_vals.append(row['Node'])
 
-            sorted_y_vals = sorted(y_vals)
-            ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=labels[i])
-            i=i+1
-            #for topic in topics:
-            #    plt.axvline(x=topic, color='b', label=topics[topic])
-    ax.legend()
-    ax.set_xticks([])
-    #ax.set_yticks(ax.get_yticks()[::100])
-    ax.set_xticklabels([])
-    ax.set_ylabel('Number of received messages/sec')
-    ax.set_xlabel('Nodes')
+                sorted_y_vals = sorted(y_vals)
+                ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=labels[i])
+                i=i+1
+                #for topic in topics:
+                #    plt.axvline(x=topic, color='b', label=topics[topic])
+        ax.legend()
+        ax.set_xticks([])
+        #ax.set_yticks(ax.get_yticks()[::100])
+        ax.set_xticklabels([])
+        ax.set_ylabel('Number of received messages/sec')
+        ax.set_xlabel('Nodes')
 
-    ax.set_title('Message received by node')
+        ax.set_title('Message received by node')
 
-    plt.savefig(OUTDIR + '/messages_received')
+        plt.savefig(OUTDIR + '/messages_received2')
+    except FileNotFoundError:
+        print("file not found")
+        return
 
 def analyzeRegistrationOverhead(dirs):
-    fig, ax = plt.subplots()
-    num_xvalues = len(dirs)
-    width = 0.3
-    i = 0
-    ncol = 0
-    numOfTopics = 0
-    topics = []
-    labels=['NoSpam','Spam']
-    for log_dir in dirs:
-        logdirname = extractAlphanumeric(log_dir)
-#        print(logdirname)
-        with open(log_dir + '/register_overhead.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            ncols = len(next(reader)) # Read first line and count columns
-            numOfTopics = int(ncols-1)
-            topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
-            topics.append('overall')
+    try:
+        fig, ax = plt.subplots()
+        num_xvalues = len(dirs)
+        width = 0.3
+        i = 0
+        ncol = 0
+        numOfTopics = 0
+        topics = []
+        labels=['NoSpam','Spam']
+        for log_dir in dirs:
+            logdirname = extractAlphanumeric(log_dir)
+    #        print(logdirname)
+            with open(log_dir + '/register_overhead.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                ncols = len(next(reader)) # Read first line and count columns
+                numOfTopics = int(ncols-1)
+                topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
+                topics.append('overall')
 
-        x_values = [x for x in range(5, ncols*5+1, 5)]
-        y_values = []
-        with open(log_dir + '/register_overhead.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                for topic in topics:
-                    y_values.append(float(row[topic]))
-                    xs = [x-width*i for x in x_values]
-#        print('y_values: ', y_values)
-#        print('x_values: ', xs)
-        #ax.legend()
-        margin=width*i
-        print(np.arange(len(topics)))
-        ax.bar(np.arange(len(topics))+margin, y_values, width, label=labels[i])
-        i = i + 1
+            x_values = [x for x in range(5, ncols*5+1, 5)]
+            y_values = []
+            with open(log_dir + '/register_overhead.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    for topic in topics:
+                        y_values.append(float(row[topic]))
+                        xs = [x-width*i for x in x_values]
+    #        print('y_values: ', y_values)
+    #        print('x_values: ', xs)
+            #ax.legend()
+            margin=width*i
+            print(np.arange(len(topics)))
+            ax.bar(np.arange(len(topics))+margin, y_values, width, label=labels[i])
+            i = i + 1
 
-    # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel('Number of Ticket/Register Requests until Registration')
-    ax.set_title('Overhead of registrations')
-    ax.set_xticks(np.arange(len(topics)))
-    ax.set_xticklabels(topics)
-    ax.legend()
-    plt.savefig(OUTDIR + '/registration_overhead.png')
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Number of Ticket/Register Requests until Registration')
+        ax.set_title('Overhead of registrations')
+        ax.set_xticks(np.arange(len(topics)))
+        ax.set_xticklabels(topics)
+        ax.legend()
+        plt.savefig(OUTDIR + '/registration_overhead.png')
+    except FileNotFoundError:
+        print("file not found")
+        return
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
@@ -1031,21 +1143,21 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 
-#analyzeMessages(sys.argv[1:])
-#analyzeRegistrations(sys.argv[1:])
-#analyzeRegistrations2(sys.argv[1:])
+analyzeMessages(sys.argv[1:])
+analyzeRegistrations(sys.argv[1:])
+analyzeRegistrations2(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
-#analyzeRegistrantDistribution(sys.argv[1:])
-#analyzeRegistrarDistribution(sys.argv[1:])
-#analyzeEclipsedNodesOverTime(sys.argv[1:])
-#analyzeActiveRegistrations(sys.argv[1:])
-#analyzeActiveRegistrationsMalicious(sys.argv[1:])
-#analyzeRegistrationTime(sys.argv[1:])
-#analyzeStorageUtilisation(sys.argv[1:])
-#analyzeWaitingTimes(sys.argv[1:])
-#analyzeNumberOfMessages(sys.argv[1:])
+analyzeRegistrantDistribution(sys.argv[1:])
+analyzeRegistrarDistribution(sys.argv[1:])
+analyzeEclipsedNodesOverTime(sys.argv[1:])
+analyzeActiveRegistrations(sys.argv[1:])
+analyzeActiveRegistrationsMalicious(sys.argv[1:])
+analyzeRegistrationTime(sys.argv[1:])
+analyzeStorageUtilisation(sys.argv[1:])
+analyzeWaitingTimes(sys.argv[1:])
+analyzeNumberOfMessages(sys.argv[1:])
 
-#analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
+analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
 #analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
 #plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
