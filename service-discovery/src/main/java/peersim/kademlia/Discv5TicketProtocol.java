@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.sun.tools.sjavac.Log;
+
 import peersim.kademlia.Topic;
 import peersim.kademlia.operations.LookupTicketOperation;
 import peersim.kademlia.operations.Operation;
@@ -68,8 +70,12 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	final String PAR_MAX_REGISTRATION_RETRIES = "MAX_REGISTRATION_RETRIES";
 	final String PAR_MAX_REG_BUCKETS = "MAX_REG_BUCKETS";
 
-	boolean printSearchTable=false;
 	
+	final String PAR_STOP_REGISTER_WINDOW_SIZE = "STOP_REGISTER_WINDOW_SIZE";
+	final String PAR_STOP_REGISTER_MIN_REGS = "STOP_REGISTER_MIN_REGS";
+
+	boolean printSearchTable=true;
+
 	/**
 	 * Replicate this object by returning an identical copy.<br>
 	 * It is called by the initializer and do not fill any particular field.
@@ -119,6 +125,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		KademliaCommonConfig.SEARCH_TABLE_REPLACEMENTS = Configuration.getInt(prefix + "." + PAR_SEARCH_TABLE_REPLACEMENTS, KademliaCommonConfig.SEARCH_TABLE_REPLACEMENTS);
 		KademliaCommonConfig.MAX_REGISTRATION_RETRIES = Configuration.getInt(prefix + "." + PAR_MAX_REGISTRATION_RETRIES, KademliaCommonConfig.MAX_REGISTRATION_RETRIES);
 		KademliaCommonConfig.MAX_REG_BUCKETS = Configuration.getInt(prefix + "." + PAR_MAX_REG_BUCKETS, KademliaCommonConfig.MAX_REG_BUCKETS);
+		KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE = Configuration.getInt(prefix + "." + PAR_STOP_REGISTER_WINDOW_SIZE, KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE);
+		KademliaCommonConfig.STOP_REGISTER_MIN_REGS = Configuration.getInt(prefix + "." + PAR_STOP_REGISTER_MIN_REGS, KademliaCommonConfig.STOP_REGISTER_MIN_REGS);
 
 		super._init();
 	}
@@ -204,7 +212,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     private void makeRegisterDecision(Topic topic, int myPid) {
 
         long curr_time = CommonState.getTime();
-        Ticket [] tickets = this.topicTable.makeRegisterDecisionForTopic(topic, curr_time);
+        Ticket [] tickets = this.topicTable.makeRegisterDecision(curr_time);
         
         for (Ticket ticket : tickets) {
             Message m = ticket.getMsg();
@@ -273,7 +281,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         // Send a response message with a ticket back to advertiser
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
 
-    	Message.TicketRequestBody body = new Message.TicketRequestBody(ticket, neighbours);
+    	Message.TicketReplyBody body = new Message.TicketReplyBody(ticket, neighbours);
 		Message response  = new Message(Message.MSG_TICKET_RESPONSE, body);
 
         //Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
@@ -289,30 +297,46 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
      *
      */
     private void handleTicketResponse(Message m, int myPid) {
-		Message.TicketRequestBody body = (Message.TicketRequestBody) m.body;
-		
-        Ticket t = body.ticket;
-        if (t.getWaitTime() == -1) 
+		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
+        Ticket ticket = body.ticket;
+        System.out.println("Got response! Is topic queue full?" + ticket.topicOccupancy);
+        Topic topic = ticket.getTopic();
+        TicketTable tt = ticketTables.get(topic.getTopicID());
+        tt.reportResponse(ticket);
+        
+        if (ticket.getWaitTime() == -1) 
         {   
-            logger.warning("Attempted to re-register topic on the same node "+m.src.getId());
-            ticketTables.get(t.getTopic().getTopicID()).removeNeighbour(m.src.getId());
+
+            logger.warning("Attempted to re-register topic on the same node");
+            tt.removeNeighbour(m.src.getId());
             return;
         }
+        
         if(KademliaCommonConfig.TICKET_NEIGHBOURS==1) {  
         	
         	for(BigInteger node: body.neighbours)
         		routingTable.addNeighbour(node);
         	
-        	TicketTable ttable = ticketTables.get(t.getTopic().getTopicID());
-        	if(ttable!=null) {
-        		ttable.addNeighbour(body.neighbours);
+        	
+        	if(tt!=null) {
+        		tt.addNeighbour(body.neighbours);
         	}
-         	SearchTable stable = searchTables.get(t.getTopic().getTopicID());
-        	if(stable!=null)stable.addNeighbour(body.neighbours);
+         	SearchTable st = searchTables.get(topic.getTopicID());
+        	if(st != null) st.addNeighbour(body.neighbours);
+        	
    	
         }
-
-        ticketTables.get(t.getTopic().getTopicID()).addTicket(m,t);
+     
+        tt.addTicket(m,ticket);
+        tt.available_requests++;
+        
+        if(tt.available_requests > 0) {
+        	BigInteger nextNode = tt.getNeighbour();
+			if (nextNode != null) {
+				sendTicketRequest(nextNode, topic,myPid);
+			}
+        	
+        }
     }
 
 	/**
@@ -472,25 +496,31 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     	Topic t = (Topic) m.body;
     	
     	logger.warning("handleInitRegisterTopic "+t.getTopic()+" "+t.getTopicID()+" "+KademliaCommonConfig.TICKET_BUCKET_SIZE);
-
-
     	//restore the IF statement
     	KademliaObserver.addTopicRegistration(t, this.node.getId());
 
-        //TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
-        TicketTable rou;
+        TicketTable tt;
         if(KademliaCommonConfig.TICKET_BUCKET_SIZE==0)
-        	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+        	tt = new TicketTable(KademliaCommonConfig.NBUCKETS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
         else
-        	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
-        rou.setNodeId(t.getTopicID());
-        ticketTables.put(t.getTopicID(),rou);
+        	tt = new TicketTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+        tt.setNodeId(t.getTopicID());
+        ticketTables.put(t.getTopicID(),tt);
         	
         for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
         	BigInteger[] neighbours = routingTable.getNeighbours(i);
-        	rou.addNeighbour(neighbours);
+        	tt.addNeighbour(neighbours);
         }
-        if(printSearchTable)rou.print();
+        if(printSearchTable) tt.print();
+        
+        
+        for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
+			BigInteger nextNode = tt.getNeighbour();
+			if (nextNode != null) {
+				sendTicketRequest(nextNode, t,myPid);
+			}
+		}
+        
         //Register messages are automatically sent when adding Neighbours
         
 
@@ -525,6 +555,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
        	
         if(printSearchTable)rou.print();
         sendTopicLookup(m,t,myPid);
+        
  
     }
     
@@ -561,9 +592,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 				lop.nrHops++;
 			}
 		}
-		
-		
-    	
     }
 
     
@@ -593,7 +621,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	}
 	
    public void sendTicketRequest(BigInteger dest,Topic t,int myPid) {
-    	
+    	logger.warning("Sending ticket request to " + dest + " for topic " + t.topic);
+    	TicketTable tt = ticketTables.get(t.topicID);
         TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
  		top.body = t;
  		operations.put(top.operationId, top);
@@ -612,6 +641,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
  		
  		logger.info("Send ticket request to "+dest+" for topic "+t.getTopic());
  		sendMessage(m,top.getNeighbour(),myPid);
+ 		tt.available_requests--;
+ 		System.out.println("available_requests:" + tt.available_requests);
+
 
    }
 

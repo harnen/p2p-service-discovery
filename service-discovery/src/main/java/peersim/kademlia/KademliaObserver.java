@@ -555,6 +555,7 @@ public class KademliaObserver implements Control {
         try {
             String filename = this.logFolderName + "/" + "register_overhead.csv";
             FileWriter writer = new FileWriter(filename);
+            if(all_topics == null) return;
             Arrays.sort(all_topics);
             String title = "";
             for (String topic: all_topics) {

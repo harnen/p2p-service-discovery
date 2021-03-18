@@ -38,11 +38,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	//private final static String PAR_FREQ = "maxfreq";
 
 	protected boolean first = true;
-	private boolean second = false;
-
-    protected final int attackTopicIndex; //index of the topic attacked by all the malicious nodes
-	private static Integer topicCounter = 0;
-
+	protected final int attackTopicIndex; //index of the topic attacked by all the malicious nodes
 	protected ZipfDistribution zipf;
 	/**
 	 * MSPastry Protocol ID to act
@@ -57,8 +53,6 @@ public class Discv5ZipfTrafficGenerator implements Control {
 
 	//private Iterator<Entry<String, Integer>> it;
 	
-	private int counter = 0;
-	private int lastRegistered = 0;
 	private int randomLookups = 0;
 	// ______________________________________________________________________________________________
 	public Discv5ZipfTrafficGenerator(String prefix) {
@@ -152,7 +146,8 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
-
+		System.out.println("Discv5Zipf Traffic generator called");
+		first = false;	
 		HashMap<String,Integer> n = new HashMap<String,Integer>();
 		if(first) {
 			for(int i = 0;i<Network.size();i++) 
@@ -168,10 +163,11 @@ public class Discv5ZipfTrafficGenerator implements Control {
                 if (t == null) {
 				    topic = new String("t"+zipf.sample());
     				t = new Topic(topic);
-                }
-                else 
+                }else { 
                     topic = t.getTopic();
-				Integer value = n.get(topic);
+                }
+				
+                Integer value = n.get(topic);
 				if(value==null)
 					n.put(topic, 1);
 				else {
