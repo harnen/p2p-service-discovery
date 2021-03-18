@@ -92,40 +92,46 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
                     for (int topicIndex = 1; topicIndex < numTopics+1; topicIndex++) {
                         topic = new String("t" + topicIndex);
                         topicList[topicIndex-1] = new Topic(topic);
+                        //System.out.println("Topic "+topic);
+                        Integer value = n.get(topic);
+        				if(value==null)
+        					n.put(topic, 1);
+        				else {
+        					int val = value.intValue()+1;
+        					n.put(topic,val);
+        				}
                     }
                     //System.out.println(i + "," + numTopics);
                 }
+
 				
-                Integer value = n.get(topic);
-				if(value==null)
-					n.put(topic, 1);
-				else {
-					int val = value.intValue()+1;
-					n.put(topic,val);
-				}
+
 				//System.out.println("Topic " + topic + " will be registered ");
 				//System.out.println("Topic hash: " + t.getTopicID());
 				//System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
 				
-                for (int topicIndex = 1; topicIndex < numTopics+1; topicIndex++) {
+                for (int topicIndex = 0; topicIndex < numTopics; topicIndex++) {
 				    //kad.setClient(this);
 			    	//prot.getNode().setCallBack(this,start,topicList[topicIndex-1]);
-				    Message registerMessage = generateRegisterMessage(topicList[topicIndex-1].getTopic());
-				    Message lookupMessage = generateTopicLookupMessage(topicList[topicIndex-1].getTopic());
+                	//System.out.println("Topic "+topicList[topicIndex].getTopic());
+				    Message registerMessage = generateRegisterMessage(topicList[topicIndex].getTopic());
+				    Message lookupMessage = generateTopicLookupMessage(topicList[topicIndex].getTopic());
                     //System.out.println();
 				    if(registerMessage != null) {
 					    //int time = CommonState.r.nextInt(900000);
 						int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
 					    //int time = 0;
-					    System.out.println("Topic " + topicList[topicIndex-1].getTopic() + " will be registered by "+prot.getNode().getId()+" at "+time);
+					    //System.out.println("Topic " + topicList[topicIndex-1].getTopic() + " will be registered by "+prot.getNode().getId()+" at "+time);
 					    EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
 					    EDSimulator.add((KademliaCommonConfig.AD_LIFE_TIME)+time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
 
 				    }
 			    }
             }
+
 			for (Map.Entry<String, Integer> i :n.entrySet()) 
 				System.out.println("Topic "+i.getKey()+" "+i.getValue()+" times");
+			
 			
 			first=false;
 		}  else if(randomLookups==1) {

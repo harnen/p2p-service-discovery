@@ -144,14 +144,14 @@ public class KademliaObserver implements Control {
         this.reportMsg = Configuration.getInt(prefix +"." +PAR_REPORT_MSG,1);
         this.reportReg = Configuration.getInt(prefix +"." +PAR_REPORT_REG,1);
 
-        if (!this.parameterName.isEmpty())
-            this.parameterValue = Configuration.getDouble(prefix + "." + PAR_RANGE_EXPERIMENT, -1);
+        //if (!this.parameterName.isEmpty())
+        //    this.parameterValue = Configuration.getDouble(prefix + "." + PAR_RANGE_EXPERIMENT, -1);
         
         if (this.parameterName.isEmpty())
             this.logFolderName = "./logs";
         else
-            this.logFolderName = this.parameterName + "-" + String.valueOf(this.parameterValue);
-        
+            //this.logFolderName = this.parameterName + "-" + String.valueOf(this.parameterValue);
+        	this.logFolderName = this.parameterName;
         File directory = new File(this.logFolderName);
         if (! directory.exists()){
             directory.mkdir();

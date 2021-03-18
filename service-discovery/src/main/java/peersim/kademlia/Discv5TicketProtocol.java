@@ -66,7 +66,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	final String PAR_TICKET_TABLE_REPLACEMENTS = "TICKET_TABLE_REPLACEMENTS";
 	final String PAR_SEARCH_TABLE_REPLACEMENTS = "SEARCH_TABLE_REPLACEMENTS";
 	final String PAR_MAX_REGISTRATION_RETRIES = "MAX_REGISTRATION_RETRIES";
-	final String PAR_BACKOFF_SERVICE = "BACKOFF_SERVICE";
 	final String PAR_MAX_REG_BUCKETS = "MAX_REG_BUCKETS";
 
 	boolean printSearchTable=false;
@@ -119,7 +118,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS = Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_REPLACEMENTS, KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS);
 		KademliaCommonConfig.SEARCH_TABLE_REPLACEMENTS = Configuration.getInt(prefix + "." + PAR_SEARCH_TABLE_REPLACEMENTS, KademliaCommonConfig.SEARCH_TABLE_REPLACEMENTS);
 		KademliaCommonConfig.MAX_REGISTRATION_RETRIES = Configuration.getInt(prefix + "." + PAR_MAX_REGISTRATION_RETRIES, KademliaCommonConfig.MAX_REGISTRATION_RETRIES);
-		KademliaCommonConfig.BACKOFF_SERVICE = Configuration.getInt(prefix + "." + PAR_BACKOFF_SERVICE, KademliaCommonConfig.BACKOFF_SERVICE);
 		KademliaCommonConfig.MAX_REG_BUCKETS = Configuration.getInt(prefix + "." + PAR_MAX_REG_BUCKETS, KademliaCommonConfig.MAX_REG_BUCKETS);
 
 		super._init();
@@ -344,13 +342,10 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
             } else {
             	backoff.registrationFailed();
             }
-            logger.info("Registration failed "+KademliaCommonConfig.BACKOFF_SERVICE+" "+backoff.getTimesFailed() +" backing off "+ +backoff.getTimeToWait()+" "+backoff.shouldRetry()+" "+ticket.getWaitTime());
+            logger.info("Registration failed "+backoff.getTimesFailed() +" backing off "+ +backoff.getTimeToWait()+" "+backoff.shouldRetry()+" "+ticket.getWaitTime());
             
             if(backoff.shouldRetry()) {
-                if(KademliaCommonConfig.BACKOFF_SERVICE==1) 
-                	scheduleSendMessage(register, m.src.getId(), myPid, backoff.getTimeToWait());
-                else
-            		scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
+            	scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
             } else {
                 removeTicket(m.src.getId(),ticket,myPid);
             	

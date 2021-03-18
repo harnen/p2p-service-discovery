@@ -24,7 +24,6 @@ public class KademliaCommonConfig {
     public static int ONE_UNIT_OF_TIME = 1; // smallest time value
     public static int TOPIC_PEER_LIMIT = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
     public static int MAX_SEARCH_HOPS = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
-    public static int BACKOFF_SERVICE = 1;
     public static int MAX_TICKETS = 100;
     public static int MAX_REG_BUCKETS = 0;
 
@@ -50,7 +49,7 @@ public class KademliaCommonConfig {
     public static final int RANDOM_BUCKET_ORDER = 0;
     public static final int CLOSEST_BUCKET_ORDER = 1;
     public static final int ALL_BUCKET_ORDER = 2;
-    public static int LOOKUP_BUCKET_ORDER = RANDOM_BUCKET_ORDER;
+    public static int LOOKUP_BUCKET_ORDER = 1;
     
     
     public static int REPORT_MSG_ACTIVATED = 0; 
