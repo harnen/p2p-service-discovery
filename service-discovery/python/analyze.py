@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import pandas as pd
 import matplotlib
 from matplotlib import pyplot as plt
@@ -919,6 +918,7 @@ def analyzeMessageReceivedByNodes(dirs):
 
         logdirname = extractAlphanumeric(log_dir)
         with open(log_dir + '/msg_received.csv', newline='') as csvfile:
+            print(log_dir)
             reader = csv.DictReader(csvfile)
             for row in reader:
                 if 't' in row['numMsg']:
