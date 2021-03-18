@@ -1,6 +1,7 @@
 package peersim.kademlia;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -15,20 +16,20 @@ import peersim.core.CommonState;
 
 public class Discv5TopicTable { // implements TopicTable {
     
-    private int tableCapacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
+    protected int tableCapacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
     private int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
-    private int adLifeTime = KademliaCommonConfig.AD_LIFE_TIME;
+    protected int adLifeTime = KademliaCommonConfig.AD_LIFE_TIME;
     private BigInteger hostID;
 
     // Per-topic registration table
-    private HashMap<Topic, ArrayDeque<TopicRegistration>> topicTable;
+    protected HashMap<Topic, ArrayDeque<TopicRegistration>> topicTable;
     // Competing tickets for each topic 
-    private HashMap<Topic, ArrayList<Ticket>> competingTickets;
+    protected HashMap<Topic, ArrayList<Ticket>> competingTickets;
     // All topic advertisements ordered by registration
-    private ArrayDeque<TopicRegistration> allAds;
+    protected ArrayDeque<TopicRegistration> allAds;
     private HashMap<Topic, Long> nextDecisionTime;
 
-    private Logger logger;
+    protected Logger logger;
 
     public Discv5TopicTable() {
         topicTable = new HashMap<Topic, ArrayDeque<TopicRegistration>>(); 
@@ -63,7 +64,7 @@ public class Discv5TopicTable { // implements TopicTable {
         this.adsPerQueue = qSize;
     }
 
-    private void updateTopicTable(long curr_time) {
+    protected void updateTopicTable(long curr_time) {
 		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
@@ -103,8 +104,23 @@ public class Discv5TopicTable { // implements TopicTable {
                 ticketList.add(ticket);
         }
     }
+    
+    private int topicQueueOccupancy(Topic topic) {
+    	ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
+    	if (topicQ != null) {
+    		System.out.println("topicQ: " + topicQ.size() + "/" + this.adsPerQueue);
+    		return topicQ.size();
+    	}else {
+    		System.out.println("Topic queue is null");
+    		for(Topic t: topicTable.keySet()) {
+    			System.out.println(t);
+    		}
+    		
+    	}
+    	return 0;
+    }
 
-    private long getWaitingTime(TopicRegistration reg, long curr_time) {
+    protected long getWaitingTime(TopicRegistration reg, long curr_time) {
         //System.out.println("Get Waiting time "+reg.getTopic().getTopic());
 
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
@@ -175,74 +191,66 @@ public class Discv5TopicTable { // implements TopicTable {
         this.allAds.add(reg);
     }
     
-    public Ticket [] makeRegisterDecisionForTopic(Topic ti, long curr_time) {   
-        nextDecisionTime.remove(ti);
-        Topic topic = new Topic(ti.topic);
-        //topic.setHostID(this.hostID);
-        
-        ArrayList<Ticket> ticketList = competingTickets.get(topic);
-        if (ticketList == null) {
-            /*
-            System.out.println("This should not happen");
-            System.out.println("Lookup topic: " + topic.toString());
-            System.out.println("My HostID: " + this.hostID);
-    	    String result = "Topic in TicketList: ";
-    	    for(Topic t: competingTickets.keySet()) {
-                result += t.toString();
-                System.out.println("Comparison: " + topic.compareTo(t));
-                System.out.println("Equality check: " + topic.equals(t));
-            }
-            System.out.println(result);
-	        //System.exit(-1);
-            */
-            return new Ticket[0];
-        }    
-        if (ticketList !=null && ticketList.size() == 0) {
+    protected Ticket [] makeRegisterDecision(long curr_time) {   
+        // Determine which topics are up for decision
+        HashSet<Topic> topicSet = new HashSet<Topic>();
+        for (Topic topic : this.competingTickets.keySet()) {
+            ArrayList<Ticket> tickets = this.competingTickets.get(topic);
+            if (tickets != null && !tickets.isEmpty())
+                topicSet.add(topic);
+        }
+        if (topicSet.isEmpty()) {
             return new Ticket[0];
         }
 
         // list of tickets to respond with MSG_REGISTER_RESPONSE
         //ArrayList<Ticket> responseList = new ArrayList<Ticket>();
 
-        //Register as many tickets as possible (subject to resource availability)
+        ArrayList<Ticket> ticketList = new ArrayList<Ticket>();
+        for (Topic topic : topicSet) {
+            ArrayList<Ticket> tickets = this.competingTickets.get(topic);
+            ticketList.addAll(tickets);
+            nextDecisionTime.remove(topic);
+            competingTickets.remove(topic);
+        }
         Collections.sort(ticketList);
         updateTopicTable(curr_time);
+
+        //Register as many tickets as possible (subject to availability of space in the table)
         for(Ticket ticket: ticketList) {
-            TopicRegistration reg = new TopicRegistration(ticket.getSrc(), topic, curr_time);
+            TopicRegistration reg = new TopicRegistration(ticket.getSrc(), ticket.getTopic(), curr_time);
             reg.setTimestamp(curr_time);
             long waiting_time = getWaitingTime(reg, curr_time);
 
         	int topicOccupancy = 0;
-        	if(this.topicTable.get(reg.getTopic())!=null)
+            if(this.topicTable.get(reg.getTopic())!=null)
                 topicOccupancy = this.topicTable.get(reg.getTopic()).size();
-            
+        
             if (waiting_time == -1) { 
                 // rejected because a registration from ticket src for topic already exists
                 ticket.setRegistrationComplete(false);
                 ticket.setWaitTime(waiting_time);
             }
-            else if (waiting_time == 0 && topicOccupancy <adsPerQueue && this.allAds.size()<tableCapacity) { //accepted ticket
+            else if ( (waiting_time == 0) && (topicOccupancy < adsPerQueue) && (this.allAds.size() < tableCapacity) ) { //accepted ticket
                 register(reg);
                 ticket.setRegistrationComplete(true);
-                KademliaObserver.reportCumulativeTime(topic, ticket.getCumWaitTime());
+                KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime());
             }
             else { //waiting_time > 0, reject (for now) due to space
                 waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
                 ticket.updateWaitingTime(waiting_time);
                 ticket.setRegistrationComplete(false);
             }
-            KademliaObserver.reportWaitingTime(topic, waiting_time);
+            KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time);
         }
-
         Ticket [] tickets = (Ticket []) ticketList.toArray(new Ticket[ticketList.size()]);
-        competingTickets.remove(topic);
         return tickets;
     }
 
-    public Ticket getTicket(Topic t, KademliaNode advertiser, long rtt_delay, long curr_time) {
+    protected Ticket getTicket(Topic t, KademliaNode advertiser, long rtt_delay, long curr_time) {
         Topic topic = new Topic(t.topic);
         //topic.setHostID(this.hostID);
-        // System.out.println("Get ticket "+topic.getTopic());
+        System.out.println("Get ticket "+topic.getTopic() + " " + this.hostID);
         TopicRegistration reg = new TopicRegistration(advertiser, topic, curr_time);
 
         //update the topic table (remove expired advertisements)
@@ -250,16 +258,17 @@ public class Discv5TopicTable { // implements TopicTable {
 
         //compute ticket waiting time
         long waiting_time = getWaitingTime(reg, curr_time);
-
+        int queueOccupancy = topicQueueOccupancy(t);
+        
         if (waiting_time == -1) {
             //already registered
             KademliaObserver.reportWaitingTime(topic, waiting_time);
-            return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
+            return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
         }
         
         waiting_time = (waiting_time - rtt_delay > 0) ? waiting_time - rtt_delay : 0;
      
-        return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay);
+        return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
     }
 
     // Returns true if there is no makeRegisterDecisionForTopic scheduled for the topic at decision time

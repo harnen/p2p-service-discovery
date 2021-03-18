@@ -58,7 +58,7 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 	 * @return boolean
 	 */
 	public boolean execute() {
-
+		System.out.println("MultiTopic Traffic generator called");
         int num_topics;
 		HashMap<String,Integer> n = new HashMap<String,Integer>();
         Topic [] topicList = new Topic[maxtopicNum]; //references to topics of a node

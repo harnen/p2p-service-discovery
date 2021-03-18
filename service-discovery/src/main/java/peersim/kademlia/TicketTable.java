@@ -2,6 +2,7 @@ package peersim.kademlia;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 //import java.util.Random;
@@ -33,6 +34,13 @@ public class TicketTable extends RoutingTable {
     HashMap<Integer, Integer> registeredPerDist;
     
     private List<BigInteger> registeredNodes;
+    
+    private int lastAskedBucket;
+    private int triesWithinBucket;
+    private List<Integer> seenOccupancy;
+    private int seenNotFull = 0; 
+    
+    public int available_requests = KademliaCommonConfig.ALPHA;
 
     
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
@@ -56,6 +64,10 @@ public class TicketTable extends RoutingTable {
 		registeredPerDist = new HashMap<Integer, Integer>();
 
 		registeredNodes = new ArrayList<BigInteger>();
+		
+		lastAskedBucket = KademliaCommonConfig.BITS;
+		
+		seenOccupancy = new ArrayList<Integer>();
 		
 	}
 
@@ -97,7 +109,6 @@ public class TicketTable extends RoutingTable {
 		if(!pendingTickets.contains(node) && !registeredNodes.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
-				protocol.sendTicketRequest(node,t,myPid);
 				return true;
 			} 
 		}
@@ -110,6 +121,29 @@ public class TicketTable extends RoutingTable {
 			addNeighbour(node);
 		}
 	}
+	
+	public BigInteger getNeighbour() {
+		BigInteger res = null;
+		
+		if(!shallContinueRegistration()) {
+			System.out.println("Decided not to continue registration anymore");
+			this.available_requests = -KademliaCommonConfig.ALPHA;
+			return null;
+		}
+		
+		while(lastAskedBucket > bucketMinDistance && triesWithinBucket >= super.bucketAtDistance(lastAskedBucket).occupancy()) {
+			lastAskedBucket--;
+			triesWithinBucket = 0;
+		}
+		if(lastAskedBucket > bucketMinDistance) {
+			res = super.bucketAtDistance(lastAskedBucket).neighbours.get(triesWithinBucket);
+			triesWithinBucket++;
+		}
+		System.out.println("returning neighbour " + triesWithinBucket + " from bucket " + lastAskedBucket);
+		return res;
+		//protocol.sendTicketRequest(node,t,myPid);
+	}
+	
 
 	public void addTicket(Message m,Ticket ticket) {
 
@@ -213,6 +247,32 @@ public class TicketTable extends RoutingTable {
 	
 	public BigInteger getTopicId() {
 		return nodeId;
+	}
+	
+	public boolean shallContinueRegistration() {
+		int windowSize = Math.min(seenOccupancy.size(), KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE);
+		//System.out.println("STOP_REGISTER_WINDOW_SISZE: " + KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE + " STOP_REGISTER_MIN_REGS: " + KademliaCommonConfig.STOP_REGISTER_MIN_REGS + " windowsSize:" + windowSize);
+		if(seenOccupancy.size() < KademliaCommonConfig.STOP_REGISTER_MIN_REGS || windowSize == 0) {
+			return true;
+		}
+		
+		int sumOccupancy = 0;
+		int sumSpace = windowSize * KademliaCommonConfig.ADS_PER_QUEUE;
+		for(int i = (seenOccupancy.size() - windowSize); i < seenOccupancy.size(); i++) {
+		    sumOccupancy += seenOccupancy.get(i);
+		}
+		
+		
+		int toss = CommonState.r.nextInt(sumSpace);
+		//System.out.println("Flipping coin. sumSpace: " + sumSpace + " seenOccupancy: " + seenOccupancy + " toss: " + toss);
+		if(toss < sumOccupancy) {
+			return false;
+		}
+		return true;
+	}
+
+	public void reportResponse(Ticket ticket) {
+		seenOccupancy.add(ticket.topicOccupancy);
 	}
 
 
