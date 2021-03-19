@@ -263,21 +263,21 @@ public class KademliaObserver implements Control {
 	public static void reportActiveRegistration(Topic t, boolean is_evil) {
         if (is_evil) {
             if (!activeRegistrationsByMalicious.containsKey(t.getTopic())) {
-                activeRegistrationsByMalicious.put(t.getTopic(), new Integer(1));
+                activeRegistrationsByMalicious.put(t.getTopic(), 1);
             } 
             else {
                 Integer num = activeRegistrationsByMalicious.get(t.getTopic());
-                num += 1;
+                num++;
                 activeRegistrationsByMalicious.put(t.getTopic(), num);
             }
         }
         else {
             if (!activeRegistrations.containsKey(t.getTopic())) {
-                activeRegistrations.put(t.getTopic(), new Integer(1));
+                activeRegistrations.put(t.getTopic(), 1);
             } 
             else {
                 Integer num = activeRegistrations.get(t.getTopic());
-                num += 1;
+                num++;
                 activeRegistrations.put(t.getTopic(), num);
             }
         }
@@ -375,9 +375,9 @@ public class KademliaObserver implements Control {
             String filename = this.logFolderName + "/" + "waiting_times.csv";
             File myFile = new File(filename);
             FileWriter writer;
+            all_topics = (String []) waitingTimes.keySet().toArray(new String[waitingTimes.size()]);
+            Arrays.sort(all_topics);
             if (!myFile.exists()) {
-                all_topics = (String []) waitingTimes.keySet().toArray(new String[waitingTimes.size()]);
-                Arrays.sort(all_topics);
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
                 String title = "time";

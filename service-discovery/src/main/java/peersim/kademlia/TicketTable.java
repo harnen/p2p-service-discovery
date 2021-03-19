@@ -124,7 +124,7 @@ public class TicketTable extends RoutingTable {
 		if(!pendingTickets.contains(node)&&!registeredNodes.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
-				protocol.sendTicketRequest(node,t,myPid);
+				//protocol.sendTicketRequest(node,t,myPid);
 				addRegisteredList(node);
 
 				return true;
