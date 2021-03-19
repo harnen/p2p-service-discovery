@@ -52,7 +52,7 @@ function run_sim(){
 	sed  -i "s/^protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE .*$/protocol.3kademlia.SEARCH_TABLE_BUCKET_SIZE $SEARCH_TABLE_BUCKET_SIZE/g" $OUT_CONFIG
 	sed  -i "s/^protocol.3kademlia.TICKET_REMOVE_AFTER_REG .*$/protocol.3kademlia.TICKET_REMOVE_AFTER_REG $SPAM_OPT/g" $OUT_CONFIG
 	
-	./run.sh $OUT_CONFIG &> /dev/null
+	./run.sh $OUT_CONFIG &> ./dev/null
 	mkdir -p ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}
 	cp ./logs/*.csv ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}
 	cp $OUT_CONFIG ./logs/s${SIZE}_t${TOPIC}_z${ZIPF}_b${BUCKET_SIZE}_o${BUCKET_ORDER}_q${TOPIC_LIMIT}_ttbs${TICKET_TABLE_BUCKET_SIZE}_stbs${SEARCH_TABLE_BUCKET_SIZE}

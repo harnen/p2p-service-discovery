@@ -1,7 +1,7 @@
 #!/bin/bash
 STOP_REGISTER_WINDOW_SIZES='0 3 16'
-STOP_REGISTER_MIN_REGS='0 3 16'
-ADS_PER_QUEUES='17 50'
+STOP_REGISTER_MIN_REGS='2'
+ADS_PER_QUEUES='17'
 
 IN_CONFIG='config/fix_overload.cfg'
 OUT_CONFIG='config/tmp.cfg'
@@ -13,14 +13,14 @@ function run_sim(){
 	sed  -i "s/^protocol.3kademlia.STOP_REGISTER_MIN_REGS .*$/protocol.3kademlia.STOP_REGISTER_MIN_REGS $STOP_REGISTER_MIN_REG/g" $OUT_CONFIG 
 	sed  -i "s/^protocol.3kademlia.STOP_REGISTER_WINDOW_SIZE .*$/protocol.3kademlia.STOP_REGISTER_WINDOW_SIZE $STOP_REGISTER_WINDOW_SIZE/g" $OUT_CONFIG  
 	
-	./run.sh $OUT_CONFIG &> /dev/null
+	./run.sh $OUT_CONFIG &> ./logs/log.dat 
 	mkdir -p ./logs/a${ADS_PER_QUEUE}_w${STOP_REGISTER_WINDOW_SIZE}_m${STOP_REGISTER_MIN_REG}
-	cp ./logs/*.csv ./logs/a${ADS_PER_QUEUE}_w${STOP_REGISTER_WINDOW_SIZE}_m${STOP_REGISTER_MIN_REG}
+	cp ./logs/log.dat ./logs/*.csv ./logs/a${ADS_PER_QUEUE}_w${STOP_REGISTER_WINDOW_SIZE}_m${STOP_REGISTER_MIN_REG}
 	cp $OUT_CONFIG ./logs/a${ADS_PER_QUEUE}_w${STOP_REGISTER_WINDOW_SIZE}_m${STOP_REGISTER_MIN_REG}
 }
 
 function clean(){
-	rm logs/*.csv logs/*.cfg
+	rm logs/*.csv logs/*.cfg ./logs/log.dat
 	python3 python/analyze.py logs/*
 	mkdir -p $1_results
 	mv *.png $1_results
