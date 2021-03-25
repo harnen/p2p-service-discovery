@@ -108,8 +108,6 @@ public class TicketTable extends RoutingTable {
 	}
 	
 	public boolean addNeighbour(BigInteger node) {
-
-		
 		logger.info("Adding neighbour "+bucketWithRegs()+" "+KademliaCommonConfig.MAX_REG_BUCKETS+" "+Util.logDistance(nodeId, node)+" "+(Util.logDistance(nodeId, node) - bucketMinDistance - 1)+" "+(nBuckets-KademliaCommonConfig.MAX_REG_BUCKETS));
 		if(bucketWithRegs()>=KademliaCommonConfig.MAX_REG_BUCKETS&&KademliaCommonConfig.MAX_REG_BUCKETS>0) {
 			int dist = Util.logDistance(nodeId, node);
@@ -134,7 +132,6 @@ public class TicketTable extends RoutingTable {
 	}
 	// add a neighbour to the correct k-bucket
 	public void addNeighbour(BigInteger[] nodes) {
-
 		for(BigInteger node : nodes) {
 			addNeighbour(node);
 		}
@@ -180,8 +177,7 @@ public class TicketTable extends RoutingTable {
 			}else {
 				registeredPerDist.put(dist, registeredPerDist.get(dist) + 1);
 			}
-		}
-			
+		}		
 	}
 	
 	// remove a neighbour from the correct k-bucket
@@ -193,9 +189,7 @@ public class TicketTable extends RoutingTable {
 		int i = Util.logDistance(nodeId, node) - bucketMinDistance - 1;
 		BigInteger randomNode = generateRandomNode(i);
 		protocol.refreshBucket(this, randomNode,i);
-		
-	}	
-	
+	}		
 	
 	/**
 	 * Check nodes and replace buckets with valid nodes from replacement list
