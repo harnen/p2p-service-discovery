@@ -68,11 +68,17 @@ public class DnsListDistribution extends CustomDistribution {
 		}
 
         for (int i = 0; i < Network.size(); ++i) {
+        //for (int i = 0; ; ++i) {
+        	if(!jsonIt.hasNext()) {
+        		System.out.println("Not enough IPs in the fetched file");
+        		System.exit(-1);
+        	}
         	JSONObject nodeJson = json.getJSONObject(jsonIt.next());
         	EthereumNodeRecord enr = EthereumNodeRecord.fromRLP((Base64URLSafe.decode(nodeJson.getString("record").substring(4))));
 			final BigInteger id = enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger();
 			String IP = enr.ip().toString();
-			int portNum = enr.tcp();
+			int portNum = enr.tcp()
+			
         	
             Node generalNode = Network.get(i);
             KademliaNode node; 
