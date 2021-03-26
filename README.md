@@ -24,23 +24,36 @@ The project is organised in three main milestones of the project together with t
 * [X] Complete tasks 
 * [ ] Pending or uncomplete tasks
 
-* Objective 1: Discv5 simulation environment
-  * [X] Task 1: Selection of an appropriate simulator: Investigate the scalability of the Speer simulator (https://github.com/danalex97/Speer) which is written in Go. In case of problems, we will proceed with Peersim (http://peersim.sourceforge.net/) simulator in the rest of the tasks.
-  * [X] Task 2: Adding Ethereum DHT to the simulator: Implement the Ethereum’s modified version of Kademlia protocol in the chosen simulator.
-  * [X] Task 3: Adding discv5 to the simulator: Implement the existing discovery protocol using radius estimation in the chosen simulator.
-  * Deliverables: Discv5 network simulator, including code repository, docs and examples. Deadline: Deadline: 31st August 2020.
+* Objective 1: Traffic optimization and load balancing
+  * [ ] Task: Improve the current discv5 to avoid hotspots in the network and avoid unnecessary load on participating nodes
+  * Deliverable: Updated Discv5 specification and evaluation results (TBC)
+  * Deadline: 31/3/2021
 
-* Objective 2: Implementation of the proposed enhancements to discv5
-  * [X] Task 4: New discv5 discovery: Implementation of the proposed topic registration and discovery protocol where registrar nodes make individual admission decisions on topic registration requests (based on considerations such as load, popularity of topic, and so on) in the chosen simulator.
-  * [X] Task 5: Adding Sybil resistance to discv5: Detection of Sybil attacks by evaluating different evaluating differenct attack vectors and proposing countermeasures.
-  * [X] Task 6: Large-scale simulations: Run large-scale simulations in a setting with hundred of thousands of nodes.
-  Deadline: 30th September 2020.
-  * Deliverables: Service discovery implementation in the simulation environment and an initial version of the specification.
-  
-* Objective 3: Performance evaluation and improvement
-  * [X] Task 7: Add threat model and performance analysis: Implement malicious nodes and computation of performance metrics for discovery and Sybil resistance.
-  * [X] Task 8: Evaluation of performance: Investigate the effectiveness of the proposed extensions under heavy presence of malicious nodes and make necessary changes to optimise the performance.
-  * Deliverables: Analysis and performance evaluation of service discovery in the presence of malicious actors and final specification of the protocol. Deadline: 30th November 2020.
+* Objective 2: Investigate topic table structure
+  * [ ] Task: Investigate on the optimal structure of the topic table to ensure fairness among all topics
+  * Deliverable: Updated Discv5 specification and evaluation results (TBC)
+  * Deadline: 30/4/2021
+
+* Objective 3: Additional security analysis
+  * [ ] Task: Extend on security analysis to avoid any malicious behaviour and measure the risk of sybil attacks.
+  * Deliverable: Updated Discv5 specification and evaluation results (TBC)
+  * Deadline: 30/4/2021
+
+* Objective 4: Configuration parameters analysis
+  * [ ] Task: Extend existing evaluation to test multiple configuration parameters to choose the optimal ones to be used in production software.
+  * Deliverable: Evaluation report (TBC)
+  * Deadline: 31/5/2021
+
+* Objective 5: Publication-ready technical report
+  * [ ] Task: Write a technical report including the final specs of the discovery mechanism, all results of the evaluation and the conclusions of the investigation.
+  * Deliverable: Technical report including specs, evaluation and documentation (TBC)
+  * Deadline: 30/6/2021
+  * 
+* Objective 6: Evaluation on a real testbed
+  * [ ] Task: Evaluate the service discovery mechanism using production software in a real testbed.
+  * Deliverable: Testbed instructions and evaluation report using final parameters (TBC)
+  * Deadline: 30/6/2021
+
   
 ## Service Discovery Requirements
 
