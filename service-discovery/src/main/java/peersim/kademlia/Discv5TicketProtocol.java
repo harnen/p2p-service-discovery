@@ -334,6 +334,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         	BigInteger nextNode = tt.getNeighbour();
 			if (nextNode != null) {
 				sendTicketRequest(nextNode, topic,myPid);
+			}else {//we're done - clean the ttable
+				ticketTables.remove(topic.getTopicID());
 			}
         	
         }
@@ -533,8 +535,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 				sendTicketRequest(nextNode, t,myPid);
 			}
 		}
-        
-        //Register messages are automatically sent when adding Neighbours
+        //restart the process after expiry
+        EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, m, Util.nodeIdtoNode(this.node.getId()), myPid);
         
 
   }
