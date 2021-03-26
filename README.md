@@ -2,15 +2,21 @@
 
 ## Overview
  
-DEVP2P is a set of network protocols which form the Ethereum peer-to-peer network and act as an entry point for multiple different networks and applications. A service discovery system is thus necessary to allow each user to find its peers. The main challenge facing such a decentralised system is to efficiently manage the scarce resources of registrant nodes. The platform needs to decide how to place service advertisement to enable fast lookups for application with thousands of users and avoid starving users of less popular services. This task is crucial for the efficiency of the whole platform, but becomes especially challenging under the presence of malicious nodes who can try to manipulate or overload the system.
 
-The goal of this project is to develop a secure, efficient and robust service discovery protocol for Ethereum 2.0 (Discv5). The project has 3 main stages:
+This is a follow-up research project on Service Discovery in Ethereum 2.0 (Discv5) (available at: https://github.com/harnen/p2p-service-discovery). The previous project was successfully completed, but requires additional security analysis, traffic optimization and documentation to allow integration and deployment in the production code. 
 
-* Develop a Discv5 simulation environment allowing us to prototype and evaluate different variants of the protocol (Objective 1).
-* Implement the proposed mechanism of service discovery (Objective 2).
-* Perform an extensive evaluation, verification and incremental improvement of the proposed protocol (Objective 3).
+DEVP2P is a set of network protocols that form the Ethereum peer-to-peer network and act as an entry point for multiple different networks and applications. A service discovery system is thus necessary to allow each user to find its peers. The main challenge facing such a decentralised system is to efficiently manage the scarce resources of registrant nodes. The platform needs to decide how to place service advertisements to enable fast lookups for applications with thousands of users and avoid having less popular services to be hard to find by their users. This task is crucial for the efficiency of the whole platform, but becomes especially challenging under the presence of malicious nodes who can try to manipulate or overload the system.
 
-An improved service discovery system will increase the synchronization speed between peers, improve user experience and enhance the overall security of the network by providing larger and more divers set of peers to connect to.
+To the best of our knowledge, there is no other existing work that proposes a service discovery mechanisms suitable for work with Ethereum 2.0. Similar work has been done for p2p content exchange networks (e.g., BitTorrent), but either require assistance from a centralized tracker, are not scalable enough or comes with an additional set of assumptions. Our goal is to discover nodes offering a specific service, without having a separate, dedicated p2p network (or a swarm) for each service.. Our solution aims at proposing a new service discovery mechanism for the DEVP2P network that can be used to discover any service in the network efficiently, with good performance for any service regardless of the popularity and with resistance to malicious nodes behaviour (with the focus on sybil, spam and eclipse attacks).
+
+The specific outcome of this project is to improve the service discovery mechanism, designed during the last project, on already identified aspects, such as traffic load balancing, optimal topic table structure or measurements on the resistance against various (e.g., DoS, Sybil and Eclipse) attacks by malicious nodes.
+The outcome of this project will be:
+* Improvement of the existing network simulator.
+* Specifications of the service discovery mechanism with the proposed improvements.
+* Technical report including the performance evaluation of the proposed mechanism along
+with an evaluation of the security resistance against security attacks.
+* (Optional) Service discovery performance evaluation in a real testbed using production
+software (go-ethereum).
 
 ## Project Plan
 
