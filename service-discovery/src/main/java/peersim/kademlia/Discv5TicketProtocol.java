@@ -334,10 +334,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         	BigInteger nextNode = tt.getNeighbour();
 			if (nextNode != null) {
 				sendTicketRequest(nextNode, topic,myPid);
-			}else {//we're done - clean the ttable
-				ticketTables.remove(topic.getTopicID());
-			}
-        	
+			}        	
         }
     }
 
