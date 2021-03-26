@@ -48,7 +48,7 @@ The project is organised in three main milestones of the project together with t
   * [ ] Task: Write a technical report including the final specs of the discovery mechanism, all results of the evaluation and the conclusions of the investigation.
   * Deliverable: Technical report including specs, evaluation and documentation (TBC)
   * Deadline: 30/6/2021
-  * 
+  
 * Objective 6: Evaluation on a real testbed
   * [ ] Task: Evaluate the service discovery mechanism using production software in a real testbed.
   * Deliverable: Testbed instructions and evaluation report using final parameters (TBC)
