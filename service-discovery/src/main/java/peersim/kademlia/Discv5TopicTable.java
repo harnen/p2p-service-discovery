@@ -95,17 +95,21 @@ public class Discv5TopicTable { // implements TopicTable {
         }
     }
 
-    private void add_to_competingTickets (Topic topic, Ticket ticket) {
+    private boolean add_to_competingTickets (Topic topic, Ticket ticket) {
         ArrayList<Ticket> ticketList = competingTickets.get(topic);
         if (ticketList == null) {
             ArrayList<Ticket> newTicketList = new ArrayList<Ticket>();
             newTicketList.add(ticket);
             competingTickets.put(topic, newTicketList);
+            return true;
         }
         else {
-            if(!ticketList.contains(ticket))
+            if(!ticketList.contains(ticket)) {
                 ticketList.add(ticket);
+                return true;
+            }
         }
+        return false;
     }
     
     private int topicQueueOccupancy(Topic topic) {
@@ -114,9 +118,9 @@ public class Discv5TopicTable { // implements TopicTable {
     		System.out.println("topicQ: " + topicQ.size() + "/" + this.adsPerQueue);
     		return topicQ.size();
     	}else {
-    		System.out.println("Topic queue is null");
+    		System.out.println("Topic queue is null. Topics in the table: ");
     		for(Topic t: topicTable.keySet()) {
-    			System.out.println(t);
+    			System.out.println(t.getTopic());
     		}
     		
     	}
@@ -175,12 +179,13 @@ public class Discv5TopicTable { // implements TopicTable {
         //topic.setHostID(this.hostID);
         
         ticket.setMsg(m);
-        add_to_competingTickets(topic, ticket);
+        if(add_to_competingTickets(topic, ticket))
+            System.out.println("Ticket for topic: " + ticket.getTopic().getTopic() + " is successful");
 
         return setDecisionTime(ticket.getTopic(), curr_time + KademliaCommonConfig.ONE_UNIT_OF_TIME);
     }
 
-    private void register(TopicRegistration reg) {
+    protected void register(TopicRegistration reg) {
         ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
         if (topicQ != null) {
             topicQ.add(reg);

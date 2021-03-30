@@ -115,6 +115,10 @@ public class Ticket implements Comparable<Ticket> {
     public void setRegistrationComplete(boolean complete) {
     	this.isRegistrationComplete = complete;
     }
+
+    public boolean isRegistered() {
+        return this.isRegistrationComplete;
+    }
     
     public boolean isRegistrationComplete() {
     	return isRegistrationComplete;
@@ -146,7 +150,7 @@ public class Ticket implements Comparable<Ticket> {
         // typecast o to Complex so that we can compare data members  
         Ticket r = (Ticket) o; 
           
-        if(this.src == r.src) return true;
+        if(this.src.equals(r.src)) return true;
         return false;
     } 
 
