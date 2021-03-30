@@ -79,7 +79,7 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
         Topic topicToRegister = reg.getTopic();
         if (this.roundRobin) {
             // in round robin mode
-            System.out.println("Entered round-robin!");
+            //System.out.println("Entered round-robin!");
             Long reg_time = this.registrationTimes.get(topicToRegister);
             if (reg_time != null && reg_time > curr_time) {
                 return reg_time - curr_time; // - KademliaCommonConfig.ONE_UNIT_OF_TIME;
@@ -120,8 +120,8 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
         updateTopicTable(curr_time);
         int remainingCapacity = this.tableCapacity - this.allAds.size();
         int numOfCompetingTopics = getNumberOfCompetingTopics();
-        System.out.println("Number of competing topics: " + numOfCompetingTopics);
-        System.out.println("Remaining capacity: " + remainingCapacity);
+        //System.out.println("Number of competing topics: " + numOfCompetingTopics);
+        //System.out.println("Remaining capacity: " + remainingCapacity);
         boolean sched_done = false;
         if ( this.roundRobin && (numOfCompetingTopics > remainingCapacity) && (this.nextTopicIndex >= this.registrationTimes.keySet().size() ) ) {
             sched_done = true;
@@ -265,11 +265,11 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
             long slot_time = getTimeOfNextKAvailableSlot(slot, curr_time);
             entry.setValue(slot_time);
             slot+=1;
-            System.out.println("For topic: " + entry.getKey().getTopic() + " registration to take place at: " + entry.getValue());
+            //System.out.println("For topic: " + entry.getKey().getTopic() + " registration to take place at: " + entry.getValue());
         }
 
         this.endOfRoundTime = getTimeOfNextKAvailableSlot(slot, curr_time);
-        System.out.println("End of round time: " + this.endOfRoundTime);
+        //System.out.println("End of round time: " + this.endOfRoundTime);
         this.nextTopicIndex = 0;
     }
 }

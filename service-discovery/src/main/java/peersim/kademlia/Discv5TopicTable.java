@@ -117,13 +117,15 @@ public class Discv5TopicTable { // implements TopicTable {
     	if (topicQ != null) {
     		System.out.println("topicQ: " + topicQ.size() + "/" + this.adsPerQueue);
     		return topicQ.size();
-    	}else {
+    	}
+        /*
+        else {
     		System.out.println("Topic queue is null. Topics in the table: ");
     		for(Topic t: topicTable.keySet()) {
     			System.out.println(t.getTopic());
     		}
     		
-    	}
+    	}*/
     	return 0;
     }
 
@@ -179,8 +181,9 @@ public class Discv5TopicTable { // implements TopicTable {
         //topic.setHostID(this.hostID);
         
         ticket.setMsg(m);
-        if(add_to_competingTickets(topic, ticket))
-            System.out.println("Ticket for topic: " + ticket.getTopic().getTopic() + " is successful");
+        //if(add_to_competingTickets(topic, ticket))
+        //    System.out.println("Ticket for topic: " + ticket.getTopic().getTopic() + " is successful");
+        add_to_competingTickets(topic, ticket);
 
         return setDecisionTime(ticket.getTopic(), curr_time + KademliaCommonConfig.ONE_UNIT_OF_TIME);
     }
@@ -260,7 +263,7 @@ public class Discv5TopicTable { // implements TopicTable {
     protected Ticket getTicket(Topic t, KademliaNode advertiser, long rtt_delay, long curr_time) {
         Topic topic = new Topic(t.topic);
         //topic.setHostID(this.hostID);
-        System.out.println("Get ticket "+topic.getTopic() + " " + this.hostID);
+        //System.out.println("Get ticket "+topic.getTopic() + " " + this.hostID);
         TopicRegistration reg = new TopicRegistration(advertiser, topic, curr_time);
 
         //update the topic table (remove expired advertisements)
