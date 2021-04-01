@@ -77,7 +77,7 @@ public class DnsListDistribution extends CustomDistribution {
         	EthereumNodeRecord enr = EthereumNodeRecord.fromRLP((Base64URLSafe.decode(nodeJson.getString("record").substring(4))));
 			final BigInteger id = enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger();
 			String IP = enr.ip().toString();
-			int portNum = enr.tcp()
+			int portNum = enr.tcp();
 			
         	
             Node generalNode = Network.get(i);
