@@ -33,15 +33,15 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
         this.endOfRoundTime =  Long.valueOf(-1);
         this.startOfRoundTime =  Long.valueOf(-1);
         this.nextTopicIndex = -1;
-        //this.adsPerQueue = this.tableCapacity;
+        this.adsPerQueue = this.tableCapacity; //this is needed to avoid tickets waiting for full topic queue (not full table) and attempting to register in the middle of round robin
     }
     
     // Returns the current time when xth space is available in the topic table.
     // If slot_number is one, then this returns the time that first space opens up in topic table
     private long getTimeOfNextKAvailableSlot(int slot_number, long curr_time) {
-        int remainingCapacity = this.tableCapacity - this.allAds.size();
+        int remaining_capacity = this.tableCapacity - this.allAds.size();
 
-        if (remainingCapacity >= slot_number) 
+        if (remaining_capacity >= slot_number) 
             return curr_time;
 
         if (slot_number > this.tableCapacity) {
@@ -51,7 +51,7 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
         }
 
 		Iterator<TopicRegistration> it = allAds.iterator();
-        int count = remainingCapacity;
+        int count = remaining_capacity;
         long waiting_time = 0;
         for(TopicRegistration reg : allAds) {
             waiting_time = this.adLifeTime - (curr_time - reg.getTimestamp());
@@ -94,71 +94,75 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
     }
 
     private int getNumberOfCompetingTickets() {
-        int numOfTickets = 0;
+        int num_tickets = 0;
         for (Map.Entry<Topic,ArrayList<Ticket>> entry : this.competingTickets.entrySet()) {
             ArrayList<Ticket> ticket_list = entry.getValue();
-            numOfTickets += ticket_list.size();
+            num_tickets += ticket_list.size();
         }
-        return numOfTickets;
+        return num_tickets;
 
     }
 
     private int getNumberOfCompetingTopics() {
 
-        int numOfTopics = 0;
+        int num_topics = 0;
         for (Map.Entry<Topic,ArrayList<Ticket>> entry : this.competingTickets.entrySet()) {
             ArrayList<Ticket> ticket_list = entry.getValue();
             if (ticket_list.size() > 0 )
-                numOfTopics += 1; 
+                num_topics += 1; 
         }
 
-        return numOfTopics;
+        return num_topics;
     }
     
     protected Ticket [] makeRegisterDecision(long curr_time) {  
         // update topic table (remove expired ads)
         updateTopicTable(curr_time);
-        int remainingCapacity = this.tableCapacity - this.allAds.size();
-        int numOfCompetingTopics = getNumberOfCompetingTopics();
-        //System.out.println("Number of competing topics: " + numOfCompetingTopics);
-        //System.out.println("Remaining capacity: " + remainingCapacity);
-        boolean sched_done = false;
-        if ( this.roundRobin && (numOfCompetingTopics > remainingCapacity) && (this.nextTopicIndex >= this.registrationTimes.keySet().size() ) ) {
-            sched_done = true;
+        int remaining_capacity = this.tableCapacity - this.allAds.size();
+        int num_competing_topics = getNumberOfCompetingTopics();
+        //System.out.println("Number of competing topics: " + num_competing_topics);
+        //System.out.println("Remaining capacity: " + remaining_capacity);
+        boolean begin_of_round = false;
+        if ( this.roundRobin && (num_competing_topics > remaining_capacity) && (this.nextTopicIndex >= this.registrationTimes.keySet().size() ) ) {
+            begin_of_round = true;
             scheduleRoundRobin(curr_time);
         }
-        else if ( !this.roundRobin && (numOfCompetingTopics > remainingCapacity) ) {
+        else if ( !this.roundRobin && (num_competing_topics > remaining_capacity) ) {
             this.roundRobin = true;
-            sched_done = true;
+            begin_of_round = true;
             scheduleRoundRobin(curr_time);
         }
         if ( this.roundRobin )
-            return makeRegisterDecisionRoundRobin(curr_time, sched_done);
+            return makeRegisterDecisionRoundRobin(curr_time, begin_of_round);
         else
             return super.makeRegisterDecision(curr_time);
     }
 
     // Make registration decision in round-robin order 
     // NOTE: adsPerQueue limit is not used when determining registration
-    private Ticket [] makeRegisterDecisionRoundRobin(long curr_time, boolean sched_done) {
+    private Ticket [] makeRegisterDecisionRoundRobin(long curr_time, boolean begin_of_round) {
         Topic current_topic = null;
-        int remainingCapacity = this.tableCapacity - this.allAds.size();
+        int remaining_capacity = this.tableCapacity - this.allAds.size();
         ArrayList<Ticket> all_tickets = new ArrayList<Ticket>();
         int topic_index = this.nextTopicIndex;
-        boolean endOfRound = false;
+        int num_competing_tickets = getNumberOfCompetingTickets();
+        boolean end_of_round = false;
 
-        while (remainingCapacity > 0 || sched_done) {
+        // If beginning of round, go through all the competing tickets for all topics;
+        // otherwise, loop as many as the remaining capacity
+        while (remaining_capacity > 0 || begin_of_round) {
 
-            if ( remainingCapacity > 0 && endOfRound ) {
-                // End of round reached but there is still space in the table
+            if ( remaining_capacity > 0 && end_of_round ) {
+                // End of round reached but there is still space in the table,
+                // so start a new round.
                 scheduleRoundRobin(curr_time);
                 this.nextTopicIndex = 0;
                 topic_index = 0;
-                int numOfCompetingTopics = getNumberOfCompetingTopics();
-                if (numOfCompetingTopics <= remainingCapacity)
+                int num_topics = getNumberOfCompetingTopics();
+                if (num_topics <= remaining_capacity)
                     this.roundRobin = false;
                 else 
-                    sched_done = true;
+                    begin_of_round = true;
                     // Fix the waiting time of tickets that are rejected in the 
                     // previous round but waiting time is set to 0 (because 
                     // endOdRoundTime coincided with last topic of round)
@@ -166,11 +170,15 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
                         if ( !t.isRegistered() && ( t.getWaitTime() == 0 ) ) {
                             long waiting_time = getRRWaitingTime(t.getTopic(), curr_time);
                             t.setWaitTime(waiting_time);
+                            KademliaObserver.reportWaitingTime(t.getTopic(), waiting_time);
                         }
                     }
 
-                endOfRound = false;
+                end_of_round = false;
             }
+
+            if(num_competing_tickets == 0)
+                break;
 
             // Determine which topic's turn in the round-robin order 
             // The ordering of the keys in the TreeMap determines the order of topics.
@@ -187,7 +195,7 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
             ArrayList<Ticket> ticket_list = new ArrayList<Ticket> ();
             ticket_list.addAll(this.competingTickets.get(current_topic));
             all_tickets.addAll(ticket_list);
-            ArrayList<Ticket> competingTicketsOfTopic = this.competingTickets.get(current_topic);
+            ArrayList<Ticket> competing_tickets_for_topic = this.competingTickets.get(current_topic);
             //this.competingTickets.remove(current_topic);
             
             // Sort tickets by cumulative waiting time (oldest ticket first) 
@@ -195,7 +203,7 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
 
             // admit first (oldest) ticket, only if there is available capacity
             boolean first = false;
-            if (remainingCapacity > 0)
+            if (remaining_capacity > 0)
                 first = true;
 
             for(Ticket ticket: ticket_list) {
@@ -204,34 +212,37 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
                     TopicRegistration reg = new TopicRegistration(ticket.getSrc(), ticket.getTopic(), curr_time);
                     reg.setTimestamp(curr_time);
                     first = false;
-                    KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime());
                     ticket.setRegistrationComplete(true);
                     ticket.setWaitTime(0);
+                    KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime());
                     register(reg);
                     this.nextTopicIndex += 1;
-                    competingTicketsOfTopic.remove(ticket);
+                    competing_tickets_for_topic.remove(ticket);
+                    num_competing_tickets--;
+                    remaining_capacity--; 
                 }
                 else {
-                    assert !first : "first must be false"; 
                     ticket.setRegistrationComplete(false);
                     long waiting_time = getRRWaitingTime(ticket.getTopic(), curr_time); 
                     if (waiting_time != 0)
-                        competingTicketsOfTopic.remove(ticket);
+                        competing_tickets_for_topic.remove(ticket);
                     //this.endOfRoundTime - curr_time;
                     assert waiting_time >= 0 : "waiting time must be positive or zero";
                     //waiting_time -= KademliaCommonConfig.ONE_UNIT_OF_TIME;
                     waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
                     ticket.setWaitTime(waiting_time);
                     KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time);
+                    num_competing_tickets--;
                 }
             }
-            remainingCapacity--; 
             topic_index += 1;
-            if (topic_index == this.registrationTimes.keySet().size() && sched_done)
-                sched_done = false;
+            if (topic_index == this.registrationTimes.keySet().size() && begin_of_round)
+                begin_of_round = false;
             if (this.nextTopicIndex == this.registrationTimes.keySet().size())
-                endOfRound = true; 
-        }
+                end_of_round = true; 
+
+        } // end of while
+
         for (Ticket t : all_tickets) {
             Topic topic = t.getTopic();
             this.competingTickets.remove(topic);

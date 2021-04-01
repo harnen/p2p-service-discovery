@@ -55,11 +55,17 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     
     protected HashMap<Ticket,BackoffService> registrationFailed;
     
+    // Topic table capacity
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
+    // The limit on the number of adverisements allowed to register per topic at a registrar
 	final String PAR_ADS_PER_QUEUE = "ADS_PER_QUEUE";
+    // The lifetime of an advertisement (after which it expires and removed from topic table)
 	final String PAR_AD_LIFE_TIME = "AD_LIFE_TIME";
+    // Number of buckets in a ticket table
 	final String PAR_TICKET_TABLE_BUCKET_SIZE = "TICKET_TABLE_BUCKET_SIZE";
+    // Number of buckets in a search table
 	final String PAR_SEARCH_TABLE_BUCKET_SIZE = "SEARCH_TABLE_BUCKET_SIZE";
+    // 
 	final String PAR_REFRESH_TICKET_TABLE = "REFRESH_TICKET_TABLE";
 	final String PAR_REFRESH_SEARCH_TABLE = "REFRESH_SEARCH_TABLE";
 	final String PAR_TICKET_NEIGHBOURS = "TICKET_NEIGHBOURS";
@@ -69,6 +75,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	final String PAR_SEARCH_TABLE_REPLACEMENTS = "SEARCH_TABLE_REPLACEMENTS";
 	final String PAR_MAX_REGISTRATION_RETRIES = "MAX_REGISTRATION_RETRIES";
 	final String PAR_MAX_REG_BUCKETS = "MAX_REG_BUCKETS";
+    final String PAR_ROUND_ROBIN_TOPIC_TABLE = "ROUND_ROBIN";
 
 	
 	final String PAR_STOP_REGISTER_WINDOW_SIZE = "STOP_REGISTER_WINDOW_SIZE";
@@ -95,7 +102,10 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	 */
 	public Discv5TicketProtocol(String prefix) {
 		super(prefix);
-        this.topicTable = new Discv5TopicTable();
+        if (KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE == 1)
+            this.topicTable = new Discv5RRTopicTable();
+        else
+            this.topicTable = new Discv5TopicTable();
         ticketTables = new HashMap<BigInteger,TicketTable>();
         searchTables = new HashMap<BigInteger,SearchTable>();
         registrationFailed = new HashMap<Ticket,BackoffService>();
@@ -127,6 +137,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		KademliaCommonConfig.MAX_REG_BUCKETS = Configuration.getInt(prefix + "." + PAR_MAX_REG_BUCKETS, KademliaCommonConfig.MAX_REG_BUCKETS);
 		KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE = Configuration.getInt(prefix + "." + PAR_STOP_REGISTER_WINDOW_SIZE, KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE);
 		KademliaCommonConfig.STOP_REGISTER_MIN_REGS = Configuration.getInt(prefix + "." + PAR_STOP_REGISTER_MIN_REGS, KademliaCommonConfig.STOP_REGISTER_MIN_REGS);
+        KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE = Configuration.getInt(prefix + "." + PAR_ROUND_ROBIN_TOPIC_TABLE, 0);
 
 		super._init();
 	}

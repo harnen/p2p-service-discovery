@@ -18,7 +18,7 @@ import peersim.core.CommonState;
 public class Discv5TopicTable { // implements TopicTable {
     
     protected int tableCapacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
-    private int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
+    protected int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
     protected int adLifeTime = KademliaCommonConfig.AD_LIFE_TIME;
     private BigInteger hostID;
 
