@@ -70,7 +70,7 @@ public class Discv5TrafficGenerator implements Control {
 	 * @return Message
 	 */
 	private Message generateRegisterMessage() {
-		Topic topic = new Topic("t" + Integer.toString(0));
+		Topic topic = new Topic("t" + Integer.toString(1));
 		Message m = Message.makeRegister(topic);
 		m.timestamp = CommonState.getTime();
 		//System.out.println("Topic id "+topic.topicID);

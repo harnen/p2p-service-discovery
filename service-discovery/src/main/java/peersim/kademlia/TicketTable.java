@@ -42,7 +42,7 @@ public class TicketTable extends RoutingTable {
     private List<Integer> seenOccupancy;
     private int seenNotFull = 0; 
     
-    public int available_requests = KademliaCommonConfig.ALPHA;
+    private int available_requests;
 
     
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
@@ -72,9 +72,11 @@ public class TicketTable extends RoutingTable {
 		
 		seenOccupancy = new ArrayList<Integer>();
 		
+		available_requests = KademliaCommonConfig.ALPHA;
+		
 	}
 
-	public TicketTable(int nBuckets,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
+	/*public TicketTable(int nBuckets,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
 		super(0, 0, 0);
 		k_buckets = new KBucket[nBuckets];
@@ -105,7 +107,7 @@ public class TicketTable extends RoutingTable {
 		registeredPerDist = new HashMap<Integer, Integer>();
 
 		registeredNodes = new ArrayList<BigInteger>();
-	}
+	}*/
 	
 	public boolean addNeighbour(BigInteger node) {
 		logger.info("Adding neighbour "+bucketWithRegs()+" "+KademliaCommonConfig.MAX_REG_BUCKETS+" "+Util.logDistance(nodeId, node)+" "+(Util.logDistance(nodeId, node) - bucketMinDistance - 1)+" "+(nBuckets-KademliaCommonConfig.MAX_REG_BUCKETS));
@@ -140,11 +142,11 @@ public class TicketTable extends RoutingTable {
 	public BigInteger getNeighbour() {
 		BigInteger res = null;
 		
-		if(!shallContinueRegistration()) {
+		/*if(!shallContinueRegistration()) {
 			System.out.println("Decided not to continue registration anymore");
 			this.available_requests = -KademliaCommonConfig.ALPHA;
 			return null;
-		}
+		}*/
 		
 		while(lastAskedBucket > bucketMinDistance && triesWithinBucket >= super.bucketAtDistance(lastAskedBucket).occupancy()) {
 			lastAskedBucket--;
@@ -318,5 +320,16 @@ public class TicketTable extends RoutingTable {
 		seenOccupancy.add(ticket.topicOccupancy);
 	}
 
+	public void increaseAvailableRequests() {
+		available_requests++;
+	}
+	
+	public void decreaseAvailableRequests() {
+		available_requests--;
+	}
+	
+	public int getAvailableRequests() {
+		return available_requests;
+	}
 
 }

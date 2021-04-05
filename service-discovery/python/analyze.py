@@ -137,6 +137,9 @@ def analyzeMessages(dirs):
         except pd.errors.EmptyDataError:
             print("messages file empty")
             return
+        except FileNotFoundError:
+            print("file not found")
+            return
         #df['src'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message sent by node", label=log_dir)
 
 
@@ -473,37 +476,42 @@ def analyzeRegistrantDistribution(dirs):
                         if topic not in discovered_per_topic:
                             discovered_per_topic[topic] = set()
                         discovered_per_topic[topic].add(node)
-    #mark topic hashes
-    for topic in topicIDs:
-        topicID = int(topicIDs[topic])
-        topic_index = sorted(topics).index(topic)
-        ax1.scatter(topicID,topic_index, s=global_max*2, marker='X',color='black',linewidths=1)
-        all = registrants_per_topic[topic].union(discovered_per_topic[topic])
-        #print("Topic ", topic, "has", len(registrants_per_topic[topic]), "reported registrants.")
-        print("Topic ", topic, "has", len(all), "all registrants.")
-        #print("Topic ", topic, "has", len(discovered_per_topic[topic]), "discovered registrants.")
-        print("Topic ", topic, "has", len(discovered_per_topic[topic])/len(all), "ratio discovered/all.")
-        ax1.annotate(str("%.2f" % (100*len(discovered_per_topic[topic])/len(all))) + "% registrants discovered", xy=(1000, topic_index+0.1), xytext=(10001, topic_index+0.11), fontsize=12)
 
-    ax1.scatter(x, y, c=c, s=s)
-    ax1.set_yticks(np.arange(len(topics)))
-    ax1.set_yticklabels(sorted(topics))
-    #ax1.scatter(x_nondiscovered, y_nondiscovered, c=c_nondiscovered, s=s_nondiscovered, marker = '|')
-    legend_elements = []
-    for log_dir in dirs:
-        dir_num = dirs.index(log_dir)
-        color = colors[dir_num]
-        legend_elements.append(Line2D([0], [0], marker='o', color=color, label="Discovered registrants",
-                          markerfacecolor=color, markersize=10))
+    try:
+        #mark topic hashes
+        for topic in topicIDs:
+            topicID = int(topicIDs[topic])
+            topic_index = sorted(topics).index(topic)
+            ax1.scatter(topicID,topic_index, s=global_max*2, marker='X',color='black',linewidths=1)
+            all = registrants_per_topic[topic].union(discovered_per_topic[topic])
+            #print("Topic ", topic, "has", len(registrants_per_topic[topic]), "reported registrants.")
+            print("Topic ", topic, "has", len(all), "all registrants.")
+            #print("Topic ", topic, "has", len(discovered_per_topic[topic]), "discovered registrants.")
+            print("Topic ", topic, "has", len(discovered_per_topic[topic])/len(all), "ratio discovered/all.")
+            ax1.annotate(str("%.2f" % (100*len(discovered_per_topic[topic])/len(all))) + "% registrants discovered", xy=(1000, topic_index+0.1), xytext=(10001, topic_index+0.11), fontsize=12)
 
-    legend_elements.append(Line2D([0], [0], marker='|', color='red', label='Non-discovered registrants',
-                          markerfacecolor='black', markersize=10))
-    legend_elements.append(Line2D([0], [0], marker='X', color='black', label='Topic hash',
-                          markerfacecolor='black', markersize=10))
-    #print(legend_elements)
-    ax1.legend(handles=legend_elements)
-    ax1.set_title("Discovered Registrants ID Distribution - NoSpam/Random")
-    fig.savefig(OUTDIR + '/registrant_distribution.png')
+        ax1.scatter(x, y, c=c, s=s)
+        ax1.set_yticks(np.arange(len(topics)))
+        ax1.set_yticklabels(sorted(topics))
+        #ax1.scatter(x_nondiscovered, y_nondiscovered, c=c_nondiscovered, s=s_nondiscovered, marker = '|')
+        legend_elements = []
+        for log_dir in dirs:
+            dir_num = dirs.index(log_dir)
+            color = colors[dir_num]
+            legend_elements.append(Line2D([0], [0], marker='o', color=color, label="Discovered registrants",
+                              markerfacecolor=color, markersize=10))
+
+        legend_elements.append(Line2D([0], [0], marker='|', color='red', label='Non-discovered registrants',
+                              markerfacecolor='black', markersize=10))
+        legend_elements.append(Line2D([0], [0], marker='X', color='black', label='Topic hash',
+                              markerfacecolor='black', markersize=10))
+        #print(legend_elements)
+        ax1.legend(handles=legend_elements)
+        ax1.set_title("Discovered Registrants ID Distribution - NoSpam/Random")
+        fig.savefig(OUTDIR + '/registrant_distribution.png')
+
+    except KeyError:
+        print("Error missing key in registrant distribution")
 
 def analyzeOperations(dirs):
     #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
