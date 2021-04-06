@@ -1009,8 +1009,20 @@ public class KademliaObserver implements Control {
                 
                 if(kadProtocol instanceof Discv5TicketProtocol) {
                 	if(reportReg==1) {
-                        FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
-                        writer.write("host,topic,registrant,timestamp\n");
+                        String filename = this.logFolderName + "/" + CommonState.getTime() + "_registrations.csv";
+                        File myFile = new File(filename);
+                        FileWriter writer;
+                        if (!myFile.exists()) {
+                            myFile.createNewFile();
+                            writer = new FileWriter(myFile, true);
+                            writer.write("host,topic,registrant,timestamp\n");
+                        }
+                        else {
+                            writer = new FileWriter(myFile, true);
+                        }
+
+                        //FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
+                        //writer.write("host,topic,registrant,timestamp\n");
 	                    String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
 	                    writer.write(registrations);
 	                    writer.close();
