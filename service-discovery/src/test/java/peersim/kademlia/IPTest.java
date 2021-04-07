@@ -1,7 +1,6 @@
 package peersim.kademlia;
 
 import org.junit.jupiter.api.Test;
-import org.javatuples.*;
 
 public class IPTest {
 	int[] comparators = new int[] {128, 64, 32, 16, 8, 4, 2, 1};

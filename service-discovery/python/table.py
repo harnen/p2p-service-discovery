@@ -1,17 +1,14 @@
 #!/usr/bin/python3
 import csv
-import simpy
-import matplotlib
 from matplotlib import cm
 import matplotlib.pyplot as plt
 import math
+import abc
+import numpy as np
+from scipy.stats import entropy
 
 
-#yield env.timeout(self._initial_delay)
-#env.process(self.run()) - new process
-#env.process(self._nodes[peer].receive(advertisement, weight))
-
-class Table:
+class Table(metaclass=abc.ABCMeta):
     def __init__(self, env, capacity, ad_lifetime):
         self.table = {}
         self.workload = {}
@@ -28,32 +25,8 @@ class Table:
                 row['arrived'] = counter
                 print(row)
                 self.workload[counter] = row
-                env.process(self.new_request(row, counter))
+                self.env.process(self.new_request(row, counter))
                 counter += 1
-
-
-    def get_waiting_time(self, req):
-        if(len(self.table) > self.capacity):
-            return list(self.table.items())[0][1]['expire'] - self.env.now + 1
-        else:
-            return 0
-
-    def remove_ad(self, ad_id, delay):
-        yield env.timeout(delay)
-        log("Removing", self.table[ad_id])
-        self.table.pop(ad_id)
-
-    def new_request(self, req, delay):
-        yield env.timeout(delay)
-        log("new request arrived:", req)
-        waiting_time = self.get_waiting_time(req)
-        if(waiting_time == 0):
-            req['expire'] = self.env.now + self.ad_lifetime
-            self.table[self.ad_ids] = req
-            self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
-            self.ad_ids += 1
-        else:
-            self.env.process(self.new_request(req, waiting_time))
     
     def scatter(self, values, title):
         fig, ax = plt.subplots()
@@ -73,39 +46,119 @@ class Table:
         
         ax.scatter(ip_x, ip_y, c=ip_colors)
         ax.set_title(title)
+        print("Frequency of", title, {x:values.count(x) for x in values})
 
-    
-    def display(self):
-        yield env.timeout(50)
-        self.scatter([x['ip'] for x in self.table.values()], "IPs in the table")
-        self.scatter([x['ip'] for x in self.workload.values()], "IPs in the workload")
-        self.scatter([x['id'] for x in self.table.values()], "IDs in the table")
-        self.scatter([x['id'] for x in self.workload.values()], "IDs in the workload")
-        self.scatter([x['topic'] for x in self.table.values()], "Topics in the table")
-        self.scatter([x['topic'] for x in self.workload.values()], "Topicss in the workload")
-        #ids = set(x['id'] for x in self.table.values())
-        #topics = set(x['topic'] for x in self.table.values())
+    def display(self, delay):
+        yield self.env.timeout(delay)
+        self.scatter([x['ip'] for x in self.table.values()], "IPs in the table at" + str(delay))
+        self.scatter([x['ip'] for x in self.workload.values()], "IPs in the workload" + str(delay))
+        self.scatter([x['id'] for x in self.table.values()], "IDs in the table" + str(delay))
+        self.scatter([x['id'] for x in self.workload.values()], "IDs in the workload" + str(delay))
+        self.scatter([x['topic'] for x in self.table.values()], "Topics in the table" + str(delay))
+        self.scatter([x['topic'] for x in self.workload.values()], "Topicss in the workload" + str(delay))
         plt.show()
-        quit()
-
-
-
-
-def log(*arg):
-        print("[", env.now, "s]",  sep="", end='')
-        print(*arg)
-
-
     
-run_time = 1000
-ad_lifetime = 300
-capacity = 200
-env = simpy.Environment()
-counter = 1
-table = Table(env, capacity, ad_lifetime)
-table.load('topics.csv')
-env.process(table.display())
+    def log(self, *arg):
+        print("[", self.env.now, "s]",  sep="", end='')
+        print(*arg)
+    
+    @abc.abstractmethod
+    def get_waiting_time(self, req, delay):
+        pass
+
+    def remove_ad(self, ad_id, delay):
+        yield self.env.timeout(delay)
+        self.log("Removing", self.table[ad_id])
+        self.table.pop(ad_id)
+
+    def new_request(self, req, delay):
+        yield self.env.timeout(delay)
+        self.log("new request arrived:", req)
+        waiting_time = self.get_waiting_time(req)
+        if(waiting_time == 0):
+            req['expire'] = self.env.now + self.ad_lifetime
+            self.table[self.ad_ids] = req
+            self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
+            self.ad_ids += 1
+        else:
+            self.env.process(self.new_request(req, waiting_time))
+    
+
+class SimpleTable(Table):
+    def get_waiting_time(self, req):
+        if(len(self.table) > self.capacity):
+            return list(self.table.items())[0][1]['expire'] - self.env.now + 1
+        else:
+            return 0
+    
+    
+class DiversityTable(Table):
+    def get_waiting_time(self, req, delay):
+        pass
 
 
+class TreeNode:
+    def __init__(self):
+        self.counter = 0
+        self.zero = None
+        self.one = None
 
-env.run(until=run_time)
+	    
+    def getCounter(self):
+        return self.counter
+
+    def increment(self):
+        self.counter += 1
+        return self.counter
+
+	    
+    def decrement(self):
+        self.counter -= 1
+        return self.counter
+
+
+def get_entropy(labels, base=2):
+  value,counts = np.unique(labels, return_counts=True)
+  print("value", value, "counts", counts)
+  return entropy(counts, base=base)
+
+class Tree:	
+    
+    def __init__(self):
+        self.comparators = [128, 64, 32, 16, 8, 4, 2, 1]
+        self.root = TreeNode()
+
+    def add(self, addr):
+        result = self.addRecursive(self.root, addr, 0)
+        self.root = result[0]
+        score = result[1]
+        print("Final score: ", score, " Max score: ", " My score: ", (self.root.getCounter()-1) * 528)
+        return score
+	
+	
+    def addRecursive(self, current, addr, depth):
+        if (current == None):
+            current = TreeNode()
+
+        score = current.getCounter() * depth
+        print("Increment counter to ", current.increment())
+	    
+        if(depth < 32):
+            print("Octet: ",  addr.split('.')[int(depth/8)])
+            octet = int(addr.split('.')[int(depth/8)])
+            comparator = self.comparators[int(depth % 8)]
+            result = None
+            if((octet & comparator) == 0):
+                print("Going towards 0")
+                result = self.addRecursive(current.zero, addr, depth + 1)
+                current.zero = result[0]
+            else:
+                print("Going towards 1")
+                result = self.addRecursive(current.one, addr, depth + 1)
+                current.one = result[0]; 
+
+            score += result[1]
+        else:
+            print("Reached depth ", depth, " going back.")
+        
+        return (current, score)
