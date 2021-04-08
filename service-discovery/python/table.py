@@ -94,14 +94,14 @@ class SimpleTable(Table):
     
 class DiversityTable(Table):
     def get_waiting_time(self, req, delay):
-        current_ips = [x['ip'] for x in self.table.values()]
-        current_ip_entropy = get_entropy(current_ips)
-        new_ip_entropy = get_entropy(current_ips.append(req['ip']))
-        ip_change = (new_ip_entropy-current_ip_entropy)/current_ip_entropy
+        current_topics = [x['topic'] for x in self.table.values()]
+        current_topic_entropy = get_entropy(current_topics)
+        new_topic_entropy = get_entropy(current_topics.append(req['topic']))
+        topic_change = (new_topic_entropy-current_topic_entropy)/current_topic_entropy
         
         current_ids = [x['id'] for x in self.table.values()]
         current_id_entropy = get_entropy(current_ids)
-        new_id_entropy = get_entropy(current_ips.append(req['id']))
+        new_id_entropy = get_entropy(current_ids.append(req['id']))
         id_change = (new_id_entropy-current_id_entropy)/current_id_entropy
 
 
