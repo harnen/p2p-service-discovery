@@ -169,6 +169,23 @@ public class KademliaObserver implements Control {
             regByRegistrar = new HashMap<String, HashMap<BigInteger,Integer>>();
             avgCounter = new HashMap<BigInteger, Integer>();
             simpCounter=0;
+            
+            String filename = this.logFolderName + "/" + "waiting_times.csv";
+            File myFile = new File(filename);
+            if(myFile.exists())myFile.delete();
+            
+            filename = this.logFolderName + "/" + "registration_stats.csv";
+            myFile = new File(filename);
+            if(myFile.exists())myFile.delete();
+            
+            filename = this.logFolderName + "/" + "storage_utilisation.csv";
+            myFile = new File(filename);
+            if(myFile.exists())myFile.delete();
+            
+            filename = this.logFolderName + "/" + "msg_stats.csv";
+            myFile = new File(filename);
+            if(myFile.exists())myFile.delete();
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
