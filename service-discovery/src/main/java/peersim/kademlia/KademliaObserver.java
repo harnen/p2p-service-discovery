@@ -128,6 +128,8 @@ public class KademliaObserver implements Control {
 
     private static HashMap<BigInteger, Integer> avgCounter;
     
+    private HashMap<String, Integer> topicsList;
+    
     private static int simpCounter;
     private static int observerStep;
     private static int reportMsg;
@@ -144,6 +146,7 @@ public class KademliaObserver implements Control {
         this.reportMsg = Configuration.getInt(prefix +"." +PAR_REPORT_MSG,1);
         this.reportReg = Configuration.getInt(prefix +"." +PAR_REPORT_REG,1);
 
+        topicsList = new HashMap<String,Integer>();
         //if (!this.parameterName.isEmpty())
         //    this.parameterValue = Configuration.getDouble(prefix + "." + PAR_RANGE_EXPERIMENT, -1);
         
@@ -175,6 +178,10 @@ public class KademliaObserver implements Control {
             if(myFile.exists())myFile.delete();
             
             filename = this.logFolderName + "/" + "registration_stats.csv";
+            myFile = new File(filename);
+            if(myFile.exists())myFile.delete();
+            
+            filename = this.logFolderName + "/" + "topics.csv";
             myFile = new File(filename);
             if(myFile.exists())myFile.delete();
             
@@ -600,6 +607,42 @@ public class KademliaObserver implements Control {
         
     }
 
+    
+    private void write_topics() {
+        if (topicsList.size() == 0)
+            return;
+        
+        TreeMap<String,Integer> tm=new  TreeMap<String,Integer> (topicsList);  
+
+        try {
+            String filename = this.logFolderName + "/" + "topics.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                String title = "time";
+                for (String topic : tm.keySet()) {
+                    title += "," + topic;
+                }
+                title += "\n";
+                writer.write(title);
+            }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+            writer.write("" + CommonState.getTime());
+            for (String topic : tm.keySet()) {
+                writer.write("," + tm.get(topic));
+                //activeRegistrations.put(topic, 0);
+            }
+            writer.write("\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
     private void write_registration_stats() {
         if (activeRegistrations.size() == 0)
             return;
@@ -991,6 +1034,8 @@ public class KademliaObserver implements Control {
         try {
 
             simpCounter++;
+        	topicsList.clear();
+
             for(int i = 0; i < Network.size(); i++) {
             	
                 Node node = Network.get(i);
@@ -1013,8 +1058,20 @@ public class KademliaObserver implements Control {
             	avgCounter.put(kadProtocol.getNode().getId(), c);
                 HashMap<Topic,Integer> topics = new HashMap<Topic,Integer>();
                 
+
                 if(kadProtocol instanceof Discv5TicketProtocol) {
                 	topics = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyTopic();
+                	
+                	List<String> topicsregistering = ((Discv5TicketProtocol) kadProtocol).getRegisteringTopics();
+                	for(String t : topicsregistering) {
+                		int n=1;
+                		if(topicsList.get(t)!=null) {
+                			 n+= topicsList.get(t);
+                		}
+            			topicsList.put(t,n);
+
+                			
+                	}
                 }
                 
                 for(Topic t: topics.keySet()) {
@@ -1025,6 +1082,8 @@ public class KademliaObserver implements Control {
                 }
                 
                 if(kadProtocol instanceof Discv5TicketProtocol) {
+                	
+                	
                 	if(reportReg==1) {
                         String filename = this.logFolderName + "/" + CommonState.getTime() + "_registrations.csv";
                         File myFile = new File(filename);
@@ -1111,6 +1170,7 @@ public class KademliaObserver implements Control {
             write_msg_received_by_nodes();
             write_register_overhead();
         }
+    	if(CommonState.getTime() > 100000) write_topics();
         return false;
     }
 

@@ -331,5 +331,9 @@ public class TicketTable extends RoutingTable {
 	public int getAvailableRequests() {
 		return available_requests;
 	}
+	
+	public Topic getTopic() {
+		return t;
+	}
 
 }

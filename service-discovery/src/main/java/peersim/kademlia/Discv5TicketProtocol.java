@@ -853,6 +853,15 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
        
 	}
 	
+	public List<String> getRegisteringTopics(){
+		
+		List<String> topics = new ArrayList<String>();
+		
+		for(TicketTable t : ticketTables.values())
+			topics.add(t.getTopic().getTopic());
+		return topics; 
+	}
+	
 	public void onKill()
 	{
 		//System.out.println("Node removed");
