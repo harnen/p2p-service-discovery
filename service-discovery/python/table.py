@@ -94,7 +94,16 @@ class SimpleTable(Table):
     
 class DiversityTable(Table):
     def get_waiting_time(self, req, delay):
-        pass
+        current_ips = [x['ip'] for x in self.table.values()]
+        current_ip_entropy = get_entropy(current_ips)
+        new_ip_entropy = get_entropy(current_ips.append(req['ip']))
+        ip_change = (new_ip_entropy-current_ip_entropy)/current_ip_entropy
+        
+        current_ids = [x['id'] for x in self.table.values()]
+        current_id_entropy = get_entropy(current_ids)
+        new_id_entropy = get_entropy(current_ips.append(req['id']))
+        id_change = (new_id_entropy-current_id_entropy)/current_id_entropy
+
 
 
 class TreeNode:
@@ -119,7 +128,8 @@ class TreeNode:
 
 def get_entropy(labels, base=2):
   value,counts = np.unique(labels, return_counts=True)
-  print("value", value, "counts", counts)
+  #print("value", value, "counts", counts, "Max entropy", entropy([1]*len(counts), base=base))
+  #efficiency - entropy, deviced by max entropy
   return entropy(counts, base=base)
 
 class Tree:	
@@ -132,33 +142,41 @@ class Tree:
         result = self.addRecursive(self.root, addr, 0)
         self.root = result[0]
         score = result[1]
-        print("Final score: ", score, " Max score: ", " My score: ", (self.root.getCounter()-1) * 528)
-        return score
+        balanced_score = (self.root.getCounter()-1) * 32
+        max_score = -(self.root.getCounter()-1) * (1 - pow(2, 33))
+        print("Final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
+        if(balanced_score > 0):
+            return score/balanced_score
+        else:
+            return 0
 	
 	
     def addRecursive(self, current, addr, depth):
         if (current == None):
             current = TreeNode()
-
-        score = current.getCounter() * depth
-        print("Increment counter to ", current.increment())
+        
+        score = current.getCounter() * pow(2, depth)
+        #print("Depth", depth, "Score", score)
+        current.increment()
+        #print("Increment counter to ", current.getCounter())
 	    
         if(depth < 32):
-            print("Octet: ",  addr.split('.')[int(depth/8)])
+            #print("Octet: ",  addr.split('.')[int(depth/8)])
             octet = int(addr.split('.')[int(depth/8)])
             comparator = self.comparators[int(depth % 8)]
             result = None
             if((octet & comparator) == 0):
-                print("Going towards 0")
+                #print("Going towards 0")
                 result = self.addRecursive(current.zero, addr, depth + 1)
                 current.zero = result[0]
             else:
-                print("Going towards 1")
+                #print("Going towards 1")
                 result = self.addRecursive(current.one, addr, depth + 1)
                 current.one = result[0]; 
 
             score += result[1]
         else:
-            print("Reached depth ", depth, " going back.")
+            pass
+            #print("Reached depth ", depth, " going back.")
         
         return (current, score)
