@@ -110,6 +110,7 @@ public class KademliaObserver implements Control {
     private static HashMap<Topic,Integer> regByTopic;
     private static HashMap<String, HashMap<BigInteger,Integer>> regByRegistrant;
     private static HashMap<String, HashMap<BigInteger,Integer>> regByRegistrar;
+    private static HashMap<String, HashMap<BigInteger,Integer>> competingTickets;
 
     //Waiting times
     private static HashMap<String, Long> waitingTimes = new HashMap<String, Long>();
@@ -170,6 +171,8 @@ public class KademliaObserver implements Control {
             regByTopic = new HashMap<Topic,Integer>();
             regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
             regByRegistrar = new HashMap<String, HashMap<BigInteger,Integer>>();
+            competingTickets = new HashMap<String, HashMap<BigInteger,Integer>>();
+
             avgCounter = new HashMap<BigInteger, Integer>();
             simpCounter=0;
             
@@ -824,6 +827,43 @@ public class KademliaObserver implements Control {
 
     }
     
+    private void write_competingtickets() {
+    	try {
+	        String filename = this.logFolderName + "/" + "competingtickets.csv";
+	        File myFile = new File(filename);
+	        FileWriter writer;
+	        if (myFile.exists())myFile.delete();
+	        myFile.createNewFile();
+	        writer = new FileWriter(myFile, true);
+	        writer.write("topic,nodeId,count\n");
+	        
+	        
+	        //System.out.println("Competing tickets");
+	        
+
+	        for(String t : competingTickets.keySet()) {
+	        	for(BigInteger n : competingTickets.get(t).keySet()) {
+	    	        //System.out.println("Competing tickets topic "+t+" "+competingTickets.get(t).get(n).intValue());
+	        		if(avgCounter.get(n)!=null) {
+		        		writer.write(String.valueOf(t));
+			        	writer.write(",");
+			        	writer.write(String.valueOf(n));
+			        	writer.write(",");
+			        	writer.write(String.valueOf(competingTickets.get(t).get(n).intValue()));
+			        	writer.write("\n");
+	        		}
+        		
+	        	}
+	        }
+	    	writer.close();
+
+    	}catch(IOException e) {
+    		e.printStackTrace();
+    	}
+
+    }
+    
+    
     private void write_registered_registrant_average() {
     	try {
 	        String filename = this.logFolderName + "/" + "registeredRegistrant.csv";
@@ -1047,6 +1087,9 @@ public class KademliaObserver implements Control {
                 	for(String t: regByRegistrant.keySet())
                 		regByRegistrant.get(t).remove(kadProtocol.getNode().getId());
 
+                	for(String t: competingTickets.keySet())
+                		competingTickets.get(t).remove(kadProtocol.getNode().getId());
+                	
                     continue;
 
                 }
@@ -1058,8 +1101,15 @@ public class KademliaObserver implements Control {
             	avgCounter.put(kadProtocol.getNode().getId(), c);
                 HashMap<Topic,Integer> topics = new HashMap<Topic,Integer>();
                 
-
+                for(Topic t: topics.keySet()) {
+            		int count = 0;
+            		if(regByTopic.get(t)!=null)count=regByTopic.get(t);
+            		count+=topics.get(t);
+            		regByTopic.put(t, count);
+                }
+                
                 if(kadProtocol instanceof Discv5TicketProtocol) {
+                	
                 	topics = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyTopic();
                 	
                 	List<String> topicsregistering = ((Discv5TicketProtocol) kadProtocol).getRegisteringTopics();
@@ -1072,17 +1122,6 @@ public class KademliaObserver implements Control {
 
                 			
                 	}
-                }
-                
-                for(Topic t: topics.keySet()) {
-            		int count = 0;
-            		if(regByTopic.get(t)!=null)count=regByTopic.get(t);
-            		count+=topics.get(t);
-            		regByTopic.put(t, count);
-                }
-                
-                if(kadProtocol instanceof Discv5TicketProtocol) {
-                	
                 	
                 	if(reportReg==1) {
                         String filename = this.logFolderName + "/" + CommonState.getTime() + "_registrations.csv";
@@ -1123,6 +1162,24 @@ public class KademliaObserver implements Control {
                     	} else
                     		regByRegistrar.get(topic).put(kadProtocol.getNode().getId(), count);
 
+                    }
+                    
+                    HashMap<String,Integer> competing = ((Discv5TicketProtocol) kadProtocol).topicTable.getCompetingTickets();
+                    
+                    for(String topic : competing.keySet()) {
+                    	/*count=0;
+                    	if(competingTickets.get(topic)!=null) 
+                    		if(competingTickets.get(topic).get(kadProtocol.getNode().getId())!=null)
+                    			count = competingTickets.get(topic).get(kadProtocol.getNode().getId());
+                    	
+                    	count=competing.get(topic);*/
+                    	if(competingTickets.get(topic)==null) {
+                    		HashMap<BigInteger,Integer> tmp = new HashMap<BigInteger,Integer>();
+                    		tmp.put(kadProtocol.getNode().getId(), competing.get(topic));
+                    		competingTickets.put(topic, tmp);
+                    	} else 
+                    		competingTickets.get(topic).put(kadProtocol.getNode().getId(),competing.get(topic));                    		
+                    	
                     }
    
                     //topic table registrations by registrant
@@ -1171,6 +1228,7 @@ public class KademliaObserver implements Control {
             write_register_overhead();
         }
     	if(CommonState.getTime() > 100000) write_topics();
+    	write_competingtickets();
         return false;
     }
 

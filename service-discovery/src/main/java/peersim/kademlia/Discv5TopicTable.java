@@ -21,6 +21,8 @@ public class Discv5TopicTable { // implements TopicTable {
     protected int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
     protected int adLifeTime = KademliaCommonConfig.AD_LIFE_TIME;
     private BigInteger hostID;
+    
+    protected HashMap<String,Integer> ticketCompetingList;
 
     // Per-topic registration table
     protected HashMap<Topic, ArrayDeque<TopicRegistration>> topicTable;
@@ -39,6 +41,7 @@ public class Discv5TopicTable { // implements TopicTable {
         competingTickets = new HashMap<Topic, ArrayList<Ticket>>();
         allAds = new ArrayDeque<TopicRegistration>();
         nextDecisionTime = new HashMap<Topic, Long>();
+        ticketCompetingList = new HashMap<String,Integer>();
     }
 
     public void setHostID(BigInteger id){
@@ -204,6 +207,8 @@ public class Discv5TopicTable { // implements TopicTable {
     
     protected Ticket [] makeRegisterDecision(long curr_time) {   
         // Determine which topics are up for decision
+    	
+    	ticketCompetingList.clear();
         HashSet<Topic> topicSet = new HashSet<Topic>();
         for (Topic topic : this.competingTickets.keySet()) {
             ArrayList<Ticket> tickets = this.competingTickets.get(topic);
@@ -220,6 +225,8 @@ public class Discv5TopicTable { // implements TopicTable {
         ArrayList<Ticket> ticketList = new ArrayList<Ticket>();
         for (Topic topic : topicSet) {
             ArrayList<Ticket> tickets = this.competingTickets.get(topic);
+        	//System.out.println("Get Competing by topic "+topic.getTopic()+" "+tickets.size());
+            ticketCompetingList.put(topic.getTopic(),tickets.size());
             ticketList.addAll(tickets);
             nextDecisionTime.remove(topic);
             competingTickets.remove(topic);
@@ -388,7 +395,8 @@ public class Discv5TopicTable { // implements TopicTable {
         HashMap<Topic,Integer> numOfCompetingTickets = new HashMap<Topic,Integer>();
         for(Topic t: topicTable.keySet())
         {
-        	ArrayList<Ticket> tickets = competingTickets.get(t);       
+        	ArrayList<Ticket> tickets = competingTickets.get(t); 
+
             int size;
             if (tickets == null)
                 size = 0;
@@ -430,4 +438,11 @@ public class Discv5TopicTable { // implements TopicTable {
         return regByRegistrant;
 
     }
+    
+    
+    public HashMap<String,Integer> getCompetingTickets(){
+		
+    	return ticketCompetingList;
+    }
+    
 }
