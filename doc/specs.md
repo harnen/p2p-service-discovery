@@ -70,14 +70,14 @@ Also, it prevents attackers overflowing topic indexes by regulating registration
 While tickets are opaque to advertisers, they are readable by the advertisement medium. 
 The medium uses the ticket to store the cumulative waiting time, which is sum of all waiting times the advertiser spent. 
 Whenever a ticket is presented and a new one issued in response, the cumulative waiting time is increased and carries over into the new ticket.
-Topic queues are subject to competition. 
+<!--Topic queues are subject to competition. 
 To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time when multiple tickets are received for the same topic but not enough room in the topic table for them.
 In addition to the ads, each queue also keeps the current 'best ticket', i.e. the ticket with the longest cumulative waiting time. 
-When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.
+When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.-->
 
 Tickets cannot be used beyond their lifetime. If the advertiser does not come back after the waiting time, all cumulative waiting time is lost and it needs to start over.
 
-To keep ticket traffic under control, an advertiser requesting a ticket for the first time gets a waiting time equal to the cumulative time of the current best ticket. For a placement attempt with a ticket, the new waiting time is assigned to be the best time minus the cumulative waiting time on the submitted ticket.
+<!--To keep ticket traffic under control, an advertiser requesting a ticket for the first time gets a waiting time equal to the cumulative time of the current best ticket. For a placement attempt with a ticket, the new waiting time is assigned to be the best time minus the cumulative waiting time on the submitted ticket.-->
 
 The image below depicts a single ticket's validity over time. When the ticket is issued, the node keeping it must wait until the registration window opens. The length of the registration window is implementation dependent, but by default `10 seconds` is used. The ticket becomes invalid after the registration window has passed.
 
@@ -91,13 +91,20 @@ In order to choose to which advertising medium register, the advertiser keeps a 
 This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. 
 It is sufficient to use a small value of k such as `k=3`. 
 For this table no replacement list is used, different from the Kademlia routing table.
-For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
+Ticket table buckets are filled from the local routing table (Kademlia DHT Table) with the same distance to the topic hash id.
+
+Registration process is started by selecting `ALPHA=3` nodes from the ticket table, starting from the highest distance bucket (distance 256), and sending  parallel registrations requests to `ALPHA` different nodes. 
+For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all pending tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
+Once a registration is succesful, a new node is selected from the ticket table, continuing to the next bucket of the table.
+
+The process is finished once `k=3` registrations are placed to each bucket, or when `target-ad-lifetime` expired for the first registration placed, whatever happens first. At this point the whole ticket table structured is cleared and the whole process is restarted.
+
 
 In this project we evaluated two different approaches to remove tickets from ticket table:
 * Removing the ticket after the registration lifetime expired: In this case we remove a ticket from the table, not after this registration has taken place, but after the registration has expired. This way we control the number of active registration, bounded to the number of buckets * bucket size.
 * Removing the ticket once the registration is successful: This approach removes the ticket as soon as the registration has complete. This way the number of ongoing registrations is much bigger and only depends on the time required to place a registration, that will cause the bucket space keeps occupied and no other registrations can take place meanwhile. This approach implies more registrations and thereofore more overhead, but a better distribution of registration placed, especially for non popular topics and node with identifiers distant from topic id.
 
-Every node removed from the table is automatically replaced by another node from the local routing table (Kademlia DHT Table) with the same distance to the topic hash id.
+
 
 
 ### Bucket refresh
@@ -117,7 +124,13 @@ Also, all nodes in the bucket are pinged to check they are still alive. In case 
 
 ### Waiting time function
 
-XXXX
+Waiting time function is used to calculate the waiting time reported to registering advertising nodes to regulate and control the ticket registration. The function should use the following input to calculate the waiting time: 
+
+* Number of active registrations in the table for the same topic.
+* Pending on-going registrations (competing tickets).
+* Cumulative waiting time.
+* IP diversity score. 
+* Node id diversity score.
 
 ## Topic Search
 
