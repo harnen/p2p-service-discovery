@@ -83,7 +83,7 @@ The image below depicts a single ticket's validity over time. When the ticket is
 
 ![ticket validity over time](./imgs/ticket-validity.png)
 
-#### Ticket Table
+### Ticket Table
 
 The above description explains the storage and placement of ads on a single medium, but advertisers need to place ads redundantly on multiple nodes in order to be found. 
 
@@ -100,7 +100,7 @@ In this project we evaluated two different approaches to remove tickets from tic
 Every node removed from the table is automatically replaced by another node from the local routing table (Kademlia DHT Table) with the same distance to the topic hash id.
 
 
-#### Bucket refresh
+### Bucket refresh
 
 'Ticket table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
 Ideally, all k-buckets should be constantly full, meaning that the node has active registrations in 'advertising medium' in all distances to the topic hash.
@@ -140,7 +140,7 @@ I think the proposed advertisement algorithm will track popularity automatically
 For search, estimation is less necessary and we should try to see how efficient it is in the way specified above. I think it might just work out.-->
 
 
-#### Search strategies
+### Search strategies
 
 For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. 
 In case not enough `LOOKUP_LIMIT=50` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `LOOKUP_LIMIT` or `MAX_LOOKUP_HOPS=50`.
@@ -152,7 +152,7 @@ We implemented and evaluated different search strategies in order to choose whic
 
 * All buckets: A random node is picked from a bucket following a round-robin approach. It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list.
 
-#### Bucket refresh
+### Bucket refresh
 
 Similarly to 'ticket table', 'search table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
 Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash.
