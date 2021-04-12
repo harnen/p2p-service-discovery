@@ -28,8 +28,6 @@ In the following we describe the specification of this new Topic or Service Disc
 ## Topic Table
 
 
-
-
 <!--In order to place an ad, the advertiser must present a valid ticket to the advertiser.-->
 
 
@@ -55,12 +53,14 @@ Also, implementations may impose other restrictions on the table, such as restri
 range or number of occurrences of the same node across queues, similar to limitations of different neighbours in the same k-bucket to avoid sybil attacks.
 This will be achieved by using a 'diversity score' to measure the diversity of IP addresses domains in a topic queue. Topic registrations that improve diversity score will be prioritised to the registrations that reduce the diversity score
 
-#### Ticket Registration
+## Ticket Registration
 
+In order to place an ad in an advetisement medium, the advertiser must present a valid ticket to the advertiser.
 Tickets are opaque objects issued by the advertisement medium. 
 When the advertiser first tries to place an ad without a ticket, it receives an initial ticket and a 'waiting time' which it needs to spend. 
 The advertiser must come back after the waiting time has elapsed and present the ticket again. 
 When it does come back, it will either place the ad successfully or receive another ticket and waiting time.
+'Waiting times' can be used by advertisement mediums to throttle advetisement input rate and prioritise registrations of less popular topics or nodes that increase IP diversity. Waiting times will be calculated according to [X]().
 
 Enforcing this time limit prevents misuse of the topic index because any topic must be important enough to outweigh the cost of waiting. 
 Imagine a group phone call: announcing the participants of the call using topic advertisement isn't a good use of the system because the topic exists only for a short time and will have very few participants. 
@@ -71,7 +71,7 @@ While tickets are opaque to advertisers, they are readable by the advertisement 
 The medium uses the ticket to store the cumulative waiting time, which is sum of all waiting times the advertiser spent. 
 Whenever a ticket is presented and a new one issued in response, the cumulative waiting time is increased and carries over into the new ticket.
 Topic queues are subject to competition. 
-To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time when multiple tickets are received but not enough room in the topic table for them.
+To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time when multiple tickets are received for the same topic but not enough room in the topic table for them.
 In addition to the ads, each queue also keeps the current 'best ticket', i.e. the ticket with the longest cumulative waiting time. 
 When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.
 
@@ -87,7 +87,7 @@ The image below depicts a single ticket's validity over time. When the ticket is
 
 The above description explains the storage and placement of ads on a single medium, but advertisers need to place ads redundantly on multiple nodes in order to be found. 
 
-The advertiser keeps a 'ticket table' per topic advertised to track its ongoing placement attempts.
+In order to choose to which advertising medium register, the advertiser keeps a 'ticket table' per topic advertised to track its ongoing placement attempts.
 This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. 
 It is sufficient to use a small value of k such as `k=3`. 
 For this table no replacement list is used, different from the Kademlia routing table.
@@ -114,6 +114,10 @@ There is also a refresh bucket process, similar to the Kademlia DHT table, where
 The refresh time used is `refresh_time=10 seconds`.
 When empty slots during the refresh process, they can be filled from the local DHT table list, optionally, perform lookups to the topic hash in case is empty.
 Also, all nodes in the bucket are pinged to check they are still alive. In case they are not, tickets are removed from the table and replaced with new nodes.
+
+### Waiting time function
+
+XXXX
 
 ## Topic Search
 
