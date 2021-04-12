@@ -60,7 +60,7 @@ Tickets are opaque objects issued by the advertisement medium.
 When the advertiser first tries to place an ad without a ticket, it receives an initial ticket and a 'waiting time' which it needs to spend. 
 The advertiser must come back after the waiting time has elapsed and present the ticket again. 
 When it does come back, it will either place the ad successfully or receive another ticket and waiting time.
-'Waiting times' can be used by advertisement mediums to throttle advetisement input rate and prioritise registrations of less popular topics or nodes that increase IP diversity. Waiting times will be calculated according to [X]().
+'Waiting times' can be used by advertisement mediums to throttle advetisement input rate and prioritise registrations of less popular topics or nodes that increase IP diversity. Waiting times will be calculated according to the ['Waiting time function'](#waiting-time-function).
 
 Enforcing this time limit prevents misuse of the topic index because any topic must be important enough to outweigh the cost of waiting. 
 Imagine a group phone call: announcing the participants of the call using topic advertisement isn't a good use of the system because the topic exists only for a short time and will have very few participants. 
