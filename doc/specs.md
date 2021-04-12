@@ -27,32 +27,33 @@ In the following we describe the specification of this new Topic or Service Disc
 
 ## Topic Table
 
+
+
+
+<!--In order to place an ad, the advertiser must present a valid ticket to the advertiser.-->
+
+
 Advertisement mediums store ads for any number of topics and a limited number of ads for each topic. The
 data structure holding advertisements in a 'topic table'. 
 The list of ads for a particular topic is called the 'topic queue' because it functions like a FIFO queue of
 limited length. 
+This table stores the ads and they are stored during `target-ad-lifetime`. When the `target-ad-lifetime` expires, the ad is removed from the queue and new ads can be accepted.
+Ads move through the queue at a fixed rate. When the queue is full, and the last ad expires, a new ad can be stored at the beginning of the queue. An advertiser can only have a single ad in the queue, duplicate placements are rejected.
 The image below depicts a topic table containing three queues. 
 The queue for topic `T₁` is at capacity.
 
 ![topic table](./imgs/topic-queue-diagram.png)
 
-The queue size limit is implementation-defined. 
 Implementations should place a global limit on the number of ads in the topic table regardless of the topic queue which contains them.
-Reasonable limits are 100 ads per queue and 50000 ads across all queues. 
+Reasonable limits are 50000 ads across all queues. 
 Since ENRs are at most 300 bytes in size, these limits ensure that a full topic table consumes approximately 15MB of memory.
+There is no 'topic queue' limit to provide a better usage of the topic table allocation, since existing number of topics is unknown.
+Per topic allocation should follow max-min fairness policy, allowing allocations of more popular topics if and only if the allocation is feasible and an attempt to increase the allocation of any topic does not result in the decrease in the allocation of some other participant with an equal or smaller allocation.
 
 Any node may appear at most once in any topic queue, that is, registration of a node which is already registered for a given topic fails. 
 Also, implementations may impose other restrictions on the table, such as restrictions on the number of IP-addresses in a certain
 range or number of occurrences of the same node across queues, similar to limitations of different neighbours in the same k-bucket to avoid sybil attacks.
-
-## Topic Advertisement
-
-All nodes act as advertisement media and keep a table of 'topic queues'. 
-This table stores the ads and they are stored during `target-ad-lifetime`. When the `target-ad-lifetime` expires, the ad is removed from the queue and new ads can be accepted.
-The table has a limit on the number of ads in the whole table, and also has a limit on the number of ads in each queue. 
-Ads move through the queue at a fixed rate. When the queue is full, and the last ad expires, a new ad can be stored at the beginning of the queue. An advertiser can only have a single ad in the queue, duplicate placements are rejected.
-In order to place an ad, the advertiser must present a valid ticket to the advertiser.
-
+This will be achieved by using a 'diversity score' to measure the diversity of IP addresses domains in a topic queue. Topic registrations that improve diversity score will be prioritised to the registrations that reduce the diversity score
 
 #### Ticket Registration
 
