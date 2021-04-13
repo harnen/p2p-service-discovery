@@ -1,14 +1,16 @@
 import simpy
 from table import *
 import matplotlib.pyplot as plt
+from threshold import *
 
 
-run_time = 1000
+run_time = 100000
 ad_lifetime = 300
 capacity = 200
 
 env = simpy.Environment()
 table = SimpleTable(env, capacity, ad_lifetime)
+#table = DiversityThreshold(env, capacity, ad_lifetime, topicThresholds = {"t1" : 0.5, "t2" : 0.5},  ipThresholds = {8: capacity/4, 16: capacity/8, 24: capacity/16, 32 : capacity/32}, entropyLimit = 0.8)
 table.load('topics.csv')
 env.process(table.display(100))
 env.run(until=run_time)
