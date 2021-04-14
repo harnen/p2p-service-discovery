@@ -68,7 +68,6 @@ public class DnsListDistribution extends CustomDistribution {
 		}
 
         for (int i = 0; i < Network.size(); ++i) {
-        //for (int i = 0; ; ++i) {
         	if(!jsonIt.hasNext()) {
         		System.out.println("Not enough IPs in the fetched file");
         		System.exit(-1);

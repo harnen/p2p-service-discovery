@@ -30,7 +30,7 @@ env.run(until=run_time)
 #x = []
 #y = []
 #for line in in_file:
-#    addr = line.rstrip()[1:]
+#    addr = line.rstrip()
 #    addr_tab = addr.split('.')
 #    print(">>>", addr, "->", '{0:08b}'.format(int(addr_tab[0])) + '.' + '{0:08b}'.format(int(addr_tab[1])) + '.' + '{0:08b}'.format(int(addr_tab[2])) + '.'+ '{0:08b}'.format(int(addr_tab[3])))
 #    y.append(tree.add(addr))
