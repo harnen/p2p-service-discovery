@@ -1,4 +1,4 @@
-# Discv5 Design
+# Discv5 Specification
 
 This document explains the algorithms and data structures used by the service discovery protocol for Ethereum 2 (Disv5) designed and analysed in this research project.
 Previous version (Discv4) utilises a Distributed Hash Table (DHT) based on Kademlia network to discover other nodes in the network. 
@@ -27,39 +27,40 @@ In the following we describe the specification of this new Topic or Service Disc
 
 ## Topic Table
 
+
+<!--In order to place an ad, the advertiser must present a valid ticket to the advertiser.-->
+
+
 Advertisement mediums store ads for any number of topics and a limited number of ads for each topic. The
 data structure holding advertisements in a 'topic table'. 
 The list of ads for a particular topic is called the 'topic queue' because it functions like a FIFO queue of
 limited length. 
+This table stores the ads and they are stored during `target-ad-lifetime`. When the `target-ad-lifetime` expires, the ad is removed from the queue and new ads can be accepted.
+Ads move through the queue at a fixed rate. When the queue is full, and the last ad expires, a new ad can be stored at the beginning of the queue. An advertiser can only have a single ad in the queue, duplicate placements are rejected.
 The image below depicts a topic table containing three queues. 
 The queue for topic `T₁` is at capacity.
 
 ![topic table](./imgs/topic-queue-diagram.png)
 
-The queue size limit is implementation-defined. 
 Implementations should place a global limit on the number of ads in the topic table regardless of the topic queue which contains them.
-Reasonable limits are 100 ads per queue and 50000 ads across all queues. 
+Reasonable limits are 50000 ads across all queues. 
 Since ENRs are at most 300 bytes in size, these limits ensure that a full topic table consumes approximately 15MB of memory.
+There is no 'topic queue' limit to provide a better usage of the topic table allocation, since existing number of topics is unknown.
+Per topic allocation should follow max-min fairness policy, allowing allocations of more popular topics if and only if the allocation is feasible and an attempt to increase the allocation of any topic does not result in the decrease in the allocation of some other participant with an equal or smaller allocation.
 
 Any node may appear at most once in any topic queue, that is, registration of a node which is already registered for a given topic fails. 
 Also, implementations may impose other restrictions on the table, such as restrictions on the number of IP-addresses in a certain
 range or number of occurrences of the same node across queues, similar to limitations of different neighbours in the same k-bucket to avoid sybil attacks.
+This will be achieved by using a 'diversity score' to measure the diversity of IP addresses domains in a topic queue. Topic registrations that improve diversity score will be prioritised to the registrations that reduce the diversity score
 
-## Topic Advertisement
+## Ticket Registration
 
-All nodes act as advertisement media and keep a table of 'topic queues'. 
-This table stores the ads and they are stored during `target-ad-lifetime`. When the `target-ad-lifetime` expires, the ad is removed from the queue and new ads can be accepted.
-The table has a limit on the number of ads in the whole table, and also has a limit on the number of ads in each queue. 
-Ads move through the queue at a fixed rate. When the queue is full, and the last ad expires, a new ad can be stored at the beginning of the queue. An advertiser can only have a single ad in the queue, duplicate placements are rejected.
-In order to place an ad, the advertiser must present a valid ticket to the advertiser.
-
-
-#### Ticket Registration
-
+In order to place an ad in an advetisement medium, the advertiser must present a valid ticket to the advertiser.
 Tickets are opaque objects issued by the advertisement medium. 
 When the advertiser first tries to place an ad without a ticket, it receives an initial ticket and a 'waiting time' which it needs to spend. 
 The advertiser must come back after the waiting time has elapsed and present the ticket again. 
 When it does come back, it will either place the ad successfully or receive another ticket and waiting time.
+'Waiting times' can be used by advertisement mediums to throttle advetisement input rate and prioritise registrations of less popular topics or nodes that increase IP diversity. Waiting times will be calculated according to the ['Waiting time function'](#waiting-time-function).
 
 Enforcing this time limit prevents misuse of the topic index because any topic must be important enough to outweigh the cost of waiting. 
 Imagine a group phone call: announcing the participants of the call using topic advertisement isn't a good use of the system because the topic exists only for a short time and will have very few participants. 
@@ -69,37 +70,44 @@ Also, it prevents attackers overflowing topic indexes by regulating registration
 While tickets are opaque to advertisers, they are readable by the advertisement medium. 
 The medium uses the ticket to store the cumulative waiting time, which is sum of all waiting times the advertiser spent. 
 Whenever a ticket is presented and a new one issued in response, the cumulative waiting time is increased and carries over into the new ticket.
-Topic queues are subject to competition. 
-To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time when multiple tickets are received but not enough room in the topic table for them.
+<!--Topic queues are subject to competition. 
+To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time when multiple tickets are received for the same topic but not enough room in the topic table for them.
 In addition to the ads, each queue also keeps the current 'best ticket', i.e. the ticket with the longest cumulative waiting time. 
-When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.
+When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.-->
 
 Tickets cannot be used beyond their lifetime. If the advertiser does not come back after the waiting time, all cumulative waiting time is lost and it needs to start over.
 
-To keep ticket traffic under control, an advertiser requesting a ticket for the first time gets a waiting time equal to the cumulative time of the current best ticket. For a placement attempt with a ticket, the new waiting time is assigned to be the best time minus the cumulative waiting time on the submitted ticket.
+<!--To keep ticket traffic under control, an advertiser requesting a ticket for the first time gets a waiting time equal to the cumulative time of the current best ticket. For a placement attempt with a ticket, the new waiting time is assigned to be the best time minus the cumulative waiting time on the submitted ticket.-->
 
 The image below depicts a single ticket's validity over time. When the ticket is issued, the node keeping it must wait until the registration window opens. The length of the registration window is implementation dependent, but by default `10 seconds` is used. The ticket becomes invalid after the registration window has passed.
 
 ![ticket validity over time](./imgs/ticket-validity.png)
 
-#### Ticket Table
+### Ticket Table
 
 The above description explains the storage and placement of ads on a single medium, but advertisers need to place ads redundantly on multiple nodes in order to be found. 
 
-The advertiser keeps a 'ticket table' per topic advertised to track its ongoing placement attempts.
+In order to choose to which advertising medium register, the advertiser keeps a 'ticket table' per topic advertised to track its ongoing placement attempts.
 This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k advertisement media for every distance step. 
 It is sufficient to use a small value of k such as `k=3`. 
 For this table no replacement list is used, different from the Kademlia routing table.
-For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
+Ticket table buckets are filled from the local routing table (Kademlia DHT Table) with the same distance to the topic hash id.
+
+Registration process is started by selecting `ALPHA=3` nodes from the ticket table, starting from the highest distance bucket (distance 256), and sending  parallel registrations requests to `ALPHA` different nodes. 
+For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all pending tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
+Once a registration is succesful, a new node is selected from the ticket table, continuing to the next bucket of the table.
+
+The process is finished once `k=3` registrations are placed to each bucket, or when `target-ad-lifetime` expired for the first registration placed, whatever happens first. At this point the whole ticket table structured is cleared and the whole process is restarted.
+
 
 In this project we evaluated two different approaches to remove tickets from ticket table:
 * Removing the ticket after the registration lifetime expired: In this case we remove a ticket from the table, not after this registration has taken place, but after the registration has expired. This way we control the number of active registration, bounded to the number of buckets * bucket size.
 * Removing the ticket once the registration is successful: This approach removes the ticket as soon as the registration has complete. This way the number of ongoing registrations is much bigger and only depends on the time required to place a registration, that will cause the bucket space keeps occupied and no other registrations can take place meanwhile. This approach implies more registrations and thereofore more overhead, but a better distribution of registration placed, especially for non popular topics and node with identifiers distant from topic id.
 
-Every node removed from the table is automatically replaced by another node from the local routing table (Kademlia DHT Table) with the same distance to the topic hash id.
 
 
-#### Bucket refresh
+
+### Bucket refresh
 
 'Ticket table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
 Ideally, all k-buckets should be constantly full, meaning that the node has active registrations in 'advertising medium' in all distances to the topic hash.
@@ -113,6 +121,16 @@ There is also a refresh bucket process, similar to the Kademlia DHT table, where
 The refresh time used is `refresh_time=10 seconds`.
 When empty slots during the refresh process, they can be filled from the local DHT table list, optionally, perform lookups to the topic hash in case is empty.
 Also, all nodes in the bucket are pinged to check they are still alive. In case they are not, tickets are removed from the table and replaced with new nodes.
+
+### Waiting time function
+
+Waiting time function is used to calculate the waiting time reported to registering advertising nodes to regulate and control the ticket registration. The function should use the following input to calculate the waiting time: 
+
+* Number of active registrations in the table for the same topic.
+* Pending on-going registrations (competing tickets).
+* Cumulative waiting time.
+* IP diversity score. 
+* Node id diversity score.
 
 ## Topic Search
 
@@ -135,7 +153,7 @@ I think the proposed advertisement algorithm will track popularity automatically
 For search, estimation is less necessary and we should try to see how efficient it is in the way specified above. I think it might just work out.-->
 
 
-#### Search strategies
+### Search strategies
 
 For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. 
 In case not enough `LOOKUP_LIMIT=50` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `LOOKUP_LIMIT` or `MAX_LOOKUP_HOPS=50`.
@@ -147,7 +165,7 @@ We implemented and evaluated different search strategies in order to choose whic
 
 * All buckets: A random node is picked from a bucket following a round-robin approach. It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list.
 
-#### Bucket refresh
+### Bucket refresh
 
 Similarly to 'ticket table', 'search table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
 Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash.

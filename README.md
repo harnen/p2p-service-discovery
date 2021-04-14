@@ -25,8 +25,8 @@ The project is organised in three main milestones of the project together with t
 * [ ] Pending or uncomplete tasks
 
 * Objective 1: Traffic optimization and load balancing
-  * [ ] Task: Improve the current discv5 to avoid hotspots in the network and avoid unnecessary load on participating nodes
-  * Deliverable: Updated Discv5 specification and evaluation results (TBC)
+  * [X] Task: Improve the current discv5 to avoid hotspots in the network and avoid unnecessary load on participating nodes
+  * Deliverable: Updated Discv5 specification and evaluation results.
   * Deadline: 31/3/2021
 
 * Objective 2: Investigate topic table structure
@@ -54,6 +54,10 @@ The project is organised in three main milestones of the project together with t
   * Deliverable: Testbed instructions and evaluation report using final parameters (TBC)
   * Deadline: 30/6/2021
 
+## Discv5 Service Discovery Specifications
+
+[Design](doc/specs.md)
+
   
 ## Service Discovery Requirements
 
@@ -63,10 +67,6 @@ The project is organised in three main milestones of the project together with t
 
 [Security](doc/security.md)
 
-
-## Discv5 Service Discovery Design
-
-[Design](doc/design.md)
 
 ## Service Discovery Simulator
 
