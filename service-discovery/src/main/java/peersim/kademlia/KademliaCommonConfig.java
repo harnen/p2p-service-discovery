@@ -55,7 +55,7 @@ public class KademliaCommonConfig {
     public static int STOP_REGISTER_MIN_REGS = 3;
     
     // By default, topic table is not round-robin 
-    public static int ROUND_ROBIN_TOPIC_TABLE = 0;
+    public static int ROUND_ROBIN_TOPIC_TABLE = 2;
     
     public static int REPORT_MSG_ACTIVATED = 0; 
     

@@ -835,7 +835,7 @@ public class KademliaObserver implements Control {
 	        if (myFile.exists())myFile.delete();
 	        myFile.createNewFile();
 	        writer = new FileWriter(myFile, true);
-	        writer.write("topic,nodeId,count\n");
+	        writer.write("topic,nodeId,bucket,count\n");
 	        
 	        
 	        //System.out.println("Competing tickets");
@@ -847,7 +847,11 @@ public class KademliaObserver implements Control {
 	        		if(avgCounter.get(n)!=null) {
 		        		writer.write(String.valueOf(t));
 			        	writer.write(",");
+			        	Topic topic = new Topic(t); 
+		            	int dist = Util.logDistance(topic.getTopicID(), n);
 			        	writer.write(String.valueOf(n));
+			        	writer.write(",");
+			        	writer.write(String.valueOf(dist));
 			        	writer.write(",");
 			        	writer.write(String.valueOf(competingTickets.get(t).get(n).intValue()));
 			        	writer.write("\n");

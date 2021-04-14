@@ -102,13 +102,18 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	 */
 	public Discv5TicketProtocol(String prefix) {
 		super(prefix);
-        if (KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE == 1)
-            this.topicTable = new Discv5RRTopicTable();
-        else
-            this.topicTable = new Discv5TopicTable();
         ticketTables = new HashMap<BigInteger,TicketTable>();
         searchTables = new HashMap<BigInteger,SearchTable>();
         registrationFailed = new HashMap<Ticket,BackoffService>();
+        
+        if (KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE == 1) {
+            this.topicTable = new Discv5RRTopicTable();
+        }
+        else if (KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE == 2) {
+        	this.topicTable = new Discv5GlobalTopicTable();        	
+        }else {
+            this.topicTable = new Discv5TopicTable();            
+        }
     }
 	
 	/**
@@ -137,7 +142,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		KademliaCommonConfig.MAX_REG_BUCKETS = Configuration.getInt(prefix + "." + PAR_MAX_REG_BUCKETS, KademliaCommonConfig.MAX_REG_BUCKETS);
 		KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE = Configuration.getInt(prefix + "." + PAR_STOP_REGISTER_WINDOW_SIZE, KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE);
 		KademliaCommonConfig.STOP_REGISTER_MIN_REGS = Configuration.getInt(prefix + "." + PAR_STOP_REGISTER_MIN_REGS, KademliaCommonConfig.STOP_REGISTER_MIN_REGS);
-        KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE = Configuration.getInt(prefix + "." + PAR_ROUND_ROBIN_TOPIC_TABLE, 0);
+        KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE = Configuration.getInt(prefix + "." + PAR_ROUND_ROBIN_TOPIC_TABLE, KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE);
+
+        
 
 		super._init();
 	}
@@ -310,7 +317,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     private void handleTicketResponse(Message m, int myPid) {
 		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
         Ticket ticket = body.ticket;
-        System.out.println("Got response! Is topic queue full?" + ticket.topicOccupancy);
+        System.out.println("Got response! Is topic queue full?" + ticket.topicOccupancy+" "+ticket.getWaitTime());
         Topic topic = ticket.getTopic();
         TicketTable tt = ticketTables.get(topic.getTopicID());
         tt.reportResponse(ticket);
@@ -318,7 +325,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         if (ticket.getWaitTime() == -1) 
         {   
 
-            logger.warning("Attempted to re-register topic on the same node");
+            logger.warning("Attempted to re-register topic on the same node "+m.src.getId()+" for topic "+topic.getTopic());
             tt.removeNeighbour(m.src.getId());
             
         	ticketTables.get(ticket.getTopic().getTopicID()).increaseAvailableRequests();

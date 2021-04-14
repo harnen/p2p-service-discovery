@@ -30,7 +30,7 @@ public class Discv5TopicTable { // implements TopicTable {
     protected HashMap<Topic, ArrayList<Ticket>> competingTickets;
     // All topic advertisements ordered by registration
     protected ArrayDeque<TopicRegistration> allAds;
-    private HashMap<Topic, Long> nextDecisionTime;
+    protected HashMap<Topic, Long> nextDecisionTime;
 
     protected Logger logger;
     
@@ -115,7 +115,7 @@ public class Discv5TopicTable { // implements TopicTable {
         return false;
     }
     
-    private int topicQueueOccupancy(Topic topic) {
+    protected int topicQueueOccupancy(Topic topic) {
     	ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
     	if (topicQ != null) {
     		System.out.println("topicQ: " + topicQ.size() + "/" + this.adsPerQueue);
