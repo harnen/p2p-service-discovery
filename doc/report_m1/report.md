@@ -2,7 +2,7 @@
 
 ## Setup
 The report consist of a comparison between the specs developed in the first discv5 service discovery project
-and the [new specs](doc/specs.md) aimed at improving traffic optimization and load balancing
+and the [new specs](../doc/specs.md) aimed at improving traffic optimization and load balancing
 
 
 The parameters used in the simulation are the following:
