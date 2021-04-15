@@ -9,9 +9,10 @@ ad_lifetime = 300
 capacity = 200
 
 env = simpy.Environment()
-table = SimpleTable(env, capacity, ad_lifetime)
+#table = SimpleTable(env, capacity, ad_lifetime)
 #table = DiversityThreshold(env, capacity, ad_lifetime, topicThresholds = {"t1" : 0.5, "t2" : 0.5},  ipThresholds = {8: capacity/4, 16: capacity/8, 24: capacity/16, 32 : capacity/32}, entropyLimit = 0.8)
-table.load('topics.csv')
+table = DiversityTable(env, capacity, ad_lifetime)
+table.load('./workloads/regular_size100_dist2.csv')
 env.process(table.display(100))
 env.run(until=run_time)
 #quit()
@@ -25,20 +26,24 @@ env.run(until=run_time)
 #print("Entropy", get_entropy(tab3))
 #quit()
 #tree = Tree()
-#in_file = open('../ips1k.txt', "r")
+#in_file = open('./workloads/ips.txt', "r")
 #counter = 0
 #x = []
 #y = []
 #for line in in_file:
+#    if counter > 100:
+#        break
 #    addr = line.rstrip()
 #    addr_tab = addr.split('.')
 #    print(">>>", addr, "->", '{0:08b}'.format(int(addr_tab[0])) + '.' + '{0:08b}'.format(int(addr_tab[1])) + '.' + '{0:08b}'.format(int(addr_tab[2])) + '.'+ '{0:08b}'.format(int(addr_tab[3])))
+    #print("tryAppend:", tree.tryAdd(addr), "append", tree.add(addr))
 #    y.append(tree.add(addr))
 #    x.append(counter)
 #    counter += 1
-
+#print(y)
 #fig, ax = plt.subplots()
 #ax.plot(x, y)
+#ax.axhline(y = 1, color = 'r', linestyle = '-')
 #ax.set_yscale('log')
 #print(sum(y)/len(y))
 #plt.show()
