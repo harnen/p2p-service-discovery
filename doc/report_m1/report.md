@@ -36,12 +36,19 @@ The parameters used in the simulation are the following:
 ## Lookups hop count 
 
 <p align="center">
-  <img src="./imgs/lookups_hopcount.png" width="45%" />
+  <img src="./imgs/lookup_hopcount.png" width="45%" />
 </p>
 
-## Tickets registration distribution per topic
+## Discovered registrations distribution per topic
 
 <p align="center">
   <img src="./imgs/registrant_distribution_logsnew.png" width="45%" />
   <img src="./imgs/registrant_distribution_logsold.png" width="45%" />
 </p>
+
+## Ticket registrations placed per topic
+
+<p align="center">
+  <img src="./imgs/registrations_registrar.png" width="45%" />
+</p>
+
