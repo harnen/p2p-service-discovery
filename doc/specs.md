@@ -111,7 +111,6 @@ Once a registration is successful, a new node is selected from the ticket table,
 
 The process is finished once `k=3` registrations are placed to each bucket, or when `target-ad-lifetime` expired for the first registration placed, whatever happens first. At this point the whole ticket table structure is cleared and the whole process is restarted.
 
-
 In this project we evaluated two different approaches to remove tickets from ticket table:
 * Removing the ticket after the registration lifetime expired: In this case we remove a ticket from the table, not after this registration has taken place, but after the registration has expired. This way we control the number of active registration, bounded to the number of buckets * bucket size.
 * Removing the ticket once the registration is successful: This approach removes the ticket as soon as the registration has complete. This way the number of ongoing registrations is much bigger and only depends on the time required to place a registration, that will cause the bucket space keeps occupied and no other registrations can take place meanwhile. This approach implies more registrations and therefore more overhead, but a better distribution of registration placed, especially for non popular topics and node with identifiers distant from topic id.
@@ -134,19 +133,34 @@ Also, all nodes in the bucket are pinged to check they are still alive. In case 
 
 ### Waiting time function
 
-Waiting time function is used to calculate the waiting time reported to registering advertising nodes to regulate and control the ticket registration. The function should use the following input to calculate the waiting time: 
+Waiting time function is used to calculate the waiting time reported to registering advertising nodes to regulate and control the ticket registration. The function should ideally use all of the following input to calculate a waiting time: 
 
 * Number of active registrations in the table for the same topic.
 * Pending on-going registrations (competing tickets).
 * Cumulative waiting time.
 * IP diversity score. 
 * Node id diversity score.
+* Current utilisation of the topic table (i.e., how many slots are available for placement of new registrations).
+
+Given the inputs above, our approach is to define metrics whose scores are used to compute a waiting time. These metrics are used to reduce the number of congestion and reduce the impact of Sybil attacks on the topic table resources. Given a request from an advertiser A for a topic t0, a registrar R first computes a score for each of the metrics below: 
+
+1. Uniformity score of the distribution of the per-topic number of registrations; i.e, how close the distribution of number of active registrations to a uniform distribution where each topic has equal number of registrations.
+2. Diversity score for the IP addresses of the advertisers that currently have a registration in the topic table of R.
+3. Diversity score for the node IDs of advertisers that currently have a registration in the topic table of R. 
+4. Congestion level score based on the current utilisation of the topic table. 
+
+A separate waiting time is computed based on each of the scores above and the maximum of the waiting times is returned back to advertiser A. The next question is how to convert each of the above scores to a waiting time. A possible and straightforward approach is to define a threshold (upper- or lower-bound) for each score and compute the waiting time as follows:
+* if the current score is above (below) the upper-(lower-)bound, then compute the necessary waiting time for the score to fall below (above) the threshold. This waiting time can be obtained by iteratively computing the score after removing the registrations in the oldest to newest order; once the score falls below (above) the threshold, the expiration of the current request minus the current time is set to be the waiting time. 
+* if the current score is below the threshold, the waiting time for the score is zero. 
+
+An important consideration when computing waiting times is to maintain a deterministic behaviour. In other words, there should not be a randomness in the waiting time computation; otherwise, advertisers will be tempted to send multiple requests to the same registrar in an effort to obtain different (i.e., smaller) waiting times. 
+
+We are currently investigating other metrics and different ways of computing waiting times.
 
 ## Topic Search
 
-The purpose of placing ads is being discovered by searchers.
-
-Searchers on a topic also keep a table, the 'search table'. 
+The purpose of placing ads is being discovered by searchers. 
+Searchers maintain a separate table that they use to keep track of on-going searches called the 'search table'. 
 Similar to the 'ticket table', the search table also stores k-buckets of advertisement media by distance to the topic hash, and a new 'search table' is created for each topic lookup.
 The k factor of the search table should be relatively large in order to make the search efficient.
 By default we use `k=16` similarly to the Kademlia DHT.
@@ -189,4 +203,26 @@ When empty slots during the refresh process, optionally, lookups are performed t
 Also, the last node in the bucket is pinged to check it is still alive. In case it is not, it is removed from the table.
 
 <!--*The search table is initialized and refreshed by performing lookups for the topic hash on using the main node table.*-->
+
+## Distributing ads across the network
+
+An important issue is how advertisers distribute their ads among registrar nodes. 
+Since every node may act as an advertisement medium for any topic, advertisers and searchers looking for ads must somehow meet at common registrars. 
+Ideally, the topic search should be fast even when the number of advertisers for a topic is much smaller than the number of all live nodes.
+Given that in a decentralised setting, advertisers and registrars can not apriori agree on a subset of nodes to serve as the advertisement media for the topics, the main challenge for nodes is to find the "right" set of nodes to send advertisements and topic search queries so that they quickly meet at common nodes.  
+
+Below are three naive approaches for the selection of nodes for registering ads and searching the peers for a topic ID: 
+ 1. "Walk" the DHT, exhaustively finding all neighbors in each bucket starting with the closest bucket. 
+Obviously, such an approach would be unscalable as it would lead to excessive overhead on the network in terms of number of messages and would require huge storage space to register ads. 
+ 2. A node can select a random subset of nodes by, for instance, picking a random Node ID from each bucket distance and finding the closest node to that ID. 
+This approach would be lightweight, but the downside is the potential inefficiency of search operations; that is, it could potentially take a lot of time and search messages for advertisers to find peers at registrars, especially for less popular services with small sets of peers.  
+NOTE: On the other hand, when the number of nodes advertising a topic is at least a certain percentage of the whole discovery network (rough estimate: at least 1%), ads may simply be placed on random nodes because searching for the topic on randomly selected nodes can locate the ads quickly enough.
+ 3. Using node(s) closest to the topic hash or hash(topic ID), i.e., mapping the topic ID to the node ID space by using the hash of the topic ID.
+This is an efficient approach, but it leads to poor load-balancing in terms of balance of load across registrars, because registrars whose IDs are close to the hash of a popular topic ID receive a lot of search and registration traffic, while the rest of the nodes receive very little traffic. 
+
+As discussed in ['Ticket Table'](#ticket-table), advertisers can perform parallel registrations at each and every bucket (relative to the topic hash), resulting with k on-going registrations per bucket. However, registering at all the bucket distances in parallel means that all advertisers will attempt to register at the nodes closest to the topic hash. Therefore, this approach also suffers from the same load-balancing problem with the third approach above. 
+
+A better approach is to sequentially "walk" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash. During the walk, the advertiser observes the achieved cumulative waiting times to successfully place ads (the elapsed time from the first ticket request to the receipt of notification of successful ad placement). Initially, the advertiser starts with only k registrars at the farthest bucket. Once the registrations are complete, then the advertiser initiates k registrations in the next closest bucket, adding this bucket to the current "bucket window" (the sequence of buckets for which there are on-going registrations or placed ads). The advertiser also keeps track of the expiration times of already placed ads and replaces expired ads with a fresh registration (by adding a new node to the ticket table at the corresponding  bucket).
+
+ The advertiser increases the "bucket window" until either the last bucket in the window is the closest bucket to the topic hash or a stopping condition occurs. A possible stopping condition is the sudden increase in the average cumulative waiting times in the last bucket. Because the number of nodes is halved for each new bucket compared to the previous one, the waiting times are expected to be doubled (increase linearly). If the increase in the cumulative waiting time is higher than a linear increase in the last bucket, then the bucket window is reduced. Following the conventions of the TCP congestion protocol, an advertiser can apply an additive increase multiplicative decrease approach to the bucket window size. This means halving the bucket window size, which essentially means halving the number of ads (i.e., waiting until half of the ads in the last half of the buckets expire) and then proceeding with incrementally increasing the window size.
 
