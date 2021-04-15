@@ -19,8 +19,8 @@ The parameters used in the simulation are the following:
 * Registration lifetime (i.e., expire after): 5 minutes
 
 <p float="left">
-  <img src="./img/Figure_1.png" width="450" />
-  <img src="./img/Figure_3.png" width="450" />
+  <img src="./img/message_quantity_logsnew.png" width="45%" />
+  <img src="./img/message_quantity_logsold.png" width="45%" />
 </p>
 <!-- ![a](./img/Figure_1.png) | ![a](./img/Figure_3.png) -->
 
