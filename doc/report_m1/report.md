@@ -20,7 +20,7 @@ The parameters used in the simulation are the following:
 
 ## Messages exchanged over simulation time
 
-<p float="left">
+<p align="center">
   <img src="./imgs/message_quantity_logsnew.png" width="45%" />
   <img src="./imgs/message_quantity_logsold.png" width="45%" />
 </p>
@@ -31,4 +31,17 @@ The parameters used in the simulation are the following:
 
 <p align="center">
   <img src="./imgs/messages_received2.png" width="45%" />
+</p>
+
+## Lookups hop count 
+
+<p align="center">
+  <img src="./imgs/lookups_hopcount.png" width="45%" />
+</p>
+
+## Tickets registration distribution per topic
+
+<p align="center">
+  <img src="./imgs/registrant_distribution_logsnew.png" width="45%" />
+  <img src="./imgs/registrant_distribution_logsold.png" width="45%" />
 </p>
