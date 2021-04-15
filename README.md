@@ -26,7 +26,7 @@ The project is organised in three main milestones of the project together with t
 
 * Objective 1: Traffic optimization and load balancing
   * [X] Task: Improve the current discv5 to avoid hotspots in the network and avoid unnecessary load on participating nodes
-  * Deliverable: Updated Discv5 specification and evaluation results.
+  * Deliverable: [Updated Discv5 specification](docs/specs.md) and [evaluation results](docs/report_m1.md).
   * Deadline: 31/3/2021
 
 * Objective 2: Investigate topic table structure
