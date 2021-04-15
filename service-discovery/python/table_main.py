@@ -4,17 +4,22 @@ import matplotlib.pyplot as plt
 from threshold import *
 
 
-run_time = 100000
+runtime = 100
 ad_lifetime = 300
 capacity = 200
 
-env = simpy.Environment()
-#table = SimpleTable(env, capacity, ad_lifetime)
-#table = DiversityThreshold(env, capacity, ad_lifetime, topicThresholds = {"t1" : 0.5, "t2" : 0.5},  ipThresholds = {8: capacity/4, 16: capacity/8, 24: capacity/16, 32 : capacity/32}, entropyLimit = 0.8)
-table = DiversityTable(env, capacity, ad_lifetime)
-table.load('./workloads/regular_size100_dist2.csv')
-env.process(table.display(100))
-env.run(until=run_time)
+
+tables = []
+tables.append(SimpleTable(simpy.Environment(), capacity, ad_lifetime))
+#tables.append(DiversityThreshold(simpy.Environment(), capacity, ad_lifetime, topicThresholds = {"t1" : 0.5, "t2" : 0.5},  ipThresholds = {8: capacity/4, 16: capacity/8, 24: capacity/16, 32 : capacity/32}, entropyLimit = 0.8))
+tables.append(DiversityTable(simpy.Environment(), capacity, ad_lifetime))
+for table in tables:
+    table.load('./workloads/regular_size100_dist2.csv')
+    table.display(99)
+    table.run(runtime)
+plt.show()
+    #env.process(table.display(100))
+    #env.run(until=run_time)
 #quit()
 #tab0 = [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 5, 6, 7, 8, 9, 9]
 #tab1 = [1, 0, 1, 0, 1, 0, 1, 0]

@@ -3,7 +3,6 @@ from table import *
 class DiversityThreshold(Table):
 
     def __init__(self, env, capacity, ad_lifetime, topicThresholds=None, ipThresholds=None, entropyLimit=None):
-        super().__init__(env, capacity, ad_lifetime)
         self.trie = {} # map prefix to request
         self.minEntropy = entropyLimit
         self.topicLimits = {}
@@ -11,6 +10,7 @@ class DiversityThreshold(Table):
         
         self.setTopicThresholds(topicThresholds)
         self.setIpThresholds(ipThresholds)
+        super().__init__(env, capacity, ad_lifetime)
 
     def setTopicThresholds(self, topicPercentages):
         if len(topicPercentages) == 0:

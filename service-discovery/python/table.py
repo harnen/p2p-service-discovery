@@ -28,7 +28,10 @@ class Table(metaclass=abc.ABCMeta):
                 self.workload[counter] = row
                 self.env.process(self.new_request(row, counter))
                 counter += 1
-    
+        
+    def run(self, runtime):
+        self.env.run(until=runtime)
+
     def scatter(self, values, title, ax = None):
         if(ax == None):
             fig, ax = plt.subplots()
@@ -51,8 +54,11 @@ class Table(metaclass=abc.ABCMeta):
         print("Frequency of", title, {x:values.count(x) for x in values})
 
     def display(self, delay):
+        self.env.process(self.display_body(delay))
+
+    def display_body(self, delay):
         yield self.env.timeout(delay)
-        figure, axis = plt.subplots(2, 3)
+        figure, axis = plt.subplots(2, 4)
         self.scatter([x['ip'] for x in self.table.values()], "IPs in the table at" + str(delay), axis[0, 0])
         self.scatter([x['ip'] for x in self.workload.values()], "IPs in the workload" + str(delay), axis[1, 0])
         self.scatter([x['id'] for x in self.table.values()], "IDs in the table" + str(delay), axis[0, 1])
@@ -60,11 +66,11 @@ class Table(metaclass=abc.ABCMeta):
         self.scatter([x['topic'] for x in self.table.values()], "Topics in the table" + str(delay), axis[0, 2])
         self.scatter([x['topic'] for x in self.workload.values()], "Topicss in the workload" + str(delay), axis[1, 2])
 
-        fig, ax = plt.subplots()
-        ax.plot(range(0, len(self.admission_times)), self.admission_times)
-        ax.set_title("Admissions times")
+        axis[0, 3].plot(range(0, len(self.admission_times)), self.admission_times)
+        axis[0, 3].set_title("Waiting times")
+        figure.suptitle(type(self).__name__)
 
-        plt.show()
+
     
     def log(self, *arg):
         print("[", self.env.now, "s]",  sep="", end='')
