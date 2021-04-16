@@ -18,7 +18,12 @@ The parameters used in the simulation are the following:
 * Turbulence events: each 1.5 sec.
 * Registration lifetime (i.e., expire after): 5 minutes
 
+This simulation is aimed at testing the behaviour of the new registration process that sequentially "walks" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash, instead of registering in parallel for each bucket to reduce the traffic load and improve the load balancing in the network. 
+The topic table structure used is the same of the [initial specifications](https://github.com/harnen/p2p-service-discovery/blob/master/doc/design.md) and also the waiting time calculation, based on topic queue slots availability.
+
 ## Messages exchanged over simulation time
+
+In these two figures we can observe the total number of messages exchanged (differentitated by message type) in the simulation over time using the new registration process (left figure) and the previous one (right figure).
 
 <p align="center">
   <img src="./imgs/message_quantity_logsnew.png" width="45%" />
@@ -29,11 +34,15 @@ The parameters used in the simulation are the following:
 
 ## Messages received per node
 
+In this figure we can observe the total number of messages received per node comparing the new registration process (blue) and the previous one (orange), and therefore the load balancing in the simulation. 
+
 <p align="center">
   <img src="./imgs/messages_received2.png" width="45%" />
 </p>
 
 ## Lookups hop count 
+
+In this figure we can observe the hop count required to discover the target nodes (50 nodes) comparing the new registration process (blue) and the previous one (orange).
 
 <p align="center">
   <img src="./imgs/lookup_hopcount.png" width="45%" />
@@ -41,12 +50,16 @@ The parameters used in the simulation are the following:
 
 ## Discovered registrations distribution per topic
 
+In these figures we can observe the distribution of advertising nodes discovered (and the discovery frequency shown in the size of the dots) comparing the new registration process (blue) and the previous one (orange).
+
 <p align="center">
   <img src="./imgs/registrant_distribution_logsnew.png" width="45%" />
   <img src="./imgs/registrant_distribution_logsold.png" width="45%" />
 </p>
 
 ## Ticket registrations placed per topic
+
+In this figure we can observe the registrations distribution in the 'registrar' nodes, comparing the new registration process (blue) and the previous one (orange).
 
 <p align="center">
   <img src="./imgs/registrations_registrar.png" width="45%" />
