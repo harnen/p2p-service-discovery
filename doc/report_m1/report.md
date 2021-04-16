@@ -31,6 +31,7 @@ In these two figures we can observe the total number of messages exchanged (diff
 </p>
 <!-- ![a](./img/Figure_1.png) | ![a](./img/Figure_3.png) -->
 
+We can see most of the messages exchanges are registrations requests, and these are reduced 20x with the new specs.
 
 ## Messages received per node
 
@@ -40,6 +41,8 @@ In this figure we can observe the total number of messages received per node com
   <img src="./imgs/messages_received2.png" width="45%" />
 </p>
 
+In the figure we observe the message distribution skeweness is reduced to the minimum. This was caused by the fact that nodes with Node ID close to the Topic Hash Id were receiving much more number of registrations because of the ticket table structure, were only a few number of nodes are in the buckets for shortest distances. With the new registration system, these nodes they do not receive an excessive number of messages because in most of the cases the registration process is stopped before arriving to these nodes.
+
 ## Lookups hop count 
 
 In this figure we can observe the hop count required to discover the target nodes (50 nodes) comparing the new registration process (blue) and the previous one (orange).
@@ -48,9 +51,11 @@ In this figure we can observe the hop count required to discover the target node
   <img src="./imgs/lookup_hopcount.png" width="45%" />
 </p>
 
+Therefore, we can observe lookup performance is not affected by the fact of placing less registrations in the network with the new system.
+
 ## Discovered registrations distribution per topic
 
-In these figures we can observe the distribution of advertising nodes discovered (and the discovery frequency shown in the size of the dots) comparing the new registration process (blue) and the previous one (orange).
+In these figures we can observe the distribution of advertising nodes discovered (and the discovery frequency shown in the size of the dots) comparing the new registration process (blue) and the previous one (orange). Discovery distribution is not clearly affected by the new registration mechanism.
 
 <p align="center">
   <img src="./imgs/registrant_distribution_logsnew.png" width="45%" />
@@ -64,4 +69,6 @@ In this figure we can observe the registrations distribution in the 'registrar' 
 <p align="center">
   <img src="./imgs/registrations_registrar.png" width="45%" />
 </p>
+
+We observe that actually, the number of active registrations is superior using the improved registration mechanism.
 
