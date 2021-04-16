@@ -17,6 +17,8 @@ class Table(metaclass=abc.ABCMeta):
         self.ad_lifetime = ad_lifetime
         self.ad_ids = 0
         self.admission_times = []
+        self.occupancies = []
+        self.returns = []
 
     def load(self, file):
         counter = 0
@@ -24,50 +26,79 @@ class Table(metaclass=abc.ABCMeta):
             reader = csv.DictReader(csvfile, delimiter=',', quotechar='|')
             for row in reader:
                 row['arrived'] = counter
+                row['returned'] = 0
                 print(row)
                 self.workload[counter] = row
                 self.env.process(self.new_request(row, counter))
                 counter += 1
         
     def run(self, runtime):
+        self.env.process(self.report_occupancy())
         self.env.run(until=runtime)
+        
 
-    def scatter(self, values, title, ax = None):
+    def report_occupancy(self):
+        yield self.env.timeout(1)
+        self.occupancies.append(len(self.table) / self.capacity)
+        self.env.process(self.report_occupancy())
+
+    def scatter(self, values, title, ax = None, color_map = None):
         if(ax == None):
             fig, ax = plt.subplots()
         cmap = cm.get_cmap('Spectral')
-        ips = list(set(values))
-        ip_step = 1/len(ips)
-        ip_row_length = int(math.sqrt(len(values)))
-        ip_colors = []
-        ip_x = []
-        ip_y = []
+        vals = list(set(values))
+        #print("vals:",   vals)
+        #required for consistent coloring across graphs
+        if(color_map == None):
+            if(len(vals) > 0):
+                step = 1/len(vals)
+            color_map = {}
+            for item in vals:
+                color_map[item] = cmap(vals.index(item) * step)
+
+        row_length = int(math.sqrt(len(values)))
+        colors = []
+        x = []
+        y = []
         counter = 0
         for entry in values:
-            ip_colors.append(cmap(ips.index(entry) * ip_step))
-            ip_x.append(counter % ip_row_length)
-            ip_y.append(int(counter/ip_row_length))
+            colors.append(color_map[entry])
+            x.append(counter % row_length)
+            y.append(int(counter/row_length))
             counter += 1
         
-        ax.scatter(ip_x, ip_y, c=ip_colors)
+        ax.scatter(x, y, c=colors)
         ax.set_title(title)
         print("Frequency of", title, {x:values.count(x) for x in values})
+        return color_map
 
     def display(self, delay):
         self.env.process(self.display_body(delay))
 
     def display_body(self, delay):
         yield self.env.timeout(delay)
-        figure, axis = plt.subplots(2, 4)
-        self.scatter([x['ip'] for x in self.table.values()], "IPs in the table at" + str(delay), axis[0, 0])
-        self.scatter([x['ip'] for x in self.workload.values()], "IPs in the workload" + str(delay), axis[1, 0])
-        self.scatter([x['id'] for x in self.table.values()], "IDs in the table" + str(delay), axis[0, 1])
-        self.scatter([x['id'] for x in self.workload.values()], "IDs in the workload" + str(delay), axis[1, 1])
-        self.scatter([x['topic'] for x in self.table.values()], "Topics in the table" + str(delay), axis[0, 2])
-        self.scatter([x['topic'] for x in self.workload.values()], "Topicss in the workload" + str(delay), axis[1, 2])
+        figure, axis = plt.subplots(3, 3)
+        ips_table = [x['ip'] for x in self.table.values()]
+        ips_workload = [x['ip'] for x in self.workload.values()]
+        ids_table = [x['id'] for x in self.table.values()]
+        ids_workload = [x['id'] for x in self.workload.values()]
+        topics_table = [x['topic'] for x in self.table.values()]
+        topics_workload = [x['topic'] for x in self.workload.values()]
+        
+        color_map = self.scatter(ips_workload, "IPs in the workload" + str(delay), axis[1, 0])
+        self.scatter(ips_table, "IPs in the table at" + str(delay), axis[0, 0], color_map)
+        color_map = self.scatter(ids_workload, "IDs in the workload" + str(delay), axis[1, 1])
+        self.scatter(ids_table, "IDs in the table" + str(delay), axis[0, 1], color_map)
+        color_map = self.scatter(topics_workload, "Topics in the workload" + str(delay), axis[1, 2])
+        self.scatter(topics_table, "Topics in the table" + str(delay), axis[0, 2], color_map)
+        
 
-        axis[0, 3].plot(range(0, len(self.admission_times)), self.admission_times)
-        axis[0, 3].set_title("Waiting times")
+        axis[2, 0].plot(range(0, len(self.admission_times)), self.admission_times)
+        axis[2, 0].set_title("Waiting times")
+        axis[2, 1].plot(range(0, len(self.occupancies)), self.occupancies)
+        axis[2, 1].set_title("Occupancy over time")
+        axis[2, 2].plot(range(0, len(self.returns)), self.returns)
+        axis[2, 2].set_title("Returns")
         figure.suptitle(type(self).__name__)
 
 
@@ -95,7 +126,9 @@ class Table(metaclass=abc.ABCMeta):
             self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
             self.ad_ids += 1
             self.admission_times.append(self.env.now - req['arrived'])
+            self.returns.append(req['returned'])
         else:
+            req['returned'] += 1
             self.env.process(self.new_request(req, waiting_time))
     
 

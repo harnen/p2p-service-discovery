@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from threshold import *
 import sys
 
-runtime = 1000
+runtime = 1300
 ad_lifetime = 300
 capacity = 100
 input_file = './workloads/regular_size100_dist2.csv'
@@ -19,7 +19,7 @@ tables.append(SimpleTable(simpy.Environment(), capacity, ad_lifetime))
 tables.append(DiversityTable(simpy.Environment(), capacity, ad_lifetime))
 for table in tables:
     table.load(input_file)
-    table.display(900)
+    table.display(1299)
     table.run(runtime)
 plt.show()
     #env.process(table.display(100))

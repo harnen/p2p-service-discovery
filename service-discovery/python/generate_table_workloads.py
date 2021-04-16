@@ -25,7 +25,7 @@ def generate_regular(size = 100, zipf_distribution = 2):
             dict_writer.writerow(record)
     print("Generated regular workload in", str(output_filename))
 
-def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't1', attacker_ip_num = 3, attacker_id_num=10, percentage_malicious = 0.9):
+def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't11', attacker_ip_num = 3, attacker_id_num=10, percentage_malicious = 0.9):
     output_filename = './workloads/attack_topic_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
     #get ips/ids from ethereum repo
     ip_file = open('./workloads/ips.txt', "r")
@@ -125,7 +125,7 @@ def generate_spam_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't1
 zipf_distribution = 2
 size = 100
 
-#generate_attack_topic(size=1000)
+generate_attack_topic(size=1000)
 generate_spam_topic(size=1000)
 #generate_regular(size = size, zipf_distribution=zipf_distribution)
 
