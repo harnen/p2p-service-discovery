@@ -111,16 +111,16 @@ Once a registration is successful, a new node is selected from the ticket table,
 
 The process is finished once `k=3` registrations are placed to each bucket, or when `target-ad-lifetime` expired for the first registration placed, whatever happens first. At this point the whole ticket table structure is cleared and the whole process is restarted.
 
-In this project we evaluated two different approaches to remove tickets from ticket table:
+<!--In this project we evaluated two different approaches to remove tickets from ticket table:
 * Removing the ticket after the registration lifetime expired: In this case we remove a ticket from the table, not after this registration has taken place, but after the registration has expired. This way we control the number of active registration, bounded to the number of buckets * bucket size.
-* Removing the ticket once the registration is successful: This approach removes the ticket as soon as the registration has complete. This way the number of ongoing registrations is much bigger and only depends on the time required to place a registration, that will cause the bucket space keeps occupied and no other registrations can take place meanwhile. This approach implies more registrations and therefore more overhead, but a better distribution of registration placed, especially for non popular topics and node with identifiers distant from topic id.
+* Removing the ticket once the registration is successful: This approach removes the ticket as soon as the registration has complete. This way the number of ongoing registrations is much bigger and only depends on the time required to place a registration, that will cause the bucket space keeps occupied and no other registrations can take place meanwhile. This approach implies more registrations and therefore more overhead, but a better distribution of registration placed, especially for non popular topics and node with identifiers distant from topic id.-->
 
 
 ### Bucket refresh
 
 'Ticket table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
-Ideally, all k-buckets should be constantly full, meaning that the node has active registrations at registrars in all distances to the topic hash.
-Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash may create an additional overhead that can be too expensive and create too much traffic in the network.
+Ideally, all k-buckets should be constantly full, meaning that the node place registrations at registrars in all distances to the topic hash.
+An option to fill up all k-buckets would be to send periodic lookups for the specific distance to the topic hash, but since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash may create an additional overhead that can be too expensive and create too much traffic in the network.
 To avoid that, initially, the 'ticket table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash'.
 In addition to that, every time a node sends a ticket request, the registrar replies with the closest nodes to 'the topic hash' that it knows.
 This helps filling up k-buckets without sending additional lookups.
