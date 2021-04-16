@@ -133,7 +133,7 @@ We should decide how to implement it.
 
 [Security report comparing two discovery protocols](doc/security_report/report.md)
 
-[Security report for final protocol](doc/ticket_security_report/report.md)-->
+[Security report for final protocol](doc/ticket_security_report/report.md)
 
 [Evaluation results](doc/FinalReport.pdf)
 
@@ -158,4 +158,4 @@ We should decide how to implement it.
 
 ## Other
 
-[Service discovery implementation](doc/discovery.md)
+[Service discovery implementation](doc/discovery.md)-->
