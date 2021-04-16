@@ -1,23 +1,15 @@
 from table import *
+from scipy.stats import entropy
 
 class DiversityThreshold(Table):
 
-    def __init__(self, env, capacity, ad_lifetime, topicThresholds=None, ipThresholds=None, entropyLimit=None):
+    def __init__(self, env, capacity, ad_lifetime, ipThresholds=None, entropyLimit=None):
         self.trie = {} # map prefix to request
         self.minEntropy = entropyLimit
-        self.topicLimits = {}
         self.prefixLimits = {}
         
-        self.setTopicThresholds(topicThresholds)
         self.setIpThresholds(ipThresholds)
         super().__init__(env, capacity, ad_lifetime)
-
-    def setTopicThresholds(self, topicPercentages):
-        if len(topicPercentages) == 0:
-            self.topicLimits = []
-
-        for topic in topicPercentages.keys():
-            self.topicLimits[topic] = topicPercentages[topic]
 
     def setIpThresholds(self, ipThresholds):
         if len(ipThresholds) == 0:
@@ -42,19 +34,34 @@ class DiversityThreshold(Table):
                 reqs.remove(req)
 
     def get_topic_waiting_time(self, topic, time):
-        if len(self.topicLimits) == 0:
+        
+        current_topics = set([req['topic'] for req in self.table.values()])
+        num_of_topics = len(current_topics)
+
+        topic_limit = self.capacity
+        if num_of_topics > 0:
+            topic_limit = self.capacity/num_of_topics
+
+        num_topic_reqs = {}
+        for topic in current_topics:
+            num_topic_reqs[topic] = len([req for req in self.table.values() if req['topic'] == topic])
+
+        if topic not in current_topics:
+            num_topic_reqs[topic] = 0
+
+        current_reqs = [req for req in self.table.values()]
+        sorted_reqs = sorted(current_reqs, key=lambda k: k['expire'])
+        last_element = None
+        while len(sorted_reqs) >= self.capacity or num_topic_reqs[topic] > topic_limit:
+            last_element = sorted_reqs.pop(0)
+            last_topic = last_element['topic']
+            if last_topic == topic:
+                num_topic_reqs[topic] -= 1
+
+        if last_element is None:
             return 0
 
-        topic_reqs = [req for req in self.table.values() if req['topic'] == topic]
-
-        util = 1.0 * len(topic_reqs) / self.capacity
-        if (util < self.topicLimits[topic]):
-            return 0
-
-        topic_expirations = [req['expire'] for req in self.table.values() if req['topic'] == topic]
-        min_expiration = min(topic_expirations)
-
-        return min_expiration - time
+        return last_element['expire'] - time
 
     def get_IP_waiting_time(self, iP, time):
         if len(self.prefixLimits) == 0:
@@ -108,13 +115,16 @@ class DiversityThreshold(Table):
             current_ids.append(req['id'])
             entropy = get_entropy(current_ids)
 
-            #print('Sorted Reqs: ', sorted_reqs)
-            #print('Entropy is', entropy)
+            print('Current ids: ', current_ids)
+            print('Entropy is', entropy)
 
-            last_element = sorted_reqs.pop(0)
-            
             if entropy > self.minEntropy:
                 break
+            
+            last_element = sorted_reqs.pop(0)
+
+        if last_element is None:
+            return 0
 
         return last_element['expire'] - time
 
@@ -125,8 +135,11 @@ class DiversityThreshold(Table):
         
         time = self.env.now
         ip_waiting_time = self.get_IP_waiting_time(iP, time)
+        print('ip_waiting_time = ', ip_waiting_time)
         topic_waiting_time = self.get_topic_waiting_time(topic, time)
-        nodeID_waiting_time = 0 # self.get_nodeId_entropy_waiting_time(req, time) XXX
+        print('topic_waiting_time = ', topic_waiting_time)
+        nodeID_waiting_time = self.get_nodeId_entropy_waiting_time(req, time)
+        print('nodeID_waiting_time = ', nodeID_waiting_time)
 
         waiting_time = max([ip_waiting_time, topic_waiting_time, nodeID_waiting_time])
 
@@ -161,6 +174,4 @@ class DiversityThreshold(Table):
                 reqs.append(req)
             else:
                 self.trie[prefix] = [req]
-
-
 

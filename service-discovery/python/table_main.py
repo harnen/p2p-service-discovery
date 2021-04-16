@@ -15,7 +15,7 @@ if len(sys.argv) > 1:
 
 tables = []
 tables.append(SimpleTable(simpy.Environment(), capacity, ad_lifetime))
-#tables.append(DiversityThreshold(simpy.Environment(), capacity, ad_lifetime, topicThresholds = {"t1" : 0.5, "t2" : 0.5},  ipThresholds = {8: capacity/4, 16: capacity/8, 24: capacity/16, 32 : capacity/32}, entropyLimit = 0.8))
+tables.append(DiversityThreshold(simpy.Environment(), capacity, ad_lifetime,  ipThresholds = {8: capacity/4, 16: capacity/8, 24: capacity/16, 32 : capacity/32}, entropyLimit = 0.8))
 tables.append(DiversityTable(simpy.Environment(), capacity, ad_lifetime))
 for table in tables:
     table.load(input_file)
