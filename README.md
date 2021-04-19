@@ -26,7 +26,7 @@ The project is organised in three main milestones of the project together with t
 
 * Objective 1: Traffic optimization and load balancing
   * [X] Task: Improve the current discv5 to avoid hotspots in the network and avoid unnecessary load on participating nodes
-  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [evaluation results](doc/report_m1.md).
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [evaluation results](doc/report_m1/report.md).
   * Deadline: 31/3/2021
 
 * Objective 2: Investigate topic table structure
@@ -133,7 +133,7 @@ We should decide how to implement it.
 
 [Security report comparing two discovery protocols](doc/security_report/report.md)
 
-[Security report for final protocol](doc/ticket_security_report/report.md)-->
+[Security report for final protocol](doc/ticket_security_report/report.md)
 
 [Evaluation results](doc/FinalReport.pdf)
 
@@ -158,4 +158,4 @@ We should decide how to implement it.
 
 ## Other
 
-[Service discovery implementation](doc/discovery.md)
+[Service discovery implementation](doc/discovery.md)-->

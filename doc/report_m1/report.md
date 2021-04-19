@@ -2,7 +2,7 @@
 
 ## Setup
 The report consist of a comparison between the specs developed in the first discv5 service discovery project
-and the [new specs] (../specs.md) aimed at improving traffic optimization and load balancing
+and the [new specs](../doc/specs.md) aimed at improving traffic optimization and load balancing
 
 
 The parameters used in the simulation are the following:
@@ -18,48 +18,57 @@ The parameters used in the simulation are the following:
 * Turbulence events: each 1.5 sec.
 * Registration lifetime (i.e., expire after): 5 minutes
 
-<p float="left">
-  <img src="./img/Figure_1.png" width="450" />
-  <img src="./img/Figure_3.png" width="450" />
+This simulation is aimed at testing the behaviour of the new registration process that sequentially "walks" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash, instead of registering in parallel for each bucket to reduce the traffic load and improve the load balancing in the network. 
+The topic table structure used is the same of the [initial specifications](https://github.com/harnen/p2p-service-discovery/blob/master/doc/design.md) and also the waiting time calculation, based on topic queue slots availability.
+
+## Messages exchanged over simulation time
+
+In these two figures we can observe the total number of messages exchanged (differentitated by message type) in the simulation over time using the new registration process (left figure) and the previous one (right figure).
+
+<p align="center">
+  <img src="./imgs/message_quantity_logsnew.png" width="45%" />
+  <img src="./imgs/message_quantity_logsold.png" width="45%" />
 </p>
 <!-- ![a](./img/Figure_1.png) | ![a](./img/Figure_3.png) -->
 
-The graph above shows the number of messages received by nodes in the network.
-The ticket protocol sends advertisement and lookups to a higher number of nodes and expieriences high number of received messages. We're currently investigating why there's a significant disproportion in the number of received message between nodes.
+We can see most of the messages exchanges are registrations requests, and these are reduced 20x with the new specs.
 
-In contrast, the noticket protocol sends advertisement and lookups to a small portion of the nodes (close to the topic hash) and produces lower overhead.
+## Messages received per node
 
-The same applies for the sent messages
+In this figure we can observe the total number of messages received per node comparing the new registration process (blue) and the previous one (orange), and therefore the load balancing in the simulation. 
 
+<p align="center">
+  <img src="./imgs/messages_received2.png" width="45%" />
+</p>
 
-We continue by analyzing the number of registrations present on registrars.
+In the figure we observe the message distribution skeweness is reduced to the minimum. This was caused by the fact that nodes with Node ID close to the Topic Hash Id were receiving much more number of registrations because of the ticket table structure, were only a few number of nodes are in the buckets for shortest distances. With the new registration system, these nodes they do not receive an excessive number of messages because in most of the cases the registration process is stopped before arriving to these nodes.
 
-![a](./img/Figure_8.png)
+## Lookups hop count 
 
+In this figure we can observe the hop count required to discover the target nodes (50 nodes) comparing the new registration process (blue) and the previous one (orange).
 
-The noticket proposal results in less equal load on registrars. Nodes closer to hashes of popular topic receive more traffic than the rest.
-This effect is mitigated in the ticket protocol as the registration are performed at uniformly distributed nodes. However, the ticket protocol place the advertisements on a higher number of registrars.
+<p align="center">
+  <img src="./imgs/lookup_hopcount.png" width="45%" />
+</p>
 
+Therefore, we can observe lookup performance is not affected by the fact of placing less registrations in the network with the new system.
 
-We now have a look at the number of successful registrations for each topic.
-![a](./img/Figure_9.png)
+## Discovered registrations distribution per topic
 
-The number of registrations follows the popularity of each topic (more popular topic having more registrations in the network). We don nott observe major differences between the protocols.
+In these figures we can observe the distribution of advertising nodes discovered (and the discovery frequency shown in the size of the dots) comparing the new registration process (blue) and the previous one (orange). Discovery distribution is not clearly affected by the new registration mechanism.
 
+<p align="center">
+  <img src="./imgs/registrant_distribution_logsnew.png" width="45%" />
+  <img src="./imgs/registrant_distribution_logsold.png" width="45%" />
+</p>
 
-We analyze the number of advertisements placed by each registrants:
-![a](./img/Figure_7.png)
+## Ticket registrations placed per topic
 
-For the noticket protocol the number of placed ads differs slightly. It depends on the distance of the registrant's id from the topic id. The furher away the registrant is, the more nodes it needs to traverse thus placing more advertisements.
+In this figure we can observe the registrations distribution in the 'registrar' nodes, comparing the new registration process (blue) and the previous one (orange).
 
-For the ticket protocol, we also observe differences in the number of placed ads. This is a consequence of the initial connections present in the DHT. Nodes having some buckets empty need first to fill them up by sending FIND messages. it delays the registration process and results in a lwoer number of places registrations.
+<p align="center">
+  <img src="./imgs/registrations_registrar.png" width="45%" />
+</p>
 
-Finally, we observer the registrants for each topic. The x-axis represents the ID hash space.
-![a](./img/Figure_13.png)
+We observe that actually, the number of active registrations is superior using the improved registration mechanism.
 
-Both protocol expierience similar number of registrants uniformly distributed for each topic. This is expected, as it's a part of the random registrant selection process.
-
-The situation changes when observing the registrars for each topic:
-![a](./img/Figure_14.png)
-
-The ticket protocol places advertisements on registrars uniformly distributed over the hash space. We do not observe differences between various topics. In contrast, the noticket protocol places advertisements uniquely close to the hash of each topic.
