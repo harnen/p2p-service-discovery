@@ -23,7 +23,6 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
    
 	public Discv5GlobalTopicTable() {
         super();
-        System.out.println("Global topic table");
     }
   
     
@@ -44,7 +43,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         System.out.println("Competing tickets "+getNumberOfCompetingTicketsPerTopic(t));
 
         //compute ticket waiting time
-        long waiting_time = getWaitingTime(reg, curr_time);
+        long waiting_time = getWaitingTime(reg, curr_time,rtt_delay);
         int queueOccupancy = topicQueueOccupancy(t);
         
         if (waiting_time == -1) {
@@ -58,12 +57,13 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
     }
     
-    protected long getWaitingTime(TopicRegistration reg, long curr_time) {
+    protected long getWaitingTime(TopicRegistration reg, long curr_time, long rtt_delay) {
         //System.out.println("Get Waiting time "+reg.getTopic().getTopic());
 
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
-        long waiting_time;
-        
+        long waiting_time=0;
+    	double modifier = 0;
+
         //System.out.println("Topic "+reg.getTopic().topic+" "+topicQ.size());
         /*if(topicQ!=null) {
         for(Iterator<TopicRegistration> itr = topicQ.iterator();itr.hasNext();)  {
@@ -93,10 +93,23 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         }
         else {
             //waiting_time = 0;
-        	waiting_time = (long) Math.pow(2,getNumberOfCompetingTicketsPerTopic(reg.getTopic()))*1000;
+        	if(topicQ!=null) {
+        		modifier = getTopicsEntropyModifier(reg.getTopic());
+        		int competing = (competingTickets.get(reg.getTopic())!=null)?competingTickets.get(reg.getTopic()).size():0;
+        		//waiting_time = (long) Math.pow(2,(topicQ.size()*(modifier-1.0)));
+        		waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * allAds.size()/(tableCapacity / topicTable.keySet().size()));
+        		//waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * (modifier-1.0));
+        		//System.out.println("Waiting time "+waiting_time+" "+modifier);
+        		//waiting_time = 6000000;
+        		if(waiting_time<0)waiting_time=Long.MAX_VALUE-(4*rtt_delay);
+        	}
         }
 
         //assert waiting_time <= this.adLifeTime && waiting_time >= 0;
+        if(topicQ!=null&&competingTickets.get(reg.getTopic())!=null)
+        	System.out.println("Waiting time "+waiting_time+" queue:"+topicQ.size()+" competing:"+competingTickets.get(reg.getTopic()).size()+" bucket:"+Util.logDistance(reg.getTopic().getTopicID(),hostID));
+        if(topicQ!=null)
+        	System.out.println("Waiting time "+waiting_time+" queue:"+topicQ.size()+" bucket:"+Util.logDistance(reg.getTopic().getTopicID(),hostID)+" "+modifier);
 
         return waiting_time;
     }
@@ -167,16 +180,18 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         for(Ticket ticket: ticketList) {
             TopicRegistration reg = new TopicRegistration(ticket.getSrc(), ticket.getTopic(), curr_time);
             reg.setTimestamp(curr_time);
-            long waiting_time = getWaitingTime(reg, curr_time);
+            //long waiting_time = getWaitingTime(reg, curr_time);
 
         	int topicOccupancy = 0;
+        	long waiting_time = 0;
             if(this.topicTable.get(reg.getTopic())!=null)
                 topicOccupancy = this.topicTable.get(reg.getTopic()).size();
         
-            if (waiting_time == -1) { 
+            if (containsReg(reg)) { 
                 // rejected because a registration from ticket src for topic already exists
                 ticket.setRegistrationComplete(false);
-                ticket.setWaitTime(waiting_time);
+                ticket.setWaitTime(-1);
+                waiting_time=-1;
             }
             //else if ( (waiting_time == 0) && (topicOccupancy < adsPerQueue) && (this.allAds.size() < tableCapacity) ) { //accepted ticket
             else if (this.allAds.size() < tableCapacity) { //accepted ticket
@@ -185,16 +200,67 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
                 KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime());
             }
             else { //waiting_time > 0, reject (for now) due to space
-                waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
+                waiting_time = (nextExpirationTime(curr_time) - ticket.getRTT() > 0) ? nextExpirationTime(curr_time) - ticket.getRTT() : 0;
                 ticket.updateWaitingTime(waiting_time);
                 ticket.setRegistrationComplete(false);
-
                 
             }
             KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time);
+
         }
         Ticket [] tickets = (Ticket []) ticketList.toArray(new Ticket[ticketList.size()]);
         return tickets;
+    }
+    
+    
+    private boolean containsReg(TopicRegistration reg) {
+    	
+        ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
+
+	    if ( (topicQ != null) && (topicQ.contains(reg)) ) {
+	        //logger.warning("Ad already registered by this node");
+	        return true;
+	    }
+	    return false;
+    }
+    
+    private long nextExpirationTime(long curr_time) {
+        TopicRegistration r = allAds.getFirst();
+        long age = curr_time - r.getTimestamp();
+        return this.adLifeTime - age;
+    }
+    
+    
+    private double getTopicsEntropyModifier(Topic topic) {
+    	
+    	//System.out.println("Looking for entropy topic "+topic.getTopic()+" "+topicTable.get(topic).size());
+        double entropy1 = 0.0;
+        for (ArrayDeque<TopicRegistration> q: topicTable.values()) {
+            double p = (double)q.size() / (double)allAds.size();
+            //System.out.print("P "+p+" ");
+            entropy1 += p * Math.log(p) / Math.log(2);
+            //System.out.print("entropy1 "+entropy1+" ");
+
+        }
+        entropy1 *=-1;
+       // System.out.println("entropy1 "+entropy1);
+        double entropy2 = 0.0;
+       // System.out.print("entropy ");
+        for (Topic t: topicTable.keySet()) {
+    //    	System.out.print("topic "+t.getTopic()+" "+topicTable.get(t).size()+" ");
+        	double p;
+        	if(topic.equals(t)) 
+        		p = (double)(topicTable.get(t).size()+1) / (double)allAds.size();
+        	else 
+        		p = (double)topicTable.get(t).size() / (double)allAds.size();
+
+            entropy2 += p * Math.log(p) / Math.log(2);
+        }
+        entropy2 *=-1;
+    //    System.out.println(" entropy");
+        
+        System.out.println("Entropy1:"+entropy1+" entropy2:"+entropy2+" return:"+Math.max(1.0,entropy1/entropy2));
+        return Math.max(1.0,entropy1/entropy2);
     }
     
 }
