@@ -112,13 +112,19 @@ class DiversityThreshold(Table):
 
         while len(sorted_reqs) > 0:
             current_ids = [x['id'] for x in sorted_reqs]
-            current_ids.append(req['id'])
-            entropy = get_entropy(current_ids)
+            entropyBefore = get_entropy(current_ids)
 
             print('Current ids: ', current_ids)
-            print('Entropy is', entropy)
+            print('Entropy before is', entropyBefore)
 
-            if entropy > self.minEntropy:
+            current_ids.append(req['id'])
+            entropyAfter = get_entropy(current_ids)
+            
+            print('Entropy after is', entropyAfter)
+            delta = entropyAfter - entropyBefore
+            print('min entropy: ', self.minEntropy, ' delta: ', delta)
+            if delta > self.minEntropy:
+                print('Exiting')
                 break
             
             last_element = sorted_reqs.pop(0)
