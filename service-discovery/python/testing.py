@@ -4,7 +4,7 @@ import math
 import random
 import pandas as pd
 
-def plot_multi(data, cols=None, spacing=.1, **kwargs):
+def plot_multi(data, tics, cols=None, spacing=.1, **kwargs):
 
     from pandas import plotting
 
@@ -33,7 +33,6 @@ def plot_multi(data, cols=None, spacing=.1, **kwargs):
         lines += line
         labels += label
 
-    
     #return ax
     # Multiple y-axes
     #ax_new = ax.twinx()
@@ -90,7 +89,7 @@ def test_topic_modifier():
     df = pd.DataFrame(modifiers)
     df.set_index('n', inplace=True)
     print(df)
-    plot_multi(df, figsize=(6, 3))
+    plot_multi(df, input, figsize=(6, 3))
     plt.show()
     #figure, ax = plt.subplots()
     #ax.plot(range(0, len(modifiers['entropy'])), modifiers['entropy'], label='entropy')
