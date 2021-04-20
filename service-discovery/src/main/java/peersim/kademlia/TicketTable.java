@@ -76,38 +76,6 @@ public class TicketTable extends RoutingTable {
 		
 	}
 
-	/*public TicketTable(int nBuckets,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
-		
-		super(0, 0, 0);
-		k_buckets = new KBucket[nBuckets];
-		this.nBuckets = nBuckets;
-		this.maxReplacements=0;
-		bucketMinDistance = KademliaCommonConfig.BITS - nBuckets;
-		
-		this.k=3;
-		
-		for (int i = 0; i < k_buckets.length; i++) {
-			k_buckets[i] = new KBucket(this,k,maxReplacements);
-		}
-		
-		pendingTickets = new ArrayList<BigInteger>();
-
-		this.protocol = protocol;
-		
-		this.t = t;
-		
-		this.nodeId = t.getTopicID();
-		
-		this.myPid = myPid;
-		
-		logger = Logger.getLogger(protocol.getNode().getId().toString());
-		
-		this.refresh = refresh;
-		
-		registeredPerDist = new HashMap<Integer, Integer>();
-
-		registeredNodes = new ArrayList<BigInteger>();
-	}*/
 	
 	public boolean addNeighbour(BigInteger node) {
 		logger.info("Adding neighbour "+bucketWithRegs()+" "+KademliaCommonConfig.MAX_REG_BUCKETS+" "+Util.logDistance(nodeId, node)+" "+(Util.logDistance(nodeId, node) - bucketMinDistance - 1)+" "+(nBuckets-KademliaCommonConfig.MAX_REG_BUCKETS));
@@ -124,7 +92,7 @@ public class TicketTable extends RoutingTable {
 		if(!pendingTickets.contains(node)&&!registeredNodes.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
-				//protocol.sendTicketRequest(node,t,myPid);
+				if(KademliaCommonConfig.PARALLELREGISTRATIONS==1)protocol.sendTicketRequest(node,t,myPid);
 				addRegisteredList(node);
 
 				return true;

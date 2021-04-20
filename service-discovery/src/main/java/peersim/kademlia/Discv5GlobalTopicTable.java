@@ -43,7 +43,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         System.out.println("Competing tickets "+getNumberOfCompetingTicketsPerTopic(t));
 
         //compute ticket waiting time
-        long waiting_time = getWaitingTime(reg, curr_time,rtt_delay);
+        long waiting_time = getWaitingTime(reg, curr_time);
         int queueOccupancy = topicQueueOccupancy(t);
         
         if (waiting_time == -1) {
@@ -57,13 +57,18 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
     }
     
-    protected long getWaitingTime(TopicRegistration reg, long curr_time, long rtt_delay) {
+    protected long getWaitingTime(TopicRegistration reg, long curr_time) {
+    	return getWaitingTime(reg,curr_time,null);
+    }
+    
+    protected long getWaitingTime(TopicRegistration reg, long curr_time, Ticket ticket) {
         //System.out.println("Get Waiting time "+reg.getTopic().getTopic());
 
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
         long waiting_time=0;
     	double modifier = 0;
-
+    	long cumWaitingTime = 0;
+    	if(ticket!=null)cumWaitingTime=ticket.getCumWaitTime();
         //System.out.println("Topic "+reg.getTopic().topic+" "+topicQ.size());
         /*if(topicQ!=null) {
         for(Iterator<TopicRegistration> itr = topicQ.iterator();itr.hasNext();)  {
@@ -97,11 +102,12 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         		modifier = getTopicsEntropyModifier(reg.getTopic());
         		int competing = (competingTickets.get(reg.getTopic())!=null)?competingTickets.get(reg.getTopic()).size():0;
         		//waiting_time = (long) Math.pow(2,(topicQ.size()*(modifier-1.0)));
-        		waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * allAds.size()/(tableCapacity / topicTable.keySet().size()));
+        		System.out.println("Waiting time "+KademliaCommonConfig.AD_LIFE_TIME * (double)allAds.size()/tableCapacity +" cumwaitingtime "+cumWaitingTime+" ads "+allAds.size());
+        		waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * (double)allAds.size()/tableCapacity) - cumWaitingTime;
         		//waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * (modifier-1.0));
         		//System.out.println("Waiting time "+waiting_time+" "+modifier);
         		//waiting_time = 6000000;
-        		if(waiting_time<0)waiting_time=Long.MAX_VALUE-(4*rtt_delay);
+        		if(waiting_time<0)waiting_time=0;
         	}
         }
 
@@ -180,10 +186,9 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         for(Ticket ticket: ticketList) {
             TopicRegistration reg = new TopicRegistration(ticket.getSrc(), ticket.getTopic(), curr_time);
             reg.setTimestamp(curr_time);
-            //long waiting_time = getWaitingTime(reg, curr_time);
+            long waiting_time = getWaitingTime(reg, curr_time,ticket);
 
         	int topicOccupancy = 0;
-        	long waiting_time = 0;
             if(this.topicTable.get(reg.getTopic())!=null)
                 topicOccupancy = this.topicTable.get(reg.getTopic()).size();
         
@@ -194,13 +199,13 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
                 waiting_time=-1;
             }
             //else if ( (waiting_time == 0) && (topicOccupancy < adsPerQueue) && (this.allAds.size() < tableCapacity) ) { //accepted ticket
-            else if (this.allAds.size() < tableCapacity) { //accepted ticket
+            else if ((this.allAds.size() < tableCapacity) && waiting_time==0){ //accepted ticket
                 register(reg);
                 ticket.setRegistrationComplete(true);
                 KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime());
             }
             else { //waiting_time > 0, reject (for now) due to space
-                waiting_time = (nextExpirationTime(curr_time) - ticket.getRTT() > 0) ? nextExpirationTime(curr_time) - ticket.getRTT() : 0;
+                waiting_time = (waiting_time- ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
                 ticket.updateWaitingTime(waiting_time);
                 ticket.setRegistrationComplete(false);
                 
@@ -259,8 +264,8 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         entropy2 *=-1;
     //    System.out.println(" entropy");
         
-        System.out.println("Entropy1:"+entropy1+" entropy2:"+entropy2+" return:"+Math.max(1.0,entropy1/entropy2));
-        return Math.max(1.0,entropy1/entropy2);
+        System.out.println("Entropy1:"+entropy1+" entropy2:"+entropy2+" return:"+10*entropy1/entropy2);
+        return 10*entropy1/entropy2;
     }
     
 }
