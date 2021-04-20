@@ -9,7 +9,7 @@ from scipy.stats import entropy
 
 
 class Table(metaclass=abc.ABCMeta):
-    def __init__(self, env, capacity, ad_lifetime):
+    def __init__(self, env, capacity, ad_lifetime, interval=1):
         self.table = {}
         self.workload = {}
         self.env = env
@@ -19,6 +19,7 @@ class Table(metaclass=abc.ABCMeta):
         self.admission_times = []
         self.occupancies = []
         self.returns = []
+        self.interval = interval
 
     def load(self, file):
         counter = 0
@@ -29,7 +30,7 @@ class Table(metaclass=abc.ABCMeta):
                 row['returned'] = 0
                 print(row)
                 self.workload[counter] = row
-                self.env.process(self.new_request(row, counter))
+                self.env.process(self.new_request(row, counter * self.interval))
                 counter += 1
         
     def run(self, runtime):
@@ -73,6 +74,7 @@ class Table(metaclass=abc.ABCMeta):
         return color_map
 
     def display(self, delay):
+        print("display, env", self.env)
         self.env.process(self.display_body(delay))
 
     def display_body(self, delay):
@@ -144,42 +146,85 @@ class DiversityTable(Table):
     def __init__(self, env, capacity, ad_lifetime):
         super().__init__(env, capacity, ad_lifetime)
         self.tree = Tree()
+        self.ip_modifiers = {}
+        self.id_modifiers = {}
+        self.topic_modifiers = {}
+    
+    def get_ip_modifier(self, ip):
+        return self.tree.tryAdd(ip)
+    
+    def get_id_modifier(self, id):
+        current_ids = [x['id'] for x in self.table.values()]
+        current_id_entropy = get_entropy(current_ids)
+        current_ids.append(id)
+        new_id_entropy = get_entropy(current_ids)
+        if((len(current_ids) - 1) == 0):
+            id_modifier = 1
+        elif(new_id_entropy == 0):
+            id_modifier = 2
+        else:
+            id_modifier = current_id_entropy/new_id_entropy
+        
+        id_modifier = max(id_modifier, 1)
+        return id_modifier
+
+    def get_topic_modifier(self, topic):
+        current_topics = [x['topic'] for x in self.table.values()]
+        current_topic_entropy = get_entropy(current_topics)
+        current_topics.append(topic)
+        new_topic_entropy = get_entropy(current_topics)
+        
+        if((len(current_topics) - 1) == 0):
+            topic_modifier = 1
+        elif(new_topic_entropy == 0):
+            topic_modifier = 2
+        else:
+            topic_modifier = current_topic_entropy/new_topic_entropy
+        topic_modifier *= 10
+        print("new_topic_entropy", new_topic_entropy, "current_topic_entropy:", current_topic_entropy, "current_topics:", current_topics, "topic_modifier:", topic_modifier)
+        topic_modifier = max(topic_modifier, 1)
+        return topic_modifier
+
 
     def get_waiting_time(self, req):
         base_waiting_time = self.ad_lifetime * (len(self.table) / self.capacity)
-
-        current_topics = [x['topic'] for x in self.table.values()]
-        current_topic_entropy = get_entropy(current_topics)
-        current_topics.append(req['topic'])
-        new_topic_entropy = get_entropy(current_topics)
-        if(new_topic_entropy == 0):
-            topic_modifier = 10
-        else:
-            topic_modifier = current_topic_entropy/new_topic_entropy
         
-        current_ids = [x['id'] for x in self.table.values()]
-        current_id_entropy = get_entropy(current_ids)
-        current_ids.append(req['id'])
-        new_id_entropy = get_entropy(current_ids)
-        if(new_id_entropy == 0):
-            id_modifier = 10
-        else:
-            id_modifier = current_id_entropy/new_id_entropy
-        topic_modifier = max(topic_modifier, 1)
-        id_modifier = max(id_modifier, 1)
-        ip_modifier = self.tree.tryAdd(req['ip'])
+        topic_modifier = self.get_topic_modifier(req['topic'])
+        id_modifier = self.get_id_modifier(req['id'])
+        ip_modifier = self.get_ip_modifier(req['ip'])
+
         needed_time = base_waiting_time * topic_modifier * id_modifier * ip_modifier
         returned_time = needed_time - (self.env.now - req['arrived'])
         if(returned_time < 1):
             returned_time = 0
             self.tree.add(req['ip'])
-
+        
+        #just for stats
+        self.ip_modifiers[self.env.now] = ip_modifier
+        self.id_modifiers[self.env.now] = id_modifier
+        self.topic_modifiers[self.env.now] = topic_modifier
         #print("time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
         #print("returning:", returned_time, "now:", self.env.now, "arrived:", req['arrived'])
         return returned_time
         
         #return base_waiting_time * topic_modifier * id_modifier * ip_modifier
+    def report_modifiers(self, delay):
+        yield self.env.timeout(delay)
+        figure, ax = plt.subplots()
+        #ax.plot(range(0, len(self.ip_modifiers)), self.ip_modifiers, label='ip_modifier')
+        #ax.plot(range(0, len(self.id_modifiers)), self.id_modifiers, label='id_modifier')
+        ax.plot(self.topic_modifiers.keys(), self.topic_modifiers.values(), label='topic_modifier')
+        ax.legend()
+        ax.set_title("Diversity Table Modifiers")
 
+    def display_body(self, delay):
+        self.env.process(self.report_modifiers(delay))
+        return super().display_body(delay)
+    #    yield self.env.timeout(0)
+    #    print("before super().display_body, delay:", delay)
+        
+    #    print("after super().display_body")
+        #quit()
 
 
 class TreeNode:
