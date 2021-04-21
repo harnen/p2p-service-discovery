@@ -155,35 +155,11 @@ class DiversityTable(Table):
     
     def get_id_modifier(self, id):
         current_ids = [x['id'] for x in self.table.values()]
-        current_id_entropy = get_entropy(current_ids)
-        current_ids.append(id)
-        new_id_entropy = get_entropy(current_ids)
-        if((len(current_ids) - 1) == 0):
-            id_modifier = 1
-        elif(new_id_entropy == 0):
-            id_modifier = 2
-        else:
-            id_modifier = current_id_entropy/new_id_entropy
-        
-        id_modifier = max(id_modifier, 1)
-        return id_modifier
+        return current_ids.count(id)
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
-        current_topic_entropy = get_entropy(current_topics)
-        current_topics.append(topic)
-        new_topic_entropy = get_entropy(current_topics)
-        
-        if((len(current_topics) - 1) == 0):
-            topic_modifier = 1
-        elif(new_topic_entropy == 0):
-            topic_modifier = 2
-        else:
-            topic_modifier = current_topic_entropy/new_topic_entropy
-        topic_modifier *= 10
-        print("new_topic_entropy", new_topic_entropy, "current_topic_entropy:", current_topic_entropy, "current_topics:", current_topics, "topic_modifier:", topic_modifier)
-        topic_modifier = max(topic_modifier, 1)
-        return topic_modifier
+        return current_topics.count(topic)
 
 
     def get_waiting_time(self, req):
