@@ -1,3 +1,4 @@
+from table import Tree
 from table import get_entropy
 import matplotlib.pyplot as plt
 import math
@@ -65,7 +66,7 @@ def get_entropy_modifier(topics, topic):
 
 def get_polynomial_modifier(topics, topic):
     count = topics.count(topic)
-    return math.pow(count, 1.2)
+    return math.pow(count, 1)
 
 def get_random_modifier(topics, topic):
     return random.randint(3, 9)
@@ -77,11 +78,11 @@ def test_topic_modifier(inputs):
     for input_name in inputs.keys():
         topics = []
         input = inputs[input_name]
-        modifiers['entropy_'+input_name] = []
-        #modifiers['polynomial_'+input_name] = []
+        #modifiers['entropy_'+input_name] = []
+        modifiers['polynomial_'+input_name] = []
         for item in input:
-            modifiers['entropy_'+input_name].append(get_entropy_modifier(topics, item))
-            #modifiers['polynomial_'+input_name].append(get_polynomial_modifier(topics, item))
+            #modifiers['entropy_'+input_name].append(get_entropy_modifier(topics, item))
+            modifiers['polynomial_'+input_name].append(get_polynomial_modifier(topics, item))
             topics.append(item)
     #print("Input:", input)
     print("Modifiers:", modifiers)
@@ -98,6 +99,23 @@ def test_topic_modifier(inputs):
     #ax.set_title("Modifiers")
     #plt.show()
 
+def test_ip_modifier(input):
+    modifiers = {}
+    modifiers['n'] = list(range(0, len(inputs[list(inputs)[0]])))
+    for input_name in inputs.keys():
+        input = inputs[input_name]
+        modifiers[input_name] = []
+        tree = Tree()
+        for item in input:
+            modifiers[input_name].append(tree.add(item))
+    
+    print("Modifiers:", modifiers)
+    df = pd.DataFrame(modifiers)
+    df.set_index('n', inplace=True)
+    print(df)
+    plot_multi(df, figsize=(6, 3))
+    plt.show()
+
 size = 100
 inputs = {}
 inputs['all_same'] = ['t1']*size
@@ -105,5 +123,14 @@ inputs['one_different'] = ['t1']*size
 inputs['one_different'][int(size/5)] = 't2'
 inputs['zipf'] = random.zipf(a=2, size=size)
 inputs['all_different'] = list(range(0, size))
-
 test_topic_modifier(inputs)
+
+inputs = {}
+inputs['all_same'] = ['127.0.0.1']*size
+inputs['regular'] = []
+ip_file = open('./workloads/ips.txt', "r")
+for i in range(0, size):
+    ip = ip_file.readline().rstrip()
+    inputs['regular'].append(ip)
+
+#test_ip_modifier(inputs)

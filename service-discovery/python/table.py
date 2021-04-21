@@ -278,11 +278,13 @@ class Tree:
         score = result[1]
         balanced_score = (self.root.getCounter()-1) * 32
         max_score = -(self.root.getCounter()-1) * (1 - pow(2, 33))
-        #print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
-        if(balanced_score == 0 or (math.log(score/balanced_score, 10)) < 1):
-            return 1
-        else:
-            return (math.log(score/balanced_score, 10))
+        print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
+        #quit()
+        return score
+        #if(balanced_score == 0 or (math.log(score/balanced_score, 10)) < 1):
+        #    return 1
+        #else:
+        #    return (math.log(score/balanced_score, 10))
             
 	
     def tryAddRecursive(self, current, addr, depth):
