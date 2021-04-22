@@ -132,8 +132,10 @@ class Table(metaclass=abc.ABCMeta):
 
     def new_request(self, req, delay):
         yield self.env.timeout(delay)
-        self.log("-> new request arrived:", req)
         waiting_time = self.get_waiting_time(req)
+        self.log("-> new request arrived:", req)
+        print("waiting time:", waiting_time)
+        waiting_time = int(waiting_time)
         if(waiting_time == 0):
             self.log("Admitting right away")
             req['expire'] = self.env.now + self.ad_lifetime
@@ -167,23 +169,23 @@ class SimpleTable(Table):
 class DiversityTable(Table):
     def __init__(self, env, capacity, ad_lifetime):
         super().__init__(env, capacity, ad_lifetime)
-        self.tree = Tree()
+        #self.tree = Tree()
         self.ip_modifiers = {}
         self.id_modifiers = {}
         self.topic_modifiers = {}
     
     def get_ip_modifier(self, ip):
         current_ips = [x['ip'] for x in self.table.values()]
-        return max(1, current_ips.count(ip))
+        return current_ips.count(ip) + 1
         #return self.tree.tryAdd(ip)
     
-    def get_id_modifier(self, iD):
+    def get_id_modifier(self, id):
         current_ids = [x['id'] for x in self.table.values()]
-        return max(1, current_ids.count(id))
+        return current_ids.count(id) + 1
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
-        return max(1, current_topics.count(topic))
+        return current_topics.count(topic) + 1
 
 
     def get_waiting_time(self, req):
@@ -194,18 +196,21 @@ class DiversityTable(Table):
         ip_modifier = self.get_ip_modifier(req['ip'])
 
         needed_time = base_waiting_time * topic_modifier * id_modifier * ip_modifier
-        returned_time = needed_time - (self.env.now - req['arrived'])
-        if(returned_time < 1):
-            returned_time = 0
-            self.tree.add(req['ip'])
+        returned_time = max(0, needed_time - (self.env.now - req['arrived']))
+        #if(returned_time < 1):
+        #    returned_time = 0
+        #    self.tree.add(req['ip'])
         
         #just for stats
         self.ip_modifiers[self.env.now] = ip_modifier
         self.id_modifiers[self.env.now] = id_modifier
         self.topic_modifiers[self.env.now] = topic_modifier
+        if (len(self.table) >= self.capacity):
+            self.log("Table is full returning time", self.ad_lifetime)
+            return self.ad_lifetime
 
-        #print("time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
-        #print("returning:", returned_time, "now:", self.env.now, "arrived:", req['arrived'])
+        print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
+        print("returning:", returned_time, "now:", self.env.now, "arrived:", req['arrived'])
         return returned_time
         
         #return base_waiting_time * topic_modifier * id_modifier * ip_modifier
