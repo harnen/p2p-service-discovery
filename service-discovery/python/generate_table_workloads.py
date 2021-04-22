@@ -154,7 +154,7 @@ def generate_spam_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't1
     print("Generated regular workload in", str(output_filename))
 
 zipf_distribution = 2
-size = 10
+size = 100
 
 #generate_attack_topic(size=1000)
 generate_spam_topic(size=1000)
