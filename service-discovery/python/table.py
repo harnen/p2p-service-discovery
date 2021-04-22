@@ -6,7 +6,7 @@ import math
 import abc
 import numpy as np
 from scipy.stats import entropy
-
+import copy
 
 class Table(metaclass=abc.ABCMeta):
     def __init__(self, env, capacity, ad_lifetime, interval=1):
@@ -129,6 +129,13 @@ class Table(metaclass=abc.ABCMeta):
             self.ad_ids += 1
             self.admission_times.append(self.env.now - req['arrived'])
             self.returns.append(req['returned'])
+            
+            #may the registrant re-register after expiration time
+            new_req = copy.deepcopy(req)
+            new_req['expire'] = 0
+            new_req['arrived'] = self.env.now + self.ad_lifetime
+            new_req['returned'] = 0
+            self.env.process(self.new_request(new_req, self.env.now + self.ad_lifetime))
         else:
             req['returned'] += 1
             self.env.process(self.new_request(req, waiting_time))
@@ -151,19 +158,22 @@ class DiversityTable(Table):
         self.topic_modifiers = {}
     
     def get_ip_modifier(self, ip):
-        return self.tree.tryAdd(ip)
+        current_ips = [x['ip'] for x in self.table.values()]
+        return max(1, current_ips.count(ip))
+        #return self.tree.tryAdd(ip)
     
     def get_id_modifier(self, id):
         current_ids = [x['id'] for x in self.table.values()]
-        return current_ids.count(id)
+        print(current_ids)
+        return max(1, current_ids.count(id))
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
-        return current_topics.count(topic)
+        return max(1, current_topics.count(topic))
 
 
     def get_waiting_time(self, req):
-        base_waiting_time = self.ad_lifetime * (len(self.table) / self.capacity)
+        base_waiting_time = self.ad_lifetime / self.capacity
         
         topic_modifier = self.get_topic_modifier(req['topic'])
         id_modifier = self.get_id_modifier(req['id'])
@@ -179,6 +189,7 @@ class DiversityTable(Table):
         self.ip_modifiers[self.env.now] = ip_modifier
         self.id_modifiers[self.env.now] = id_modifier
         self.topic_modifiers[self.env.now] = topic_modifier
+
         #print("time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
         #print("returning:", returned_time, "now:", self.env.now, "arrived:", req['arrived'])
         return returned_time
@@ -187,8 +198,8 @@ class DiversityTable(Table):
     def report_modifiers(self, delay):
         yield self.env.timeout(delay)
         figure, ax = plt.subplots()
-        #ax.plot(range(0, len(self.ip_modifiers)), self.ip_modifiers, label='ip_modifier')
-        #ax.plot(range(0, len(self.id_modifiers)), self.id_modifiers, label='id_modifier')
+        ax.plot(self.ip_modifiers.keys(), self.ip_modifiers.values(), label='ip_modifier')
+        ax.plot(self.id_modifiers.keys(), self.id_modifiers.values(), label='id_modifier')
         ax.plot(self.topic_modifiers.keys(), self.topic_modifiers.values(), label='topic_modifier')
         ax.legend()
         ax.set_title("Diversity Table Modifiers")
