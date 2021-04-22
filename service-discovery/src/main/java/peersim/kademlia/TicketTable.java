@@ -14,6 +14,7 @@ import peersim.core.CommonState;
 import peersim.core.Node;
 import peersim.edsim.EDSimulator;
 
+import java.util.logging.Logger;
 public class TicketTable extends RoutingTable {
 
     /**
@@ -44,7 +45,6 @@ public class TicketTable extends RoutingTable {
     
     private int available_requests;
 
-    
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
 		super(nBuckets,k,maxReplacements);
@@ -214,17 +214,17 @@ public class TicketTable extends RoutingTable {
 	}
 	
 	public void print() {
-		System.out.println("Ticket table:");
+		logger.warning("Ticket table topic "+t.getTopic()+" :");
 		int sum = 0;
 		for(int dist = 256; dist > bucketMinDistance ; dist-- ) {
 			int removed = 0;
 			if(registeredPerDist.containsKey(dist))
 				removed = registeredPerDist.get(dist);
 			
-			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() +" replacements:"+super.bucketAtDistance(dist).replacements.size()+" +" + removed);
+			logger.warning("Ticket "+t.getTopic()+" b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() +" replacements:"+super.bucketAtDistance(dist).replacements.size()+" +" + removed);
 			sum += removed;
 		}
-		System.out.println("Asked " + sum + " nodes.");
+		logger.warning("Asked "+t.getTopic()+" " + sum + " nodes.");
 	}
 	
 	public BigInteger getTopicId() {

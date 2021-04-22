@@ -86,7 +86,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	final String PAR_TTNBUCKETS = "TTNBUCKETS";
 
 	boolean firstRegister;
-	boolean printSearchTable=true;
+	boolean printSearchTable=false;
 	/**
 	 * Replicate this object by returning an identical copy.<br>
 	 * It is called by the initializer and do not fill any particular field.
@@ -480,6 +480,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
             
         }
         
+        if(printSearchTable) ticketTables.get(ticket.getTopic().getTopicID()).print();
+
+        
     }
     
     
@@ -523,8 +526,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 		int found = lop.discoveredCount();
 		
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.getTopic());		
-		//int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
-		int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
+		int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
+		//int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
 
 		if(!lop.finished && found >= required) {
 			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic + " after consulting " + lop.getUsedCount() + " nodes.");
@@ -907,7 +910,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	
 
 	      BigInteger[] neighbours = routingTable.getNeighbours(Util.logDistance(node, this.getNode().getId()));
+	      logger.warning("Refresh bucket adding "+neighbours.length);
 	      rou.addNeighbour(neighbours);
+	      if(printSearchTable)rou.print();
 	        
        
 	}

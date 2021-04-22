@@ -814,7 +814,11 @@ public class KademliaObserver implements Control {
 			        	writer.write(",");
 			        	writer.write(String.valueOf(n));
 			        	writer.write(",");
-			        	writer.write(String.valueOf(regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)));
+			        	/*System.out.println(CommonState.getTime()+" Registrar write "+t+" "+String.valueOf((double)regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)));
+			        	if((double)regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)<1&&(double)regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)>0)
+			        		writer.write("1");
+			        	else*/
+			        		writer.write(String.valueOf((double)regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)));
 			        	writer.write("\n");
 	        		}
 	        	}
@@ -1075,6 +1079,11 @@ public class KademliaObserver implements Control {
      */
     public boolean execute() {
     	//System.out.println(CommonState.getTime()+" execute");
+
+        if (CommonState.getIntTime() == 0)
+        {
+            return false;
+        }
         try {
 
             simpCounter++;
@@ -1149,11 +1158,13 @@ public class KademliaObserver implements Control {
                 	}
                     
                     //topic table registrations by registrar
-                    int count=0;
-                    
+                    int count;
+
                     HashMap<String, Integer> registrars = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyRegistrar();
                     for(String topic : registrars.keySet())
                     {
+                    	count=0;
+                    	//System.out.println(CommonState.getTime()+" Registrar topic "+topic+" "+registrars.get(topic)+" regs.");
                     	if(regByRegistrar.get(topic)!=null) {
                     		if(regByRegistrar.get(topic).get(kadProtocol.getNode().getId())!=null) 
                     			count = regByRegistrar.get(topic).get(kadProtocol.getNode().getId());
@@ -1191,6 +1202,9 @@ public class KademliaObserver implements Control {
                     for(String topic : tmpReg.keySet())
                     {  
                     	for(BigInteger id : tmpReg.get(topic).keySet()) {
+                    		
+                        	//System.out.println(CommonState.getTime()+" Registrant topic "+topic+" node:"+id+" "+tmpReg.get(topic).get(id)+" regs.");
+
 	                    	count=0;
 	                    	if(regByRegistrant.get(topic)!=null) {
 	                    		if(regByRegistrant.get(topic).get(id)!=null) {

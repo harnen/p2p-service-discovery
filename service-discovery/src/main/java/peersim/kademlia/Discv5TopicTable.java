@@ -414,7 +414,8 @@ public class Discv5TopicTable { // implements TopicTable {
     
     public HashMap<String, Integer> getRegbyRegistrar(){
     	HashMap<String, Integer> topicOccupancy= new HashMap<String, Integer>();
-    	topicTable.forEach((key,value) -> topicOccupancy.put(key.getTopic(),value.size()));
+    	for(Topic t: topicTable.keySet())
+    		if(topicTable.get(t).size()>0)topicOccupancy.put(t.getTopic(),topicTable.get(t).size());
         return topicOccupancy;
     }
     
