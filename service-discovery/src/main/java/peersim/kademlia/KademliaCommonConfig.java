@@ -23,10 +23,11 @@ public class KademliaCommonConfig {
     public static int MAX_REGISTRATION_RETRIES = 10; //life time of ads the topic table
     public static int ONE_UNIT_OF_TIME = 1; // smallest time value
     public static int TOPIC_PEER_LIMIT = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
-    public static int MAX_SEARCH_HOPS = 100; //how many high quality nodes do we want to find for each topic; after this number we stop
+    public static int MAX_SEARCH_HOPS = 200; //how many high quality nodes do we want to find for each topic; after this number we stop
     public static int MAX_TICKETS = 100;
     public static int MAX_REG_BUCKETS = 0;
     public static int PARALLELREGISTRATIONS = 0;
+    public static int TTNBUCKETS = 10; 
 	public static int SLOT = 1000;
     public static int REG_WINDOW = 10000;
     public static int SEARCH_REFRESH = 0;

@@ -96,28 +96,13 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     	double modifier = 0;
     	long cumWaitingTime = 0;
     	if(ticket!=null)cumWaitingTime=ticket.getCumWaitTime();
-        //System.out.println("Topic "+reg.getTopic().topic+" "+topicQ.size());
-        /*if(topicQ!=null) {
-        for(Iterator<TopicRegistration> itr = topicQ.iterator();itr.hasNext();)  {
-        	TopicRegistration t = itr.next();
-            System.out.println(t.getTopic().getTopic()+" "+t.getNode().getId());
-         }
-        }*/
+
         // check if the advertisement already registered before
         if ( (topicQ != null) && (topicQ.contains(reg)) ) {
             //logger.warning("Ad already registered by this node");
             return -1;
         }
-        //if (topicQ != null)
-        //    assert topicQ.size() <= this.adsPerQueue;
-
-        // compute the waiting time
-        /*if (topicQ != null && topicQ.size() == this.adsPerQueue) {
-            TopicRegistration r = topicQ.getFirst();
-            long age = curr_time - r.getTimestamp();
-            waiting_time = this.adLifeTime - age;
-        }
-        else */
+    
         if(allAds.size() == this.tableCapacity) {
             TopicRegistration r = allAds.getFirst();
             long age = curr_time - r.getTimestamp();
@@ -131,7 +116,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         		//waiting_time = (long) Math.pow(2,(topicQ.size()*(modifier-1.0)));
         		//System.out.println("Waiting time "+KademliaCommonConfig.AD_LIFE_TIME * (double)allAds.size()/tableCapacity * Math.pow(topicQ.size(),1.2) +" cumwaitingtime "+cumWaitingTime+" ads "+allAds.size());
         		//waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * (double)allAds.size()/tableCapacity * Math.pow(topicQ.size(),1.2) - cumWaitingTime);
-           		waiting_time = (long) (Math.pow(topicQ.size(),1.5) * 1000) - cumWaitingTime;
+           		waiting_time = (long) (Math.pow(topicQ.size()+competing,1.2) * 1000) - cumWaitingTime - 2*ticket.getRTT();
         		//System.out.println("Waiting time "+waiting_time+" topic "+reg.getTopic().getTopic());
         		//waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * (modifier-1.0));
         		//System.out.println("Waiting time "+waiting_time+" "+modifier);

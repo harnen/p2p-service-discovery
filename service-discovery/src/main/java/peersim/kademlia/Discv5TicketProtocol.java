@@ -82,7 +82,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	final String PAR_STOP_REGISTER_MIN_REGS = "STOP_REGISTER_MIN_REGS";
 
 	final String PAR_PARALLELREGISTRATIONS = "PARALLELREGISTRATIONS";
-	final String PAR_SLOT = "SLOT";
+	//final String PAR_SLOT = "SLOT";
+	final String PAR_TTNBUCKETS = "TTNBUCKETS";
 
 	boolean firstRegister;
 	boolean printSearchTable=true;
@@ -151,8 +152,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 
         KademliaCommonConfig.PARALLELREGISTRATIONS = Configuration.getInt(prefix + "." + PAR_PARALLELREGISTRATIONS, KademliaCommonConfig.PARALLELREGISTRATIONS);
 
-        KademliaCommonConfig.SLOT = Configuration.getInt(prefix + "." + PAR_SLOT, KademliaCommonConfig.SLOT);
-
+        //KademliaCommonConfig.SLOT = Configuration.getInt(prefix + "." + PAR_SLOT, KademliaCommonConfig.SLOT);
+        KademliaCommonConfig.TTNBUCKETS = Configuration.getInt(prefix + "." + PAR_TTNBUCKETS, KademliaCommonConfig.TTNBUCKETS);
 		super._init();
 	}
 
@@ -289,17 +290,17 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         boolean add_event = topicTable.register_ticket(ticket, m, curr_time);
 
         // Setup a timeout event for the registration decision
-        /*if (add_event) {
+        if (add_event) {
             Timeout timeout = new Timeout(ticket.getTopic());
             EDSimulator.add(KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
-        }*/
+        }
         //logger.warning("Slot time "+ CommonState.getTime()+" "+(CommonState.getTime()-slotTime));
-        if(firstRegister) {
+        /*if(firstRegister) {
         	logger.warning("Slot executed");
             Timeout timeout = new Timeout(ticket.getTopic());
             EDSimulator.add(KademliaCommonConfig.SLOT, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
             firstRegister=false;
-        }
+        }*/
        // slotTime = CommonState.getTime();
         
     }
@@ -363,7 +364,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     private void handleTicketResponse(Message m, int myPid) {
 		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
         Ticket ticket = body.ticket;
-        System.out.println("Got response! Is topic queue full?" + ticket.topicOccupancy+" "+ticket.getWaitTime());
+        logger.warning("Got response! Is topic queue full?" + ticket.topicOccupancy+" "+ticket.getWaitTime());
         Topic topic = ticket.getTopic();
         TicketTable tt = ticketTables.get(topic.getTopicID());
         tt.reportResponse(ticket);
@@ -422,7 +423,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         Ticket ticket = (Ticket) m.body;
         Topic topic = ticket.getTopic();
         if (!ticket.isRegistrationComplete()) {
-        	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: " + m.src.toString() + " wait time: " + ticket.getWaitTime());
+        	logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: " + m.src.getId()+ " wait time: " + ticket.getWaitTime()+" "+ticket.getCumWaitTime());
             Message register = new Message(Message.MSG_REGISTER, ticket);
             register.operationId = m.operationId;
             register.body = m.body;
@@ -440,9 +441,10 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
             if(backoff.shouldRetry()&&ticket.getWaitTime()>=0) {
             	scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
             } else {
-            	ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId()); 
-            	ticketTables.get(topic.getTopicID()).removeRegisteredList(m.src.getId());
-            	
+            	//ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId()); 
+            	//ticketTables.get(topic.getTopicID()).removeRegisteredList(m.src.getId());
+         		Timeout timeout = new Timeout(ticket.getTopic(),m.src.getId());
+            	EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
             }
 
             
@@ -594,7 +596,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
     	//restore the IF statement
     	KademliaObserver.addTopicRegistration(t, this.node.getId());
 
-        TicketTable tt = new TicketTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
+        TicketTable tt = new TicketTable(KademliaCommonConfig.TTNBUCKETS,KademliaCommonConfig.TICKET_BUCKET_SIZE,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
         tt.setNodeId(t.getTopicID());
         ticketTables.put(t.getTopicID(),tt);
         	
@@ -843,7 +845,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
             case Timeout.TICKET_TIMEOUT:
                 Topic t = ((Timeout)event).topic;
                 makeRegisterDecision(t, myPid);
-                EDSimulator.add(KademliaCommonConfig.SLOT, (Timeout)event, Util.nodeIdtoNode(this.node.getId()), myPid);
+                //EDSimulator.add(KademliaCommonConfig.SLOT, (Timeout)event, Util.nodeIdtoNode(this.node.getId()), myPid);
                 break;
 
             case Timeout.REG_TIMEOUT:

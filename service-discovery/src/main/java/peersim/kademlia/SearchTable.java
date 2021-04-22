@@ -116,29 +116,29 @@ public class SearchTable extends RoutingTable {
 	}
 	
 	public void print() {
-		System.out.println("Search table:");
+		System.out.println("Search table topic "+t.getTopic()+":");
 		int sum = 0;
 		for(int dist = 256; dist > bucketMinDistance ; dist-- ) {
 			int removed = 0;
 			if(removedPerDist.containsKey(dist))
 				removed = removedPerDist.get(dist);
 			
-			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() +" replacements:"+super.bucketAtDistance(dist).replacements.size()+" +" + removed);
+			System.out.println("search "+t.getTopic()+" b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() +" replacements:"+super.bucketAtDistance(dist).replacements.size()+" +" + removed);
 			sum += removed;
 		}
-		System.out.println("Asked " + sum + " nodes.");
+		System.out.println("Asked "+t.getTopic()+" "+ sum + " nodes.");
 	}
 	
 	public void dump() {
-		System.out.println("Search table:");
+		System.out.println("Search table topic "+t.getTopic()+":");
 		int sum = 0;
 		for(int dist = 256; dist > bucketMinDistance ; dist-- ) {
 						
-			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).neighbours);
+			System.out.println("search "+t.getTopic()+" b[" + dist + "]: " + super.bucketAtDistance(dist).neighbours);
 			System.out.println("\tb_r[" + dist + "]: " + super.bucketAtDistance(dist).replacements);
 			
 		}
-		System.out.println("Asked " + sum + " nodes.");
+		System.out.println("Asked "+t.getTopic()+" "+ sum + " nodes.");
 	}
 
 
