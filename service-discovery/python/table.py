@@ -18,6 +18,7 @@ class Table(metaclass=abc.ABCMeta):
         self.ad_ids = 0
         self.admission_times = []
         self.occupancies = []
+        self.occupancies_by_attackers = []
         self.returns = []
         self.interval = interval
 
@@ -26,11 +27,19 @@ class Table(metaclass=abc.ABCMeta):
         with open(file, newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',', quotechar='|')
             for row in reader:
-                row['arrived'] = counter
+                if 'attack' in row.keys():
+                    row['attack'] = int(row['attack'])
+                if 'time' in row.keys():
+                    row['arrived'] = float(row['time'])
+                else:
+                    row['arrived'] = counter
                 row['returned'] = 0
                 print(row)
                 self.workload[counter] = row
-                self.env.process(self.new_request(row, counter * self.interval))
+                if 'time' in row.keys():
+                    self.env.process(self.new_request(row, float(row['time'])))
+                else:
+                    self.env.process(self.new_request(row, counter * self.interval))
                 counter += 1
         
     def run(self, runtime):
@@ -41,6 +50,8 @@ class Table(metaclass=abc.ABCMeta):
     def report_occupancy(self):
         yield self.env.timeout(1)
         self.occupancies.append(len(self.table) / self.capacity)
+        attacker_entries = [req for req in self.table.values() if req['attack'] == 1]
+        self.occupancies_by_attackers.append(len(attacker_entries) / self.capacity)
         self.env.process(self.report_occupancy())
 
     def scatter(self, values, title, ax = None, color_map = None):
@@ -97,11 +108,12 @@ class Table(metaclass=abc.ABCMeta):
 
         axis[2, 0].plot(range(0, len(self.admission_times)), self.admission_times)
         axis[2, 0].set_title("Waiting times")
-        axis[2, 1].plot(range(0, len(self.occupancies)), self.occupancies)
+        axis[2, 1].plot(range(0, len(self.occupancies)), self.occupancies, range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers)
         axis[2, 1].set_title("Occupancy over time")
         axis[2, 2].plot(range(0, len(self.returns)), self.returns)
         axis[2, 2].set_title("Returns")
         figure.suptitle(type(self).__name__)
+        print("Admission times:", self.admission_times)
 
 
     
@@ -120,9 +132,10 @@ class Table(metaclass=abc.ABCMeta):
 
     def new_request(self, req, delay):
         yield self.env.timeout(delay)
-        self.log("new request arrived:", req)
+        self.log("-> new request arrived:", req)
         waiting_time = self.get_waiting_time(req)
         if(waiting_time == 0):
+            self.log("Admitting right away")
             req['expire'] = self.env.now + self.ad_lifetime
             self.table[self.ad_ids] = req
             self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
@@ -135,15 +148,17 @@ class Table(metaclass=abc.ABCMeta):
             new_req['expire'] = 0
             new_req['arrived'] = self.env.now + self.ad_lifetime
             new_req['returned'] = 0
-            self.env.process(self.new_request(new_req, self.env.now + self.ad_lifetime))
+            self.log("Will attempt to re-register at:", self.env.now + self.ad_lifetime)
+            self.env.process(self.new_request(new_req, self.ad_lifetime))
         else:
             req['returned'] += 1
+            self.log("Need to wait for", waiting_time)
             self.env.process(self.new_request(req, waiting_time))
     
 
 class SimpleTable(Table):
     def get_waiting_time(self, req):
-        if(len(self.table) > self.capacity):
+        if(len(self.table) >= self.capacity):
             return list(self.table.items())[0][1]['expire'] - self.env.now + 1
         else:
             return 0
@@ -162,9 +177,8 @@ class DiversityTable(Table):
         return max(1, current_ips.count(ip))
         #return self.tree.tryAdd(ip)
     
-    def get_id_modifier(self, id):
+    def get_id_modifier(self, iD):
         current_ids = [x['id'] for x in self.table.values()]
-        print(current_ids)
         return max(1, current_ids.count(id))
 
     def get_topic_modifier(self, topic):
