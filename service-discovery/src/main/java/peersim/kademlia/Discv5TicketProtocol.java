@@ -82,7 +82,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 	final String PAR_STOP_REGISTER_MIN_REGS = "STOP_REGISTER_MIN_REGS";
 
 	final String PAR_PARALLELREGISTRATIONS = "PARALLELREGISTRATIONS";
+	final String PAR_SLOT = "SLOT";
 
+	boolean firstRegister;
 	boolean printSearchTable=true;
 	/**
 	 * Replicate this object by returning an identical copy.<br>
@@ -115,6 +117,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         }else {
             this.topicTable = new Discv5TopicTable();            
         }
+        firstRegister = true;
         
     }
 	
@@ -148,7 +151,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 
         KademliaCommonConfig.PARALLELREGISTRATIONS = Configuration.getInt(prefix + "." + PAR_PARALLELREGISTRATIONS, KademliaCommonConfig.PARALLELREGISTRATIONS);
 
-        
+        KademliaCommonConfig.SLOT = Configuration.getInt(prefix + "." + PAR_SLOT, KademliaCommonConfig.SLOT);
+
 		super._init();
 	}
 
@@ -264,7 +268,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
 
         long curr_time = CommonState.getTime();
         Ticket [] tickets = this.topicTable.makeRegisterDecision(curr_time);
-        
+        logger.warning("makeRegisterDecision "+tickets.length);
         for (Ticket ticket : tickets) {
             Message m = ticket.getMsg();
             Message response  = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
@@ -285,10 +289,19 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
         boolean add_event = topicTable.register_ticket(ticket, m, curr_time);
 
         // Setup a timeout event for the registration decision
-        if (add_event) {
+        /*if (add_event) {
             Timeout timeout = new Timeout(ticket.getTopic());
             EDSimulator.add(KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+        }*/
+        //logger.warning("Slot time "+ CommonState.getTime()+" "+(CommonState.getTime()-slotTime));
+        if(firstRegister) {
+        	logger.warning("Slot executed");
+            Timeout timeout = new Timeout(ticket.getTopic());
+            EDSimulator.add(KademliaCommonConfig.SLOT, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+            firstRegister=false;
         }
+       // slotTime = CommonState.getTime();
+        
     }
 	
 	/**
@@ -830,6 +843,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable{
             case Timeout.TICKET_TIMEOUT:
                 Topic t = ((Timeout)event).topic;
                 makeRegisterDecision(t, myPid);
+                EDSimulator.add(KademliaCommonConfig.SLOT, (Timeout)event, Util.nodeIdtoNode(this.node.getId()), myPid);
                 break;
 
             case Timeout.REG_TIMEOUT:

@@ -58,7 +58,34 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     }
     
     protected long getWaitingTime(TopicRegistration reg, long curr_time) {
-    	return getWaitingTime(reg,curr_time,null);
+        //System.out.println("Get Waiting time "+reg.getTopic().getTopic());
+
+        ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
+        long waiting_time;
+       
+        // check if the advertisement already registered before
+        if ( (topicQ != null) && (topicQ.contains(reg)) ) {
+            //logger.warning("Ad already registered by this node");
+            return -1;
+        }
+      
+        // compute the waiting time
+        /*if (topicQ != null && topicQ.size() == this.adsPerQueue) {
+            TopicRegistration r = topicQ.getFirst();
+            long age = curr_time - r.getTimestamp();
+            waiting_time = this.adLifeTime - age;
+        }
+        else */if(allAds.size() == this.tableCapacity) {
+            TopicRegistration r = allAds.getFirst();
+            long age = curr_time - r.getTimestamp();
+            waiting_time = this.adLifeTime - age;
+        }
+        else {
+            waiting_time = 0;
+        }
+
+
+        return waiting_time;
     }
     
     protected long getWaitingTime(TopicRegistration reg, long curr_time, Ticket ticket) {
@@ -102,8 +129,10 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         		modifier = getTopicsEntropyModifier(reg.getTopic());
         		int competing = (competingTickets.get(reg.getTopic())!=null)?competingTickets.get(reg.getTopic()).size():0;
         		//waiting_time = (long) Math.pow(2,(topicQ.size()*(modifier-1.0)));
-        		System.out.println("Waiting time "+KademliaCommonConfig.AD_LIFE_TIME * (double)allAds.size()/tableCapacity +" cumwaitingtime "+cumWaitingTime+" ads "+allAds.size());
-        		waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * (double)allAds.size()/tableCapacity) - cumWaitingTime;
+        		//System.out.println("Waiting time "+KademliaCommonConfig.AD_LIFE_TIME * (double)allAds.size()/tableCapacity * Math.pow(topicQ.size(),1.2) +" cumwaitingtime "+cumWaitingTime+" ads "+allAds.size());
+        		//waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * (double)allAds.size()/tableCapacity * Math.pow(topicQ.size(),1.2) - cumWaitingTime);
+           		waiting_time = (long) (Math.pow(topicQ.size(),1.5) * 1000) - cumWaitingTime;
+        		//System.out.println("Waiting time "+waiting_time+" topic "+reg.getTopic().getTopic());
         		//waiting_time = (long) (KademliaCommonConfig.AD_LIFE_TIME * (modifier-1.0));
         		//System.out.println("Waiting time "+waiting_time+" "+modifier);
         		//waiting_time = 6000000;
@@ -115,7 +144,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         if(topicQ!=null&&competingTickets.get(reg.getTopic())!=null)
         	System.out.println("Waiting time "+waiting_time+" queue:"+topicQ.size()+" competing:"+competingTickets.get(reg.getTopic()).size()+" bucket:"+Util.logDistance(reg.getTopic().getTopicID(),hostID));
         if(topicQ!=null)
-        	System.out.println("Waiting time "+waiting_time+" queue:"+topicQ.size()+" bucket:"+Util.logDistance(reg.getTopic().getTopicID(),hostID)+" "+modifier);
+        	System.out.println("Waiting time "+(Math.pow(topicQ.size(),1.5) * 1000) +" queue:"+topicQ.size()+" bucket:"+Util.logDistance(reg.getTopic().getTopicID(),hostID)+" "+modifier);
 
         return waiting_time;
     }
@@ -183,6 +212,8 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         updateTopicTable(curr_time);
 
         //Register as many tickets as possible (subject to availability of space in the table)
+        int i=0;
+        
         for(Ticket ticket: ticketList) {
             TopicRegistration reg = new TopicRegistration(ticket.getSrc(), ticket.getTopic(), curr_time);
             reg.setTimestamp(curr_time);
@@ -211,7 +242,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
                 
             }
             KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time);
-
+            i++;
         }
         Ticket [] tickets = (Ticket []) ticketList.toArray(new Ticket[ticketList.size()]);
         return tickets;

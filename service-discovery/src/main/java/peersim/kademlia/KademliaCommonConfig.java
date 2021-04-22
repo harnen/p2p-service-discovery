@@ -27,7 +27,7 @@ public class KademliaCommonConfig {
     public static int MAX_TICKETS = 100;
     public static int MAX_REG_BUCKETS = 0;
     public static int PARALLELREGISTRATIONS = 0;
-
+	public static int SLOT = 1000;
     public static int REG_WINDOW = 10000;
     public static int SEARCH_REFRESH = 0;
     public static int TICKET_REFRESH = 0;
