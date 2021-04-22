@@ -18,6 +18,7 @@ class Table(metaclass=abc.ABCMeta):
         self.ad_ids = 0
         self.admission_times = []
         self.occupancies = []
+        self.occupancies_by_attackers = []
         self.returns = []
         self.interval = interval
 
@@ -26,11 +27,19 @@ class Table(metaclass=abc.ABCMeta):
         with open(file, newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',', quotechar='|')
             for row in reader:
-                row['arrived'] = counter
+                if 'attack' in row.keys():
+                    row['attack'] = int(row['attack'])
+                if 'time' in row.keys():
+                    row['arrived'] = float(row['time'])
+                else:
+                    row['arrived'] = counter
                 row['returned'] = 0
                 print(row)
                 self.workload[counter] = row
-                self.env.process(self.new_request(row, counter * self.interval))
+                if 'time' in row.keys():
+                    self.env.process(self.new_request(row, float(row['time'])))
+                else:
+                    self.env.process(self.new_request(row, counter * self.interval))
                 counter += 1
         
     def run(self, runtime):
@@ -41,6 +50,8 @@ class Table(metaclass=abc.ABCMeta):
     def report_occupancy(self):
         yield self.env.timeout(1)
         self.occupancies.append(len(self.table) / self.capacity)
+        attacker_entries = [req for req in self.table.values() if req['attack'] == 1]
+        self.occupancies_by_attackers.append(len(attacker_entries) / self.capacity)
         self.env.process(self.report_occupancy())
 
     def scatter(self, values, title, ax = None, color_map = None):
@@ -97,7 +108,7 @@ class Table(metaclass=abc.ABCMeta):
 
         axis[2, 0].plot(range(0, len(self.admission_times)), self.admission_times)
         axis[2, 0].set_title("Waiting times")
-        axis[2, 1].plot(range(0, len(self.occupancies)), self.occupancies)
+        axis[2, 1].plot(range(0, len(self.occupancies)), self.occupancies, range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers)
         axis[2, 1].set_title("Occupancy over time")
         axis[2, 2].plot(range(0, len(self.returns)), self.returns)
         axis[2, 2].set_title("Returns")
@@ -153,9 +164,9 @@ class DiversityTable(Table):
     def get_ip_modifier(self, ip):
         return self.tree.tryAdd(ip)
     
-    def get_id_modifier(self, id):
+    def get_id_modifier(self, iD):
         current_ids = [x['id'] for x in self.table.values()]
-        return current_ids.count(id)
+        return current_ids.count(iD)
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
@@ -189,7 +200,8 @@ class DiversityTable(Table):
         figure, ax = plt.subplots()
         #ax.plot(range(0, len(self.ip_modifiers)), self.ip_modifiers, label='ip_modifier')
         #ax.plot(range(0, len(self.id_modifiers)), self.id_modifiers, label='id_modifier')
-        ax.plot(self.topic_modifiers.keys(), self.topic_modifiers.values(), label='topic_modifier')
+        print('Topic modifiers: ', self.topic_modifiers)
+        ax.plot(list(self.topic_modifiers.keys()), list(self.topic_modifiers.values()), label='topic_modifier')
         ax.legend()
         ax.set_title("Diversity Table Modifiers")
 
