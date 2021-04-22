@@ -22,7 +22,7 @@ def generate_regular(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0):
             if(not ip or not iD):
                 print("Not enough IPs/IDs in the files")
                 exit(1)
-            record['time'] = t_next_req
+            record['time'] = int(1000*t_next_req)
             record['id'] = iD
             record['ip'] =ip
             record['topic'] = 't' + str(topics[i])
@@ -80,7 +80,7 @@ def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = '
                 iD = attacker_ids[i % attacker_id_num]
                 topic = topic_to_attack
 
-            record['time'] = time 
+            record['time'] = int(1000*time)
             record['id'] = iD
             record['ip'] =ip
             record['topic'] = topic
@@ -92,6 +92,7 @@ def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = '
                 t_next_normal_req += rand.expovariate(rate_normal)
             if time == t_next_attack_req:
                 t_next_attack_req += rand.expovariate(rate_attack)
+
     print("Generated regular workload in", str(output_filename))
 
 
@@ -144,19 +145,26 @@ def generate_spam_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't1
                 iD = attacker_ids[i % attacker_id_num]
                 topic = 't' + str(100+i)
 
-            record['time'] = time 
+            record['time'] = int(1000*time) 
             record['id'] = iD
             record['ip'] =ip
             record['topic'] = topic
             record['attack'] = attack
             #print(record)
             dict_writer.writerow(record)
+            if time == t_next_normal_req:
+                t_next_normal_req += rand.expovariate(rate_normal)
+            if time == t_next_attack_req:
+                t_next_attack_req += rand.expovariate(rate_attack)
     print("Generated regular workload in", str(output_filename))
 
 zipf_distribution = 2
 size = 100
 
-#generate_attack_topic(size=1000)
+generate_attack_topic(size=1000)
+generate_attack_topic(size=100)
+generate_attack_topic(size=150)
 generate_spam_topic(size=1000)
-generate_regular(size = size, zipf_distribution=zipf_distribution)
-
+generate_regular(size = 100, zipf_distribution=zipf_distribution)
+generate_regular(size = 10, zipf_distribution=zipf_distribution)
+generate_regular(size = 3, zipf_distribution=zipf_distribution)
