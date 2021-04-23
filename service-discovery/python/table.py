@@ -7,6 +7,7 @@ import abc
 import numpy as np
 from scipy.stats import entropy
 import copy
+from random import randint
 
 class Table(metaclass=abc.ABCMeta):
     def __init__(self, env, capacity, ad_lifetime, interval=1):
@@ -164,13 +165,14 @@ class Table(metaclass=abc.ABCMeta):
             self.returns.append(req['returned'])
             
             #may the registrant re-register after expiration time
+            rand_time = randint(0, 999) # add a random time btw. 0 and 999 milliseconds
             new_req = copy.deepcopy(req)
             del new_req['req_id']
             new_req['expire'] = 0
-            new_req['arrived'] = self.env.now + self.ad_lifetime
+            new_req['arrived'] = self.env.now + self.ad_lifetime + rand_time
             new_req['returned'] = 0
             self.log("Will attempt to re-register at:", self.env.now + self.ad_lifetime)
-            self.env.process(self.new_request(new_req, self.ad_lifetime))
+            self.env.process(self.new_request(new_req, self.ad_lifetime + rand_time))
         else:
             req['returned'] += 1
             self.log("Need to wait for", waiting_time)
@@ -199,9 +201,9 @@ class DiversityTable(Table):
         return math.pow(current_ips.count(ip) + 1, self.amplify)
         #return self.tree.tryAdd(ip)
     
-    def get_id_modifier(self, id):
+    def get_id_modifier(self, iD):
         current_ids = [x['id'] for x in self.table.values()]
-        return math.pow(current_ids.count(id) + 1, self.amplify)
+        return math.pow(current_ids.count(iD) + 1, self.amplify)
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
@@ -237,9 +239,9 @@ class DiversityTable(Table):
     def report_modifiers(self, delay):
         yield self.env.timeout(delay)
         figure, ax = plt.subplots()
-        ax.plot(self.ip_modifiers.keys(), self.ip_modifiers.values(), label='ip_modifier')
-        ax.plot(self.id_modifiers.keys(), self.id_modifiers.values(), label='id_modifier')
-        ax.plot(self.topic_modifiers.keys(), self.topic_modifiers.values(), label='topic_modifier')
+        ax.plot(list(self.ip_modifiers.keys()), list(self.ip_modifiers.values()), label='ip_modifier')
+        ax.plot(list(self.id_modifiers.keys()), list(self.id_modifiers.values()), label='id_modifier')
+        ax.plot(list(self.topic_modifiers.keys()), list(self.topic_modifiers.values()), label='topic_modifier')
         ax.legend()
         ax.set_title("Diversity Table Modifiers")
 
