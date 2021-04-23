@@ -34,7 +34,7 @@ class DiversityThreshold(Table):
                 reqs.remove(req)
 
     def get_topic_waiting_time(self, topic, time):
-        
+        return 0
         current_topics = set([req['topic'] for req in self.table.values()])
         num_of_topics = len(current_topics)
 

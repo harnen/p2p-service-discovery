@@ -21,6 +21,8 @@ class Table(metaclass=abc.ABCMeta):
         self.occupancies_by_attackers = []
         self.returns = []
         self.interval = interval
+        self.req_counter = 0
+        self.pending_req = {}
 
     def load(self, file):
         counter = 0
@@ -90,7 +92,7 @@ class Table(metaclass=abc.ABCMeta):
 
     def display_body(self, delay):
         yield self.env.timeout(delay)
-        figure, axis = plt.subplots(3, 3)
+        figure, axis = plt.subplots(3, 4)
         ips_table = [x['ip'] for x in self.table.values()]
         ips_workload = [x['ip'] for x in self.workload.values()]
         ids_table = [x['id'] for x in self.table.values()]
@@ -98,12 +100,12 @@ class Table(metaclass=abc.ABCMeta):
         topics_table = [x['topic'] for x in self.table.values()]
         topics_workload = [x['topic'] for x in self.workload.values()]
         
-        color_map = self.scatter(ips_workload, "IPs in the workload" + str(delay), axis[1, 0])
-        self.scatter(ips_table, "IPs in the table at" + str(delay), axis[0, 0], color_map)
+        color_map = self.scatter(ips_workload, "IPs in the workload" , axis[1, 0])
+        self.scatter(ips_table, "IPs in the table at", axis[0, 0], color_map)
         color_map = self.scatter(ids_workload, "IDs in the workload" + str(delay), axis[1, 1])
-        self.scatter(ids_table, "IDs in the table" + str(delay), axis[0, 1], color_map)
+        self.scatter(ids_table, "IDs in the table", axis[0, 1], color_map)
         color_map = self.scatter(topics_workload, "Topics in the workload" + str(delay), axis[1, 2])
-        self.scatter(topics_table, "Topics in the table" + str(delay), axis[0, 2], color_map)
+        self.scatter(topics_table, "Topics in the table", axis[0, 2], color_map)
         
 
         axis[2, 0].plot(range(0, len(self.admission_times)), self.admission_times)
@@ -112,7 +114,14 @@ class Table(metaclass=abc.ABCMeta):
         axis[2, 1].set_title("Occupancy over time")
         axis[2, 2].plot(range(0, len(self.returns)), self.returns)
         axis[2, 2].set_title("Returns")
-        figure.suptitle(type(self).__name__)
+
+        pending_returns = [x['returned'] for x in self.pending_req.values()]
+        axis[0, 3].plot(range(0, len(pending_returns)), pending_returns)
+        axis[0, 3].set_title("Returns of pending requests")
+        pending_times = [(self.env.now - x['arrived']) for x in self.pending_req.values()]
+        axis[1, 3].plot(range(0, len(pending_times)), pending_times)
+        axis[1, 3].set_title("Waiting times of pending requests")
+        figure.suptitle(type(self).__name__ + " at " + str(delay) + "ms")
         print("Admission times:", self.admission_times)
 
 
@@ -133,11 +142,20 @@ class Table(metaclass=abc.ABCMeta):
     def new_request(self, req, delay):
         yield self.env.timeout(delay)
         waiting_time = self.get_waiting_time(req)
-        self.log("-> new request arrived:", req)
+        if('req_id' in req):
+            self.log("-> old request arrived:", req)
+        else:
+            req['req_id'] = self.req_counter
+            self.req_counter += 1
+            self.log("-> new request arrived:", req)
+            assert(req['req_id'] not in self.pending_req)
+            self.pending_req[req['req_id']] = req
+
         print("waiting time:", waiting_time)
         waiting_time = int(waiting_time)
         if(waiting_time == 0):
             self.log("Admitting right away")
+            del self.pending_req[req['req_id']]
             req['expire'] = self.env.now + self.ad_lifetime
             self.table[self.ad_ids] = req
             self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
@@ -147,6 +165,7 @@ class Table(metaclass=abc.ABCMeta):
             
             #may the registrant re-register after expiration time
             new_req = copy.deepcopy(req)
+            del new_req['req_id']
             new_req['expire'] = 0
             new_req['arrived'] = self.env.now + self.ad_lifetime
             new_req['returned'] = 0
@@ -167,25 +186,26 @@ class SimpleTable(Table):
     
     
 class DiversityTable(Table):
-    def __init__(self, env, capacity, ad_lifetime):
+    def __init__(self, env, capacity, ad_lifetime, amplify = 2):
         super().__init__(env, capacity, ad_lifetime)
         #self.tree = Tree()
         self.ip_modifiers = {}
         self.id_modifiers = {}
         self.topic_modifiers = {}
+        self.amplify = amplify
     
     def get_ip_modifier(self, ip):
         current_ips = [x['ip'] for x in self.table.values()]
-        return current_ips.count(ip) + 1
+        return math.pow(current_ips.count(ip) + 1, self.amplify)
         #return self.tree.tryAdd(ip)
     
     def get_id_modifier(self, id):
         current_ids = [x['id'] for x in self.table.values()]
-        return current_ids.count(id) + 1
+        return math.pow(current_ids.count(id) + 1, self.amplify)
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
-        return current_topics.count(topic) + 1
+        return math.pow(current_topics.count(topic) + 1, self.amplify)
 
 
     def get_waiting_time(self, req):
@@ -195,7 +215,7 @@ class DiversityTable(Table):
         id_modifier = self.get_id_modifier(req['id'])
         ip_modifier = self.get_ip_modifier(req['ip'])
 
-        needed_time = base_waiting_time * topic_modifier * id_modifier * ip_modifier
+        needed_time = base_waiting_time * ((topic_modifier * id_modifier * ip_modifier)**0.33)
         returned_time = max(0, needed_time - (self.env.now - req['arrived']))
         #if(returned_time < 1):
         #    returned_time = 0
@@ -207,7 +227,7 @@ class DiversityTable(Table):
         self.topic_modifiers[self.env.now] = topic_modifier
         if (len(self.table) >= self.capacity):
             self.log("Table is full returning time", self.ad_lifetime)
-            return self.ad_lifetime
+            return max(self.ad_lifetime, returned_time)
 
         print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
         print("returning:", returned_time, "now:", self.env.now, "arrived:", req['arrived'])
