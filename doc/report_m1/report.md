@@ -2,7 +2,7 @@
 
 ## Setup
 The report consist of a comparison between the specs developed in the first discv5 service discovery project
-and the [new specs](../doc/specs.md) aimed at improving traffic optimization and load balancing
+and the [new specs](https://github.com/datahop/p2p-service-discovery/blob/d67a7ccd2b4c2c6bec38f5987c99cb13ea074cdc/doc/specs.md) aimed at improving traffic optimization and load balancing
 
 
 The parameters used in the simulation are the following:
