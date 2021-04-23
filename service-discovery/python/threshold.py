@@ -3,7 +3,7 @@ from scipy.stats import entropy
 
 class DiversityThreshold(Table):
 
-    def __init__(self, env, capacity, ad_lifetime, ipThresholds=None, entropyLimit=None):
+    def __init__(self, env, capacity, ad_lifetime, ipThresholds=None, entropyLimit=0.01):
         self.trie = {} # map prefix to request
         self.minEntropy = entropyLimit
         self.prefixLimits = {}
@@ -34,29 +34,24 @@ class DiversityThreshold(Table):
                 reqs.remove(req)
 
     def get_topic_waiting_time(self, topic, time):
-        return 0
+        
         current_topics = set([req['topic'] for req in self.table.values()])
         num_of_topics = len(current_topics)
 
         topic_limit = self.capacity
         if num_of_topics > 0:
-            topic_limit = self.capacity/num_of_topics
+            topic_limit = int(self.capacity/num_of_topics)
 
-        num_topic_reqs = {}
-        for topic in current_topics:
-            num_topic_reqs[topic] = len([req for req in self.table.values() if req['topic'] == topic])
-
-        if topic not in current_topics:
-            num_topic_reqs[topic] = 0
+        num_topic_reqs = len([req for req in self.table.values() if req['topic'] == topic])
 
         current_reqs = [req for req in self.table.values()]
         sorted_reqs = sorted(current_reqs, key=lambda k: k['expire'])
         last_element = None
-        while len(sorted_reqs) >= self.capacity or num_topic_reqs[topic] > topic_limit:
+        while len(sorted_reqs) >= self.capacity or num_topic_reqs > topic_limit:
             last_element = sorted_reqs.pop(0)
             last_topic = last_element['topic']
             if last_topic == topic:
-                num_topic_reqs[topic] -= 1
+                num_topic_reqs -= 1
 
         if last_element is None:
             return 0
