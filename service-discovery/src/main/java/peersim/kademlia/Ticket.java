@@ -30,7 +30,7 @@ public class Ticket implements Comparable<Ticket> {
     // indicates whether the local queue was full 
     //(it's to distinguish between cases where the queue is full for this
     //particular topic rather than globally
-    int topicOccupancy;
+    private int topicOccupancy;
 
     // Message that registered the ticket
     Message m;
@@ -123,7 +123,14 @@ public class Ticket implements Comparable<Ticket> {
     public boolean isRegistrationComplete() {
     	return isRegistrationComplete;
     }
-
+    
+    public void setOccupancy(int occupancy) {
+    	this.topicOccupancy = occupancy;
+    }
+    
+    public int getOccupancy() {
+    	return topicOccupancy;
+    }
     @Override
     public int compareTo(Ticket other) {
         int result = (int) (this.getCumWaitTime() - other.getCumWaitTime());
