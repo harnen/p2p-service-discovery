@@ -37,22 +37,22 @@ The project is organised in three main milestones of the project together with t
 * Objective 3: Additional security analysis
   * [ ] Task: Extend on security analysis to avoid any malicious behaviour and measure the risk of sybil attacks.
   * Deliverable: Updated Discv5 specification and evaluation results (TBC)
-  * Deadline: 30/4/2021
+  * Deadline: 21/5/2021
 
 * Objective 4: Configuration parameters analysis
   * [ ] Task: Extend existing evaluation to test multiple configuration parameters to choose the optimal ones to be used in production software.
   * Deliverable: Evaluation report (TBC)
-  * Deadline: 31/5/2021
+  * Deadline: 21/6/2021
 
 * Objective 5: Publication-ready technical report
   * [ ] Task: Write a technical report including the final specs of the discovery mechanism, all results of the evaluation and the conclusions of the investigation.
   * Deliverable: Technical report including specs, evaluation and documentation (TBC)
-  * Deadline: 30/6/2021
+  * Deadline: 21/7/2021
   
 * Objective 6: Evaluation on a real testbed
   * [ ] Task: Evaluate the service discovery mechanism using production software in a real testbed.
   * Deliverable: Testbed instructions and evaluation report using final parameters (TBC)
-  * Deadline: 30/6/2021
+  * Deadline: 30/7/2021
 
 ## Discv5 Service Discovery Requirements
 
