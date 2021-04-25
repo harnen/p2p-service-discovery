@@ -22,7 +22,7 @@ def analyzeMessages(dirs):
     fig2, ax2 = plt.subplots()
     i=0
     fig3, ax3 = plt.subplots()
-    fig4, ax4 = plt.subplots()
+    #fig4, ax4 = plt.subplots()
 
     for log_dir in dirs:
         #print(log_dir)
@@ -129,9 +129,9 @@ def analyzeMessages(dirs):
 #            df3 = df.loc[(df['type'] == 'MSG_REGISTER') & (df['bucket'] == 240) ]
 #            df3['dst'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message received by node", label='240')
 
-            df3 = df.loc[(df['type'] == 'MSG_REGISTER_RESPONSE') & (df['waiting_time'] != -1)]
-            df3['waiting_time'].value_counts().plot(ax=ax4, kind='line', xticks=[], title="Register responses waiting times", label='Total')
-            print(df3['waiting_time'].value_counts())
+#            df3 = df.loc[(df['type'] == 'MSG_REGISTER_RESPONSE') & (df['waiting_time'] != -1)]
+#            df3['waiting_time'].value_counts().plot(ax=ax4, kind='line', xticks=[], title="Register responses waiting times", label='Total')
+#            print(df3['waiting_time'].value_counts())
 
             i = i+1
         except pd.errors.EmptyDataError:
@@ -162,9 +162,9 @@ def analyzeMessages(dirs):
     ax3.set_ylabel("#Messages")
     fig3.savefig(OUTDIR + '/messages_received_bucket.png')
 
-    ax4.set_xlabel("Messages")
-    ax4.set_ylabel("Waiting times")
-    fig4.savefig(OUTDIR + '/messages_waiting_times.png')
+#    ax4.set_xlabel("Messages")
+#    ax4.set_ylabel("Waiting times")
+#    fig4.savefig(OUTDIR + '/messages_waiting_times.png')
 
 
     ax2.legend()
@@ -507,7 +507,7 @@ def analyzeRegistrantDistribution(dirs):
                               markerfacecolor='black', markersize=10))
         #print(legend_elements)
         ax1.legend(handles=legend_elements)
-        ax1.set_title("Discovered Registrants ID Distribution - NoSpam/Random")
+        ax1.set_title("Discovered Registrants ID Distribution")
         fig.savefig(OUTDIR + '/registrant_distribution.png')
 
     except KeyError:
@@ -717,7 +717,7 @@ def analyzeStorageUtilisation(dirs):
 
         ax.set_ylabel('Average utilisation of storage space')
         ax.set_xlabel('time (sec)')
-        plt.savefig(OUTDIR + '/storage_utilisation_' + log_dir1 + '.png')
+        plt.savefig(OUTDIR + '/storage_utilisation.png')
 
 # plot per-topic, average waiting times and number of rejected
 def analyzeWaitingTimes(dirs):
@@ -758,7 +758,7 @@ def analyzeWaitingTimes(dirs):
         ax3.legend()
         ax3.set_ylabel('Number of ticket requests')
         ax3.set_xlabel('time (sec)')
-        plt.savefig(OUTDIR + '/rejected_tickets_' + log_dir1 + '.png')
+        plt.savefig(OUTDIR + '/rejected_tickets.png')
 
 def analyzeNumberOfMessages(dirs):
 
@@ -777,7 +777,7 @@ def analyzeNumberOfMessages(dirs):
         ax.legend()
         ax.set_xlabel('time (sec)')
         ax.set_ylabel('Number of exchanged regiser/response messages')
-        plt.savefig(OUTDIR + '/message_quantity_' + log_dir1 + '.png')
+        plt.savefig(OUTDIR + '/message_quantity.png')
 
 def analyzeRegistrations2(dirs):
 
