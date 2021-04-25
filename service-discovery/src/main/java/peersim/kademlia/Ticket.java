@@ -131,6 +131,7 @@ public class Ticket implements Comparable<Ticket> {
     public int getOccupancy() {
     	return topicOccupancy;
     }
+    
     @Override
     public int compareTo(Ticket other) {
         int result = (int) (this.getCumWaitTime() - other.getCumWaitTime());

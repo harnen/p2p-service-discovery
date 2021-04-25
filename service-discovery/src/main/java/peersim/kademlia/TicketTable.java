@@ -285,7 +285,7 @@ public class TicketTable extends RoutingTable {
 	}
 
 	public void reportResponse(Ticket ticket) {
-		seenOccupancy.add(ticket.topicOccupancy);
+		seenOccupancy.add(ticket.getOccupancy());
 	}
 
 	public void increaseAvailableRequests() {
