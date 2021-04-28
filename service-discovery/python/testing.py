@@ -66,7 +66,7 @@ def get_entropy_modifier(topics, topic):
 
 def get_polynomial_modifier(topics, topic):
     count = topics.count(topic)
-    return math.pow(count, 1)
+    return math.pow(count, 1.2)
 
 def get_random_modifier(topics, topic):
     return random.randint(3, 9)
@@ -123,7 +123,7 @@ inputs['one_different'] = ['t1']*size
 inputs['one_different'][int(size/5)] = 't2'
 inputs['zipf'] = random.zipf(a=2, size=size)
 inputs['all_different'] = list(range(0, size))
-#test_topic_modifier(inputs)
+test_topic_modifier(inputs)
 
 inputs = {}
 inputs['all_same'] = ['10.0.0.1']*size
@@ -136,4 +136,4 @@ for i in range(0, size):
     ip = ip_file.readline().rstrip()
     inputs['regular'].append(ip)
 
-test_ip_modifier(inputs)
+#test_ip_modifier(inputs)

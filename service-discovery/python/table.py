@@ -24,6 +24,10 @@ class Table(metaclass=abc.ABCMeta):
         self.interval = interval
         self.req_counter = 0
         self.pending_req = {}
+        self.honest_count = 0
+        self.malicious_count = 0
+        self.malicious_in = []
+        self.honest_in = []
 
     def load(self, file):
         counter = 0
@@ -32,6 +36,11 @@ class Table(metaclass=abc.ABCMeta):
             for row in reader:
                 if 'attack' in row.keys():
                     row['attack'] = int(row['attack'])
+                    if(row['attack'] == 0):
+                        self.honest_count += 1
+                    else:
+                        self.malicious_count += 1
+
                 if 'time' in row.keys():
                     row['arrived'] = float(row['time'])
                 else:
@@ -44,6 +53,9 @@ class Table(metaclass=abc.ABCMeta):
                 else:
                     self.env.process(self.new_request(row, counter * self.interval))
                 counter += 1
+        #print("Honest", self.honest_count, "Malicious:", self.malicious_count)
+
+
         
     def run(self, runtime):
         self.env.process(self.report_occupancy())
@@ -54,7 +66,10 @@ class Table(metaclass=abc.ABCMeta):
         yield self.env.timeout(1)
         self.occupancies.append(len(self.table) / self.capacity)
         attacker_entries = [req for req in self.table.values() if req['attack'] == 1]
+        honest_entries = [req for req in self.table.values() if req['attack'] == 0]
         self.occupancies_by_attackers.append(len(attacker_entries) / self.capacity)
+        self.malicious_in.append(len(attacker_entries)/self.malicious_count)
+        self.honest_in.append(len(honest_entries)/self.honest_count)
         self.env.process(self.report_occupancy())
 
     def scatter(self, values, title, ax = None, color_map = None):
@@ -109,11 +124,11 @@ class Table(metaclass=abc.ABCMeta):
         self.scatter(topics_table, "Topics in the table", axis[0, 2], color_map)
         
 
-        axis[2, 0].plot(range(0, len(self.admission_times)), self.admission_times)
+        axis[2, 0].scatter([x[0] for x in self.admission_times], [x[1] for x in self.admission_times], c=get_colors([x[2] for x in self.admission_times]))
         axis[2, 0].set_title("Waiting times")
         axis[2, 1].plot(range(0, len(self.occupancies)), self.occupancies, range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers)
         axis[2, 1].set_title("Occupancy over time")
-        axis[2, 2].plot(range(0, len(self.returns)), self.returns)
+        axis[2, 2].scatter([x[0] for x in self.returns], [x[1] for x in self.returns], c=get_colors([x[2] for x in self.returns]))
         axis[2, 2].set_title("Returns")
 
         pending_returns = [x['returned'] for x in self.pending_req.values()]
@@ -124,6 +139,9 @@ class Table(metaclass=abc.ABCMeta):
         axis[1, 3].set_title("Waiting times of pending requests")
         figure.suptitle(type(self).__name__ + " at " + str(delay) + "ms")
         print("Admission times:", self.admission_times)
+
+        axis[2, 3].plot(range(0, len(self.honest_in)), self.honest_in, c='g')
+        axis[2, 3].plot(range(0, len(self.malicious_in)), self.malicious_in, c='r')
 
 
     
@@ -161,11 +179,11 @@ class Table(metaclass=abc.ABCMeta):
             self.table[self.ad_ids] = req
             self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
             self.ad_ids += 1
-            self.admission_times.append(self.env.now - req['arrived'])
-            self.returns.append(req['returned'])
+            self.admission_times.append((self.env.now, self.env.now - req['arrived'], req['attack']))
+            self.returns.append((self.env.now, req['returned'], req['attack']))
             
             #may the registrant re-register after expiration time
-            rand_time = randint(0, 999) # add a random time btw. 0 and 999 milliseconds
+            rand_time = randint(0, 99) # add a random time btw. 0 and 99 milliseconds
             new_req = copy.deepcopy(req)
             del new_req['req_id']
             new_req['expire'] = 0
@@ -188,7 +206,7 @@ class SimpleTable(Table):
     
     
 class DiversityTable(Table):
-    def __init__(self, env, capacity, ad_lifetime, amplify = 2):
+    def __init__(self, env, capacity, ad_lifetime, amplify = 1):
         super().__init__(env, capacity, ad_lifetime)
         #self.tree = Tree()
         self.ip_modifiers = {}
@@ -198,12 +216,12 @@ class DiversityTable(Table):
     
     def get_ip_modifier(self, ip):
         current_ips = [x['ip'] for x in self.table.values()]
-        return math.pow(current_ips.count(ip) + 1, self.amplify)
+        return math.pow(current_ips.count(ip) + 1, self.amplify*5)
         #return self.tree.tryAdd(ip)
     
     def get_id_modifier(self, iD):
         current_ids = [x['id'] for x in self.table.values()]
-        return math.pow(current_ids.count(iD) + 1, self.amplify)
+        return math.pow(current_ids.count(iD) + 1, self.amplify*5)
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
@@ -217,16 +235,16 @@ class DiversityTable(Table):
         id_modifier = self.get_id_modifier(req['id'])
         ip_modifier = self.get_ip_modifier(req['ip'])
 
-        needed_time = base_waiting_time * ((topic_modifier * id_modifier * ip_modifier)**0.33)
+        needed_time = base_waiting_time * ((topic_modifier * id_modifier * ip_modifier)**0.2)
         returned_time = max(0, needed_time - (self.env.now - req['arrived']))
         #if(returned_time < 1):
         #    returned_time = 0
         #    self.tree.add(req['ip'])
         
         #just for stats
-        self.ip_modifiers[self.env.now] = ip_modifier
-        self.id_modifiers[self.env.now] = id_modifier
-        self.topic_modifiers[self.env.now] = topic_modifier
+        self.ip_modifiers[self.env.now] = (ip_modifier, req['attack'])
+        self.id_modifiers[self.env.now] = (id_modifier, req['attack'])
+        self.topic_modifiers[self.env.now] = (topic_modifier, req['attack'])
         if (len(self.table) >= self.capacity):
             self.log("Table is full returning time", self.ad_lifetime)
             return max(self.ad_lifetime, returned_time)
@@ -236,14 +254,20 @@ class DiversityTable(Table):
         return returned_time
         
         #return base_waiting_time * topic_modifier * id_modifier * ip_modifier
+    
+    
+
     def report_modifiers(self, delay):
         yield self.env.timeout(delay)
-        figure, ax = plt.subplots()
-        ax.plot(list(self.ip_modifiers.keys()), list(self.ip_modifiers.values()), label='ip_modifier')
-        ax.plot(list(self.id_modifiers.keys()), list(self.id_modifiers.values()), label='id_modifier')
-        ax.plot(list(self.topic_modifiers.keys()), list(self.topic_modifiers.values()), label='topic_modifier')
-        ax.legend()
-        ax.set_title("Diversity Table Modifiers")
+        figure, axis = plt.subplots(3, 1)
+        axis[0].scatter(list(self.ip_modifiers.keys()), [x[0] for x in list(self.ip_modifiers.values())], c=get_colors([x[1] for x in list(self.ip_modifiers.values())]))
+        axis[0].set_title("IP modifier")
+        axis[1].scatter(list(self.id_modifiers.keys()), [x[0] for x in list(self.id_modifiers.values())], c=get_colors([x[1] for x in list(self.id_modifiers.values())]))
+        axis[1].set_title("ID modifier")
+        axis[2].scatter(list(self.topic_modifiers.keys()), [x[0] for x in list(self.topic_modifiers.values())], c=get_colors([x[1] for x in list(self.topic_modifiers.values())]))
+        axis[2].set_title("Topic modifier")
+
+        figure.suptitle("Diversity Table Modifiers")
 
     def display_body(self, delay):
         self.env.process(self.report_modifiers(delay))
@@ -274,6 +298,20 @@ class TreeNode:
         self.counter -= 1
         return self.counter
 
+#helper for bar charts
+def get_widths(l):
+    widths = []
+    for i in range(0, len(l)-1):
+        widths.append(l[i+1] - l[i])
+    widths.append(widths[-1])
+    return widths
+
+def get_colors(l):
+    colors = ['g', 'r', 'b']
+    result = []
+    for i in l:
+        result.append(colors[i%len(colors)])
+    return result
 
 def get_entropy(labels, base=2):
   value,counts = np.unique(labels, return_counts=True)
