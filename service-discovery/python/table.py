@@ -126,6 +126,7 @@ class Table(metaclass=abc.ABCMeta):
 
         axis[2, 0].scatter([x[0] for x in self.admission_times], [x[1] for x in self.admission_times], c=get_colors([x[2] for x in self.admission_times]))
         axis[2, 0].set_title("Waiting times")
+        axis[2, 0].set_yscale('log')
         axis[2, 1].plot(range(0, len(self.occupancies)), self.occupancies, range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers)
         axis[2, 1].set_title("Occupancy over time")
         axis[2, 2].scatter([x[0] for x in self.returns], [x[1] for x in self.returns], c=get_colors([x[2] for x in self.returns]))
