@@ -68,8 +68,10 @@ class Table(metaclass=abc.ABCMeta):
         attacker_entries = [req for req in self.table.values() if req['attack'] == 1]
         honest_entries = [req for req in self.table.values() if req['attack'] == 0]
         self.occupancies_by_attackers.append(len(attacker_entries) / self.capacity)
-        self.malicious_in.append(len(attacker_entries)/self.malicious_count)
-        self.honest_in.append(len(honest_entries)/self.honest_count)
+        if(self.malicious_count > 0):
+            self.malicious_in.append(len(attacker_entries)/self.malicious_count)
+        if(self.honest_count > 0):
+            self.honest_in.append(len(honest_entries)/self.honest_count)
         self.env.process(self.report_occupancy())
 
     def scatter(self, values, title, ax = None, color_map = None):
@@ -99,7 +101,7 @@ class Table(metaclass=abc.ABCMeta):
         
         ax.scatter(x, y, c=colors)
         ax.set_title(title)
-        print("Frequency of", title, {x:values.count(x) for x in values})
+        #print("Frequency of", title, {x:values.count(x) for x in values})
         return color_map
 
     def display(self, delay):
@@ -109,8 +111,8 @@ class Table(metaclass=abc.ABCMeta):
     def display_body(self, delay):
         yield self.env.timeout(delay)
         figure, axis = plt.subplots(3, 4)
-        ips_table = [x['ip'] for x in self.table.values()]
-        ips_workload = [x['ip'] for x in self.workload.values()]
+        ips_table = [x['attack'] for x in self.table.values()]
+        ips_workload = [x['attack'] for x in self.workload.values()]
         ids_table = [x['id'] for x in self.table.values()]
         ids_workload = [x['id'] for x in self.workload.values()]
         topics_table = [x['topic'] for x in self.table.values()]
@@ -126,7 +128,7 @@ class Table(metaclass=abc.ABCMeta):
 
         axis[2, 0].scatter([x[0] for x in self.admission_times], [x[1] for x in self.admission_times], c=get_colors([x[2] for x in self.admission_times]))
         axis[2, 0].set_title("Waiting times")
-        axis[2, 0].set_yscale('log')
+        #axis[2, 0].set_yscale('log')
         axis[2, 1].plot(range(0, len(self.occupancies)), self.occupancies, range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers)
         axis[2, 1].set_title("Occupancy over time")
         axis[2, 2].scatter([x[0] for x in self.returns], [x[1] for x in self.returns], c=get_colors([x[2] for x in self.returns]))
@@ -139,7 +141,7 @@ class Table(metaclass=abc.ABCMeta):
         axis[1, 3].plot(range(0, len(pending_times)), pending_times)
         axis[1, 3].set_title("Waiting times of pending requests")
         figure.suptitle(type(self).__name__ + " at " + str(delay) + "ms")
-        print("Admission times:", self.admission_times)
+        print("Admission times:", [x for x in self.admission_times])# if x[2] == 0
 
         axis[2, 3].plot(range(0, len(self.honest_in)), self.honest_in, c='g')
         axis[2, 3].plot(range(0, len(self.malicious_in)), self.malicious_in, c='r')
@@ -161,7 +163,7 @@ class Table(metaclass=abc.ABCMeta):
 
     def new_request(self, req, delay):
         yield self.env.timeout(delay)
-        waiting_time = self.get_waiting_time(req)
+        
         if('req_id' in req):
             self.log("-> old request arrived:", req)
         else:
@@ -171,8 +173,9 @@ class Table(metaclass=abc.ABCMeta):
             assert(req['req_id'] not in self.pending_req)
             self.pending_req[req['req_id']] = req
 
-        print("waiting time:", waiting_time)
+        waiting_time = self.get_waiting_time(req)
         waiting_time = int(waiting_time)
+        print("waiting time:", waiting_time)
         if(waiting_time == 0):
             self.log("Admitting right away")
             del self.pending_req[req['req_id']]
@@ -194,7 +197,7 @@ class Table(metaclass=abc.ABCMeta):
             self.env.process(self.new_request(new_req, self.ad_lifetime + rand_time))
         else:
             req['returned'] += 1
-            self.log("Need to wait for", waiting_time)
+            #self.log("Need to wait for", waiting_time)
             self.env.process(self.new_request(req, waiting_time))
     
 
@@ -226,7 +229,7 @@ class DiversityTable(Table):
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
-        return math.pow(current_topics.count(topic) + 1, self.amplify)
+        return math.pow(current_topics.count(topic) + 1, self.amplify*2)
 
 
     def get_waiting_time(self, req):
@@ -247,8 +250,11 @@ class DiversityTable(Table):
         self.id_modifiers[self.env.now] = (id_modifier, req['attack'])
         self.topic_modifiers[self.env.now] = (topic_modifier, req['attack'])
         if (len(self.table) >= self.capacity):
-            self.log("Table is full returning time", self.ad_lifetime)
-            return max(self.ad_lifetime, returned_time)
+            first_to_expire = list(self.table.values())[0]
+            print("First to expire", first_to_expire)
+            print("Expiry time", first_to_expire['expire'], 'now', self.env.now)
+            self.log("Table is full returning time", first_to_expire['expire'] - self.env.now)
+            return max(first_to_expire['expire'] - self.env.now, returned_time)
 
         print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
         print("returning:", returned_time, "now:", self.env.now, "arrived:", req['arrived'])
@@ -263,10 +269,13 @@ class DiversityTable(Table):
         figure, axis = plt.subplots(3, 1)
         axis[0].scatter(list(self.ip_modifiers.keys()), [x[0] for x in list(self.ip_modifiers.values())], c=get_colors([x[1] for x in list(self.ip_modifiers.values())]))
         axis[0].set_title("IP modifier")
+        axis[0].set_yscale('log')
         axis[1].scatter(list(self.id_modifiers.keys()), [x[0] for x in list(self.id_modifiers.values())], c=get_colors([x[1] for x in list(self.id_modifiers.values())]))
         axis[1].set_title("ID modifier")
+        axis[1].set_yscale('log')
         axis[2].scatter(list(self.topic_modifiers.keys()), [x[0] for x in list(self.topic_modifiers.values())], c=get_colors([x[1] for x in list(self.topic_modifiers.values())]))
         axis[2].set_title("Topic modifier")
+        axis[2].set_yscale('log')
 
         figure.suptitle("Diversity Table Modifiers")
 

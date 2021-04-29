@@ -5,9 +5,9 @@ from threshold import *
 import sys
 
 
-runtime = 50000
+runtime = 1000000
 ad_lifetime = 3000
-capacity = 100
+capacity = 1000
 input_file = './workloads/regular_size100_dist2.csv'
 
 if len(sys.argv) > 1:
