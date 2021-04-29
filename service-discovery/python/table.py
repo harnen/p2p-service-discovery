@@ -98,7 +98,14 @@ class Table(metaclass=abc.ABCMeta):
             x.append(counter % row_length)
             y.append(int(counter/row_length))
             counter += 1
-        
+        #hack for the final report - remove later on as
+        #it clashes with the code above
+        colors = []
+        for i in values:
+            if i == 1:
+                colors.append('r')
+            else:
+                colors.append('g')
         ax.scatter(x, y, c=colors)
         ax.set_title(title)
         #print("Frequency of", title, {x:values.count(x) for x in values})
@@ -110,41 +117,49 @@ class Table(metaclass=abc.ABCMeta):
 
     def display_body(self, delay):
         yield self.env.timeout(delay)
-        figure, axis = plt.subplots(3, 4)
-        ips_table = [x['attack'] for x in self.table.values()]
-        ips_workload = [x['attack'] for x in self.workload.values()]
-        ids_table = [x['id'] for x in self.table.values()]
-        ids_workload = [x['id'] for x in self.workload.values()]
-        topics_table = [x['topic'] for x in self.table.values()]
-        topics_workload = [x['topic'] for x in self.workload.values()]
+        figure, axis = plt.subplots(2, 3)
+        #ips_table = [x['ip'] for x in self.table.values()]
+        #ips_workload = [x['ip'] for x in self.workload.values()]
+        #ids_table = [x['id'] for x in self.table.values()]
+        #ids_workload = [x['id'] for x in self.workload.values()]
+        #topics_table = [x['topic'] for x in self.table.values()]
+        #topics_workload = [x['topic'] for x in self.workload.values()]
         
-        color_map = self.scatter(ips_workload, "IPs in the workload" , axis[1, 0])
-        self.scatter(ips_table, "IPs in the table at", axis[0, 0], color_map)
-        color_map = self.scatter(ids_workload, "IDs in the workload" + str(delay), axis[1, 1])
-        self.scatter(ids_table, "IDs in the table", axis[0, 1], color_map)
-        color_map = self.scatter(topics_workload, "Topics in the workload" + str(delay), axis[1, 2])
-        self.scatter(topics_table, "Topics in the table", axis[0, 2], color_map)
+        #color_map = self.scatter(ips_workload, "IPs in the workload" , axis[1, 0])
+        #self.scatter(ips_table, "IPs in the table at", axis[0, 0], color_map)
+        #color_map = self.scatter(ids_workload, "IDs in the workload" + str(delay), axis[1, 1])
+        #self.scatter(ids_table, "IDs in the table", axis[0, 1], color_map)
+        #color_map = self.scatter(topics_workload, "Topics in the workload" + str(delay), axis[1, 2])
+        #self.scatter(topics_table, "Topics in the table", axis[0, 2], color_map)
+
+        requests_table = [x['attack'] for x in self.table.values()]
+        requests_workload = [x['attack'] for x in self.workload.values()]
+        color_map = self.scatter(requests_workload, "Requests in the workload" , axis[1, 0])
+        self.scatter(requests_table, "Requests in the table at", axis[0, 0], color_map)
         
 
-        axis[2, 0].scatter([x[0] for x in self.admission_times], [x[1] for x in self.admission_times], c=get_colors([x[2] for x in self.admission_times]))
-        axis[2, 0].set_title("Waiting times")
+        axis[0, 1].scatter([x[0] for x in self.admission_times], [x[1] for x in self.admission_times], c=get_colors([x[2] for x in self.admission_times]))
+        axis[0, 1].set_title("Waiting times")
         #axis[2, 0].set_yscale('log')
-        axis[2, 1].plot(range(0, len(self.occupancies)), self.occupancies, range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers)
-        axis[2, 1].set_title("Occupancy over time")
-        axis[2, 2].scatter([x[0] for x in self.returns], [x[1] for x in self.returns], c=get_colors([x[2] for x in self.returns]))
-        axis[2, 2].set_title("Returns")
+        axis[1, 1].plot(range(0, len(self.occupancies)), self.occupancies, color='b')
+        axis[1, 1].plot(range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers, color='r')
+        axis[1, 1].plot(range(0, len(self.occupancies)), [x - y for x, y in zip(self.occupancies, self.occupancies_by_attackers)], color='g')
+        axis[1, 1].set_title("Occupancy over time")
+        axis[0, 2].scatter([x[0] for x in self.returns], [x[1] for x in self.returns], c=get_colors([x[2] for x in self.returns]))
+        axis[0, 2].set_title("Returns")
 
-        pending_returns = [x['returned'] for x in self.pending_req.values()]
-        axis[0, 3].plot(range(0, len(pending_returns)), pending_returns)
-        axis[0, 3].set_title("Returns of pending requests")
-        pending_times = [(self.env.now - x['arrived']) for x in self.pending_req.values()]
-        axis[1, 3].plot(range(0, len(pending_times)), pending_times)
-        axis[1, 3].set_title("Waiting times of pending requests")
-        figure.suptitle(type(self).__name__ + " at " + str(delay) + "ms")
-        print("Admission times:", [x for x in self.admission_times])# if x[2] == 0
+        #pending_returns = [x['returned'] for x in self.pending_req.values()]
+        #axis[0, 3].plot(range(0, len(pending_returns)), pending_returns)
+        #axis[0, 3].set_title("Returns of pending requests")
+        #pending_times = [(self.env.now - x['arrived']) for x in self.pending_req.values()]
+        #axis[1, 3].plot(range(0, len(pending_times)), pending_times)
+        #axis[1, 3].set_title("Waiting times of pending requests")
+        #figure.suptitle(type(self).__name__ + " at " + str(delay) + "ms")
+        #print("Admission times:", [x for x in self.admission_times])# if x[2] == 0
 
-        axis[2, 3].plot(range(0, len(self.honest_in)), self.honest_in, c='g')
-        axis[2, 3].plot(range(0, len(self.malicious_in)), self.malicious_in, c='r')
+        axis[1, 2].plot(range(0, len(self.honest_in)), self.honest_in, c='g')
+        axis[1, 2].plot(range(0, len(self.malicious_in)), self.malicious_in, c='r')
+        axis[1, 2].set_title("Percentage of overal requests in the table")
 
 
     
