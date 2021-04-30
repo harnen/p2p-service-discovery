@@ -170,16 +170,15 @@ When a ticket with a better time is submitted, it replaces the current best tick
 The above description explains the storage and placement of ads on a single registrar, but the advertisers need to distribute ads redundantly on multiple nodes in order to speed up its discovery and to be discovered by more searchers at once. 
 
 An advertiser maintains a per-topic 'ticket table' for each topic advertised in order to keep track of the ongoing registration attempts.
-This table is made up of k-buckets of logarithmic distance to the topic hash, i.e. the table stores k registrars for every distance step (bucket). 
+This table can be equivalent to the routing table used in Kademlia protocol, but instead of storing nodes based on distance for routing purposes, nodes are stored based on distance to topic ID to keep track of on-going registrations.
+
+This table is made up of k-buckets of logarithmic distance to the topic hash (topic ID), i.e. the table stores k registrars for every distance step (bucket). 
 It is sufficient to use a small value of k such as `k=3`. 
 For this table no replacement list is used, different from the Kademlia routing table.
-Ticket table buckets are filled from the local routing table (Kademlia DHT Table) with the same distance to the topic hash id.
+Ticket table buckets are filled from the local routing table (Kademlia DHT Table) with the same distance to the topic hash.
 
-Registration process is started by selecting `ALPHA=3` nodes from the ticket table, starting from the highest distance bucket (distance 256), and sending  parallel registrations requests to `ALPHA` different nodes. 
 For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all pending tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
-Once a registration is successful, a new node is selected from the ticket table, continuing to the next bucket of the table.
 
-The process is finished once `k=3` registrations are placed to each bucket, or when `target-ad-lifetime` expired for the first registration placed, whatever happens first. At this point the whole ticket table structure is cleared and the whole process is restarted.
 
 <!--In this project we evaluated two different approaches to remove tickets from ticket table:
 * Removing the ticket after the registration lifetime expired: In this case we remove a ticket from the table, not after this registration has taken place, but after the registration has expired. This way we control the number of active registration, bounded to the number of buckets * bucket size.
