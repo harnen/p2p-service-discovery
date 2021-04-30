@@ -83,7 +83,7 @@ encrypt and authenticate them with a dedicated secret key:
     topic        = the topic that ticket is valid for
     req-time     = absolute time of REGTOPIC request
     wait-time    = waiting time assigned when ticket was created
-    cum-wait     = cumulative waiting time of this node
+    issue-time   = time when the first registration attempt ticket was created
 
 Tickets cannot be used beyond their lifetime. If the advertiser does not come back after the waiting time, all cumulative waiting time is lost and the advertiser must start over.
 The image below depicts a single ticket's validity over time. When the ticket is issued, the node keeping it must wait until the registration window opens. The length of the registration window is implementation dependent, but by default `10 seconds` is used. The ticket becomes invalid after the registration window has passed.
@@ -110,7 +110,17 @@ This is an efficient approach, but it leads to poor load-balancing in terms of b
 
 However, these naives approaches are not efficient in terms of overhead, search time or uniform distibution of discovered nodes, or do not follow the requirements described in [here](requirements.md).
 
-In order to perform an optimal ticket registration placement among the registrar nodes, a ticket table structure is used to follow and control the active on-going registrations per node. 
+In order to perform an optimal advetisiment registration placement among the registrars topic tables, a ticket table structure is used to follow and control the active on-going registrations per node. 
+
+The ticket registration process follows the next steps:
+
+1. `K` nodes are selected for each bucket of the [ticket table structure](#ticket-table) (depending on the bucket size). Only `K` nodes are selected per bucket and no new registrations are started till the advertisement registration on these nodes have expired in case of succesful registration or the registration has been discarded after `T` attempts on the selected node without succesful registration.
+2.  REGTOPIC request is sent to the selected node without attaching any TICKET.
+3.  Registrar node replies with a TICKET response. This message includes the TICKET a waiting time and a ticket issue time.
+4.  The advertiser replies after the waiting time with another REGTOPIC request with the previously received TICKET attached to it.
+5.  The registrer replies with a new TICKET response with a new TICKET and a new waiting time in case the registration is not succesful. 
+6.  The registration is succesful when the [waiting time calculated](#waiting-time-function) at the registrar is not greater than the difference of the current time and the initial ticket issue time. In this case the registrar sends a REGCONFIRMATION response to the advertiser.
+7.  The process is restarted with a new selected node in the same bucket after the advertisement expires in case of succesful registration, or after `T` in case of unsuccesful registration.
 
 <!--As discussed in ['Ticket Table'](#ticket-table), advertisers can perform parallel registrations at each and every bucket (relative to the topic hash), resulting with k on-going registrations per bucket. However, registering at all the bucket distances in parallel means that advertisers for a topic will all attempt to register at the nodes closest to the topic hash. Therefore, this approach also suffers from the same load-balancing problem with the third approach above. 
 
@@ -147,6 +157,8 @@ For this table no replacement list is used, different from the Kademlia routing 
 Ticket table buckets are filled from the local routing table (Kademlia DHT Table) with the same distance to the topic hash.
 
 For every node stored in the ticket table, the advertiser attempts to place an ad on the node and keeps the latest ticket issued by that node. It also keeps references to all pending tickets in a priority queue keyed by the expiry time of the ticket so it can efficiently access the next ticket for which a placement attempt is due.
+
+Once a ticket request is sent 
 
 
 <!--In this project we evaluated two different approaches to remove tickets from ticket table:
