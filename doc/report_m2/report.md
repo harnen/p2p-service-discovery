@@ -29,9 +29,9 @@ In both workloads, the rate of attacker registrations is ten times the rate of r
 In the first experiment, we use the spam workload where attackers use random topic IDs. We initially use a very small **topic table capacity of 25**. This is an extreme case with topic table having very little capacity.
 
 <p align="center">
-  <img src="./imgs/Spam_Cap25/spam_cap_25_occupancy" width="32%" />
-  <img src="./imgs/Spam_Cap25/spam_cap_25_reqs" width="32%" />
-  <img src="./imgs/Spam_Cap25/spam_cap_25_waiting" width="32%" />
+  <img src="./img/Spam_Cap25/spam_cap_25_occupancy.png" width="30%" />
+  <img src="./img/Spam_Cap25/spam_cap_25_reqs.png" width="30%" />
+  <img src="./img/Spam_Cap25/spam_cap_25_waiting.png" width="30%" />
 </p>
 
 In these graphs (and the ones below) the **green** lines are for the honest registrations and **red** lines are for the malicious registrations. In the leftmost plot, we observe the occupancy of the topic table from malicious (red line) and honest (green line) registrants. We observe that honest registrations dominate the storage space of the topic table. In the middle plot, we observe the acceptance rate of registrations from malicious and hones registrants. Aligned with the occupancy results, the middle plot shows that the ratio of registrations accepted from honest registrants is higher than the ratio of registrations accepted from malicious nodes. The rightmost plot demonstrates the waiting time returned to malicious and honest registrants over time. Here, we also observe that malicious nodes obtain a much higher waiting time than honest nodes due to diversity modifiers. 
@@ -39,15 +39,15 @@ In these graphs (and the ones below) the **green** lines are for the honest regi
 The below graphs demonstrate the values computed by the three modifier functions. The top graph shows the IP modifier, the middle graph shows the node ID modifier, and the bottom graph shows the topic ID modifier values. For this workload, the registrations from the attackers exhibit a low diversity in IP address and node ID aspects, while their topic diversity is high. Because the waiting time is the multiplication of these three components, the waiting time returned to malicious registrants are still much higher. This is also because the range of values returned by the topic ID modifier is much lower by design compared to node ID and IP address modifiers. 
 
 <p align="center">
-  <img src="./imgs/Spam_Cap25/spam_cap_25_occupancy" width="80%" />
+  <img src="./img/Spam_Cap25/Spam_25_modifiers.png" width="50%" />
 </p>
 
 We also plot the same results with a **large topic table capacity of 1000**. In this case, we still observe that the topic table successfully limits the registrations from malicious nodes as demonstrated in the plots below.
 
 <p align="center">
-  <img src="./imgs/Spam_Cap1000/spam_cap_1000_occupancy" width="32%" />
-  <img src="./imgs/Spam_Cap1000/spam_cap_1000_reqs" width="32%" />
-  <img src="./imgs/Spam_Cap1000/spam_cap_1000_waiting" width="32%" />
+  <img src="./img/Spam_Cap1000/spam_cap_1000_occupancy.png" width="30%" />
+  <img src="./img/Spam_Cap1000/spam_cap_1000_reqs.png" width="30%" />
+  <img src="./img/Spam_Cap1000/spam_cap_1000_waiting.png" width="30%" />
 </p>
 
 ## Target topic ID 
