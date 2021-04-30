@@ -33,44 +33,13 @@ In the following we describe the specification of this new Topic or Service Disc
 
 
 ## Topic Table
+The registrars store ads in a topic table. The total size of the topic table is limited, however no per-topic limits are imposed since existing number of topics in the network is unknown. Reasonable global limit is 50,000 ads. Since ENRs are at most 300 bytes in size, these limits ensure that a full topic table consumes approximately 15MB of memory. 
 
+In order to place an ad, the advertiser must present a valid ticket to the advertiser. We discuss the details on the tickets in sections below. Each ad added to the table is stored for `target-ad-lifetime`. When the `target-ad-lifetime` expires, the ad is removed. An advertiser can only have a single ad for a specific topic in the queue, duplicate placements are rejected (althought the same node may attempt placing ads for multiple topics at the same registrar).
 
-<!--In order to place an ad, the advertiser must present a valid ticket to the advertiser.-->
-
-
-The registrars store ads for any number of topics and a limited number of ads for each topic. The
-data structure holding advertisements in a 'topic table'. 
-The list of ads for a particular topic is called the 'topic queue' because it functions like a FIFO queue of
-limited length. 
-This table stores the ads and they are stored during `target-ad-lifetime`. When the `target-ad-lifetime` expires, the ad is removed from the queue and new ads can be accepted.
-Ads move through the queue at a fixed rate. When the queue is full, and the last ad expires, a new ad can be stored at the beginning of the queue. An advertiser can only have a single ad in the queue, duplicate placements are rejected.
-The image below depicts a topic table containing three queues. 
-The queue for topic `T₁` is at capacity.
-
-![topic table](./imgs/topic-queue-diagram.png)
-
-Implementations should place a global limit on the number of ads in the topic table regardless of the topic queue which contains them.
-Reasonable limits are 50000 ads across all queues. 
-Since ENRs are at most 300 bytes in size, these limits ensure that a full topic table consumes approximately 15MB of memory.
-There is no 'topic queue' limit to provide a better usage of the topic table allocation, since existing number of topics is unknown.
-Per topic allocation should follow max-min fairness policy, allowing allocations of more popular topics if and only if the allocation is feasible and an attempt to increase the allocation of any topic does not result in the decrease in the allocation of some other participant with an equal or smaller allocation.
-
-Any node may appear at most once in any topic queue, that is, registration of a node which is already registered for a given topic fails. 
-Other restrictions are imposed on the table in order to limit the influence of the Sybil attacks on the topic advertisement system. These include:
-
-* Limiting the number of ads with same IP-address prefixes. 
-* Limiting the number of registrations from  (i.e., detected by occurence of the same nodeID) across queues.
-* Limiting the number of ads for a single topic. 
-
-The above restrictions are imposed by registrars using the assignment of appropriate 'waiting times' to advertisers, as we discuss in detail next. 
-
-<!--using a 'diversity score' to measure the diversity of IP addresses domains in a topic queue. Topic registrations that improve diversity score will be prioritised to the registrations that reduce the diversity score
-
-(similar restrictions are used, for instance, in the Kademlia k-bucket table   of different neighbours in the same k-bucket .  include: --> 
+The topic table is shared across multiple nodes and topics and should be diverse and follow max-min fairness policy. Popular topics/nodes should not dominate the topic table and prevent less popular ones from registering. This is achieved using the waiting time function discussed below. 
 
 ### Tickets
-
-
 In order to place an ad on a registrar, the advertiser must present a valid 'ticket' to the registrar.
 Tickets are opaque objects issued by the registrars. 
 An advertiser willing to register an ad at a registrar must first obtain a ticket by sending a 'ticket request' message to the registrar.  
