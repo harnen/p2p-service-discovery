@@ -1,12 +1,13 @@
 # Discv5 Specification
 
-This document explains the algorithms and data structures used by the service discovery protocol for Ethereum 2 (Disv5) designed and analysed in this research project.
-Previous version (Discv4) utilises a Distributed Hash Table (DHT) based on Kademlia network to discover other nodes in the network. 
+This document explains the design of the algorithms and data structures used by the service discovery protocol for Ethereum 2 (Disv5) designed and analysed in this research project.
+
+Previous version of the discovery protocol used in Ethereum (DevP2P) network Discv4 utilises a Distributed Hash Table (DHT) based on Kademlia network to discover other nodes in the network. 
 Using FINDNODE queries with appropriately chosen targets, the entire DHT can be sampled by a random walk to find all other participants. 
 When building a distributed application, it is often desirable to restrict the search to participants which provide a certain service. 
 A simple solution to this problem would be to simply split up the network and require participation in many smaller application-specific networks. 
 However, such networks are hard to bootstrap and also more vulnerable to attacks which could isolate nodes.
-To this end, in Discv5 Topics are introduced. Topics can be considered as identifiers for a specific service. This way a single network can support multiple services advertisement at the same time differentiated by a Topic index. Any user of the network can be used to participate in the service discovery, even if it does not support the service, making it more resilient and efficient for non popular topics, compared with having independent service discovery networks for each topic.
+To this end, in the new version of the discovery protocol for the Ethereum P2P network (Discv5) Topics are introduced. Topics can be considered as identifiers for a specific service. This way a single network can support multiple services advertisement at the same time differentiated by a Topic index. Any user of the network can be used to participate in the service discovery, even if it does not support the service, making it more resilient and efficient for non popular topics, compared with having independent service discovery networks for each topic.
 
 The topic advertisement subsystem indexes participants by their provided services. 
 A node's provided services are identified by arbitrary strings called 'topics'. 
@@ -14,6 +15,8 @@ A node providing a certain service is said to 'place an ad' for itself when it m
 discoverable under that topic.
 Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
 Every node participating in the discovery protocol acts as an 'advertisement medium', meaning that it accepts topic ads from other nodes and later returns them to nodes searching for the same topic, keeping an extra topic table (in addition to the Kademlia neighbours table) tracking their neighbors by topic index.
+
+In this document we describe the design of the new topics system designed for Discv5. The design has been based in the requirements described in [this document](https://github.com/ethereum/devp2p/blob/master/discv5/discv5-rationale.md), along with the requirements defined [here](docs/requirements).
 
 In the following we describe the specification of this new Topic or Service Discovery by describing the terms and the different mechanisms used in the protocol: Topic Table, Topic Advertisement and Topic Search.
 
