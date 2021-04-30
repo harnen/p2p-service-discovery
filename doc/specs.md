@@ -19,7 +19,7 @@ Every node participating in the discovery protocol acts as an 'advertisement med
 In this document we describe the design of the new topics system designed for Discv5. The design has been based in the requirements described in [this document](https://github.com/ethereum/devp2p/blob/master/discv5/discv5-rationale.md), along with the requirements defined [here](requirements.md).
 
 The wire protocol used in Discv5 is detailed in the following [document](https://github.com/ethereum/devp2p/blob/master/discv5/discv5-wire.md).
-(TODO: TICKET response messages and TOPICQUERY response messages may include other nodes for the same topic id distance in the same response to help with the discovery of other nodes without requiring sending specific FINDNODE messages)
+(Note: TICKET response messages and TOPICQUERY response messages may include other nodes for the same topic id distance in the same response to help with the discovery of other nodes without requiring sending specific FINDNODE messages)
 
 In the following we describe the specification of this new Topic or Service Discovery by describing the terms and the different mechanisms used in the protocol: Topic Table, Topic Advertisement and Topic Search.
 
