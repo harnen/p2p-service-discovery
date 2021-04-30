@@ -116,6 +116,11 @@ encrypt and authenticate them with a dedicated secret key:
     wait-time    = waiting time assigned when ticket was created
     cum-wait     = cumulative waiting time of this node
 
+Tickets cannot be used beyond their lifetime. If the advertiser does not come back after the waiting time, all cumulative waiting time is lost and the advertiser must start over.
+The image below depicts a single ticket's validity over time. When the ticket is issued, the node keeping it must wait until the registration window opens. The length of the registration window is implementation dependent, but by default `10 seconds` is used. The ticket becomes invalid after the registration window has passed.
+
+![ticket validity over time](./imgs/ticket-validity.png)
+
 
 ## Ticket Registration
 
@@ -155,13 +160,10 @@ To keep things fair, the advertisement medium prefers tickets which have the lon
 In addition to the ads, each queue also keeps the current 'best ticket', i.e. the ticket with the longest cumulative waiting time. 
 When a ticket with a better time is submitted, it replaces the current best ticket. Once an ad in the queue expires, the best ticket is admitted into the queue and the node which submitted it is notified.-->
 
-Tickets cannot be used beyond their lifetime. If the advertiser does not come back after the waiting time, all cumulative waiting time is lost and the advertiser must start over.
-The image below depicts a single ticket's validity over time. When the ticket is issued, the node keeping it must wait until the registration window opens. The length of the registration window is implementation dependent, but by default `10 seconds` is used. The ticket becomes invalid after the registration window has passed.
 
 <!--To keep ticket traffic under control, an advertiser requesting a ticket for the first time gets a waiting time equal to the cumulative time of the current best ticket. For a placement attempt with a ticket, the new waiting time is assigned to be the best time minus the cumulative waiting time on the submitted ticket.-->
 
 
-![ticket validity over time](./imgs/ticket-validity.png)
 
 ### Ticket Table
 
