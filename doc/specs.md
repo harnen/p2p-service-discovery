@@ -30,6 +30,34 @@ In the following we describe the specification of this new Topic or Service Disc
 * A 'registrar' is a node that is acting as the advertisement medium in a service protocol interaction, i.e., a node that is contacted to store an ad belonging to an advertiser.
 * A 'searcher' is a node looking for ads for a topic.
 
+
+## Distributing ads across the network
+
+The main goal of this protocol is to distribute advertisements to be found within the network. 
+An important issue is how advertisers distribute their ads among registrar nodes. 
+Since every node may act as an advertisement medium for any topic, advertisers and searchers looking for ads must somehow meet at common registrars. 
+Ideally, the topic search should be fast even when the number of advertisers for a topic is much smaller than the number of all live nodes.
+Given that in a decentralised setting, advertisers and registrars can not apriori agree on a subset of nodes to serve as the advertisement media for the topics, the main challenge for nodes is to find the "right" set of nodes to send advertisements and topic search queries so that they quickly meet at common nodes.  
+
+Below are three naive approaches for the selection of nodes for registering ads and searching the peers for a topic ID: 
+ 1. "Walk" the DHT, exhaustively finding all neighbors in each bucket starting with the closest bucket. 
+Obviously, such an approach would be unscalable as it would lead to excessive overhead on the network in terms of number of messages and would require huge storage space to register ads. 
+ 2. Using node(s) closest to the topic hash or hash(topic ID), i.e., mapping the topic ID to the node ID space by using the hash of the topic ID.
+This is an efficient approach, but it leads to poor load-balancing in terms of balance of load across registrars, because registrars whose IDs are close to the hash of a popular topic ID receive a lot of search and registration traffic, while the rest of the nodes receive very little traffic. 
+ 3. A node can select a random subset of nodes by, for instance, picking a random Node ID from each bucket distance and finding the closest node to that ID. 
+This approach would be lightweight, but the downside is the potential inefficiency of search operations; that is, it could potentially take a lot of time and search messages for advertisers to find peers at registrars, especially for less popular services with small sets of peers.  
+NOTE: On the other hand, when the number of nodes advertising a topic is at least a certain percentage of the whole discovery network (rough estimate: at least 1%), ads may simply be placed on random nodes because searching for the topic on randomly selected nodes can locate the ads quickly enough.
+
+As discussed in ['Ticket Table'](#ticket-table), advertisers can perform parallel registrations at each and every bucket (relative to the topic hash), resulting with k on-going registrations per bucket. However, registering at all the bucket distances in parallel means that advertisers for a topic will all attempt to register at the nodes closest to the topic hash. Therefore, this approach also suffers from the same load-balancing problem with the third approach above. 
+
+A better approach is to sequentially "walk" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash. Initially, an advertiser initiate k registrations at registrars located in the farthest bucket from the topic hash. Once these k registrations are complete, then the advertiser initiates k new registrations with registrars in the next closest bucket, and once these k registrations are complete, the advertiser starts another k registrations in the next closest bucket and  so on. The walk though the buckets is terminated when either a stopping condition occurs or when k registrations are complete in the closest bucket to the topic hash. 
+
+In the current implementation, the stopping condition occurs when the elapsed time since the first successful registration (at the farthest bucket to the topic hash) exceeds target-ad-lifetime. Once the stopping condition occurs, an advertiser "backs off" and restarts the topic registrations from the farthest bucket to the topic hash. We are currently investigating other stopping conditions such as one that is probabilistically triggered depending either on the occupancy of topic queues at registrars or on the changes in the observed sequence of cumulative waiting times, and so on. 
+
+<!--A better approach is to sequentially "walk" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash. During the walk, the advertiser observes the achieved cumulative waiting times to successfully place ads (the elapsed time from the first ticket request to the receipt of notification of successful ad placement). Initially, the advertiser starts with only k registrars at the farthest bucket from the topic hash. Once the registrations are complete, then the advertiser initiates k registrations in the next closest bucket, adding this bucket to the current "bucket window" (the sequence of buckets for which there are on-going registrations or placed ads). The advertiser also keeps track of the expiration times of already placed ads and replaces expired ads with a fresh registration (by adding a new node to the ticket table at the corresponding  bucket).
+
+ The advertiser increases the "bucket window" until either the last bucket in the window is the closest bucket to the topic hash or a stopping condition occurs. A possible stopping condition is the sudden increase in the average cumulative waiting times in the last bucket. Because the number of nodes is halved for each new bucket compared to the previous one, the waiting times are expected to be doubled (increase linearly). If the increase in the cumulative waiting time is higher than a linear increase in the last bucket, then the bucket window is reduced. Following the conventions of the TCP congestion protocol, an advertiser can apply an additive increase multiplicative decrease approach to the bucket window size. This means halving the bucket window size, which essentially means halving the number of ads (i.e., waiting until half of the ads in the last half of the buckets expire) and then proceeding with incrementally increasing the window size. -->
+
 ## Topic Table
 
 
@@ -209,28 +237,3 @@ Also, the last node in the bucket is pinged to check it is still alive. In case 
 
 <!--*The search table is initialized and refreshed by performing lookups for the topic hash on using the main node table.*-->
 
-## Distributing ads across the network
-
-An important issue is how advertisers distribute their ads among registrar nodes. 
-Since every node may act as an advertisement medium for any topic, advertisers and searchers looking for ads must somehow meet at common registrars. 
-Ideally, the topic search should be fast even when the number of advertisers for a topic is much smaller than the number of all live nodes.
-Given that in a decentralised setting, advertisers and registrars can not apriori agree on a subset of nodes to serve as the advertisement media for the topics, the main challenge for nodes is to find the "right" set of nodes to send advertisements and topic search queries so that they quickly meet at common nodes.  
-
-Below are three naive approaches for the selection of nodes for registering ads and searching the peers for a topic ID: 
- 1. "Walk" the DHT, exhaustively finding all neighbors in each bucket starting with the closest bucket. 
-Obviously, such an approach would be unscalable as it would lead to excessive overhead on the network in terms of number of messages and would require huge storage space to register ads. 
- 2. A node can select a random subset of nodes by, for instance, picking a random Node ID from each bucket distance and finding the closest node to that ID. 
-This approach would be lightweight, but the downside is the potential inefficiency of search operations; that is, it could potentially take a lot of time and search messages for advertisers to find peers at registrars, especially for less popular services with small sets of peers.  
-NOTE: On the other hand, when the number of nodes advertising a topic is at least a certain percentage of the whole discovery network (rough estimate: at least 1%), ads may simply be placed on random nodes because searching for the topic on randomly selected nodes can locate the ads quickly enough.
- 3. Using node(s) closest to the topic hash or hash(topic ID), i.e., mapping the topic ID to the node ID space by using the hash of the topic ID.
-This is an efficient approach, but it leads to poor load-balancing in terms of balance of load across registrars, because registrars whose IDs are close to the hash of a popular topic ID receive a lot of search and registration traffic, while the rest of the nodes receive very little traffic. 
-
-As discussed in ['Ticket Table'](#ticket-table), advertisers can perform parallel registrations at each and every bucket (relative to the topic hash), resulting with k on-going registrations per bucket. However, registering at all the bucket distances in parallel means that advertisers for a topic will all attempt to register at the nodes closest to the topic hash. Therefore, this approach also suffers from the same load-balancing problem with the third approach above. 
-
-A better approach is to sequentially "walk" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash. Initially, an advertiser initiate k registrations at registrars located in the farthest bucket from the topic hash. Once these k registrations are complete, then the advertiser initiates k new registrations with registrars in the next closest bucket, and once these k registrations are complete, the advertiser starts another k registrations in the next closest bucket and  so on. The walk though the buckets is terminated when either a stopping condition occurs or when k registrations are complete in the closest bucket to the topic hash. 
-
-In the current implementation, the stopping condition occurs when the elapsed time since the first successful registration (at the farthest bucket to the topic hash) exceeds target-ad-lifetime. Once the stopping condition occurs, an advertiser "backs off" and restarts the topic registrations from the farthest bucket to the topic hash. We are currently investigating other stopping conditions such as one that is probabilistically triggered depending either on the occupancy of topic queues at registrars or on the changes in the observed sequence of cumulative waiting times, and so on. 
-
-<!--A better approach is to sequentially "walk" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash. During the walk, the advertiser observes the achieved cumulative waiting times to successfully place ads (the elapsed time from the first ticket request to the receipt of notification of successful ad placement). Initially, the advertiser starts with only k registrars at the farthest bucket from the topic hash. Once the registrations are complete, then the advertiser initiates k registrations in the next closest bucket, adding this bucket to the current "bucket window" (the sequence of buckets for which there are on-going registrations or placed ads). The advertiser also keeps track of the expiration times of already placed ads and replaces expired ads with a fresh registration (by adding a new node to the ticket table at the corresponding  bucket).
-
- The advertiser increases the "bucket window" until either the last bucket in the window is the closest bucket to the topic hash or a stopping condition occurs. A possible stopping condition is the sudden increase in the average cumulative waiting times in the last bucket. Because the number of nodes is halved for each new bucket compared to the previous one, the waiting times are expected to be doubled (increase linearly). If the increase in the cumulative waiting time is higher than a linear increase in the last bucket, then the bucket window is reduced. Following the conventions of the TCP congestion protocol, an advertiser can apply an additive increase multiplicative decrease approach to the bucket window size. This means halving the bucket window size, which essentially means halving the number of ads (i.e., waiting until half of the ads in the last half of the buckets expire) and then proceeding with incrementally increasing the window size. -->
