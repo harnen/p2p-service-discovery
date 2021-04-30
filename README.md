@@ -30,8 +30,8 @@ The project is organised in three main milestones of the project together with t
   * Deadline: 31/3/2021
 
 * Objective 2: Investigate topic table structure
-  * [ ] Task: Investigate on the optimal structure of the topic table to ensure fairness among all topics
-  * Deliverable: Updated Discv5 specification and evaluation results (TBC)
+  * [X] Task: Investigate on the optimal structure of the topic table to ensure fairness among all topics
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [evaluation results](doc/report_m2/report.md).
   * Deadline: 30/4/2021
 
 * Objective 3: Additional security analysis
