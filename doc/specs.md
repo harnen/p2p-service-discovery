@@ -68,6 +68,34 @@ The above restrictions are imposed by registrars using the assignment of appropr
 
 (similar restrictions are used, for instance, in the Kademlia k-bucket table   of different neighbours in the same k-bucket .  include: --> 
 
+### Tickets
+
+Ads should remain in the queue for a constant amount of time, the `target-ad-lifetime`. To maintain this guarantee, new registrations are throttled and registrants must wait for a certain amount of time before they are admitted. When a node attempts to place an ad, it receives a 'ticket' which tells them how long they must wait before they will be accepted. It is up to the registrant node to keep the ticket and present it to the advertisement
+medium when the waiting time has elapsed. Waiting times calculation are based on topic table occupancy, described in [here](#waitingtimefunction) 
+
+Tickets are opaque objects storing arbitrary information determined by the issuing node.
+While details of encoding and ticket validation are up to the implementation, tickets must
+contain enough information to verify that:
+
+- The node attempting to use the ticket is the node which requested it.
+- The ticket is valid for a single topic only.
+- The ticket can only be used within the registration window.
+- The ticket can't be used more than once.
+
+Implementations may choose to include arbitrary other information in the ticket, such as
+the cumulative wait time spent by the advertiser. A practical way to handle tickets is to
+encrypt and authenticate them with a dedicated secret key:
+
+    ticket       = aesgcm_encrypt(ticket-key, ticket-nonce, ticket-pt, '')
+    ticket-pt    = [src-node-id, src-ip, topic, req-time, wait-time, cum-wait-time]
+    src-node-id  = node ID that requested the ticket
+    src-ip       = IP address that requested the ticket
+    topic        = the topic that ticket is valid for
+    req-time     = absolute time of REGTOPIC request
+    wait-time    = waiting time assigned when ticket was created
+    cum-wait     = cumulative waiting time of this node
+
+
 ## Ticket Registration
 
 The main goal of this protocol is to distribute advertisements to be found within the network. 
