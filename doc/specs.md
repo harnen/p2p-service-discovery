@@ -70,6 +70,27 @@ The above restrictions are imposed by registrars using the assignment of appropr
 
 ### Tickets
 
+
+In order to place an ad on a registrar, the advertiser must present a valid 'ticket' to the registrar.
+Tickets are opaque objects issued by the registrars. 
+An advertiser willing to register an ad at a registrar must first obtain a ticket by sending a 'ticket request' message to the registrar.  
+In response to the ticket request, the registrar issues an initial ticket containing a 'waiting time' and sends the ticket to the advertiser in a 'ticket response' message. 
+The advertiser can come back to the registrar (to register an ad) after the waiting time has elapsed and present the ticket in a 'registration request' message. 
+If the advertiser comes back to the registrar, the advertiser can either place the ad (and notify the advertiser of a successful registration) or issue another ticket with a new waiting time in another ticket response message.
+Assignment of 'waiting times' is the only way the registrars can control the registrations in order to both:
+*  Throttle ad placement rate to prevent overflowing of topic table: when the topic table is full, the advertisers must wait for already placed ads to expire first before they are allowed to register new ads.
+*  Prioritise registrations to achieve a diverse set of ads in the topic table. For example, registrations for less popular topics or registrations from advertisers that increase IP diversity (in the set of registrar IP addresses that currently have an ad in the table) can be prioritised over others. This is useful to reduce the impact of Sybil attacks on the service discovery system. 
+
+Waiting times will be calculated according to a ['Waiting time function'](#waiting-time-function).
+Enforcing this time limit prevents misuse of the topic table because any topic must be important enough to outweigh the cost of waiting for ad placement. 
+Imagine a group phone call: announcing the participants of the call using topic advertisement isn't a good use of the system because the topic exists only for a short time and will have very few participants. 
+The waiting time prevents using the topic table for this purpose because the call might already be over before everyone could get registered.
+Also, it prevents attackers from overflowing topic table by regulating registrations in case of spamming attacks.
+
+While tickets are opaque to advertisers, they are readable by the registrar that issued the ticket. 
+The registrar uses the ticket to store the cumulative waiting time, which is sum of all waiting times the advertiser has already spent. 
+Whenever a ticket is presented and a new one issued in response, the cumulative waiting time of the ticket is increased and carries over into the new ticket.
+
 Ads should remain in the queue for a constant amount of time, the `target-ad-lifetime`. To maintain this guarantee, new registrations are throttled and registrants must wait for a certain amount of time before they are admitted. When a node attempts to place an ad, it receives a 'ticket' which tells them how long they must wait before they will be accepted. It is up to the registrant node to keep the ticket and present it to the advertisement
 medium when the waiting time has elapsed. Waiting times calculation are based on topic table occupancy, described in [here](#waiting-time-function) 
 
@@ -113,37 +134,22 @@ NOTE: On the other hand, when the number of nodes advertising a topic is at leas
  3. Using node(s) closest to the topic hash or hash(topic ID), i.e., mapping the topic ID to the node ID space by using the hash of the topic ID.
 This is an efficient approach, but it leads to poor load-balancing in terms of balance of load across registrars, because registrars whose IDs are close to the hash of a popular topic ID receive a lot of search and registration traffic, while the rest of the nodes receive very little traffic. 
 
+However, these naives approaches are not efficient in terms of overhead, search time or uniform distibution of discovered nodes, or do not follow the requirements described in [here](requirements.md).
 
-As discussed in ['Ticket Table'](#ticket-table), advertisers can perform parallel registrations at each and every bucket (relative to the topic hash), resulting with k on-going registrations per bucket. However, registering at all the bucket distances in parallel means that advertisers for a topic will all attempt to register at the nodes closest to the topic hash. Therefore, this approach also suffers from the same load-balancing problem with the third approach above. 
+In order to perform an optimal ticket registration placement among the registrar nodes, a ticket table structure is used to follow and control the active on-going registrations per node. 
+
+<!--As discussed in ['Ticket Table'](#ticket-table), advertisers can perform parallel registrations at each and every bucket (relative to the topic hash), resulting with k on-going registrations per bucket. However, registering at all the bucket distances in parallel means that advertisers for a topic will all attempt to register at the nodes closest to the topic hash. Therefore, this approach also suffers from the same load-balancing problem with the third approach above. 
 
 A better approach is to sequentially "walk" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash. Initially, an advertiser initiate k registrations at registrars located in the farthest bucket from the topic hash. Once these k registrations are complete, then the advertiser initiates k new registrations with registrars in the next closest bucket, and once these k registrations are complete, the advertiser starts another k registrations in the next closest bucket and  so on. The walk though the buckets is terminated when either a stopping condition occurs or when k registrations are complete in the closest bucket to the topic hash. 
 
 In the current implementation, the stopping condition occurs when the elapsed time since the first successful registration (at the farthest bucket to the topic hash) exceeds target-ad-lifetime. Once the stopping condition occurs, an advertiser "backs off" and restarts the topic registrations from the farthest bucket to the topic hash. We are currently investigating other stopping conditions such as one that is probabilistically triggered depending either on the occupancy of topic queues at registrars or on the changes in the observed sequence of cumulative waiting times, and so on. 
 
-<!--A better approach is to sequentially "walk" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash. During the walk, the advertiser observes the achieved cumulative waiting times to successfully place ads (the elapsed time from the first ticket request to the receipt of notification of successful ad placement). Initially, the advertiser starts with only k registrars at the farthest bucket from the topic hash. Once the registrations are complete, then the advertiser initiates k registrations in the next closest bucket, adding this bucket to the current "bucket window" (the sequence of buckets for which there are on-going registrations or placed ads). The advertiser also keeps track of the expiration times of already placed ads and replaces expired ads with a fresh registration (by adding a new node to the ticket table at the corresponding  bucket).
+A better approach is to sequentially "walk" through the buckets starting from the farthest bucket and proceed incrementally with buckets closer to the topic hash. During the walk, the advertiser observes the achieved cumulative waiting times to successfully place ads (the elapsed time from the first ticket request to the receipt of notification of successful ad placement). Initially, the advertiser starts with only k registrars at the farthest bucket from the topic hash. Once the registrations are complete, then the advertiser initiates k registrations in the next closest bucket, adding this bucket to the current "bucket window" (the sequence of buckets for which there are on-going registrations or placed ads). The advertiser also keeps track of the expiration times of already placed ads and replaces expired ads with a fresh registration (by adding a new node to the ticket table at the corresponding  bucket).
 
  The advertiser increases the "bucket window" until either the last bucket in the window is the closest bucket to the topic hash or a stopping condition occurs. A possible stopping condition is the sudden increase in the average cumulative waiting times in the last bucket. Because the number of nodes is halved for each new bucket compared to the previous one, the waiting times are expected to be doubled (increase linearly). If the increase in the cumulative waiting time is higher than a linear increase in the last bucket, then the bucket window is reduced. Following the conventions of the TCP congestion protocol, an advertiser can apply an additive increase multiplicative decrease approach to the bucket window size. This means halving the bucket window size, which essentially means halving the number of ads (i.e., waiting until half of the ads in the last half of the buckets expire) and then proceeding with incrementally increasing the window size. -->
 
 
-In order to place an ad on a registrar, the advertiser must present a valid 'ticket' to the registrar.
-Tickets are opaque objects issued by the registrars. 
-An advertiser willing to register an ad at a registrar must first obtain a ticket by sending a 'ticket request' message to the registrar.  
-In response to the ticket request, the registrar issues an initial ticket containing a 'waiting time' and sends the ticket to the advertiser in a 'ticket response' message. 
-The advertiser can come back to the registrar (to register an ad) after the waiting time has elapsed and present the ticket in a 'registration request' message. 
-If the advertiser comes back to the registrar, the advertiser can either place the ad (and notify the advertiser of a successful registration) or issue another ticket with a new waiting time in another ticket response message.
-Assignment of 'waiting times' is the only way the registrars can control the registrations in order to both:
-*  Throttle ad placement rate to prevent overflowing of topic table: when the topic table is full, the advertisers must wait for already placed ads to expire first before they are allowed to register new ads.
-*  Prioritise registrations to achieve a diverse set of ads in the topic table. For example, registrations for less popular topics or registrations from advertisers that increase IP diversity (in the set of registrar IP addresses that currently have an ad in the table) can be prioritised over others. This is useful to reduce the impact of Sybil attacks on the service discovery system. 
 
-Waiting times will be calculated according to a ['Waiting time function'](#waiting-time-function).
-Enforcing this time limit prevents misuse of the topic table because any topic must be important enough to outweigh the cost of waiting for ad placement. 
-Imagine a group phone call: announcing the participants of the call using topic advertisement isn't a good use of the system because the topic exists only for a short time and will have very few participants. 
-The waiting time prevents using the topic table for this purpose because the call might already be over before everyone could get registered.
-Also, it prevents attackers from overflowing topic table by regulating registrations in case of spamming attacks.
-
-While tickets are opaque to advertisers, they are readable by the registrar that issued the ticket. 
-The registrar uses the ticket to store the cumulative waiting time, which is sum of all waiting times the advertiser has already spent. 
-Whenever a ticket is presented and a new one issued in response, the cumulative waiting time of the ticket is increased and carries over into the new ticket.
 <!--Topic queues are subject to competition. 
 To keep things fair, the advertisement medium prefers tickets which have the longest cumulative waiting time when multiple tickets are received for the same topic but not enough room in the topic table for them.
 In addition to the ads, each queue also keeps the current 'best ticket', i.e. the ticket with the longest cumulative waiting time. 
