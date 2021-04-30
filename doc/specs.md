@@ -71,7 +71,7 @@ The above restrictions are imposed by registrars using the assignment of appropr
 ### Tickets
 
 Ads should remain in the queue for a constant amount of time, the `target-ad-lifetime`. To maintain this guarantee, new registrations are throttled and registrants must wait for a certain amount of time before they are admitted. When a node attempts to place an ad, it receives a 'ticket' which tells them how long they must wait before they will be accepted. It is up to the registrant node to keep the ticket and present it to the advertisement
-medium when the waiting time has elapsed. Waiting times calculation are based on topic table occupancy, described in [here](#waitingtimefunction) 
+medium when the waiting time has elapsed. Waiting times calculation are based on topic table occupancy, described in [here](#waiting-time-function) 
 
 Tickets are opaque objects storing arbitrary information determined by the issuing node.
 While details of encoding and ticket validation are up to the implementation, tickets must
