@@ -33,7 +33,7 @@ In the following we describe the specification of this new Topic or Service Disc
 
 
 ## Topic Table
-The registrars store ads in a topic table. The total size of the topic table is limited, however no per-topic limits are imposed since existing number of topics in the network is unknown. Reasonable global limit is 50,000 ads. Since ENRs are at most 300 bytes in size, these limits ensure that a full topic table consumes approximately 15MB of memory. 
+The registrars store ads in a topic table. The total size of the topic table is limited by `topic_table_capacity`, however no per-topic limits are imposed since existing number of topics in the network is unknown. Reasonable `topic_table_capacity` is 50,000 ads. Since ENRs are at most 300 bytes in size, these limits ensure that a full topic table consumes approximately 15MB of memory. 
 
 In order to place an ad, the advertiser must present a valid ticket to the advertiser. We discuss the details on the tickets in sections below. Each ad added to the table is stored for `target-ad-lifetime`. When the `target-ad-lifetime` expires, the ad is removed. An advertiser can only have a single ad for a specific topic in the queue, duplicate placements are rejected (althought the same node may attempt placing ads for multiple topics at the same registrar).
 
@@ -171,29 +171,24 @@ Also, all nodes in the bucket are pinged to check they are still alive. In case 
 
 ### Waiting time function
 
-Waiting time function is used to calculate the waiting time reported to registering advertising nodes to regulate and control the ticket registration. The function should ideally use all of the following input to calculate a waiting time: 
+Waiting time function is used to calculate the waiting time reported to registering advertising nodes to regulate and control the ticket registration. The function directly shapes the structure of the topic table, determines its diversity and performs flow control. The function should also protect against all kinds of attacks, where a malicious actor tries to exhaust resources of the registrar. At the same time, no hard limits on the registrant IPs/IDs/registered topic should be imposed, allowing the table to be used in various environments. 
 
-* Number of active registrations in the table for the same topic.
-* Pending on-going registrations (competing tickets).
-* Cumulative waiting time.
-* IP diversity score. 
-* Node id diversity score.
-* Current utilisation of the topic table (i.e., how many slots are available for placement of new registrations).
+An important consideration when computing waiting times is to maintain a deterministic behaviour. In other words, there should not be a randomness in the waiting time computation; otherwise, advertisers will be tempted to send multiple requests to the same registrar in an effort to obtain different (i.e., smaller) waiting times. The waiting for a specific request follows the formula below (we assume that the ads contain registrant IP, ID and topic):
+```
+waiting_time(ad) = base_time * max(IP_modifier, ID_modifier, topic_modifier)
+base_time = `target-ad-lifetime` / topic_table_capacity
+```
+The base time is determined based on the lifetime of an ad and capacity of the table. Longer `target-ad-lifetime` yields longer waiting times, while increased capacity of the table yields shorter waiting time. However, the latter is compoensated by the modifiers explained below. 
 
-Given the inputs above, our approach is to define metrics whose scores are used to compute a waiting time. These metrics are used to reduce the number of congestion and reduce the impact of Sybil attacks on the topic table resources. Given a request from an advertiser A for a topic t0, a registrar R first computes a score for each of the metrics below: 
+```
+IP_modifier = count(already_in_topic_table(ad[IP]))^5
+ID_modifier = count(already_in_topic_table(ad[ID]))^5
+topic_modifier = count(already_in_topic_table(ad[topic]))^2
+```
+All the modifiers increase with increasing number of the same items already in the table. Thus it's getting increasingly difficult to register ads for the same IP/ID/topic. For instance, ads for less popular topic will receive lower waiting times than popular ones. Note that the table does not prevent anyone from registering, but rather makes it slower for already popular items. Such a mechanism promotess diversity in the table and protects against Sybill attacks. An attacker with a limited poll of IP addresses won't be able to dominate the table. The low exponent for the `topic_modifier` is motivated by the topics in the network that are likely to follow a zipf distribution. In contast, honest nodes IPs/IDs should follow a uniform distribution. 
 
-1. Uniformity score of the distribution of the per-topic number of registrations; i.e, how close the distribution of number of active registrations to a uniform distribution where each topic has equal number of registrations.
-2. Diversity score for the IP addresses of the advertisers that currently have a registration in the topic table of R.
-3. Diversity score for the node IDs of advertisers that currently have a registration in the topic table of R. 
-4. Congestion level score based on the current utilisation of the topic table. 
 
-A separate waiting time is computed based on each of the scores above and the maximum of the waiting times is returned back to advertiser A. The next question is how to convert each of the above scores to a waiting time. A possible and straightforward approach is to define a threshold (upper- or lower-bound) for each score and compute the waiting time as follows:
-* if the current score is above (below) the upper-(lower-)bound, then compute the necessary waiting time for the score to fall below (above) the threshold. This waiting time can be obtained by iteratively computing the score after removing the registrations in the oldest to newest order; once the score falls below (above) the threshold, the expiration of the current request minus the current time is set to be the waiting time. 
-* if the current score is below the threshold, the waiting time for the score is zero. 
 
-An important consideration when computing waiting times is to maintain a deterministic behaviour. In other words, there should not be a randomness in the waiting time computation; otherwise, advertisers will be tempted to send multiple requests to the same registrar in an effort to obtain different (i.e., smaller) waiting times. 
-
-We are currently investigating other metrics and different ways of computing waiting times.
 
 ## Topic Search
 
