@@ -24,12 +24,12 @@ import java.lang.Math;
 
 public class Discv5GlobalTopicTableTest{
     
-    protected static void setUpBeforeClass() {
+    /*protected static void setUpBeforeClass() {
         String[] array = new String[] {"config/simple.cfg"};
         Configuration.setConfig( new ParsedProperties(array) );
         CommonState.setEndTime(Long.parseLong("100"));
         CommonState.setTime(Long.parseLong("0"));
-    }
+    }*/
 
     @Test
     public void ticketWaitingTimes() {

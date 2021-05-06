@@ -45,6 +45,7 @@ public class DnsListDistribution implements peersim.core.Control {
 
 	private JSONObject json;
 	public DnsListDistribution(String prefix) {
+		System.out.println("DNSLISTDIstr "+prefix);
 		protocolID = Configuration.getPid(prefix + "." + PAR_PROT);
 		urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
 		Object[] tmp = Configuration.getInstanceArray(prefix + "." + PAR_INIT);
@@ -71,29 +72,41 @@ public class DnsListDistribution implements peersim.core.Control {
 		Security.addProvider(new BouncyCastleProvider());
 		int i=0;
 		for (String keyStr : json.keySet()) {
-	        JSONObject json2 = json.getJSONObject(keyStr);
-			//System.out.println("Record: "+ json2.getString("record").substring(4)+" "+json.keySet().size());
-			
-			//EthereumNodeRecord enr = EthereumNodeRecord.fromRLP(Bytes.fromHexString(json2.getString("record")));
-			EthereumNodeRecord enr = EthereumNodeRecord.fromRLP((Base64URLSafe.decode(json2.getString("record").substring(4))));
-			//System.out.println("Record: "+ ((Bytes)enr.getData().get("id")).toString());
-			//System.out.println("Record: "+ enr.ip());
-
-			//enr.va
-			KademliaNode node = new KademliaNode(enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger(), enr.ip().toString(), enr.tcp());
-			//node.setProtocolId(protocolID);
-			if(i>=Network.size()) {
-				Node newNode = (Node) Network.prototype.clone();
-				for (int j = 0; j < inits.length; ++j)
-					inits[j].initialize(newNode);
-				Network.add(newNode);
-
-				// get kademlia protocol of new node
-				KademliaProtocol newKad = (KademliaProtocol) (newNode.getProtocol(protocolID));
+			if(i<Network.size()) {
+		        JSONObject json2 = json.getJSONObject(keyStr);
+				//System.out.println("Record: "+ json2.getString("record").substring(4)+" "+json.keySet().size());
+				
+				//EthereumNodeRecord enr = EthereumNodeRecord.fromRLP(Bytes.fromHexString(json2.getString("record")));
+				EthereumNodeRecord enr = EthereumNodeRecord.fromRLP((Base64URLSafe.decode(json2.getString("record").substring(4))));
+			    System.out.println("Record: "+ ((Bytes)enr.getData().get("id")).toString());
+				System.out.println("Record: "+ enr.ip());
+	
+				//enr.va
+				KademliaNode node = new KademliaNode(enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger(), enr.ip().toString(), enr.tcp());
+				//node.setProtocolId(protocolID);
+				/*if(i>=Network.size()) {
+					Node newNode = (Node) Network.prototype.clone();
+					for (int j = 0; j < inits.length; ++j)
+						inits[j].initialize(newNode);
+					Network.add(newNode);
+	
+					// get kademlia protocol of new node
+					KademliaProtocol newKad = (KademliaProtocol) (newNode.getProtocol(protocolID));
+					
+				}*/
+				
+	            Node generalNode = Network.get(i);
+	
+	            generalNode.setKademliaProtocol((KademliaProtocol) (Network.get(i).getProtocol(protocolID)));
+	            ((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
+	            ((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setProtocolID(protocolID);
+					
+				//((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
+				i++;
+			} else {
+				break;
 			}
 				
-			((KademliaProtocol) (Network.get(i).getProtocol(protocolID))).setNode(node);
-			i++;
 	    }
 		
 		while(i<Network.size())

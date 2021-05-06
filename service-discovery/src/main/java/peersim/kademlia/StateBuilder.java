@@ -80,7 +80,7 @@ public class StateBuilder implements peersim.core.Control {
 				KademliaProtocol p1 = n1.getKademliaProtocol();
 
 				KademliaProtocol p2 = n2.getKademliaProtocol();
-                
+                //System.out.println("StateBuilder execute "+o1+" "+o2+" "+p1+" "+p2);
 				return Util.put0(p1.node.getId()).compareTo(Util.put0(p2.node.getId()));
 			}
 
