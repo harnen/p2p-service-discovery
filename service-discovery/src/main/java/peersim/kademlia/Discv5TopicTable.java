@@ -35,7 +35,6 @@ public class Discv5TopicTable { // implements TopicTable {
     protected Logger logger;
     
 
-
     public Discv5TopicTable() {
         topicTable = new HashMap<Topic, ArrayDeque<TopicRegistration>>(); 
         competingTickets = new HashMap<Topic, ArrayList<Ticket>>();

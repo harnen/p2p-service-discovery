@@ -32,9 +32,10 @@ import org.apache.tuweni.devp2p.EthereumNodeRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Discv5GlobalTopicTestDns{
+public class Discv5GlobalTopicDnsTest{
     
 
+	
     @Test
     public void dnsWaitingTimes() {
     	
@@ -46,25 +47,25 @@ public class Discv5GlobalTopicTestDns{
     		System.err.println("Exception "+e);
     	}
 
-        Discv5TopicTable table = new Discv5GlobalTopicTable();
 
         Set<String> set = json.keySet();
         Iterator<String> it = set.iterator();
 
-        //UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
+        Discv5TopicTable table = new Discv5GlobalTopicTable();
+        UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
         table.setCapacity(50000);
         table.setAdLifeTime(300000);
 
         long rtt_delay = 1;
         long curr_time = 0;
-        long totalTime = 100000;
+        long totalTime = 1000000;
         Ticket successful_ticket = null;
         Ticket failed_ticket = null;
         // Register 2 topic0 at times 0 and 1, then make decision at 2;
         //  register 2 topic2 at times 2 and 3, then make decision at 4
         //  ... 
         
-        int[] topicRate= new int [] {1,2,3,4,5};
+        int[] topicRate= new int [] {1,2,3,4,5,6,7,8,9,10};
 
         //Ticket [] tickets = table.makeRegisterDecision(curr_time);
 
@@ -74,22 +75,24 @@ public class Discv5GlobalTopicTestDns{
 		Security.addProvider(new BouncyCastleProvider());
 
         int[] occupancy = new int[topicRate.length];
+        int reg=0;
         while(curr_time<totalTime) {
         	int topicnum=1;
-        	if(curr_time%1000==0) {
+        	if(curr_time%10000==0) {
 	        	for(int i:topicRate) {
 	        		for(int j=0;j<i;j++) {
 	        			if(it.hasNext()) {
 			        	    Topic topic = new Topic(new BigInteger("0"), "topic"+topicnum);
-				            //System.out.println("At: " + curr_time + " ticketing for topic: " + topic.getTopic());
+				            //System.out.println("At: " + curr_time + " ticketing for topic: " + topic.getTopic()+" "+reg+" "+set.size());
 							EthereumNodeRecord enr = EthereumNodeRecord.fromRLP((Base64URLSafe.decode(json.getJSONObject(it.next()).getString("record").substring(4))));
 			        	    KademliaNode advertiser = new KademliaNode(enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger(), enr.ip().toString(), enr.tcp());
-				            System.out.println(advertiser.getId()+" "+advertiser.getAddr()+" "+enr.ip().toString());
+				            //System.out.println(advertiser.getId()+" "+advertiser.getAddr()+" "+enr.ip().toString());
 			        	    //KademliaNode advertiser = new KademliaNode(urg.generate(), "127.0.0.1", 0);
 				            Ticket ticket = table.getTicket(topic, advertiser, rtt_delay, curr_time);
 				            //System.out.println("At: " + curr_time + " waiting time: " + ticket.getWaitTime());
 				            //assert(ticket.getWaitTime() == 0);
 				            table.register_ticket(ticket, null, curr_time);
+				            reg++;
 	        			} else {
 	        				break;
 	        			}
@@ -109,7 +112,7 @@ public class Discv5GlobalTopicTestDns{
 
             for (Ticket t:regTickets) {
                 if (t.isRegistrationComplete()) {
-                    //System.out.println("At:" + curr_time + " successful registration for topic: " + t.getTopic().getTopic()+" "+t.getCumWaitTime());
+                    //System.out.println("At:" + curr_time + " successful registration for topic: " + t.getTopic().getTopic()+" "+t.getCumWaitTime()+" "+t.getOccupancy());
                     pendingTickets.remove(t);
                     
                     occupancy[Integer.valueOf(t.getTopic().getTopic().substring(5,t.getTopic().getTopic().length()))-1] = t.getOccupancy();
@@ -137,8 +140,8 @@ public class Discv5GlobalTopicTestDns{
         int max = Arrays.stream(occupancy).max().getAsInt();
 
         System.out.println("Min:"+min+" Max:"+max+" "+(double)max/min);
-        
-        assert((double)max/min<1.2);
+        assert((double)max/min<1.5);
+
   
     }
 }

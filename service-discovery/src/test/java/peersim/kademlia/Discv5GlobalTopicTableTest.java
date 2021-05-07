@@ -24,13 +24,12 @@ import java.lang.Math;
 
 public class Discv5GlobalTopicTableTest{
     
-    /*protected static void setUpBeforeClass() {
+    protected static void setUpBeforeClass() {
         String[] array = new String[] {"config/simple.cfg"};
         Configuration.setConfig( new ParsedProperties(array) );
         CommonState.setEndTime(Long.parseLong("100"));
         CommonState.setTime(Long.parseLong("0"));
-    }*/
-
+    }
     @Test
     public void ticketWaitingTimes() {
         Discv5TopicTable table = new Discv5GlobalTopicTable();
@@ -40,14 +39,14 @@ public class Discv5GlobalTopicTableTest{
 
         long rtt_delay = 1;
         long curr_time = 0;
-        long totalTime = 100000;
+        long totalTime = 1000000;
         Ticket successful_ticket = null;
         Ticket failed_ticket = null;
         // Register 2 topic0 at times 0 and 1, then make decision at 2;
         //  register 2 topic2 at times 2 and 3, then make decision at 4
         //  ... 
         
-        int[] topicRate= new int [] {1,2,3,4,5};
+        int[] topicRate= new int [] {1,2,3,4,5,6,7,8,9,10};
 
         //Ticket [] tickets = table.makeRegisterDecision(curr_time);
 
@@ -58,7 +57,7 @@ public class Discv5GlobalTopicTableTest{
         int[] occupancy = new int[topicRate.length];
         while(curr_time<totalTime) {
         	int topicnum=1;
-        	if(curr_time%1000==0) {
+        	if(curr_time%10000==0) {
 	        	for(int i:topicRate) {
 	        		for(int j=0;j<i;j++) {
 		        	    Topic topic = new Topic(new BigInteger("0"), "topic"+topicnum);
@@ -72,7 +71,7 @@ public class Discv5GlobalTopicTableTest{
 	        		topicnum++;
 	        	}
         	}
-        	curr_time+=100;
+        	curr_time+=1000;
         	for(Ticket ticket: pendingTickets) {
         		//System.out.println("Ticket wait time "+ticket.getWaitTime());
         		if(failedTimes.get(ticket)!=null)
@@ -84,13 +83,12 @@ public class Discv5GlobalTopicTableTest{
 
             for (Ticket t:regTickets) {
                 if (t.isRegistrationComplete()) {
-                    //System.out.println("At:" + curr_time + " successful registration for topic: " + t.getTopic().getTopic()+" "+t.getCumWaitTime());
+                    //System.out.println("At:" + curr_time + " successful registration for topic: " + t.getTopic().getTopic()+" "+t.getCumWaitTime()+" "+t.getOccupancy());
                     pendingTickets.remove(t);
                     
                     occupancy[Integer.valueOf(t.getTopic().getTopic().substring(5,t.getTopic().getTopic().length()))-1] = t.getOccupancy();
                 }
                 else { 
-                   // System.out.println("At: " + curr_time + " failed ticket for topic: " + t.getTopic().getTopic() + " waiting time: " + t.getWaitTime()+" "+t.getCumWaitTime());
                     pendingTickets.remove(t);
                     pendingTickets.add(t);
                     failedTimes.put(t,curr_time);
@@ -113,7 +111,8 @@ public class Discv5GlobalTopicTableTest{
 
         System.out.println("Min:"+min+" Max:"+max+" "+(double)max/min);
         
-        assert((double)max/min<1.2);
+        assert(min==0||max==0||!((double)max/min<1.5));
+
   
     }
 }

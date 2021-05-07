@@ -124,7 +124,7 @@ public class TicketTable extends RoutingTable {
 			res = super.bucketAtDistance(lastAskedBucket).neighbours.get(triesWithinBucket);
 			triesWithinBucket++;
 		}
-		System.out.println("returning neighbour " + triesWithinBucket + " from bucket " + lastAskedBucket);
+		//System.out.println("returning neighbour " + triesWithinBucket + " from bucket " + lastAskedBucket);
 		return res;
 		//protocol.sendTicketRequest(node,t,myPid);
 	}
