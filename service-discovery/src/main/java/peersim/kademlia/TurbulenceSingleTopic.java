@@ -9,8 +9,10 @@ import peersim.config.Configuration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
+import org.apache.commons.math3.distribution.ZipfDistribution;
 
-import org.apache.commons.math3.distribution.ZipfDistribution; 
+import com.google.common.net.InetAddresses; 
 
 
 public class TurbulenceSingleTopic extends Turbulence{
@@ -46,7 +48,11 @@ public class TurbulenceSingleTopic extends Turbulence{
 			for (int i = 0; i < Network.size(); ++i) 
 				if(Network.get(i).isUp())count++;
 			
-			System.out.println(CommonState.getTime() +" Adding node " + count);
+			Random random = new Random();
+			
+			String ipString = InetAddresses.fromInteger(random.nextInt()).getHostAddress();
+
+			System.out.println(CommonState.getTime() +" Adding node " + count+" "+ipString);
 
 
 			// get kademlia protocol of new node
@@ -54,7 +60,7 @@ public class TurbulenceSingleTopic extends Turbulence{
 			newNode.setKademliaProtocol(newKad);
 			// set node Id
 			UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
-			KademliaNode node = new KademliaNode(urg.generate(), "127.0.0.1", 0);
+			KademliaNode node = new KademliaNode(urg.generate(), ipString, 0);
 			((KademliaProtocol) (newNode.getProtocol(kademliaid))).setNode(node);
 			newKad.setProtocolID(kademliaid);  
             if (newKad instanceof Discv5EvilTicketProtocol)
