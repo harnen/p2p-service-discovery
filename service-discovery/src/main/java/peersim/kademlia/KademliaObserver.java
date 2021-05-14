@@ -712,16 +712,16 @@ public class KademliaObserver implements Control {
                     continue;
                 int is_evil = kadProtocol.getNode().is_evil ? 1 : 0;
                 writer.write(id + "," + nodeInfo.get(id) + "," + is_evil + ",");
-                writer.write(kadProtocol.getNode().getIncomingConnections().size() + ",");
-                writer.write(kadProtocol.getNode().getOutgoingConnections().size() + ",");
+                writer.write(kadProtocol.getNode().getTotalIncomingConnections().size() + ",");
+                writer.write(kadProtocol.getNode().getTotalOutgoingConnections().size() + ",");
                 int numEvil = 0;
-                for(KademliaNode n : kadProtocol.getNode().getIncomingConnections()) {
+                for(KademliaNode n : kadProtocol.getNode().getTotalIncomingConnections()) {
                     if (n.is_evil) 
                         numEvil++;
                 }
                 writer.write(numEvil + ",");
                 numEvil = 0;
-                for(KademliaNode n : kadProtocol.getNode().getOutgoingConnections()) {
+                for(KademliaNode n : kadProtocol.getNode().getTotalOutgoingConnections()) {
                     if (n.is_evil)
                         numEvil++;
                 }
@@ -935,7 +935,7 @@ public class KademliaObserver implements Control {
                     evil_nodes.add(kadProtocol.getNode().getId());
                 }
                 else {
-                    if (is_eclipsed(kadProtocol.getNode())) {
+                    if (kadProtocol.getNode().isEclipsed()) {
                         eclipsed_nodes.add(kadProtocol.getNode().getId());
                         num_eclipsed_nodes += 1;
                     }
@@ -955,7 +955,7 @@ public class KademliaObserver implements Control {
         }
     }
 
-    private boolean is_eclipsed(KademliaNode node) {
+    /*private boolean is_eclipsed(KademliaNode node) {
         if (node.is_evil)
             //Don't include malicious nodes in the count
             return false;
@@ -968,7 +968,7 @@ public class KademliaObserver implements Control {
                 return false;
 
         return true;
-    }
+    }*/
 
     /**
      * write the snapshot of average storage utilisation in the topic tables

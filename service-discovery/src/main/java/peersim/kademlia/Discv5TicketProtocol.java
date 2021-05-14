@@ -575,7 +575,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 				}
 				KademliaObserver.register_total.add(all);
 				KademliaObserver.register_ok.add(found);
-				node.setLookupResult(lop.getDiscoveredArray());
+				node.setLookupResult(lop.getDiscoveredArray(),lop.topic.getTopic());
 				if (printSearchTable)
 					searchTables.get(lop.topic.getTopicID()).print();
 
