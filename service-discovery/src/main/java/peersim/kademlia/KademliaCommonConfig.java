@@ -40,9 +40,9 @@ public class KademliaCommonConfig {
 //    public static int TICKET_REMOVE_AFTER_REG=0;
     // Attack Types:
     public static String ATTACK_TYPE_TOPIC_SPAM = "TopicSpam";
+    public static String ATTACK_TYPE_RANDOM_SPAM = "RandomSpam";
     public static String ATTACK_TYPE_MALICIOUS_REGISTRAR = "MaliciousRegistrar";
     public static String ATTACK_TYPE_HYBRID = "HybridAttacker";
-    public static String ATTACK_TYPE_K = "HigherK";
     //TODO show the distribution of nodes discovered (do everyone discover the same? Or different?)
     // Settings for CustomDistribution (id distribution setting for nodes)
     public static String NON_UNIFORM_ID_DISTRIBUTION = "nonUniform";

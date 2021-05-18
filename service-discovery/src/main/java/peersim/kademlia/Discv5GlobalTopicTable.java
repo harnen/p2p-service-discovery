@@ -180,9 +180,23 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 
     	double counter=0.0;
 		Iterator<TopicRegistration> it = allAds.iterator();
+        BigInteger reg_id;
+
+        // Use attackerID for registrant ID if node is evil
+        if (reg.getNode().is_evil)
+            reg_id = reg.getNode().getAttackerId(); 
+        else
+            reg_id = reg.getNode().getId();
+
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
-    		if(r.getNode().getId().equals(reg.getNode().getId()))counter++;
+            if (r.getNode().is_evil) { // if node is evil, use its attackerId as node id
+                if(r.getNode().getAttackerId().equals(reg_id))
+                    counter++;
+            }
+            else 
+    		    if(r.getNode().getId().equals(reg_id))
+                    counter++;
 		}
 
     	return Math.pow(counter+1,amplify*idModifierExp);

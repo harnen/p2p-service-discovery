@@ -13,6 +13,8 @@ import java.math.BigInteger;
 
 public class KademliaNode implements Comparable<KademliaNode>{
     private BigInteger id;
+    // attackerId is the ID used by Sybil nodes (when multiple nodes
+    private BigInteger attackerID; 
     private String addr;
     private int port;
     
@@ -29,16 +31,26 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     public KademliaNode(BigInteger id, String addr, int port){
         this.id = id;
+        this.attackerID = null;
         this.addr = addr;
         this.port = port;
         this.connections = new HashMap<>();
 
+    }
+    
+    public KademliaNode(BigInteger id, BigInteger attackerId,  String addr, int port) {
+        this.id = id;
+        this.attackerID = attackerId;
+        this.addr = addr;
+        this.port = port;
+        this.connections = new HashMap<>();
     }
 
     public KademliaNode(BigInteger id){
         this.id = id;
         this.addr = "127.0.0.1";
         this.port = 666;
+        this.attackerID = null;
         this.connections = new HashMap<>();
 
     }
@@ -48,12 +60,17 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.addr = n.addr;
         this.port = n.port;
         this.is_evil = n.is_evil;
+        this.attackerID = n.attackerID;
         this.connections = new HashMap<>();
 
     }
 
     public BigInteger getId(){
         return this.id;
+    }
+    
+    public BigInteger getAttackerId() {
+        return this.attackerID;
     }
 
     public String getAddr(){
