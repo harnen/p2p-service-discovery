@@ -49,7 +49,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         //System.out.println("Competing tickets "+getNumberOfCompetingTicketsPerTopic(t));
 
         //compute ticket waiting time
-        long waiting_time = getWaitingTime(reg, curr_time);
+        long waiting_time = getWaitingTime(reg, curr_time, null);
         int queueOccupancy = topicQueueOccupancy(t);
         
         if (waiting_time == -1) {
@@ -75,13 +75,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
             return -1;
         }
       
-        // compute the waiting time
-        /*if (topicQ != null && topicQ.size() == this.adsPerQueue) {
-            TopicRegistration r = topicQ.getFirst();
-            long age = curr_time - r.getTimestamp();
-            waiting_time = this.adLifeTime - age;
-        }
-        else */
+        // Compute the time when the next available slot is available in the topic table
         if(allAds.size() == this.tableCapacity) {
             TopicRegistration r = allAds.getFirst();
             long age = curr_time - r.getTimestamp();
@@ -91,7 +85,6 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
             waiting_time = 0;
         }
 
-
         return waiting_time;
     }
     
@@ -99,17 +92,18 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         long waiting_time=0;
     	long baseWaitingTime;
     	long cumWaitingTime = 0;
-    	if(ticket!=null)cumWaitingTime=ticket.getCumWaitTime()+ 2*ticket.getRTT();
+
+    	if(ticket!=null) // if this is the first (initial) ticket request, ticket will be null
+            cumWaitingTime=ticket.getCumWaitTime()+ 2*ticket.getRTT();
 
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
 
         // check if the advertisement already registered before
         if ( (topicQ != null) && (topicQ.contains(reg)) ) {
-            logger.warning("Ad already registered by this node");
+            //logger.warning("Ad already registered by this node");
             return -1;
         }
     
-
         baseWaitingTime = minimumBaseWaitingTime;
         double modifier = Math.pow(getTopicModifier(reg)*getIPModifier(reg)*getIdModifier(reg),groupModifierExp);
         long neededTime = (long) (baseWaitingTime * modifier);
@@ -120,7 +114,8 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         //System.out.println("Modifiers topic "+reg.getTopic().getTopic()+" "+getTopicModifier(reg)+" "+getIPModifier(reg)+" "+getIdModifier(reg)+" "+size);
         //System.out.println("Waiting time "+baseWaitingTime+" "+modifier+" "+neededTime+" "+cumWaitingTime+" "+waiting_time);
 
-        if(waiting_time<0)waiting_time=0;
+        if(waiting_time<0)
+            waiting_time = getWaitingTime(reg, curr_time);
  
         return waiting_time;
     }
