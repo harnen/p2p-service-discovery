@@ -227,17 +227,14 @@ public class KademliaNode implements Comparable<KademliaNode>{
     		setTopic(topic,n);
     }
     
-    public boolean isEclipsed() {
+    public boolean isEclipsed(String topic) {
     	
         if (this.is_evil)
             //Don't include malicious nodes in the count
             return false;
+        
+        return connections.get(topic).isEclipsed();
 
-        for(NodeConnections nc : connections.values())
-        {
-        	if(nc.isEclipsed())return true;
-        }
-    	return false;
     }
     
     private void tryNewConnections(String topic) {
