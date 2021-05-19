@@ -190,7 +190,7 @@ public class Turbulence implements Control {
 		Node remove;
 		do {
 			remove = Network.get(CommonState.r.nextInt(Network.size()));
-		} while (remove == null || !remove.isUp() || remove.getKademliaProtocol().getNode().is_evil || remove.getIndex()<Network.size()*0.3);
+		} while (remove == null || !remove.isUp() || remove.getKademliaProtocol().getNode().is_evil || remove.getIndex()<minsize);
 
 		System.out.println("Turbulence remove node " + remove.getKademliaProtocol().getNode().getId()+ " with index: " + remove.getIndex());
 		// remove node (set its state to DOWN)
