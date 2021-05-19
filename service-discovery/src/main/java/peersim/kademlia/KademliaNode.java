@@ -237,6 +237,16 @@ public class KademliaNode implements Comparable<KademliaNode>{
 
     }
     
+    public boolean isEclipsed() {
+    	
+    	for(String topic : connections.keySet())
+    		if(isEclipsed(topic)) return true;
+        
+    	
+        return false;
+
+    }
+    
     private void tryNewConnections(String topic) {
     	//System.out.println(CommonState.getTime()+" "+id+" trying connections "+maxOutgoingConnections);
     	

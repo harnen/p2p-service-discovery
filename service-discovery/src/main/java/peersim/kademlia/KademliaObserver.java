@@ -935,7 +935,7 @@ public class KademliaObserver implements Control {
                     evil_nodes.add(kadProtocol.getNode().getId());
                 }
                 else {
-                    if (kadProtocol.getNode().isEclipsed("t1")) {
+                    if (kadProtocol.getNode().isEclipsed()) {
                         eclipsed_nodes.add(kadProtocol.getNode().getId());
                         num_eclipsed_nodes += 1;
                     }
