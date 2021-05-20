@@ -159,13 +159,13 @@ def generate_spam_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't1
                 t_next_attack_req += rand.expovariate(rate_attack)
     print("Generated regular workload in", str(output_filename))
 
-zipf_distribution = 2
-size = 100
+#zipf_distribution = 2
+#size = 100
 
-generate_attack_topic(size=1000, rate_attack=2.0)
-generate_attack_topic(size=100, rate_attack=2.0)
-generate_attack_topic(size=150, rate_attack=2.0)
-generate_spam_topic(size=1000, rate_attack=2.0)
-generate_regular(size = 100, zipf_distribution=zipf_distribution)
-generate_regular(size = 10, zipf_distribution=zipf_distribution)
-generate_regular(size = 3, zipf_distribution=zipf_distribution)
+#generate_attack_topic(size=1000, rate_attack=2.0)
+#generate_attack_topic(size=100, rate_attack=2.0)
+#generate_attack_topic(size=150, rate_attack=2.0)
+#generate_spam_topic(size=1000, rate_attack=2.0)
+#generate_regular(size = 100, zipf_distribution=zipf_distribution)
+#generate_regular(size = 10, zipf_distribution=zipf_distribution)
+#generate_regular(size = 3, zipf_distribution=zipf_distribution)

@@ -13,18 +13,15 @@ def restore_default():
     attack = 'none'
     honest_count = 100
     malicious_count = 0
-    if len(sys.argv) > 1:
-        input_file = sys.argv[1]
-    else:
-        input_file = './workloads/regular_size100_dist2.csv'
+
+
 
 def select_results_with_default_params(df, exclude = None):
     restore_default()
-    params = ['ad_lifetime', 'capacity', 'honest_count', 'honest_count', 'malicious_count']
+    params = ['ad_lifetime', 'capacity', 'honest_count', 'malicious_count']
     defaults = {}
     defaults['ad_lifetime'] = ad_lifetime
     defaults['capacity'] = capacity
-    defaults['input_file'] = input_file
     defaults['honest_count'] = honest_count
     defaults['malicious_count'] = malicious_count
 
@@ -36,7 +33,7 @@ def select_results_with_default_params(df, exclude = None):
         df = df.loc[df[p] == defaults[p]]
     print("df excluding", exclude)
     print(df)
-    quit()
+    #quit()
     return df
 
 def plot_feature(ax, df, label, y, x_title, y_title, key_suffix = None):
@@ -71,42 +68,42 @@ def plot_feature(ax, df, label, y, x_title, y_title, key_suffix = None):
 
 
 def run(stats):
+    filename = generate_input_file()
     table = DiversityTable(capacity, ad_lifetime)
-    table.load(input_file)
+    table.load(filename)
     #table.display(runtime - 1)
     table.add_stats(runtime-1, stats)
     table.run(runtime)
 
 
 def generate_input_file():
-    global attack, honest_size
+    global attack, honest_count
     if(attack == 'none'):
-        generate_regular(size = honest_size, output_filename = 'input.csv')
+        generate_regular(size = honest_count, output_filename = 'input.csv')
+    return 'input.csv'
 
 def run_all():
     stats = {}
     stats['table'] = []
-    stats['input_file'] = []
     stats['malicious_count'] = []
     stats['honest_count'] = []
     stats['occupancy_total'] = []
-    #stats['malicious_total'] = []
-    #stats['honest_total'] = []
-    stats['total_count'] = []
+    stats['malicious_occupancy_total'] = []
+    stats['honest_occupancy_total'] = []
     stats['capacity'] = []
     stats['ad_lifetime'] = []
 
-    capacities = [10, 100]
+    capacities = [10, 100, 200, 300]
 
+    attacks = ['none']
+    honest_counts = [1, 2, 5, 10, 20, 30, 50]
 
-    attack = ['none', 'spam', 'topic']
-    honest_size = [1, 2, 5, 10]
 
 
     restore_default()
-    global input_file, capacity
-    for i in input_files:
-        input_file = i
+    global capacity, honest_count
+    for i in honest_counts:
+        honest_count = i
         run(stats)
 
     restore_default()
@@ -124,13 +121,22 @@ def analyze(input_file = 'dump.csv'):
     df = pd.read_csv(input_file)
     df.drop(df.columns[[0]], axis=1, inplace=True)
     df.drop_duplicates(inplace=True)
-    print(df)
+    #print(df)
+
     
     fig, ax = plt.subplots(figsize=(10, 4))
-    plot_feature(ax, df, 'total_count', 'occupancy_total', '#registrants', 'avg occupancy')
+    plot_feature(ax, df, 'honest_count', 'occupancy_total', '#honest registrants', 'avg occupancy')
+    plot_feature(ax, df, 'honest_count', 'honest_occupancy_total', '#honest registrants', 'avg occupancy', '_honest')
+    plot_feature(ax, df, 'honest_count', 'malicious_occupancy_total', '#honest registrants', 'avg occupancy', '_malicious')
+
+    fig, ax = plt.subplots(figsize=(10, 4))
+    plot_feature(ax, df, 'capacity', 'occupancy_total', 'capacity', 'avg occupancy')
+
+
     plt.show()
 
-runtime = 1000000
+runtime = 100000
 
-#run_all()
+
+run_all()
 analyze()

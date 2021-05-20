@@ -181,36 +181,37 @@ class Table(metaclass=abc.ABCMeta):
     def add_stats(self, delay, stats):
         self.env.process(self.add_stats_body(delay, stats))
 
-    def add_stats_body(self, delay, stats):
-        yield self.env.timeout(delay)
-        print(self.occupancies)
+    def extract_total(self, dict):
         labels = []
         sizes = []
-        for val in set(self.occupancies.values()):
+        for val in set(dict.values()):
             l = []
-            for key in self.occupancies.keys():
-                if(self.occupancies[key] == val):
+            for key in dict.keys():
+                if(dict[key] == val):
                     l.append(key)
-            #print(val, "->", l)
             interval = []
             for i in range(2, len(l)-1, 2):
                 interval.append(l[i+1] - l[i])
-            #print("intervals:", interval)
             labels.append(val)
             sizes.append(sum(interval))
-            #print(val, "->", sum(interval)/self.env.now)
-
-
         total = 0
         for i in range(0, len(sizes)):
             total += labels[i] * (sizes[i] / sum(sizes))
+        return total
+    
+    def add_stats_body(self, delay, stats):
+        yield self.env.timeout(delay)
+        total = self.extract_total(self.occupancies)
+        total_malicious = self.extract_total(self.occupancies_by_attackers)
+        total_honest = total - total_malicious
+
         stats['table'].append(type(self).__name__)
-        stats['input_file'].append(self.input_file)
         stats['malicious_count'].append(self.malicious_count)
         stats['honest_count'].append(self.honest_count)
-        stats['total_count'].append(self.honest_count + self.malicious_count)
         stats['capacity'].append(self.capacity)
         stats['occupancy_total'].append(total)
+        stats['malicious_occupancy_total'].append(total_malicious)
+        stats['honest_occupancy_total'].append(total_honest)
         stats['ad_lifetime'].append(self.ad_lifetime)
         print("sum:", total)
 
