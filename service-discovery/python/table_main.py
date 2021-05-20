@@ -2,13 +2,17 @@
 from table import *
 import matplotlib.pyplot as plt
 from threshold import *
+from generate_table_workloads import *
 import sys
 import pandas as pd
 
 def restore_default():
-    global ad_lifetime, input_file, capacity
+    global ad_lifetime, input_file, capacity, attack, honest_count, malicious_count
     ad_lifetime = 3000
     capacity = 100
+    attack = 'none'
+    honest_count = 100
+    malicious_count = 0
     if len(sys.argv) > 1:
         input_file = sys.argv[1]
     else:
@@ -16,17 +20,23 @@ def restore_default():
 
 def select_results_with_default_params(df, exclude = None):
     restore_default()
-    params = ['ad_lifetime', 'capacity', 'input_file', 'total_count']
+    params = ['ad_lifetime', 'capacity', 'honest_count', 'honest_count', 'malicious_count']
     defaults = {}
     defaults['ad_lifetime'] = ad_lifetime
     defaults['capacity'] = capacity
     defaults['input_file'] = input_file
-    defaults['total_count'] = 3
+    defaults['honest_count'] = honest_count
+    defaults['malicious_count'] = malicious_count
+
 
     if(exclude != None):
         params.remove(exclude)
+    print(params, 'params')
     for p in params:
         df = df.loc[df[p] == defaults[p]]
+    print("df excluding", exclude)
+    print(df)
+    quit()
     return df
 
 def plot_feature(ax, df, label, y, x_title, y_title, key_suffix = None):
@@ -36,7 +46,9 @@ def plot_feature(ax, df, label, y, x_title, y_title, key_suffix = None):
     for key, group in df.groupby('table'):
         if(key_suffix != None):
             key += key_suffix
-        group_specific = select_results_with_default_params(group, label) 
+        print(key, group)
+        group_specific = select_results_with_default_params(group, label)
+        print(group_specific)
         print(group_specific)
         print("x_old", group_specific[label])
         print("y_old", group_specific[y])
@@ -66,7 +78,10 @@ def run(stats):
     table.run(runtime)
 
 
-
+def generate_input_file():
+    global attack, honest_size
+    if(attack == 'none'):
+        generate_regular(size = honest_size, output_filename = 'input.csv')
 
 def run_all():
     stats = {}
@@ -84,12 +99,9 @@ def run_all():
     capacities = [10, 100]
 
 
-    input_files = []
-    input_files.append('./workloads/regular_size1_dist2.csv')
-    input_files.append('./workloads/regular_size2_dist2.csv')
-    input_files.append('./workloads/regular_size3_dist2.csv')
-    #input_files.append('./workloads/regular_size4_dist2.csv')
-    #input_files.append('./workloads/regular_size10_dist2.csv')
+    attack = ['none', 'spam', 'topic']
+    honest_size = [1, 2, 5, 10]
+
 
     restore_default()
     global input_file, capacity
@@ -110,6 +122,7 @@ def run_all():
 
 def analyze(input_file = 'dump.csv'):
     df = pd.read_csv(input_file)
+    df.drop(df.columns[[0]], axis=1, inplace=True)
     df.drop_duplicates(inplace=True)
     print(df)
     
@@ -119,5 +132,5 @@ def analyze(input_file = 'dump.csv'):
 
 runtime = 1000000
 
-run_all()
+#run_all()
 analyze()

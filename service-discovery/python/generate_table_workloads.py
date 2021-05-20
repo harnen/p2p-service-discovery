@@ -2,8 +2,9 @@ from numpy import random
 import csv
 import random as rand
 
-def generate_regular(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0):
-    output_filename = './workloads/regular_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
+def generate_regular(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0, output_filename = None):
+    if(output_filename == None):
+        output_filename = './workloads/regular_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
     #get ips/ids from ethereum repo
     ip_file = open('./workloads/ips.txt', "r")
     id_file = open('./workloads/ids.txt', "r")
