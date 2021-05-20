@@ -8,29 +8,33 @@ import numpy as np
 from scipy.stats import entropy
 import copy
 from random import randint
+import simpy
 
 class Table(metaclass=abc.ABCMeta):
-    def __init__(self, env, capacity, ad_lifetime, interval=1):
-        self.table = {}
-        self.workload = {}
-        self.env = env
+    def __init__(self, capacity, ad_lifetime, interval=1):
         self.capacity = capacity
         self.ad_lifetime = ad_lifetime
+        self.interval = interval
+
+        self.table = {}
+        self.workload = {}
+        self.env = simpy.Environment()
         self.ad_ids = 0
         self.admission_times = []
-        self.occupancies = []
-        self.occupancies_by_attackers = []
+        self.occupancies = {}
+        self.occupancies_by_attackers = {}
         self.returns = []
-        self.interval = interval
+        
         self.req_counter = 0
         self.pending_req = {}
         self.honest_count = 0
         self.malicious_count = 0
-        self.malicious_in = []
-        self.honest_in = []
+        self.malicious_in = {}
+        self.honest_in = {}
 
     def load(self, file):
         counter = 0
+        self.input_file = file
         with open(file, newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',', quotechar='|')
             for row in reader:
@@ -58,21 +62,32 @@ class Table(metaclass=abc.ABCMeta):
 
         
     def run(self, runtime):
-        self.env.process(self.report_occupancy())
+        self.report_occupancy()
         self.env.run(until=runtime)
         
 
     def report_occupancy(self):
-        yield self.env.timeout(1)
-        self.occupancies.append(len(self.table) / self.capacity)
+        #yield self.env.timeout(1)
+        if(len(self.occupancies) > 0):
+            self.occupancies[self.env.now-1]  = list(self.occupancies.values())[-1]
+        self.occupancies[self.env.now] = len(self.table) / self.capacity
+        
         attacker_entries = [req for req in self.table.values() if req['attack'] == 1]
         honest_entries = [req for req in self.table.values() if req['attack'] == 0]
-        self.occupancies_by_attackers.append(len(attacker_entries) / self.capacity)
+        if(len(self.occupancies_by_attackers) > 0):
+            self.occupancies_by_attackers[self.env.now-1] = list(self.occupancies_by_attackers.values())[-1]
+        self.occupancies_by_attackers[self.env.now-1] = len(attacker_entries) / self.capacity
+        
         if(self.malicious_count > 0):
-            self.malicious_in.append(len(attacker_entries)/self.malicious_count)
+            if(len(self.malicious_in) > 0):
+                self.malicious_in[self.env.now - 1] = list(self.malicious_in.values())[-1]
+            self.malicious_in[self.env.now] = len(attacker_entries)/self.malicious_count
+        
         if(self.honest_count > 0):
-            self.honest_in.append(len(honest_entries)/self.honest_count)
-        self.env.process(self.report_occupancy())
+            if(len(self.honest_in) > 0):
+                self.honest_in[self.env.now - 1] = list(self.honest_in.values())[-1]
+            self.honest_in[self.env.now] = len(honest_entries)/self.honest_count
+        #self.env.process(self.report_occupancy())
 
     def scatter(self, values, title, ax = None, color_map = None):
         if(ax == None):
@@ -141,12 +156,14 @@ class Table(metaclass=abc.ABCMeta):
         axis[0, 1].scatter([x[0] for x in self.admission_times], [x[1] for x in self.admission_times], c=get_colors([x[2] for x in self.admission_times]))
         axis[0, 1].set_title("Waiting times")
         #axis[2, 0].set_yscale('log')
-        axis[1, 1].plot(range(0, len(self.occupancies)), self.occupancies, color='b')
-        axis[1, 1].plot(range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers, color='r')
-        axis[1, 1].plot(range(0, len(self.occupancies)), [x - y for x, y in zip(self.occupancies, self.occupancies_by_attackers)], color='g')
+        axis[1, 1].plot(self.occupancies.keys(), self.occupancies.values(), color='b')
+        #axis[1, 1].plot(range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers, color='r')
+        #axis[1, 1].plot(range(0, len(self.occupancies)), [x - y for x, y in zip(self.occupancies, self.occupancies_by_attackers)], color='g')
         axis[1, 1].set_title("Occupancy over time")
         axis[0, 2].scatter([x[0] for x in self.returns], [x[1] for x in self.returns], c=get_colors([x[2] for x in self.returns]))
         axis[0, 2].set_title("Returns")
+        
+
 
         #pending_returns = [x['returned'] for x in self.pending_req.values()]
         #axis[0, 3].plot(range(0, len(pending_returns)), pending_returns)
@@ -157,10 +174,45 @@ class Table(metaclass=abc.ABCMeta):
         #figure.suptitle(type(self).__name__ + " at " + str(delay) + "ms")
         #print("Admission times:", [x for x in self.admission_times])# if x[2] == 0
 
-        axis[1, 2].plot(range(0, len(self.honest_in)), self.honest_in, c='g')
-        axis[1, 2].plot(range(0, len(self.malicious_in)), self.malicious_in, c='r')
+        axis[1, 2].plot(self.honest_in.keys(), self.honest_in.values(), c='g')
+        axis[1, 2].plot(self.malicious_in.keys(), self.malicious_in.values(), c='r')
         axis[1, 2].set_title("Percentage of overal requests in the table")
 
+    def add_stats(self, delay, stats):
+        self.env.process(self.add_stats_body(delay, stats))
+
+    def add_stats_body(self, delay, stats):
+        yield self.env.timeout(delay)
+        print(self.occupancies)
+        labels = []
+        sizes = []
+        for val in set(self.occupancies.values()):
+            l = []
+            for key in self.occupancies.keys():
+                if(self.occupancies[key] == val):
+                    l.append(key)
+            #print(val, "->", l)
+            interval = []
+            for i in range(2, len(l)-1, 2):
+                interval.append(l[i+1] - l[i])
+            #print("intervals:", interval)
+            labels.append(val)
+            sizes.append(sum(interval))
+            #print(val, "->", sum(interval)/self.env.now)
+
+
+        total = 0
+        for i in range(0, len(sizes)):
+            total += labels[i] * (sizes[i] / sum(sizes))
+        stats['table'].append(type(self).__name__)
+        stats['input_file'].append(self.input_file)
+        stats['malicious_count'].append(self.malicious_count)
+        stats['honest_count'].append(self.honest_count)
+        stats['total_count'].append(self.honest_count + self.malicious_count)
+        stats['capacity'].append(self.capacity)
+        stats['occupancy_total'].append(total)
+        stats['ad_lifetime'].append(self.ad_lifetime)
+        print("sum:", total)
 
     
     def log(self, *arg):
@@ -175,6 +227,7 @@ class Table(metaclass=abc.ABCMeta):
         yield self.env.timeout(delay)
         self.log("Removing", self.table[ad_id])
         self.table.pop(ad_id)
+        self.report_occupancy()
 
     def new_request(self, req, delay):
         yield self.env.timeout(delay)
@@ -200,6 +253,7 @@ class Table(metaclass=abc.ABCMeta):
             self.ad_ids += 1
             self.admission_times.append((self.env.now, self.env.now - req['arrived'], req['attack']))
             self.returns.append((self.env.now, req['returned'], req['attack']))
+            self.report_occupancy()
             
             #may the registrant re-register after expiration time
             rand_time = randint(0, 99) # add a random time btw. 0 and 99 milliseconds
@@ -225,8 +279,8 @@ class SimpleTable(Table):
     
     
 class DiversityTable(Table):
-    def __init__(self, env, capacity, ad_lifetime, amplify = 1):
-        super().__init__(env, capacity, ad_lifetime)
+    def __init__(self, capacity, ad_lifetime, amplify = 1):
+        super().__init__(capacity, ad_lifetime)
         #self.tree = Tree()
         self.ip_modifiers = {}
         self.id_modifiers = {}
@@ -235,20 +289,26 @@ class DiversityTable(Table):
     
     def get_ip_modifier(self, ip):
         current_ips = [x['ip'] for x in self.table.values()]
-        return math.pow(current_ips.count(ip) + 1, self.amplify*5)
+        return math.pow((current_ips.count(ip)/self.capacity) + 1, self.amplify*20)
         #return self.tree.tryAdd(ip)
     
     def get_id_modifier(self, iD):
         current_ids = [x['id'] for x in self.table.values()]
-        return math.pow(current_ids.count(iD) + 1, self.amplify*5)
+        return math.pow((current_ids.count(iD)/self.capacity) + 1, self.amplify*20)
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
-        return math.pow(current_topics.count(topic) + 1, self.amplify*2)
+        return math.pow((current_topics.count(topic)/self.capacity) + 1, self.amplify*1)
 
 
     def get_waiting_time(self, req):
-        base_waiting_time = self.ad_lifetime / self.capacity
+        needed_time = self.ad_lifetime
+        waited_time = (self.env.now - req['arrived'])
+        if (len(self.table) >= self.capacity):
+            return  needed_time - waited_time
+        else:
+            return max(0, needed_time - waited_time)
+        base_waiting_time = self.ad_lifetime
         
         topic_modifier = self.get_topic_modifier(req['topic'])
         id_modifier = self.get_id_modifier(req['id'])

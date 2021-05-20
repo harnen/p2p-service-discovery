@@ -64,40 +64,49 @@ def get_entropy_modifier(topics, topic):
         return topic_modifier
         #return new_topic_entropy
 
-def get_polynomial_modifier(topics, topic):
+def get_polynomial_modifier(topics, topic, power):
     count = topics.count(topic)
-    return math.pow(count, 1.2)
+    return math.pow(count/size, power)*100
 
-def get_random_modifier(topics, topic):
-    return random.randint(3, 9)
+def get_occupancy_modifier(topics, topic, power):
+    count = topics.count(topic)
+    return 1/math.pow(1-(count/size), power)
 
 def test_topic_modifier(inputs):
     
     modifiers = {}
-    modifiers['n'] = list(range(0, len(inputs[list(inputs)[0]])))
+    #modifiers['n'] = list(range(0, len(inputs[list(inputs)[0]])))
     for input_name in inputs.keys():
         topics = []
         input = inputs[input_name]
-        #modifiers['entropy_'+input_name] = []
-        modifiers['polynomial_'+input_name] = []
-        for item in input:
-            #modifiers['entropy_'+input_name].append(get_entropy_modifier(topics, item))
-            modifiers['polynomial_'+input_name].append(get_polynomial_modifier(topics, item))
-            topics.append(item)
+        powers = [4, 1, 2, 0.5, 0.1]
+        for power in powers:
+            modifiers['occupancy_' + str(power) + input_name] = []
+            topics = []
+            for item in input:
+                #modifiers['entropy_'+input_name].append(get_entropy_modifier(topics, item))
+                #modifiers['polynomial_' + str(power) + input_name].append(get_polynomial_modifier(topics, item, power))
+                modifiers['occupancy_' + str(power) + input_name].append(get_occupancy_modifier(topics, item, power))
+                topics.append(item)
+        
+            
     #print("Input:", input)
     print("Modifiers:", modifiers)
 
-    df = pd.DataFrame(modifiers)
-    df.set_index('n', inplace=True)
-    print(df)
-    plot_multi(df, figsize=(6, 3))
-    plt.show()
-    #figure, ax = plt.subplots()
-    #ax.plot(range(0, len(modifiers['entropy'])), modifiers['entropy'], label='entropy')
-    #ax.plot(range(0, len(modifiers['polynomial'])), modifiers['polynomial'], label='polynomial')
-    #ax.legend()
-    #ax.set_title("Modifiers")
+    #df = pd.DataFrame(modifiers)
+    #df.set_index('n', inplace=True)
+    #print(df)
+    #plot_multi(df, figsize=(6, 3))
     #plt.show()
+
+    figure, ax = plt.subplots()
+    for key in modifiers.keys():
+        ax.plot(range(0, len(modifiers[key])), modifiers[key], label=key)
+    
+    ax.legend()
+    ax.set_title("Modifiers")
+    ax.set_yscale('log')
+    plt.show()
 
 def test_ip_modifier(input):
     modifiers = {}
@@ -119,10 +128,10 @@ def test_ip_modifier(input):
 size = 100
 inputs = {}
 inputs['all_same'] = ['t1']*size
-inputs['one_different'] = ['t1']*size
-inputs['one_different'][int(size/5)] = 't2'
-inputs['zipf'] = random.zipf(a=2, size=size)
-inputs['all_different'] = list(range(0, size))
+#inputs['one_different'] = ['t1']*size
+#inputs['one_different'][int(size/5)] = 't2'
+#inputs['zipf'] = random.zipf(a=2, size=size)
+#inputs['all_different'] = list(range(0, size))
 test_topic_modifier(inputs)
 
 inputs = {}
