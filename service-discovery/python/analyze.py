@@ -587,9 +587,19 @@ def analyzeEclipsedNodesOverTime(dirs):
 
     for log_dir in dirs:
     #print(log_dir)
+        topics = []
         df = pd.read_csv(log_dir + '/eclipse_counts.csv')
-        ax1.set_title("Number of eclipsed nodes over time")
-        ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
+        for col_name in df.columns:
+            if col_name.startswith("topic-"):
+                topics.append(col_name[len("topic-"):])
+
+        for topic in topics:
+            print(topic)
+            ax1.plot(df['time'], df["topic-"+topic], label=topic)
+        #
+        #ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
+
+    ax1.set_title("Number of eclipsed nodes over time")
 
     ax1.legend()
     plt.savefig(OUTDIR + '/eclipsed_node_over_time.png')

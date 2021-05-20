@@ -233,8 +233,10 @@ public class KademliaNode implements Comparable<KademliaNode>{
             //Don't include malicious nodes in the count
             return false;
         
-        return connections.get(topic).isEclipsed();
-
+        if(connections.get(topic)!=null)
+        	return connections.get(topic).isEclipsed();
+        
+        return false;
     }
     
     public boolean isEclipsed() {

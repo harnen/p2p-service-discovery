@@ -196,6 +196,11 @@ public class KademliaObserver implements Control {
             myFile = new File(filename);
             if(myFile.exists())myFile.delete();
             
+            filename = this.logFolderName + "/" + "eclipse_counts.csv";
+            myFile = new File(filename);
+            if(myFile.exists())myFile.delete();
+            
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -907,7 +912,7 @@ public class KademliaObserver implements Control {
 
     private void write_eclipsing_results() {
 
-        int num_eclipsed_nodes = 0;
+        HashMap<String,Integer> num_eclipsed_nodes = new HashMap<>();
         HashSet<BigInteger> eclipsed_nodes = new HashSet<BigInteger>();
         HashSet<BigInteger> uneclipsed_nodes = new HashSet<BigInteger>();
         HashSet<BigInteger> evil_nodes = new HashSet<BigInteger>();
@@ -915,15 +920,24 @@ public class KademliaObserver implements Control {
             String filename = this.logFolderName + "/" + "eclipse_counts.csv";
             File myFile = new File(filename);
             FileWriter writer;
+            if(all_topics == null) return;
+            Arrays.sort(all_topics);
             if (!myFile.exists()) {
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
-                writer.write("time,numberOfNodes,eclipsedNodes,UnEclipsedNodes,EvilNodes\n");
+                writer.write("time,");
+                for(String t : all_topics)
+                	writer.write("topic-"+t+",");
+                writer.write("EclipsedNodes,UnEclipsedNodes,EvilNodes\n");
             }
             else {
                 writer = new FileWriter(myFile, true);
             }
 
+            for(String t : all_topics) {
+            	num_eclipsed_nodes.put(t, 0);
+            }
+            
             for(int i = 0; i < Network.size(); i++) {
 				if( !(Network.get(i).isUp()) ) {
                     continue;   
@@ -937,15 +951,24 @@ public class KademliaObserver implements Control {
                 else {
                     if (kadProtocol.getNode().isEclipsed()) {
                         eclipsed_nodes.add(kadProtocol.getNode().getId());
-                        num_eclipsed_nodes += 1;
+                        for(String t : all_topics) {
+                        	if(kadProtocol.getNode().isEclipsed(t)) {
+	                        	int n = num_eclipsed_nodes.get(t).intValue();
+	                        	n++;
+	                        	num_eclipsed_nodes.put(t, n);
+                        	}
+                        }
+                        	
                     }
                     else {
                         uneclipsed_nodes.add(kadProtocol.getNode().getId());
                     }
                 }
             }
-            writer.write(CommonState.getTime() + "," + String.valueOf(num_eclipsed_nodes));
-            writer.write("," + Util.bigIntegetSetToString(eclipsed_nodes));
+            writer.write(CommonState.getTime() + ",");
+            for(String t : all_topics)
+            	 writer.write(String.valueOf(num_eclipsed_nodes.get(t).intValue())+",");
+            writer.write(Util.bigIntegetSetToString(eclipsed_nodes));
             writer.write("," + Util.bigIntegetSetToString(uneclipsed_nodes));
             writer.write("," + Util.bigIntegetSetToString(evil_nodes) + "\n");
             writer.close();
