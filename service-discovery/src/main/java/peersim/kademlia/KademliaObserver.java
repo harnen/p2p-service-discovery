@@ -662,7 +662,9 @@ public class KademliaObserver implements Control {
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
                 String title = "time";
-                for (String topic : activeRegistrations.keySet()) {
+                if(all_topics == null) return;
+                Arrays.sort(all_topics);
+                for (String topic : all_topics) {
                     title += "," + topic + "-normal";
                     title += "," + topic + "-evil";
                 }
@@ -673,8 +675,11 @@ public class KademliaObserver implements Control {
                 writer = new FileWriter(myFile, true);
             }
             writer.write("" + CommonState.getTime());
-            for (String topic : activeRegistrations.keySet()) {
-                writer.write("," + activeRegistrations.get(topic));
+            for (String topic : all_topics) {
+            	if(activeRegistrations.get(topic)!=null)
+            		writer.write("," + activeRegistrations.get(topic));
+            	else
+            		writer.write(",0");
                 Integer maliciousRegistrants = activeRegistrationsByMalicious.get(topic);
                 if (maliciousRegistrants == null) 
                     writer.write(",0");
@@ -823,7 +828,8 @@ public class KademliaObserver implements Control {
 			        	if((double)regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)<1&&(double)regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)>0)
 			        		writer.write("1");
 			        	else*/
-			        		writer.write(String.valueOf((double)regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)));
+			        	//writer.write(String.valueOf((double)regByRegistrar.get(t).get(n).intValue()/avgCounter.get(n)));
+			        	writer.write(String.valueOf((double)regByRegistrar.get(t).get(n).intValue()));
 			        	writer.write("\n");
 	        		}
 	        	}
@@ -895,7 +901,8 @@ public class KademliaObserver implements Control {
 			        	writer.write(",");
 			        	writer.write(String.valueOf(n));
 			        	writer.write(",");
-			        	writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()/avgCounter.get(n)));
+			        	//writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()/avgCounter.get(n)));
+			        	writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()));
 			        	writer.write("\n");
 	        		}
 	        	}
@@ -1181,24 +1188,26 @@ public class KademliaObserver implements Control {
                 	}
                     
                     //topic table registrations by registrar
-                    int count;
+                    //int count;
 
                     HashMap<String, Integer> registrars = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyRegistrar();
                     for(String topic : registrars.keySet())
                     {
-                    	count=0;
+                    	/*count=0;
                     	//System.out.println(CommonState.getTime()+" Registrar topic "+topic+" "+registrars.get(topic)+" regs.");
                     	if(regByRegistrar.get(topic)!=null) {
                     		if(regByRegistrar.get(topic).get(kadProtocol.getNode().getId())!=null) 
                     			count = regByRegistrar.get(topic).get(kadProtocol.getNode().getId());
                     	}
-                    	count+= registrars.get(topic);
+                    	count+= registrars.get(topic);*/
                     	if(regByRegistrar.get(topic)==null) {
                     		HashMap<BigInteger,Integer> tmp = new HashMap<BigInteger,Integer>();
-                    		tmp.put(kadProtocol.getNode().getId(), count);
+                    		//tmp.put(kadProtocol.getNode().getId(), count);
+                    		tmp.put(kadProtocol.getNode().getId(), registrars.get(topic));
                     		regByRegistrar.put(topic, tmp);
                     	} else
-                    		regByRegistrar.get(topic).put(kadProtocol.getNode().getId(), count);
+                    		//regByRegistrar.get(topic).put(kadProtocol.getNode().getId(), count);
+                    		regByRegistrar.get(topic).put(kadProtocol.getNode().getId(), registrars.get(topic));
 
                     }
                     
@@ -1228,19 +1237,21 @@ public class KademliaObserver implements Control {
                     		
                         	//System.out.println(CommonState.getTime()+" Registrant topic "+topic+" node:"+id+" "+tmpReg.get(topic).get(id)+" regs.");
 
-	                    	count=0;
+	                    	/*count=0;
 	                    	if(regByRegistrant.get(topic)!=null) {
 	                    		if(regByRegistrant.get(topic).get(id)!=null) {
 	                    			count = regByRegistrant.get(topic).get(id);
 	                    		}
 	                    	}
-	                    	count+=tmpReg.get(topic).get(id);
+	                    	count+=tmpReg.get(topic).get(id);*/
 	                    	if(regByRegistrant.get(topic)==null) {
 	                    		HashMap<BigInteger,Integer> tmp = new HashMap<BigInteger,Integer>();
-	                    		tmp.put(id, count);
+	                    		//tmp.put(id, count);
+	                    		tmp.put(id, tmpReg.get(topic).get(id));
 	                    		regByRegistrant.put(topic, tmp);
 	                    	} else 
-	                    		regByRegistrant.get(topic).put(id,count);
+	                    		regByRegistrant.get(topic).put(id, tmpReg.get(topic).get(id));
+	                    		//regByRegistrant.get(topic).put(id,count);
                     	}
                     }
                 }

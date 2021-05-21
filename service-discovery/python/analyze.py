@@ -202,6 +202,7 @@ def analyzeActiveRegistrations(dirs):
             nrows = 0
             for row in reader:
                 for topic in topics:
+                    #print(topic+'-normal')
                     normal = int(row[topic + '-normal'])
                     normal_registration_count_per_topic[topic] += normal
                 nrows += 1

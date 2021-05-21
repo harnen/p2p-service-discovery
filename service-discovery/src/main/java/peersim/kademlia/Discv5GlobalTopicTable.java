@@ -21,11 +21,11 @@ import peersim.core.CommonState;
 public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements TopicTable 
 
     private static final int amplify = 1; 
-    private static final int minimumBaseWaitingTime = 1000;
-    private static final double groupModifierExp = 1;
+    private static final int minimumBaseWaitingTime = KademliaCommonConfig.AD_LIFE_TIME;
+    private static final double groupModifierExp = 0.2;
     private static final double topicModifierExp = 2;
-    private static final double ipModifierExp = 2;
-    private static final double idModifierExp = 2;
+    private static final double ipModifierExp = 5;
+    private static final double idModifierExp = 5;
 
 	public Discv5GlobalTopicTable() {
         super();
@@ -156,7 +156,9 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 
         int topicSize = topicQ!=null?topicQ.size():0;
 
-    	return Math.pow(topicSize+competing,amplify*topicModifierExp);
+		int occupancy=1;
+		if(allAds.size()>0)occupancy=allAds.size();
+    	return Math.pow(((topicSize+competing)),amplify*topicModifierExp);
     }
     
     private double getIPModifier(TopicRegistration reg) {
@@ -168,7 +170,9 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     		if(r.getNode().getAddr().equals(reg.getNode().getAddr()))counter++;
 		}
 
-    	return Math.pow(counter+1,amplify*ipModifierExp);
+		int occupancy=1;
+		if(allAds.size()>0)occupancy=allAds.size();
+    	return Math.pow((counter+1),amplify*ipModifierExp);
     }
     
     private double getIdModifier(TopicRegistration reg) {
@@ -194,7 +198,9 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
                     counter++;
 		}
 
-    	return Math.pow(counter+1,amplify*idModifierExp);
+		int occupancy=1;
+		if(allAds.size()>0)occupancy=allAds.size();
+    	return Math.pow((counter+1),amplify*idModifierExp);
     }
     
     private int getNumberOfCompetingTickets() {
