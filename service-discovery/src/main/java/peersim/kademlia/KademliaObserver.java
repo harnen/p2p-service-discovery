@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Arrays;
+import java.util.Collections;
 import java.math.BigInteger;
 
 import com.google.common.collect.HashBasedTable; 
@@ -118,7 +119,6 @@ public class KademliaObserver implements Control {
     private static HashMap<String, Long> cumWaitingTimes = new HashMap<String, Long>();
     private static HashMap<String, Integer> numOfReportedCumWaitingTimes = new HashMap<String, Integer>();
     private static HashMap<String, Integer> numOfRejectedRegistrations = new HashMap<String, Integer> ();
-    String [] all_topics;
     private static int ticket_request_to_evil_nodes = 0;
     private static int ticket_request_to_good_nodes = 0;
     
@@ -139,6 +139,9 @@ public class KademliaObserver implements Control {
     private String prefix;
 
     private static KademliaProtocol kadProtocol;
+    
+    private static HashSet<String> topicsSet;
+    private static List<String> all_topics;
 
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
@@ -151,6 +154,7 @@ public class KademliaObserver implements Control {
         //if (!this.parameterName.isEmpty())
         //    this.parameterValue = Configuration.getDouble(prefix + "." + PAR_RANGE_EXPERIMENT, -1);
         
+        topicsSet = new HashSet<String>();
         if (this.parameterName.isEmpty())
             this.logFolderName = "./logs";
         else
@@ -208,6 +212,9 @@ public class KademliaObserver implements Control {
 
     public static void addTopicRegistration(Topic t, BigInteger registrant) {
     	
+    	 topicsSet.add(t.getTopic());
+    	 all_topics = new ArrayList<String>(topicsSet);
+    	 Collections.sort(all_topics);
          String topic = t.getTopic();
          if(!registeredTopics.containsKey(topic)){
                 //System.out.println("addTopicRegistration "+topic);
@@ -407,8 +414,7 @@ public class KademliaObserver implements Control {
             String filename = this.logFolderName + "/" + "waiting_times.csv";
             File myFile = new File(filename);
             FileWriter writer;
-            all_topics = (String []) waitingTimes.keySet().toArray(new String[waitingTimes.size()]);
-            Arrays.sort(all_topics);
+
             if (!myFile.exists()) {
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
@@ -588,7 +594,7 @@ public class KademliaObserver implements Control {
             String filename = this.logFolderName + "/" + "register_overhead.csv";
             FileWriter writer = new FileWriter(filename);
             if(all_topics == null) return;
-            Arrays.sort(all_topics);
+
             String title = "";
             for (String topic: all_topics) {
                     title += topic + ",";
@@ -663,8 +669,9 @@ public class KademliaObserver implements Control {
                 writer = new FileWriter(myFile, true);
                 String title = "time";
                 if(all_topics == null) return;
-                Arrays.sort(all_topics);
+                
                 for (String topic : all_topics) {
+                	System.out.println("Kademliaobserver stats Topic "+topic);
                     title += "," + topic + "-normal";
                     title += "," + topic + "-evil";
                 }
@@ -928,7 +935,7 @@ public class KademliaObserver implements Control {
             File myFile = new File(filename);
             FileWriter writer;
             if(all_topics == null) return;
-            Arrays.sort(all_topics);
+
             if (!myFile.exists()) {
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);

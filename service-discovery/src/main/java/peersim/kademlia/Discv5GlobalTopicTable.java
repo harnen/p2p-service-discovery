@@ -118,7 +118,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         int size = topicQ!=null?topicQ.size():0;
         //System.out.println("Waiting time "+baseWaitingTime+" "+modifier+" "+neededTime+" "+cumWaitingTime+" "+waiting_time);
 
-        System.out.println("Modifiers topic "+reg.getTopic().getTopic()+" "+getTopicModifier(reg)+" "+getIPModifier(reg)+" "+getIdModifier(reg)+" "+cumWaitingTime+" "+neededTime);
+        //System.out.println("Modifiers topic "+reg.getTopic().getTopic()+" "+getTopicModifier(reg)+" "+getIPModifier(reg)+" "+getIdModifier(reg)+" "+cumWaitingTime+" "+neededTime);
 
         if(waiting_time<0)
             waiting_time = getWaitingTime(reg, curr_time);
@@ -171,7 +171,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 		if(avg<1)avg=1;
         //System.out.println("topic counter "+topicSize+" "+Math.pow(((topicSize)/occupancy)+1,amplify*topicModifierExp));
 
-       System.out.println("Topic counter "+topicSize+" "+avg);
+        //System.out.println("Topic counter "+topicSize+" "+avg);
 
      
     	return Math.pow((double)topicSize+competing/avg,amplify*topicModifierExp);
