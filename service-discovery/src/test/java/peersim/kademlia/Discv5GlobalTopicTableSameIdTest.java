@@ -25,7 +25,7 @@ import peersim.config.ParsedProperties;
 import peersim.config.Configuration;
 import java.lang.Math; 
 
-public class Discv5GlobalTopicTableTest{
+public class Discv5GlobalTopicTableSameIdTest{
     
     protected static void setUpBeforeClass() {
         String[] array = new String[] {"config/simple.cfg"};
@@ -42,7 +42,7 @@ public class Discv5GlobalTopicTableTest{
 
         long rtt_delay = 1;
         long curr_time = 0;
-        long totalTime = 10000000;
+        long totalTime = 1000000;
         Ticket successful_ticket = null;
         Ticket failed_ticket = null;
         // Register 2 topic0 at times 0 and 1, then make decision at 2;
@@ -66,10 +66,11 @@ public class Discv5GlobalTopicTableTest{
 	        		for(int j=0;j<i;j++) {
 		        	    Topic topic = new Topic(new BigInteger("0"), "topic"+topicnum);
 			            //System.out.println("At: " + curr_time + " ticketing for topic: " + topic.getTopic());
-		        		Random random = new Random();
+		          		Random random = new Random();
 
 		    			String ipString = InetAddresses.fromInteger(random.nextInt()).getHostAddress();
-			            KademliaNode advertiser = new KademliaNode(urg.generate(), ipString, 0);
+		    			BigInteger id = BigInteger.valueOf(1);
+			            KademliaNode advertiser = new KademliaNode(id, ipString, 0);
 			            Ticket ticket = table.getTicket(topic, advertiser, rtt_delay, curr_time);
 			            //System.out.println("At: " + curr_time + " waiting time: " + ticket.getWaitTime());
 			            //assert(ticket.getWaitTime() == 0);

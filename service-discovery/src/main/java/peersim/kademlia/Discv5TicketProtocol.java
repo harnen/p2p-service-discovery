@@ -472,6 +472,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 			// if(KademliaCommonConfig.TICKET_REMOVE_AFTER_REG==0) {
 			Timeout timeout = new Timeout(ticket.getTopic(), m.src.getId());
+			ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId());
+
 			EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
 			/*
 			 * } else {
@@ -883,7 +885,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 			KademliaObserver.reportExpiredRegistration(((Timeout) event).topic, this.node.is_evil);
 			// if(KademliaCommonConfig.TICKET_REMOVE_AFTER_REG==0) {
 			TicketTable tt = ticketTables.get(((Timeout) event).topic.getTopicID());
-			tt.removeNeighbour(((Timeout) event).nodeSrc);
+			//tt.removeNeighbour(((Timeout) event).nodeSrc);
 			// }
 			// ticketTables.get(((Timeout)event).topic.getTopicID()).removeRegisteredList(((Timeout)event).nodeSrc);
 			tt.removeRegisteredList(((Timeout) event).nodeSrc);

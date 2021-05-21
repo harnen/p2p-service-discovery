@@ -109,8 +109,9 @@ public class KademliaNode implements Comparable<KademliaNode>{
         if(this.id.compareTo(n.id) != 0){
             return this.id.compareTo(n.id);
         }
-        if(this.addr != n.addr){
-            return this.addr.compareTo(n.addr);
+        if(!this.addr.equals(n.addr)){
+            //return this.addr.compareTo(n.addr);
+        	return -1;
         }
 
         if(this.port == n.port){

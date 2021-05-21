@@ -134,31 +134,44 @@ public class Ticket implements Comparable<Ticket> {
     
     @Override
     public int compareTo(Ticket other) {
-        int result = (int) (this.getCumWaitTime() - other.getCumWaitTime());
-        result = -1*result; 
+        /*int result = (int) (this.getCumWaitTime() - other.getCumWaitTime());
+        result = -1*result; */
 
-        return result;
+
+    	if(this.getCumWaitTime()>other.getCumWaitTime())
+    		return -1;
+    	else if(this.getCumWaitTime()==other.getCumWaitTime())
+    		return 0;
+    	else 
+    		return 1;
     }
 
     
     @Override
     public boolean equals(Object o) { 
 
+
         // If the object is compared with itself then return true   
         if (o == this) { 
             return true; 
         } 
   
+
         /* Check if o is an instance of Ticket or not 
           "null instanceof [type]" also returns false */
         if (!(o instanceof Ticket)) { 
             return false; 
         } 
           
+
         // typecast o to Complex so that we can compare data members  
         Ticket r = (Ticket) o; 
           
-        if(this.src.equals(r.src)) return true;
+        if(this.src.equals(r.src)) {
+        	return true;
+        }
+
+
         return false;
     } 
 

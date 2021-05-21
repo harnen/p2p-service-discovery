@@ -21,14 +21,19 @@ import peersim.core.CommonState;
 public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements TopicTable 
 
     private static final int amplify = 1; 
-    private static final int minimumBaseWaitingTime = KademliaCommonConfig.AD_LIFE_TIME;
-    private static final double groupModifierExp = 0.2;
+    private static final int minimumBaseWaitingTime = 1000;//KademliaCommonConfig.AD_LIFE_TIME;
+    private static final double groupModifierExp = 1;
     private static final double topicModifierExp = 2;
     private static final double ipModifierExp = 5;
     private static final double idModifierExp = 5;
 
+    private static HashMap<String,Integer> ipCounter;
+    private static HashMap<BigInteger,Integer> idCounter;
+
 	public Discv5GlobalTopicTable() {
         super();
+        ipCounter = new HashMap<>();
+        idCounter = new HashMap<>();
     }
   
     
@@ -111,8 +116,9 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         waiting_time = neededTime - cumWaitingTime;
         
         int size = topicQ!=null?topicQ.size():0;
-        //System.out.println("Modifiers topic "+reg.getTopic().getTopic()+" "+getTopicModifier(reg)+" "+getIPModifier(reg)+" "+getIdModifier(reg)+" "+size);
         //System.out.println("Waiting time "+baseWaitingTime+" "+modifier+" "+neededTime+" "+cumWaitingTime+" "+waiting_time);
+
+        System.out.println("Modifiers topic "+reg.getTopic().getTopic()+" "+getTopicModifier(reg)+" "+getIPModifier(reg)+" "+getIdModifier(reg)+" "+cumWaitingTime+" "+neededTime);
 
         if(waiting_time<0)
             waiting_time = getWaitingTime(reg, curr_time);
@@ -156,51 +162,54 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 
         int topicSize = topicQ!=null?topicQ.size():0;
 
-		int occupancy=1;
-		if(allAds.size()>0)occupancy=allAds.size();
-    	return Math.pow(((topicSize+competing)),amplify*topicModifierExp);
+
+		
+   		int avg=0;
+   		try {
+   			avg=allAds.size()/topicTable.keySet().size();
+   		}catch(Exception e) {}
+		if(avg<1)avg=1;
+        //System.out.println("topic counter "+topicSize+" "+Math.pow(((topicSize)/occupancy)+1,amplify*topicModifierExp));
+
+       System.out.println("Topic counter "+topicSize+" "+avg);
+
+     
+    	return Math.pow((double)topicSize+competing/avg,amplify*topicModifierExp);
     }
     
     private double getIPModifier(TopicRegistration reg) {
 
-    	double counter=0.0;
-		Iterator<TopicRegistration> it = allAds.iterator();
-		while (it.hasNext()) {
-    		TopicRegistration r = it.next();
-    		if(r.getNode().getAddr().equals(reg.getNode().getAddr()))counter++;
-		}
+    	int counter=0;
 
-		int occupancy=1;
-		if(allAds.size()>0)occupancy=allAds.size();
-    	return Math.pow((counter+1),amplify*ipModifierExp);
+        if(ipCounter.containsKey(reg.getNode().getAddr()))counter+=ipCounter.get(reg.getNode().getAddr());
+
+   		int occupancy=0;
+		if(allAds.size()>0)occupancy=allAds.size()-counter;
+		if(occupancy<1)occupancy=1;
+       // System.out.println("Ip counter "+counter+" "+occupancy);
+
+    	return Math.pow(counter+1,amplify*ipModifierExp);
     }
     
     private double getIdModifier(TopicRegistration reg) {
 
-    	double counter=0.0;
-		Iterator<TopicRegistration> it = allAds.iterator();
+    	int counter=0;
         BigInteger reg_id;
+        if(reg.getNode().is_evil)reg_id=reg.getNode().getAttackerId();
+        else reg_id=reg.getNode().getId();
+        if(idCounter.containsKey(reg_id))counter+=idCounter.get(reg_id);
 
-        // Use attackerID for registrant ID if node is evil
-        if (reg.getNode().is_evil)
-            reg_id = reg.getNode().getAttackerId(); 
-        else
-            reg_id = reg.getNode().getId();
+   		int occupancy=0;
+		if(allAds.size()>0)occupancy=allAds.size()-counter;
+		if(occupancy<1)occupancy=1;
+		
+        //System.out.println("Id counter "+counter+" "+occupancy);
 
-		while (it.hasNext()) {
-    		TopicRegistration r = it.next();
-            if (r.getNode().is_evil) { // if node is evil, use its attackerId as node id
-                if(r.getNode().getAttackerId().equals(reg_id))
-                    counter++;
-            }
-            else 
-    		    if(r.getNode().getId().equals(reg_id))
-                    counter++;
-		}
-
-		int occupancy=1;
 		if(allAds.size()>0)occupancy=allAds.size();
-    	return Math.pow((counter+1),amplify*idModifierExp);
+		
+       // System.out.println("Ip counter "+counter+" "+Math.pow((counter)+1,amplify*idModifierExp));
+
+    	return Math.pow(counter+1,amplify*idModifierExp);
     }
     
     private int getNumberOfCompetingTickets() {
@@ -241,6 +250,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     protected Ticket [] makeRegisterDecision(long curr_time) {   
         // Determine which topics are up for decision
     	
+
     	ticketCompetingList.clear();
         HashSet<Topic> topicSet = new HashSet<Topic>();
         for (Topic topic : this.competingTickets.keySet()) {
@@ -251,6 +261,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         if (topicSet.isEmpty()) {
             return new Ticket[0];
         }
+        
 
         // list of tickets to respond with MSG_REGISTER_RESPONSE
         //ArrayList<Ticket> responseList = new ArrayList<Ticket>();
@@ -269,6 +280,8 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
             //System.out.println("Get Competing "+topic.getTopic()+" "+competingTickets.get(topic).size()+" "+ticketList.size());
 
         }
+        
+
         Collections.sort(ticketList);
         updateTopicTable(curr_time);
 
@@ -282,6 +295,10 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
             //long waiting_time = getWaitingTime(reg, curr_time,ticket);
         	long waiting_time = getWaitingTime(reg, curr_time,ticket);
         	//System.out.println("Ticket waiting time "+waiting_time);
+
+        	int oc = 0;
+        	if(topicTable.get(ticket.getTopic())!=null)oc+=topicTable.get(ticket.getTopic()).size();
+        	//System.out.println("Ticket order "+curr_time+" "+ticket.getTopic().getTopic()+" "+oc+" "+ticket.getCumWaitTime()+" "+waiting_time);
 
         	int topicOccupancy = 0;
             if(this.topicTable.get(reg.getTopic())!=null)
@@ -309,6 +326,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
             }
             KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time);
         }
+        
         for (Topic topic: topicSet) {
             nextDecisionTime.remove(topic);
             competingTickets.remove(topic);
@@ -367,6 +385,58 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         System.out.println("Entropy1:"+entropy1+" entropy2:"+entropy2+" return:"+10*entropy1/entropy2);
         return 10*entropy1/entropy2;
     }
+    
+    protected void register(TopicRegistration reg) {
+        ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
+        if (topicQ != null) {
+            topicQ.add(reg);
+            //System.out.println(this +" Add topictable "+reg.getTopic().getTopic()+" "+topicQ.size());
+        }else {
+            ArrayDeque<TopicRegistration> q = new ArrayDeque<TopicRegistration>();
+            q.add(reg);
+            this.topicTable.put(reg.getTopic(), q);
+            
+        }
+        
+        int idcount=0;
+        BigInteger id;
+        if(reg.getNode().is_evil)id=reg.getNode().getAttackerId();
+        else id = reg.getNode().getId();
+        if(idCounter.containsKey(id))idcount+=idCounter.get(id);
+        idcount++;
+        idCounter.put(reg.getNode().getId(),idcount);
+        
+        int ipcount=0;
+        if(ipCounter.containsKey(reg.getNode().getAddr()))ipcount+=ipCounter.get(reg.getNode().getAddr());
+        ipcount++;
+        ipCounter.put(reg.getNode().getAddr(),ipcount);
+
+        this.allAds.add(reg);
+    }
+    
+    protected void updateTopicTable(long curr_time) {
+		Iterator<TopicRegistration> it = allAds.iterator();
+		while (it.hasNext()) {
+    		TopicRegistration r = it.next();
+        	if (curr_time - r.getTimestamp() >= this.adLifeTime) {
+            	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic());
+	            //TopicRegistration r_same = topicQ.pop(); 
+	            topicQ.pop(); 
+                //assert r_same.equals(r);
+				it.remove(); //removes from allAds
+				if(ipCounter.containsKey(r.getNode().getAddr())){
+					 int ips=ipCounter.get(r.getNode().getAddr());
+					 ipCounter.put(r.getNode().getAddr(), --ips);
+				}
+				
+				if(idCounter.containsKey(r.getNode().getId())){
+					 int ids=idCounter.get(r.getNode().getId());
+					 idCounter.put(r.getNode().getId(), --ids);
+				}
+			}
+		}
+    }
+    
     
 }
 

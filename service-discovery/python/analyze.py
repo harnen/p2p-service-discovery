@@ -1147,7 +1147,7 @@ analyzeEclipsedNodesOverTime(sys.argv[1:])
 analyzeActiveRegistrations(sys.argv[1:])
 analyzeActiveRegistrationsMalicious(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
-analyzeStorageUtilisation(sys.argv[1:])
+#analyzeStorageUtilisation(sys.argv[1:])
 analyzeWaitingTimes(sys.argv[1:])
 analyzeNumberOfMessages(sys.argv[1:])
 
