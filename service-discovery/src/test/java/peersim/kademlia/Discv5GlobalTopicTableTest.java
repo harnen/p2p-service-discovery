@@ -42,7 +42,7 @@ public class Discv5GlobalTopicTableTest{
 
         long rtt_delay = 1;
         long curr_time = 0;
-        long totalTime = 10000000;
+        long totalTime = 1000000;
         Ticket successful_ticket = null;
         Ticket failed_ticket = null;
         // Register 2 topic0 at times 0 and 1, then make decision at 2;

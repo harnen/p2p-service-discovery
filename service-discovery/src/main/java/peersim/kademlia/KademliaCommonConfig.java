@@ -37,7 +37,7 @@ public class KademliaCommonConfig {
     public static int SEARCH_BUCKET_SIZE = 3;
     public static int TICKET_TABLE_REPLACEMENTS=0;
     public static int SEARCH_TABLE_REPLACEMENTS=0;
-//    public static int TICKET_REMOVE_AFTER_REG=0;
+    public static int TICKET_REMOVE_AFTER_REG=0;
     // Attack Types:
     public static String ATTACK_TYPE_TOPIC_SPAM = "TopicSpam";
     public static String ATTACK_TYPE_RANDOM_SPAM = "RandomSpam";
@@ -51,6 +51,7 @@ public class KademliaCommonConfig {
     public static final int RANDOM_BUCKET_ORDER = 0;
     public static final int CLOSEST_BUCKET_ORDER = 1;
     public static final int ALL_BUCKET_ORDER = 2;
+
     public static int LOOKUP_BUCKET_ORDER = 0;
     
     public static int STOP_REGISTER_WINDOW_SIZE = 0;
