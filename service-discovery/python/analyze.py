@@ -291,6 +291,7 @@ def analyzeRegistrations(dirs):
             data={}
             data2={}
             data3={}
+            data4={}
     #        print(df)
             for index, row in df.iterrows():
                 #print(index,row['topic'],row['nodeId'],row['count'])
@@ -300,6 +301,14 @@ def analyzeRegistrations(dirs):
                     data[row['nodeId']] = count
                 else :
                     data[row['nodeId']] = row['count']
+            for index, row in df.iterrows():
+                #print(index,row['topic'],row['nodeId'],row['count'])
+                if row['nodeId'] in data4:
+                    count = data4[row['nodeId']] + row ['evil']
+                    #print(count)
+                    data4[row['nodeId']] = count
+                else :
+                    data4[row['nodeId']] = row['evil']
                 #print(index, ': ', row['topic'], 'has', row['nodeid'], 'calories',row['count'])
             #for item in data.items():
             #    print(item)
@@ -322,7 +331,8 @@ def analyzeRegistrations(dirs):
                     data3[row['nodeId']] = row['evil']
 
     #print(data.values())
-        ax1.plot(sorted(data.values(),reverse=True),label=log_dir)
+        ax1.plot(sorted(data.values(),reverse=True),label="normal")
+        ax1.plot(sorted(data4.values(),reverse=True),label="evil")
         ax2.plot(sorted(data2.values(),reverse=True),label="normal")
         ax2.plot(sorted(data3.values(),reverse=True),label="evil")
 
@@ -356,6 +366,58 @@ def analyzeRegistrations(dirs):
 
     #    fig3.savefig(OUTDIR + '/registrations_topic.png')
 
+# def analyzeRegistrarDistribution(dirs):
+#     fig, ax1 = plt.subplots()
+#     ax1.tick_params(bottom=False,
+#                 labelbottom=False)
+#     topics = set()
+#
+#     colors = ['red', 'green', 'blue', 'orange']
+#     x = []
+#     y = []
+#     topics = []
+#     dir_nums = []
+#     c = []
+#
+#     try:
+#         for log_dir in dirs:
+#             stats = {}
+#     #        print(log_dir)
+#             dir_num = dirs.index(log_dir)
+#             with open(log_dir + '/1000000_registrations.csv', newline='') as csvfile:
+#                 reader = csv.DictReader(csvfile)
+#                 for row in reader:
+#                     node = row['host']
+#                     topic = row['topic']
+#                     topics.append(topic)
+#                     dir_nums.append(dir_num)
+#                     x.append(int(node))
+#                     c.append(colors[dir_num])
+#
+#         counter = 0
+#         topics_set = set(topics)
+#         for topic in topics:
+#             topic_index = sorted(topics_set).index(topic)
+#             dir_offset = dir_nums[counter]*0.3
+#             y.append(topic_index + dir_offset)
+#             counter += 1
+#
+#         scatter = ax1.scatter(x, y, c=c)
+#         legend_elements = []
+#         for log_dir in dirs:
+#             dir_num = dirs.index(log_dir)
+#             color = colors[dir_num]
+#             legend_elements.append(Line2D([0], [0], marker='o', color=color, label=log_dir,
+#                               markerfacecolor=color, markersize=15))
+#         print(legend_elements)
+#         ax1.legend(handles=legend_elements)
+#         ax1.set_title("Registrars")
+#         fig.savefig(OUTDIR + '/registrar_distribution.png')
+#     except FileNotFoundError:
+#         print("file not found")
+#         return
+#
+
 def analyzeRegistrarDistribution(dirs):
     fig, ax1 = plt.subplots()
     ax1.tick_params(bottom=False,
@@ -365,6 +427,7 @@ def analyzeRegistrarDistribution(dirs):
     colors = ['red', 'green', 'blue', 'orange']
     x = []
     y = []
+    evil = []
     topics = []
     dir_nums = []
     c = []
@@ -374,15 +437,19 @@ def analyzeRegistrarDistribution(dirs):
             stats = {}
     #        print(log_dir)
             dir_num = dirs.index(log_dir)
-            with open(log_dir + '/1000000_registrations.csv', newline='') as csvfile:
+            with open(log_dir + '/registeredRegistrar.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    node = row['host']
+                    node = row['nodeId']
                     topic = row['topic']
-                    topics.append(topic)
-                    dir_nums.append(dir_num)
-                    x.append(int(node))
-                    c.append(colors[dir_num])
+                    count = row['count']
+                    countEvil = row['evil']
+
+                    if float(count) > 0 :
+                        topics.append(topic)
+                        dir_nums.append(dir_num)
+                        x.append(int(node))
+                        c.append(colors[dir_num])
 
         counter = 0
         topics_set = set(topics)
@@ -399,8 +466,10 @@ def analyzeRegistrarDistribution(dirs):
             color = colors[dir_num]
             legend_elements.append(Line2D([0], [0], marker='o', color=color, label=log_dir,
                               markerfacecolor=color, markersize=15))
-        print(legend_elements)
+#        print(legend_elements)
         ax1.legend(handles=legend_elements)
+        ax1.set_yticks(np.arange(len(topics_set)))
+        ax1.set_yticklabels(sorted(topics_set))
         ax1.set_title("Registrars")
         fig.savefig(OUTDIR + '/registrar_distribution.png')
     except FileNotFoundError:
@@ -440,9 +509,12 @@ def analyzeRegistrantDistribution(dirs):
             for row in reader:
                 topic = row['topic']
                 node = row['nodeId']
+                count = int(row['count'])
                 if topic not in registrants_per_topic:
                     registrants_per_topic[topic] = set()
-                registrants_per_topic[topic].add(node)
+
+                if count > 0:
+                    registrants_per_topic[topic].add(node)
 
                 if node not in stats:
                     stats[node] = {}
@@ -859,7 +931,8 @@ def analyzeRegistrations2(dirs):
                 print(topic)
                 fig1.suptitle('Registrations by registrant')
                 fig2.suptitle('Registrations by registrar')
-                ax1[i].plot(sorted(df[df.topic == topic]['count'].values,reverse=True),label=log_dir)
+                ax1[i].plot(sorted(df[df.topic == topic]['count'].values,reverse=True),label="normal")
+                ax1[i].plot(sorted(df[df.topic == topic]['evil'].values,reverse=True),label="evil")
                 ax2[i].plot(sorted(df2[df2.topic == topic]['count'].values,reverse=True),label="normal")
                 ax2[i].plot(sorted(df2[df2.topic == topic]['evil'].values,reverse=True),label="evil")
                 ax1[i].set(ylabel=topic)
@@ -1069,7 +1142,7 @@ def analyzeMessageReceivedByNodes(dirs):
                     if 't' in row['numMsg']:
                         topics[row['Node']] = row['numMsg']
                     else:
-                        y_vals.append(int(row['numMsg'])/36000)
+                        y_vals.append(int(row['numMsg']))
                         x_vals.append(row['Node'])
 
                 sorted_y_vals = sorted(y_vals)

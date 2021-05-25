@@ -468,6 +468,27 @@ public class Discv5TopicTable { // implements TopicTable {
 
     }
     
+    public HashMap<String, HashMap<BigInteger,Integer>> getRegEvilbyRegistrant(){
+        HashMap<String, HashMap<BigInteger,Integer>> regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
+
+    	 for(Topic t: topicTable.keySet())
+         {
+    		Object[] treg = topicTable.get(t).toArray();
+            HashMap<BigInteger,Integer> register = new HashMap<BigInteger,Integer>();
+    		for(Object reg : treg)
+    		{
+    			int count=0;
+    			if(register.get(((TopicRegistration)reg).getNode().getId())!=null)count=register.get(((TopicRegistration)reg).getNode().getId());
+    			if(((TopicRegistration)reg).getNode().is_evil)count++;
+    			register.put(((TopicRegistration)reg).getNode().getId(),count);
+    	    	//System.out.println("Table "+((TopicRegistration)reg).getNode().getId()+" "+count);
+    		}
+    		regByRegistrant.put(t.getTopic(), register);
+         }
+        return regByRegistrant;
+
+    }
+    
     
     public HashMap<String,Integer> getCompetingTickets(){
 		
