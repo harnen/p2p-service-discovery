@@ -290,6 +290,7 @@ def analyzeRegistrations(dirs):
 
             data={}
             data2={}
+            data3={}
     #        print(df)
             for index, row in df.iterrows():
                 #print(index,row['topic'],row['nodeId'],row['count'])
@@ -311,9 +312,19 @@ def analyzeRegistrations(dirs):
                 else :
                     data2[row['nodeId']] = row['count']
 
+            for index, row in df2.iterrows():
+                #print(index,row['topic'],row['nodeId'],row['count'])
+                if row['nodeId'] in data3:
+                    count = data3[row['nodeId']] + row ['evil']
+                    #print(count)
+                    data3[row['nodeId']] = count
+                else :
+                    data3[row['nodeId']] = row['evil']
+
     #print(data.values())
         ax1.plot(sorted(data.values(),reverse=True),label=log_dir)
-        ax2.plot(sorted(data2.values(),reverse=True),label=log_dir)
+        ax2.plot(sorted(data2.values(),reverse=True),label="normal")
+        ax2.plot(sorted(data3.values(),reverse=True),label="evil")
 
     ax1.set_title('Registrations by registrant')
     #add line showing how the result should be
@@ -849,7 +860,8 @@ def analyzeRegistrations2(dirs):
                 fig1.suptitle('Registrations by registrant')
                 fig2.suptitle('Registrations by registrar')
                 ax1[i].plot(sorted(df[df.topic == topic]['count'].values,reverse=True),label=log_dir)
-                ax2[i].plot(sorted(df2[df2.topic == topic]['count'].values,reverse=True),label=log_dir)
+                ax2[i].plot(sorted(df2[df2.topic == topic]['count'].values,reverse=True),label="normal")
+                ax2[i].plot(sorted(df2[df2.topic == topic]['evil'].values,reverse=True),label="evil")
                 ax1[i].set(ylabel=topic)
                 ax1[i].set_ylim([0,None])
                 ax2[i].set(ylabel=topic)
