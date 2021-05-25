@@ -35,16 +35,38 @@ public class LookupOperation extends Operation {
         String result = "\"";
         boolean first = true;
         for(KademliaNode n: discovered) {
-            if(first) {
-                result += n.getId();
-                first = false;
-            }else {
-                result += " " + n.getId();
-            }
+        	if(!n.is_evil) {
+	            if(first) {
+	                result += n.getId();
+	                first = false;
+	            }else {
+	                result += " " + n.getId();
+	            }
+        	}
         }
         result += "\"";
         return result;
     }
+    
+    public String discoveredMaliciousToString() {
+        if(discovered.size() == 0) return "";
+        
+        String result = "\"";
+        boolean first = true;
+        for(KademliaNode n: discovered) {
+        	if(n.is_evil) {
+	            if(first) {
+	                result += n.getId();
+	                first = false;
+	            }else {
+	                result += " " + n.getId();
+	            }
+        	}
+        }
+        result += "\"";
+        return result;
+    }
+    
     
     public List<KademliaNode> getDiscoveredArray()
     {

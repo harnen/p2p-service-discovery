@@ -525,7 +525,8 @@ def analyzeRegistrantDistribution(dirs):
             reader = csv.DictReader(csvfile)
             max_size = 0
             for row in reader:
-                if row['type'] == 'LookupOperation' or row['type'] == 'LookupTicketOperation':
+#                if row['type'] == 'LookupOperation' or row['type'] == 'LookupTicketOperation':
+                if row['type'] == 'LookupTicketOperation':
                     assert (row['topic'] != '')
                     discovered = row['discovered_list'].split()
                     topic = row['topic']
