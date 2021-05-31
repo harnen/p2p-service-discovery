@@ -74,6 +74,8 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             System.out.println("Attacker type Malicious Registrar");
         else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM))
             System.out.println("Attacker type Topic Spam");
+        else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS))
+            System.out.println("Attacker type Dos");
         else {
             System.out.println("Invalid attacker type");
             System.exit(1);
@@ -189,7 +191,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         Topic t = (Topic) m.body;
         TopicRegistration[] registrations = new TopicRegistration[0];
 
-        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)) {
+        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
         // if only a spammer than follow the normal protocol
             super.handleTopicQuery(m, myPid);
         }
@@ -234,6 +236,10 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 		//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
 
     	Message.TicketReplyBody body = new Message.TicketReplyBody(ticket, neighbours);
+    	
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
+    		body = new Message.TicketReplyBody(new Ticket (topic, curr_time, 100000000, advertiser, rtt_delay, 0), new BigInteger[0]);
+    	}
 		Message response  = new Message(Message.MSG_TICKET_RESPONSE, body);
 	
         //Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
@@ -292,7 +298,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 	 */
 	protected void handleFind(Message m, int myPid, int dist) {
 		
-    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)) {
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
             super.handleFind(m, myPid,dist);
             return;
     	}
