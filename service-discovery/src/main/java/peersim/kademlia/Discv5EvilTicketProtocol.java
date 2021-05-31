@@ -111,6 +111,12 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         
         logger.warning("In handleInitRegister of EVIL "+t.getTopic()+" "+t.getTopicID()+" "+Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_BUCKET_SIZE, KademliaCommonConfig.TICKET_BUCKET_SIZE));
         
+
+        if(this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
+        // if only a spammer than follow the normal protocol
+            super.handleInitRegisterTopic(m, myPid);
+            return;
+        }
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
             first = false;
             logger.info("Filling up the topic table with malicious entries");
