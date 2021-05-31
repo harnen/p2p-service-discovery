@@ -25,8 +25,13 @@ public class NodeConnections {
 		
 		this.incomingConnections = new ArrayList<KademliaNode>();
         this.outgoingConnections = new ArrayList<KademliaNode>();
-        this.maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
-        this.maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
+        if(!n.is_evil) {
+	        this.maxIncomingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS*2/3;
+	        this.maxOutgoingConnections = (int)KademliaCommonConfig.MAXCONNECTIONS/3;
+        } else {
+        	this.maxIncomingConnections = KademliaCommonConfig.MAXCONNECTIONS*1000;
+        	this.maxOutgoingConnections = KademliaCommonConfig.MAXCONNECTIONS*1000;
+        }
         this.lookupResultBuffer = new ArrayList<KademliaNode>();
 		this.topic = topic;
 		this.requested = false;
