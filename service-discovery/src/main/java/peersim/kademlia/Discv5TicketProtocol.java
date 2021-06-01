@@ -84,9 +84,12 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	final String PAR_PARALLELREGISTRATIONS = "PARALLELREGISTRATIONS";
 	// final String PAR_SLOT = "SLOT";
 	final String PAR_TTNBUCKETS = "TTNBUCKETS";
+	final String PAR_REGTIMEOUT = "REG_TIMEOUT";
 
 	boolean firstRegister;
 	boolean printSearchTable = false;
+	
+	private long registrationTimeout;
 
 	/**
 	 * Replicate this object by returning an identical copy.<br>
@@ -119,7 +122,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 			this.topicTable = new Discv5TopicTable();
 		}
 		firstRegister = true;
-
+		registrationTimeout = KademliaCommonConfig.REG_TIMEOUT;
 	}
 
 	/**
@@ -168,6 +171,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 		KademliaCommonConfig.PARALLELREGISTRATIONS = Configuration.getInt(prefix + "." + PAR_PARALLELREGISTRATIONS,
 				KademliaCommonConfig.PARALLELREGISTRATIONS);
+		
+		KademliaCommonConfig.REG_TIMEOUT = Configuration.getInt(prefix + "." + PAR_REGTIMEOUT,
+				KademliaCommonConfig.REG_TIMEOUT);
 
 		// KademliaCommonConfig.SLOT = Configuration.getInt(prefix + "." + PAR_SLOT,
 		// KademliaCommonConfig.SLOT);
@@ -403,7 +409,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 		}
 
-		if (ticket.getWaitTime() == -1 || ticket.getWaitTime()>KademliaCommonConfig.REG_TIMEOUT) {
+		if (ticket.getWaitTime() == -1 || ticket.getWaitTime()>registrationTimeout) {
 
 			logger.warning("Attempted to re-register topic on the same node " + m.src.getId() + " for topic "
 					+ topic.getTopic());
@@ -458,7 +464,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 			logger.info("Registration failed " + backoff.getTimesFailed() + " backing off " + +backoff.getTimeToWait()
 					+ " " + backoff.shouldRetry() + " " + ticket.getWaitTime());
 
-			if (backoff.shouldRetry() && ticket.getWaitTime() >= 0) {
+			if ((backoff.shouldRetry() && ticket.getWaitTime() >= 0)|| ticket.getCumWaitTime()<=registrationTimeout) {
 				scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
 			} else {
 				ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId());
