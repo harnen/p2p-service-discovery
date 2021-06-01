@@ -970,8 +970,7 @@ public class KademliaObserver implements Control {
                 if (kadProtocol.getNode().is_evil) {
                     evil_nodes.add(kadProtocol.getNode().getId());
                 }
-                else {
-                    if (kadProtocol.getNode().isEclipsed()) {
+                else if (kadProtocol.getNode().isEclipsed()) {
                         eclipsed_nodes.add(kadProtocol.getNode().getId());
                         for(String t : all_topics) {
                         	if(kadProtocol.getNode().isEclipsed(t)) {
@@ -981,11 +980,11 @@ public class KademliaObserver implements Control {
                         	}
                         }
                         	
-                    }
-                    else {
-                        uneclipsed_nodes.add(kadProtocol.getNode().getId());
-                    }
                 }
+                else {
+                    uneclipsed_nodes.add(kadProtocol.getNode().getId());
+                }
+                
             }
             writer.write(CommonState.getTime() + ",");
             for(String t : all_topics)

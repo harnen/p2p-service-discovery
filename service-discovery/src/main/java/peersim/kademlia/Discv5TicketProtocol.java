@@ -409,10 +409,13 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 		}
 
-		if (ticket.getWaitTime() == -1 || ticket.getWaitTime()>registrationTimeout) {
+		if (ticket.getWaitTime() == -1 || ticket.getCumWaitTime()>registrationTimeout) {
 
-			logger.warning("Attempted to re-register topic on the same node " + m.src.getId() + " for topic "
+			if(ticket.getWaitTime()==-1)
+				logger.warning("Attempted to re-register topic on the same node " + m.src.getId() + " for topic "
 					+ topic.getTopic());
+			else 
+				logger.warning("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime());
 			tt.removeNeighbour(m.src.getId());
 			RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
 			EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()),
@@ -659,13 +662,13 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 	}
 
+	
 	/**
 	 * Start a topic query opearation.<br>
 	 * 
 	 * @param m     Message received (contains the node to find)
 	 * @param myPid the sender Pid
 	 */
-
 	private void handleInitTopicLookup(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 
