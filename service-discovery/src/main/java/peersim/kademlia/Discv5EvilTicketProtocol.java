@@ -207,9 +207,15 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
                 registrations = (TopicRegistration []) regList.toArray(new TopicRegistration[regList.size()]);
             }
         
+            int result_len = KademliaCommonConfig.K > registrations.length ? registrations.length : KademliaCommonConfig.K;
+            TopicRegistration[] final_results = new TopicRegistration[result_len];
+
+            for (int i = 0; i < result_len; i++) 
+                final_results[i] = registrations[CommonState.r.nextInt(registrations.length)];
+            
             BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 
-            Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
+            Message.TopicLookupBody body = new Message.TopicLookupBody(final_results, neighbours);
             Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
             response.operationId = m.operationId;
             response.src = this.node;
