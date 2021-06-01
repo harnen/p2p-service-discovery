@@ -403,12 +403,14 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 		}
 
-		if (ticket.getWaitTime() == -1) {
+		if (ticket.getWaitTime() == -1 || ticket.getWaitTime()>KademliaCommonConfig.REG_TIMEOUT) {
 
 			logger.warning("Attempted to re-register topic on the same node " + m.src.getId() + " for topic "
 					+ topic.getTopic());
 			tt.removeNeighbour(m.src.getId());
-
+			RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
+			EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()),
+					myPid);
 			if (KademliaCommonConfig.PARALLELREGISTRATIONS == 0) {
 				ticketTables.get(ticket.getTopic().getTopicID()).increaseAvailableRequests();
 

@@ -29,6 +29,7 @@ public class KademliaCommonConfig {
     public static int PARALLELREGISTRATIONS = 0;
     public static int TTNBUCKETS = 10; 
 	public static int SLOT = 1000;
+	public static int REG_TIMEOUT = AD_LIFE_TIME;
     public static int REG_WINDOW = 10000;
     public static int SEARCH_REFRESH = 0;
     public static int TICKET_REFRESH = 0;
