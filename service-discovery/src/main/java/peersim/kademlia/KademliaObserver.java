@@ -937,7 +937,7 @@ public class KademliaObserver implements Control {
         HashMap<String,Integer> num_eclipsed_nodes = new HashMap<>();
         HashSet<BigInteger> eclipsed_nodes = new HashSet<BigInteger>();
         HashSet<BigInteger> uneclipsed_nodes = new HashSet<BigInteger>();
-        HashSet<BigInteger> evil_nodes = new HashSet<BigInteger>();
+       // HashSet<BigInteger> evil_nodes = new HashSet<BigInteger>();
         try {
             String filename = this.logFolderName + "/" + "eclipse_counts.csv";
             File myFile = new File(filename);
@@ -967,10 +967,11 @@ public class KademliaObserver implements Control {
                 Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
 
-                if (kadProtocol.getNode().is_evil) {
+                /*if (kadProtocol.getNode().is_evil) {
                     evil_nodes.add(kadProtocol.getNode().getId());
                 }
-                else if (kadProtocol.getNode().isEclipsed()) {
+                else */
+                if (kadProtocol.getNode().isEclipsed()) {
                         eclipsed_nodes.add(kadProtocol.getNode().getId());
                         for(String t : all_topics) {
                         	if(kadProtocol.getNode().isEclipsed(t)) {
@@ -991,7 +992,7 @@ public class KademliaObserver implements Control {
             	 writer.write(String.valueOf(num_eclipsed_nodes.get(t).intValue())+",");
             writer.write(Util.bigIntegetSetToString(eclipsed_nodes));
             writer.write("," + Util.bigIntegetSetToString(uneclipsed_nodes));
-            writer.write("," + Util.bigIntegetSetToString(evil_nodes) + "\n");
+            //writer.write("," + Util.bigIntegetSetToString(evil_nodes) + "\n");
             writer.close();
         } catch (IOException e) {
 
