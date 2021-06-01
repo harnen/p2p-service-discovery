@@ -950,7 +950,8 @@ public class KademliaObserver implements Control {
                 writer.write("time,");
                 for(String t : all_topics)
                 	writer.write("topic-"+t+",");
-                writer.write("EclipsedNodes,UnEclipsedNodes,EvilNodes\n");
+                //writer.write("EclipsedNodes,UnEclipsedNodes,EvilNodes\n");
+                writer.write("EclipsedNodes,UnEclipsedNodes\n");
             }
             else {
                 writer = new FileWriter(myFile, true);
@@ -991,7 +992,7 @@ public class KademliaObserver implements Control {
             for(String t : all_topics)
             	 writer.write(String.valueOf(num_eclipsed_nodes.get(t).intValue())+",");
             writer.write(Util.bigIntegetSetToString(eclipsed_nodes));
-            writer.write("," + Util.bigIntegetSetToString(uneclipsed_nodes));
+            writer.write("," + Util.bigIntegetSetToString(uneclipsed_nodes)+"\n");
             //writer.write("," + Util.bigIntegetSetToString(evil_nodes) + "\n");
             writer.close();
         } catch (IOException e) {
