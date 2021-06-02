@@ -133,19 +133,6 @@ class Table(metaclass=abc.ABCMeta):
     def display_body(self, delay):
         yield self.env.timeout(delay)
         figure, axis = plt.subplots(2, 3)
-        #ips_table = [x['ip'] for x in self.table.values()]
-        #ips_workload = [x['ip'] for x in self.workload.values()]
-        #ids_table = [x['id'] for x in self.table.values()]
-        #ids_workload = [x['id'] for x in self.workload.values()]
-        #topics_table = [x['topic'] for x in self.table.values()]
-        #topics_workload = [x['topic'] for x in self.workload.values()]
-        
-        #color_map = self.scatter(ips_workload, "IPs in the workload" , axis[1, 0])
-        #self.scatter(ips_table, "IPs in the table at", axis[0, 0], color_map)
-        #color_map = self.scatter(ids_workload, "IDs in the workload" + str(delay), axis[1, 1])
-        #self.scatter(ids_table, "IDs in the table", axis[0, 1], color_map)
-        #color_map = self.scatter(topics_workload, "Topics in the workload" + str(delay), axis[1, 2])
-        #self.scatter(topics_table, "Topics in the table", axis[0, 2], color_map)
 
         requests_table = [x['attack'] for x in self.table.values()]
         requests_workload = [x['attack'] for x in self.workload.values()]
@@ -162,17 +149,7 @@ class Table(metaclass=abc.ABCMeta):
         axis[1, 1].set_title("Occupancy over time")
         axis[0, 2].scatter([x[0] for x in self.returns], [x[1] for x in self.returns], c=get_colors([x[2] for x in self.returns]))
         axis[0, 2].set_title("Returns")
-        
 
-
-        #pending_returns = [x['returned'] for x in self.pending_req.values()]
-        #axis[0, 3].plot(range(0, len(pending_returns)), pending_returns)
-        #axis[0, 3].set_title("Returns of pending requests")
-        #pending_times = [(self.env.now - x['arrived']) for x in self.pending_req.values()]
-        #axis[1, 3].plot(range(0, len(pending_times)), pending_times)
-        #axis[1, 3].set_title("Waiting times of pending requests")
-        #figure.suptitle(type(self).__name__ + " at " + str(delay) + "ms")
-        #print("Admission times:", [x for x in self.admission_times])# if x[2] == 0
 
         axis[1, 2].plot(self.honest_in.keys(), self.honest_in.values(), c='g')
         axis[1, 2].plot(self.malicious_in.keys(), self.malicious_in.values(), c='r')
@@ -206,13 +183,14 @@ class Table(metaclass=abc.ABCMeta):
         total_honest = total - total_malicious
 
         stats['table'].append(type(self).__name__)
-        stats['malicious_count'].append(self.malicious_count)
-        stats['honest_count'].append(self.honest_count)
+        #stats['malicious_count'].append(self.malicious_count)
+        stats['size'].append(self.honest_count +self.malicious_count)
         stats['capacity'].append(self.capacity)
         stats['occupancy_total'].append(total)
         stats['malicious_occupancy_total'].append(total_malicious)
         stats['honest_occupancy_total'].append(total_honest)
         stats['ad_lifetime'].append(self.ad_lifetime)
+        stats['occupancy_power'].append(self.occupancy_power)
         print("sum:", total)
 
     
@@ -280,13 +258,14 @@ class SimpleTable(Table):
     
     
 class DiversityTable(Table):
-    def __init__(self, capacity, ad_lifetime, amplify = 1):
+    def __init__(self, capacity, ad_lifetime, amplify = 1, occupancy_power = 1):
         super().__init__(capacity, ad_lifetime)
         #self.tree = Tree()
         self.ip_modifiers = {}
         self.id_modifiers = {}
         self.topic_modifiers = {}
         self.amplify = amplify
+        self.occupancy_power = occupancy_power
     
     def get_ip_modifier(self, ip):
         current_ips = [x['ip'] for x in self.table.values()]
@@ -305,12 +284,14 @@ class DiversityTable(Table):
     def get_waiting_time(self, req):
         needed_time = self.ad_lifetime
         waited_time = (self.env.now - req['arrived'])
-        if (len(self.table) >= self.capacity):
-            return  needed_time - waited_time
-        else:
-            return max(0, needed_time - waited_time)
-        base_waiting_time = self.ad_lifetime
-        
+        #if (len(self.table) >= self.capacity):
+        #    return  needed_time - waited_time
+        #else:
+        #    return max(0, needed_time - waited_time)
+        base_waiting_time = self.ad_lifetime/math.pow(1-len(self.table)/self.capacity, self.occupancy_power)
+        needed_time = base_waiting_time
+        return max(0, needed_time - (self.env.now - req['arrived']))
+    
         topic_modifier = self.get_topic_modifier(req['topic'])
         id_modifier = self.get_id_modifier(req['id'])
         ip_modifier = self.get_ip_modifier(req['ip'])

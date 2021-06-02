@@ -23,7 +23,8 @@ def generate_regular(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0, 
             if(not ip or not iD):
                 print("Not enough IPs/IDs in the files")
                 exit(1)
-            record['time'] = int(1000*t_next_req)
+            #record['time'] = int(1000*t_next_req)
+            record['time'] = int(100*i)
             record['id'] = iD
             record['ip'] =ip
             record['topic'] = 't' + str(topics[i])
@@ -32,8 +33,9 @@ def generate_regular(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0, 
             dict_writer.writerow(record)
     print("Generated regular workload in", str(output_filename))
 
-def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't11', attacker_ip_num = 3, attacker_id_num=10, rate_normal = 1.0, rate_attack = 10.0, seed = 0.0):
-    output_filename = './workloads/attack_topic_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
+def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't11', attacker_ip_num = 3, attacker_id_num=10, rate_normal = 1.0, rate_attack = 10.0, seed = 0.0, output_filename = None):
+    if(output_filename == None):
+        output_filename = './workloads/attack_topic_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
     #get ips/ids from ethereum repo
     ip_file = open('./workloads/ips.txt', "r")
     id_file = open('./workloads/ids.txt', "r")
@@ -81,7 +83,7 @@ def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = '
                 iD = attacker_ids[i % attacker_id_num]
                 topic = topic_to_attack
 
-            record['time'] = int(1000*time)
+            record['time'] = int(100*i)
             record['id'] = iD
             record['ip'] =ip
             record['topic'] = topic
@@ -97,8 +99,9 @@ def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = '
     print("Generated regular workload in", str(output_filename))
 
 
-def generate_spam_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't1', attacker_ip_num = 3, attacker_id_num=10, rate_normal = 1.0, rate_attack = 10.0, seed = 0.0):
-    output_filename = './workloads/spam_topic_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
+def generate_spam_topic(size = 100, zipf_distribution = 2, attacker_ip_num = 3, attacker_id_num=10, rate_normal = 1.0, rate_attack = 10.0, seed = 0.0, output_filename = None):
+    if(output_filename == None):
+        output_filename = './workloads/spam_topic_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
     #get ips/ids from ethereum repo
     ip_file = open('./workloads/ips.txt', "r")
     id_file = open('./workloads/ids.txt', "r")
@@ -146,7 +149,7 @@ def generate_spam_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't1
                 iD = attacker_ids[i % attacker_id_num]
                 topic = 't' + str(100+i)
 
-            record['time'] = int(1000*time) 
+            record['time'] = int(100*i) 
             record['id'] = iD
             record['ip'] =ip
             record['topic'] = topic
