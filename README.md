@@ -36,7 +36,7 @@ The project is organised in three main milestones of the project together with t
 
 * Objective 3: Additional security analysis
   * [ ] Task: Extend on security analysis to avoid any malicious behaviour and measure the risk of sybil attacks.
-  * Deliverable: Updated Discv5 specification and evaluation results (TBC)
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [security analysis report](doc/report_m3/report.md).
   * Deadline: 21/5/2021
 
 * Objective 4: Configuration parameters analysis
