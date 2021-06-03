@@ -610,7 +610,7 @@ def analyzeOperations(dirs):
     total_discovered_list = []
 
     i=0
-    labels=['ClosestDiscance','RandomBucket','AllBuckets']
+    labels=['ClosestDistance','RandomBucket','AllBuckets']
     for log_dir in dirs:
         #print(log_dir)
         df = pd.read_csv(log_dir + '/operations.csv')
@@ -688,6 +688,41 @@ def analyzeEclipsedNodesOverTime(dirs):
 
     ax1.legend()
     plt.savefig(OUTDIR + '/eclipsed_node_over_time.png')
+
+def analyzeEclipsedNodes(dirs):
+    #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    fig, ax1 = plt.subplots()
+    colors = ['red', 'green', 'blue','orange']
+
+    maxlabel = ['No attack','5%']
+    maxset = []
+    for log_dir in dirs:
+    #print(log_dir)
+        topics = []
+        df = pd.read_csv(log_dir + '/eclipse_counts.csv')
+        for col_name in df.columns:
+            if col_name.startswith("topic-"):
+                topics.append(col_name[len("topic-"):])
+        max=0
+        for topic in topics:
+            print(df["topic-"+topic].max())
+            if max < df["topic-"+topic].max():
+                max = df["topic-"+topic].max()
+
+        maxset.append(max)
+        #ax1.plot(df['time'], df["topic-"+topic], label=topic)
+        width=0.3
+        #
+        #ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
+
+    ax1.bar(np.arange(len(dirs)), maxset,width=width)
+
+    ax1.set_title("Number of total eclipsed nodes")
+    ax1.set_xticks(np.arange(len(dirs)))
+    ax1.set_xticklabels(maxlabel)
+    ax1.set_ylabel("# Eclipsed Nodes")
+    ax1.legend()
+    plt.savefig(OUTDIR + '/eclipsed_nodes.png')
 
 def analyzeEclipsedNodeDistribution(dirs):
 
@@ -955,17 +990,20 @@ def analyzeRegistrations2(dirs):
             meanregistrant={}
             errregistrant={}
             meanregistrar={}
+            meanregistrarevil={}
             errregistrar={}
             for topic in df['topic'].unique():
                 meanregistrant[topic] = df[df.topic == topic]['count'].mean()
-                errregistrant[topic] = df[df.topic == topic]['count'].std()
+                errregistrant[topic] = df[df.topic == topic]['count'].std(skipna = True)
                 meanregistrar[topic] = df2[df2.topic == topic]['count'].mean()
-                errregistrar[topic] = df2[df2.topic == topic]['count'].std()
+                meanregistrarevil[topic] = df2[df2.topic == topic]['evil'].mean()
+                errregistrar[topic] = df2[df2.topic == topic]['count'].std(skipna = True)
                 #meanavgdisc[topic] = df[df.topic == topic]['average_discovery_time'].mean()
                 #erravgdisc[topic] = df[df.topic == topic]['average_discovery_time'].std()
                 #print(meantimes)
             mean={}
             err={}
+            meanevil={}
             width=0.3
             margin=width*j
             j=j+1
@@ -974,12 +1012,15 @@ def analyzeRegistrations2(dirs):
             for key in sorted(errregistrant.keys()) :
                 err[key] = errregistrant[key]
             ax3.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+
             for key in sorted(meanregistrar.keys()) :
                 mean[key] = meanregistrar[key]
             for key in sorted(errregistrar.keys()) :
                 err[key] = errregistrar[key]
-
-            ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+            for key in sorted(meanregistrarevil.keys()) :
+                meanevil[key] = meanregistrarevil[key]
+            ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),width=width,label=log_dir)
+            ax4.bar(np.arange(len(meanevil.keys()))+margin, meanevil.values(),width=width,color='red')
 
     ax3.legend()
     ax3.set_xticks(np.arange(len(mean.keys())))
@@ -1230,6 +1271,7 @@ analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
 analyzeRegistrarDistribution(sys.argv[1:])
 analyzeEclipsedNodesOverTime(sys.argv[1:])
+analyzeEclipsedNodes(sys.argv[1:])
 analyzeActiveRegistrations(sys.argv[1:])
 analyzeActiveRegistrationsMalicious(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
