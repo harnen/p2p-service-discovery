@@ -335,7 +335,7 @@ public class Discv5TopicTable { // implements TopicTable {
 
         // Random selection of K results
         TopicRegistration[] results = (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);
-        int result_len = KademliaCommonConfig.K > results.length ? results.length : KademliaCommonConfig.K;
+        int result_len = KademliaCommonConfig.MAX_TOPIC_REPLY > results.length ? results.length : KademliaCommonConfig.MAX_TOPIC_REPLY;
         TopicRegistration[] final_results = new TopicRegistration[result_len];
 
         for (int i = 0; i < result_len; i++) 

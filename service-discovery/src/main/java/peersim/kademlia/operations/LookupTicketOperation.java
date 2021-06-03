@@ -10,6 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import peersim.core.CommonState;
 import peersim.kademlia.KademliaCommonConfig;
+import peersim.kademlia.KademliaObserver;
 import peersim.kademlia.SearchTable;
 import peersim.kademlia.Topic;
 import peersim.kademlia.Util;
@@ -18,11 +19,14 @@ public class LookupTicketOperation extends LookupOperation {
 
 	SearchTable sTable;
 	int lastAskedBucket;
+    private boolean completed;
 
-	public LookupTicketOperation(BigInteger srcNode, SearchTable sTable, Long timestamp, Topic t) {
+    private List<BigInteger> neighboursList;
+	public LookupTicketOperation(BigInteger srcNode, SearchTable sTable, Long timestamp, Topic t){
 		super(srcNode, timestamp, t);
 		this.sTable = sTable;
 		lastAskedBucket = KademliaCommonConfig.BITS;
+        completed=false;
 	}
 
 	private ArrayList<BigInteger> getRandomBucketNeighbours(){
@@ -58,6 +62,29 @@ public class LookupTicketOperation extends LookupOperation {
 		return neighbours;
 	}
 	
+	private ArrayList<BigInteger> getCompleteRandomWalkNeighbours(){
+		ArrayList<BigInteger> neighbours = new ArrayList<BigInteger>();
+
+		int tries = 0;
+
+		for(; tries<sTable.getnBuckets(); lastAskedBucket--, tries++) {
+
+			Collections.addAll(neighbours, sTable.getNeighbours(lastAskedBucket));
+		}
+		return neighbours;
+	}
+	
+    public boolean completed() {
+    	if(KademliaCommonConfig.LOOKUP_BUCKET_ORDER!=KademliaCommonConfig.COMPLETE_WALK) {
+			int all = KademliaObserver.topicRegistrationCount(topic.getTopic());
+			int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
+	
+	    	return discoveredCount()>=required;
+    	} else {
+    		return completed;
+    	}
+    }
+    
 
 	public BigInteger getNeighbour() {
 		BigInteger res = null;
@@ -73,23 +100,41 @@ public class LookupTicketOperation extends LookupOperation {
 			case KademliaCommonConfig.ALL_BUCKET_ORDER:
 				neighbours = getAllBucketNeighbours();
 				break;
+			case KademliaCommonConfig.COMPLETE_WALK:
+				if(neighboursList==null)neighboursList = getCompleteRandomWalkNeighbours();
+				break;
 		}
 		
-		if(neighbours.size() != 0) {
-			res = neighbours.get(CommonState.r.nextInt(neighbours.size()));
+		if(KademliaCommonConfig.LOOKUP_BUCKET_ORDER!=KademliaCommonConfig.COMPLETE_WALK) {
+			if(neighbours.size() != 0) {
+				res = neighbours.get(CommonState.r.nextInt(neighbours.size()));
+				
+				//We should never get the same neighbour twice
+				assert !this.used.contains(res);
+			}
 			
-			//We should never get the same neighbour twice
-			assert !this.used.contains(res);
+			if(res!=null) {
+				sTable.removeNeighbour(res);
+				available_requests--;
+			}else {
+				System.out.println("Returning null");
+			}
+			
+			return res;
+		} else {
+			if(neighboursList.size()>0) {
+				res = neighboursList.get(0);
+				neighboursList.remove(res);
+				System.out.println("Getneithbour return "+res+" "+neighboursList.size());
+				available_requests--;
+
+			    if(neighboursList.size()==0)
+			    	completed=true;
+			    return res;
+			}else 
+				return null;
+			
 		}
-		
-		if(res!=null) {
-			sTable.removeNeighbour(res);
-			available_requests--;
-		}else {
-			System.out.println("Returning null");
-		}
-		
-		return res;
 	}
 	
 

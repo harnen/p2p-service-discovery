@@ -13,11 +13,13 @@ public class LookupOperation extends Operation {
     public final Topic topic;
     private HashSet<KademliaNode> discovered;
 
+    private int malQueried;
     
     public LookupOperation(BigInteger srcNode, Long timestamp, Topic t) {
         super(srcNode, t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
         this.topic = t;
         discovered = new HashSet<KademliaNode>();
+        malQueried=0;
 
     }
     
@@ -67,6 +69,10 @@ public class LookupOperation extends Operation {
         return result;
     }
     
+    public void increaseMaliciousQueries() {
+    	malQueried++;
+    }
+    
     
     public List<KademliaNode> getDiscoveredArray()
     {
@@ -84,5 +90,9 @@ public class LookupOperation extends Operation {
                 num_malicious += 1;
         }
         return num_malicious;
+    }
+    
+    public int maliciousNodesQueries() {
+    	return malQueried;
     }
 }

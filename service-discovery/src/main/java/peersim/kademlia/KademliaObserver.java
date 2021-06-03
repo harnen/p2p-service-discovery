@@ -173,7 +173,7 @@ public class KademliaObserver implements Control {
 				msgWriter.write("id,type,src,dst,topic,bucket,waiting_time,sent/received\n");
 			}
 			opWriter = new FileWriter(this.logFolderName + "/" + "operations.csv");
-            opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,discovered_malicious,topic,topicID,evil\n");
+            opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,discovered_malicious,queried_malicious,topic,topicID,evil\n");
             regByTopic = new HashMap<Topic,Integer>();
             regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
             regByRegistrar = new HashMap<String, HashMap<BigInteger,Integer>>();
@@ -286,7 +286,7 @@ public class KademliaObserver implements Control {
             String type = "";
 
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
-                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString() +","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID + "\n";
+                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID + "\n";
             } else if (op instanceof RegisterOperation) {
             	System.out.println("register operation reported");
             	System.exit(1);

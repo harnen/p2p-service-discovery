@@ -84,6 +84,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	final String PAR_PARALLELREGISTRATIONS = "PARALLELREGISTRATIONS";
 	// final String PAR_SLOT = "SLOT";
 	final String PAR_TTNBUCKETS = "TTNBUCKETS";
+	final String PAR_STNBUCKETS = "STNBUCKETS";
+
 	final String PAR_REGTIMEOUT = "REG_TIMEOUT";
 
 	boolean firstRegister;
@@ -179,6 +181,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		// KademliaCommonConfig.SLOT);
 		KademliaCommonConfig.TTNBUCKETS = Configuration.getInt(prefix + "." + PAR_TTNBUCKETS,
 				KademliaCommonConfig.TTNBUCKETS);
+		KademliaCommonConfig.STNBUCKETS = Configuration.getInt(prefix + "." + PAR_STNBUCKETS,
+				KademliaCommonConfig.STNBUCKETS);
 		super._init();
 	}
 
@@ -550,6 +554,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 				tt.addNeighbour(neighbour);
 		}
 
+		if(m.src.is_evil)lop.increaseMaliciousQueries();
 		for (TopicRegistration r : registrations) {
 			lop.addDiscovered(r.getNode());
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
@@ -562,7 +567,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
 		// int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
 
-		if (!lop.finished && found >= required) {
+		//if (!lop.finished && found >= required) {
+		
+		if (!lop.finished && lop.completed()) {
 			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic "
 					+ lop.topic.topic + " after consulting " + lop.getUsedCount() + " nodes.");
 			// We should never use less than 2 hops
@@ -572,6 +579,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 		while ((lop.available_requests > 0)) { // I can send a new find request
 			// get an available neighbour
+			//System.out.println("Found "+lop.finished+" "+lop.available_requests);
 			if (lop.available_requests < KademliaCommonConfig.ALPHA) {
 				return;
 			} else if ((lop.finished && lop.available_requests == KademliaCommonConfig.ALPHA)
@@ -673,9 +681,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		Topic t = (Topic) m.body;
 
 		logger.warning("Send init lookup for topic " + this.node.getId() + " " + t.getTopic());
-		SearchTable rou = new SearchTable(KademliaCommonConfig.NBUCKETS, KademliaCommonConfig.SEARCH_BUCKET_SIZE,
+		SearchTable rou = new SearchTable(KademliaCommonConfig.TTNBUCKETS, KademliaCommonConfig.SEARCH_BUCKET_SIZE,
 				KademliaCommonConfig.SEARCH_TABLE_REPLACEMENTS, this, t, myPid,
-				KademliaCommonConfig.SEARCH_BUCKET_SIZE == 1);
+				KademliaCommonConfig.SEARCH_REFRESH == 1);
 		rou.setNodeId(t.getTopicID());
 		searchTables.put(t.getTopicID(), rou);
 
@@ -727,8 +735,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 			if (nextNode != null) {
 				m.dest = new KademliaNode(nextNode);
 				sendMessage(m.copy(), nextNode, myPid);
-				// System.out.println("Send topic lookup to: " + nextNode +" at
-				// distance:"+Util.logDistance(lop.topic.topicID, nextNode));
+				//System.out.println("Send topic lookup to: " + nextNode +" at distance:"+Util.logDistance(lop.topic.topicID, nextNode));
 				lop.nrHops++;
 			}
 		}

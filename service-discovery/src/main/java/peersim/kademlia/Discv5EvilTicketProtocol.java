@@ -114,7 +114,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 
         if(this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
         // if only a spammer than follow the normal protocol
-            super.handleInitRegisterTopic(m, myPid);
+            //super.handleInitRegisterTopic(m, myPid);
             return;
         }
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {

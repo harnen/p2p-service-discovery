@@ -28,6 +28,9 @@ public class KademliaCommonConfig {
     public static int MAX_REG_BUCKETS = 0;
     public static int PARALLELREGISTRATIONS = 0;
     public static int TTNBUCKETS = 10; 
+    public static int STNBUCKETS = 16; 
+    
+    public static int MAX_TOPIC_REPLY = 15;
 	public static int SLOT = 1000;
 	public static int REG_TIMEOUT = 1000000000;
     public static int REG_WINDOW = 10000;
@@ -53,6 +56,7 @@ public class KademliaCommonConfig {
     public static final int RANDOM_BUCKET_ORDER = 0;
     public static final int CLOSEST_BUCKET_ORDER = 1;
     public static final int ALL_BUCKET_ORDER = 2;
+    public static final int COMPLETE_WALK = 3;
 
     public static int LOOKUP_BUCKET_ORDER = 0;
     
