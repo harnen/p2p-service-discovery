@@ -693,36 +693,47 @@ def analyzeEclipsedNodes(dirs):
     #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
     colors = ['red', 'green', 'blue','orange']
-
-    maxlabel = ['No attack','5%']
-    maxset = []
+    topiclabel = str(1)
+    maxlabel = ['5%','10%','20%']
+    j=0
+    dirs = ['logs_attackTopic'+topiclabel+'_sybilSize1','logs_attackTopic'+topiclabel+'_sybilSize10','logs_attackTopic'+topiclabel+'_sybilSize20']
     for log_dir in dirs:
     #print(log_dir)
-        topics = []
-        df = pd.read_csv(log_dir + '/eclipse_counts.csv')
-        for col_name in df.columns:
-            if col_name.startswith("topic-"):
-                topics.append(col_name[len("topic-"):])
-        max=0
-        for topic in topics:
-            print(df["topic-"+topic].max())
-            if max < df["topic-"+topic].max():
-                max = df["topic-"+topic].max()
+        maxset = []
 
-        maxset.append(max)
+        topics = []
+        dirs2 = ['_attackPercent0.05','_attackPercent0.1_randomsearch','_attackPercent0.2_randomsearch']
+        for log_dir2 in dirs2:
+            df = pd.read_csv(log_dir+log_dir2 + '/eclipse_counts.csv')
+            for col_name in df.columns:
+                if col_name.startswith("topic-"):
+                    topics.append(col_name[len("topic-"):])
+            max=0
+            for topic in topics:
+                #print(df["topic-"+topic].max())
+                if max < df["topic-"+topic].max():
+                    max = df["topic-"+topic].max()
+
+            maxset.append(max)
+
+        print(maxset)
         #ax1.plot(df['time'], df["topic-"+topic], label=topic)
         width=0.3
+        margin=width*j
         #
         #ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
+        sybils = ['Sybil 1 IP','Sybil 10 IP','Sybil 20 IP']
+        ax1.bar(np.arange(len(dirs2))+margin, maxset,width=width,label=sybils[j])
+        j=j+1
 
-    ax1.bar(np.arange(len(dirs)), maxset,width=width)
 
-    ax1.set_title("Number of total eclipsed nodes")
-    ax1.set_xticks(np.arange(len(dirs)))
+    ax1.set_title("Number of total eclipsed nodes Topic "+topiclabel+" Attack")
+    ax1.set_xticks(np.arange(len(dirs))+margin/2)
     ax1.set_xticklabels(maxlabel)
     ax1.set_ylabel("# Eclipsed Nodes")
+    ax1.set_xlabel("% Malicious nodes")
     ax1.legend()
-    plt.savefig(OUTDIR + '/eclipsed_nodes.png')
+    plt.savefig(OUTDIR + '/eclipsed_nodes_t'+topiclabel+'.png')
 
 def analyzeEclipsedNodeDistribution(dirs):
 
@@ -1264,22 +1275,22 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 
-analyzeMessages(sys.argv[1:])
-analyzeRegistrations(sys.argv[1:])
-analyzeRegistrations2(sys.argv[1:])
-analyzeOperations(sys.argv[1:])
-analyzeRegistrantDistribution(sys.argv[1:])
-analyzeRegistrarDistribution(sys.argv[1:])
-analyzeEclipsedNodesOverTime(sys.argv[1:])
+#analyzeMessages(sys.argv[1:])
+#analyzeRegistrations(sys.argv[1:])
+#analyzeRegistrations2(sys.argv[1:])
+#analyzeOperations(sys.argv[1:])
+#analyzeRegistrantDistribution(sys.argv[1:])
+#analyzeRegistrarDistribution(sys.argv[1:])
+#analyzeEclipsedNodesOverTime(sys.argv[1:])
 analyzeEclipsedNodes(sys.argv[1:])
-analyzeActiveRegistrations(sys.argv[1:])
-analyzeActiveRegistrationsMalicious(sys.argv[1:])
-analyzeRegistrationTime(sys.argv[1:])
-analyzeStorageUtilisation(sys.argv[1:])
-analyzeWaitingTimes(sys.argv[1:])
-analyzeNumberOfMessages(sys.argv[1:])
+#analyzeActiveRegistrations(sys.argv[1:])
+#analyzeActiveRegistrationsMalicious(sys.argv[1:])
+#analyzeRegistrationTime(sys.argv[1:])
+#analyzeStorageUtilisation(sys.argv[1:])
+#analyzeWaitingTimes(sys.argv[1:])
+#analyzeNumberOfMessages(sys.argv[1:])
 
-analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
-analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
+#analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
+#analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
 #plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])
