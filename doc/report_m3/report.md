@@ -35,7 +35,7 @@ For the security analysis we performed two different evaluations:
  * A network simulation evaluation (using Peersim simulator) to evaluate the performance and check the security goals of the whole protocol. 
  * A second evaluation using a Python simulator to analyse the performance of the registration tables under different attacks and loads.
 
-## Network Simulation analysis
+## Network Simulation analysis (Peersim)
 
 ### Setup
 
@@ -46,19 +46,18 @@ For the security analysis we performed two different evaluations:
 * Dos registrar attack: Attack where malicious nodes try to backlog registrations from registrants by returning very long waiting times and reduce total number of registrations and therefore the performance of the system.
 
 
-
-
-## Existing Topic Attack
-
-## Random Topic attack
-
-## DoS attack
+### Hybrid Attack
 
 <p align="center">
-  <img src="./img/Attack_Least_Popular_Cap100/Attack_Least_Popular_Occupancy.png" width="30%" />
-  <img src="./img/Attack_Least_Popular_Cap100/Attack_Least_Popular_Reqs.png" width="30%" />
-  <img src="./img/Attack_Least_Popular_Cap100/Attack_Least_Popular_Waiting.png" width="30%" />
+  <img src="./img/hybrid/eclipsed_nodes_t1.png" width="30%" />
+  <img src="./img/hybrid/eclipsed_nodes_t1.png" width="30%" />
+  <img src="./img/hybrid/eclipsed_nodes_t1.png" width="30%" />
 </p>
 
+### Random Topic Spam Attack
 
-## Table Occupancy Attaks
+## DoS Registrar Attack
+
+
+
+## Table Occupancy analysis (Python)
