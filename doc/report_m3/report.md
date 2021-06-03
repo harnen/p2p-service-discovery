@@ -30,16 +30,23 @@ Under the assumptions above we aim to achieve the following properties:
 * G9 - the protocol should be resistant to sybil attacks launched by malicious nodes as described in the section below.
 
 
-## Attacks evaluated
+For the security analysis we performed two different evaluations: 
 
-* Topic spam attack: Tries to place as many as registrations as possible by using unlimited bucket size in ticket table.
-* Malicious registrar attack: Returns registrations from malicious nodes when topic query.
-* Dos registrar attack: Backlogs registrations from registrants by returning very long waiting times. 
-* Hybrid attack: combined topic spam and  Malicious registrar attack). 
-* Unlimited topics attack (malicious nodes generates unlimited topics id registrations to occupy registration tables) 
+ * A network simulation evaluation (using Peersim simulator) to evaluate the performance and check the security goals of the whole protocol. 
+ * A second evaluation using a Python simulator to analyse the performance of the registration tables under different attacks and loads.
+
+## Network Simulation analysis
+
+### Setup
+
+### Attacks evaluated
+
+* Hybrid attack: It combines spamming attack to existing topic attacks, where evil 'registrants' try to place as much as registrations as possible by using bigger ticket size , with malicious registrars attack, where evil registrars replies with only malicious nodes when receiving a topic query.
+* Random topic spam attack: This attack tries to attack registrar topic table by spamming registrations of non-existing topics. 
+* Dos registrar attack: Attack where malicious nodes try to backlog registrations from registrants by returning very long waiting times and reduce total number of registrations and therefore the performance of the system.
 
 
-## Network Simulation setup
+
 
 ## Existing Topic Attack
 
