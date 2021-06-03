@@ -58,24 +58,27 @@ For the security analysis we performed two different evaluations:
 </p>
 
 #### Lookup performance
-
+* Malicious nodes 5%
 <p align="center">
   <img src="./img/hybrid/lookup_hopcount_t1_0.2.png" width="30%" />
   <img src="./img/hybrid/lookup_hopcount_t3_0.2.png" width="30%" />
   <img src="./img/hybrid/lookup_hopcount_t5_0.2.png" width="30%" />
 </p>
 
+* Malicious nodes 10%
 <p align="center">
   <img src="./img/hybrid/lookup_hopcount_t1_0.2.png" width="30%" />
   <img src="./img/hybrid/lookup_hopcount_t3_0.2.png" width="30%" />
   <img src="./img/hybrid/lookup_hopcount_t5_0.2.png" width="30%" />
 </p>
 
+* Malicious nodes 20%
 <p align="center">
   <img src="./img/hybrid/lookup_hopcount_t1_0.2.png" width="30%" />
   <img src="./img/hybrid/lookup_hopcount_t3_0.2.png" width="30%" />
   <img src="./img/hybrid/lookup_hopcount_t5_0.2.png" width="30%" />
 </p>
+
 #### Registration/discovery time
 
 #### Discovered nodes distribution
