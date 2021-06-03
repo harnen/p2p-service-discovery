@@ -735,6 +735,68 @@ def analyzeEclipsedNodes(dirs):
     ax1.legend()
     plt.savefig(OUTDIR + '/eclipsed_nodes_t'+topiclabel+'.png')
 
+
+def analyzediscovered(dirs):
+    #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    fig2, ax2 = plt.subplots()
+    #fig3, ax3 = plt.subplots()
+
+    x = ['RegisterOperation','LookupOperation']
+    x_val = 1
+    x_vals = []
+    total_malicious_list = []
+    total_discovered_list = []
+
+    i=0
+    topiclabel = str(5)
+    maxlabel = ['5%','10%','20%']
+    j=0
+    dirs = ['logs_attackTopic'+topiclabel+'_sybilSize5']
+
+    for log_dir in dirs:
+        #print(log_dir)
+        #print(df)
+        values = {}
+        dirs2 = ['_attackPercent0.1_randomsearch','_attackPercent0.2_randomsearch']
+        for log_dir2 in dirs2:
+
+            df = pd.read_csv(log_dir+log_dir2 + '/operations.csv')
+            topic = 't'+topiclabel
+            #print(df[df.topic == topic]['discovered'].sum())
+            #print(df[df.topic == topic]['discovered'].sum()+df[df.topic == topic]['malicious'].sum())
+            values[log_dir2] = df[df.topic == topic]['discovered'].sum() / (df[df.topic == topic]['discovered'].sum()+df[df.topic == topic]['malicious'].sum())
+
+            #print(np.arange(len(mean.keys())))
+            #print(mean.values())
+
+        print (values.values())
+        width=0.3
+        margin=width*i
+        ax2.bar(np.arange(len(values.keys()))+margin, values.values(),width=width,label=maxlabel[i])
+        i = i+1
+        #print(df['returned_hops'].mean())
+        #ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
+        ax2.set_title("% Valid nodes discovered")
+        ax2.set_xticks(np.arange(len(values.keys()))+margin/2)
+        ax2.set_xticklabels(values.keys())
+
+
+    #print('x_vals: ', x_vals)
+    #width = 1.0  # the width of the bars
+    #x_values = [x-width/2 for x in x_vals]
+    #ax3.bar(x_values, total_malicious_list, width, label='Malicious')
+    #x_values = [x+width/2 for x in x_vals]
+    #ax3.bar(x_values, total_discovered_list, width, label='All')
+    #ax3.set_title("Malicious nodes out of all lookup results")
+    #ax3.set_xticks(x_vals)
+    #ax3.set_xticklabels(dirs)
+
+    #ax2.legend()
+    #ax3.legend()
+    fig2.savefig(OUTDIR + '/discovered.png')
+    #fig3.savefig('malicious_discovered.png')
+
+
 def analyzeEclipsedNodeDistribution(dirs):
 
     fig, ax1 = plt.subplots()
@@ -1068,6 +1130,7 @@ def analyzeRegistrationTime(dirs):
     i=0
     width=0.3
     labels = ['NoSpam','Spam']
+
     for log_dir in dirs:
         #print(log_dir)
         df = pd.read_csv(log_dir + '/registeredTopicsTime.csv')
@@ -1275,6 +1338,7 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 
+analyzediscovered(sys.argv[1:])
 #analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
 #analyzeRegistrations2(sys.argv[1:])
@@ -1285,7 +1349,7 @@ print('Plots will be saved in ', OUTDIR);
 #analyzeEclipsedNodes(sys.argv[1:])
 #analyzeActiveRegistrations(sys.argv[1:])
 #analyzeActiveRegistrationsMalicious(sys.argv[1:])
-analyzeRegistrationTime(sys.argv[1:])
+#analyzeRegistrationTime(sys.argv[1:])
 #analyzeStorageUtilisation(sys.argv[1:])
 #analyzeWaitingTimes(sys.argv[1:])
 #analyzeNumberOfMessages(sys.argv[1:])
