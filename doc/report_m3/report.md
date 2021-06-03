@@ -47,12 +47,17 @@ For the security analysis we performed two different evaluations:
 
 
 ### Hybrid Attack
-
+#### Active registrations
+#### Eclipsed nodes
 <p align="center">
   <img src="./img/hybrid/eclipsed_nodes_t1.png" width="30%" />
-  <img src="./img/hybrid/eclipsed_nodes_t1.png" width="30%" />
-  <img src="./img/hybrid/eclipsed_nodes_t1.png" width="30%" />
+  <img src="./img/hybrid/eclipsed_nodes_t3.png" width="30%" />
+  <img src="./img/hybrid/eclipsed_nodes_t5.png" width="30%" />
 </p>
+#### Lookup performance
+#### Registration/discovery time
+#### Discovered nodes distribution
+
 
 ### Random Topic Spam Attack
 
