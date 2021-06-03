@@ -1,7 +1,7 @@
 # Milestone 3 (Security analysis) report
 
 ## Intro
-The document presents a security analysis of the proposed discovery protocol for the Ethereum  P2P network (discv5) following the described in the following [document](https://github.com/datahop/p2p-service-discovery/blob/d67a7ccd2b4c2c6bec38f5987c99cb13ea074cdc/doc/specs.md). 
+The document presents a security analysis of the proposed discovery protocol for the Ethereum  P2P network (discv5) following the described [specs](https://github.com/datahop/p2p-service-discovery/blob/d67a7ccd2b4c2c6bec38f5987c99cb13ea074cdc/doc/specs.md). 
 
 ## Assumptions
 
