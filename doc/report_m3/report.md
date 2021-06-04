@@ -119,3 +119,9 @@ For the security analysis we performed two different evaluations:
 
 
 ## Table Occupancy analysis (Python)
+
+## Conclusions
+
+* Sybil malicious registrations are kept under control when using a limited number of resources (IP addresses)
+* Protocol performance is mantained under topic spam and DoS attacks. 
+* Nodes can be eclipsed for low popularity topics when using high number of sybil malicious nodes (>10% of the whole network).
