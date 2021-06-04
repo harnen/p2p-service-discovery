@@ -69,11 +69,18 @@ For the security analysis we performed two different evaluations:
 #### Active registrations (malicious in red)
 
 * 50 Sybil IP, different % malicious nodes
-* 20% Malicious, different Sybil size
+
 <p align="center">
   <img src="./img/hybrid/registration_origin_withmalicious_t1.png" width="30%" />
   <img src="./img/hybrid/registration_origin_withmalicious_t3.png" width="30%" />
   <img src="./img/hybrid/registration_origin_withmalicious_t1.png" width="30%" />
+</p>
+
+* 20% Malicious, different Sybil size
+<p align="center">
+  <img src="./img/hybrid/registration_origin_withmalicioussybil_t1.png" width="30%" />
+  <img src="./img/hybrid/registration_origin_withmalicioussybil_t3.png" width="30%" />
+  <img src="./img/hybrid/registration_origin_withmalicioussybil_t5.png" width="30%" />
 </p>
 
 #### Eclipsed nodes
