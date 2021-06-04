@@ -134,6 +134,15 @@ We use the following default parameters. Note that the waiting times are calcula
 * **malicious ips(3)** - the number of IPs shared across the malicious registrants
 * **malicious ids(10)** - the number of IDs shared across the malicious registrants
 
+### Results 
+
+  <img src="./img/python_results/occupancy_size.png" width="100%" />
+  <img src="./img/python_results/occupancy_ips.png" width="100%" />
+  <img src="./img/python_results/occupancy_ids.png" width="100%" />
+  <img src="./img/python_results/occupancy_ids_ips.png" width="6100%" />
+  <img src="./img/python_results/occupancy_malicious_rate.png" width="100%" />
+  
+
 
 ## Conclusions
 
