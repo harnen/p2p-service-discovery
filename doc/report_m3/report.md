@@ -115,6 +115,7 @@ For the security analysis we performed two different evaluations:
 
 ### DoS Registrar Attack
 
+* Active registrations
 
 
 ## Table Occupancy analysis (Python)
