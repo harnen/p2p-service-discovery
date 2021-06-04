@@ -50,6 +50,8 @@ For the security analysis we performed two different evaluations:
 
 #### Active registrations
 
+* 50 Sybil IP, different % malicious nodes
+* 20% Malicious, different Sybil size
 <p align="center">
   <img src="./img/hybrid/registration_origin_withmalicious_t1.png" width="30%" />
   <img src="./img/hybrid/registration_origin_withmalicious_t3.png" width="30%" />
@@ -92,7 +94,7 @@ For the security analysis we performed two different evaluations:
 
 ### Random Topic Spam Attack
 
-## DoS Registrar Attack
+### DoS Registrar Attack
 
 
 
