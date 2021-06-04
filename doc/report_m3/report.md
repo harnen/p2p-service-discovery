@@ -68,7 +68,7 @@ For the security analysis we performed two different evaluations:
 
 ### Hybrid Attack
 
-#### Active registrations
+#### Active registrations (malicious in red)
 
 * 50 Sybil IP, different % malicious nodes
 * 20% Malicious, different Sybil size
