@@ -168,7 +168,9 @@ We use the following default parameters. Note that the waiting times are calcula
 
 * Active registrations
 
-
+<p align="center">
+  <img src="./img/hybrid/registration_dos.png" width="50%" />
+</p>
   
 
 
