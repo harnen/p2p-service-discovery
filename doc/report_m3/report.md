@@ -50,6 +50,12 @@ For the security analysis we performed two different evaluations:
 
 #### Active registrations
 
+<p align="center">
+  <img src="./img/hybrid/registration_origin_withmalicious_t1.png" width="30%" />
+  <img src="./img/hybrid/registration_origin_withmalicious_t3.png" width="30%" />
+  <img src="./img/hybrid/registration_origin_withmalicious_t1.png" width="30%" />
+</p>
+
 #### Eclipsed nodes
 <p align="center">
   <img src="./img/hybrid/eclipsed_nodes_t1.png" width="30%" />
