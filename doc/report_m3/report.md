@@ -179,4 +179,4 @@ We use the following default parameters. Note that the waiting times are calcula
 
 * Sybil malicious registrations are kept under control when using a limited number of resources (IP addresses)
 * Protocol performance is mantained under topic spam and DoS attacks. 
-* Nodes can be eclipsed for low popularity topics when using high number of sybil malicious nodes (>10% of the whole network).
+* Nodes can be eclipsed for low popularity topics when using high number of sybil malicious nodes (>10% of the whole network). One solution could be to maximize the registrar origin of your connections list nodes by prioritising connections to the nodes that comes from different registrars.
