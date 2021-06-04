@@ -24,7 +24,7 @@ def generate_regular(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0, 
                 print("Not enough IPs/IDs in the files")
                 exit(1)
             #record['time'] = int(1000*t_next_req)
-            record['time'] = int(100*i)
+            record['time'] = int(10*i)
             record['id'] = iD
             record['ip'] =ip
             record['topic'] = 't' + str(topics[i])
@@ -83,7 +83,7 @@ def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = '
                 iD = attacker_ids[i % attacker_id_num]
                 topic = topic_to_attack
 
-            record['time'] = int(100*i)
+            record['time'] = int(10*i)
             record['id'] = iD
             record['ip'] =ip
             record['topic'] = topic
@@ -149,7 +149,7 @@ def generate_spam_topic(size = 100, zipf_distribution = 2, attacker_ip_num = 3, 
                 iD = attacker_ids[i % attacker_id_num]
                 topic = 't' + str(100+i)
 
-            record['time'] = int(100*i) 
+            record['time'] = int(10*i) 
             record['id'] = iD
             record['ip'] =ip
             record['topic'] = topic

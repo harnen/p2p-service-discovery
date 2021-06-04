@@ -76,7 +76,7 @@ class Table(metaclass=abc.ABCMeta):
         honest_entries = [req for req in self.table.values() if req['attack'] == 0]
         if(len(self.occupancies_by_attackers) > 0):
             self.occupancies_by_attackers[self.env.now-1] = list(self.occupancies_by_attackers.values())[-1]
-        self.occupancies_by_attackers[self.env.now-1] = len(attacker_entries) / self.capacity
+        self.occupancies_by_attackers[self.env.now] = len(attacker_entries) / self.capacity
         
         if(self.malicious_count > 0):
             if(len(self.malicious_in) > 0):
@@ -138,14 +138,15 @@ class Table(metaclass=abc.ABCMeta):
         requests_workload = [x['attack'] for x in self.workload.values()]
         color_map = self.scatter(requests_workload, "Requests in the workload" , axis[1, 0])
         self.scatter(requests_table, "Requests in the table at", axis[0, 0], color_map)
-        
-
         axis[0, 1].scatter([x[0] for x in self.admission_times], [x[1] for x in self.admission_times], c=get_colors([x[2] for x in self.admission_times]))
         axis[0, 1].set_title("Waiting times")
         #axis[2, 0].set_yscale('log')
+        #print("!!!!!!!!!!!!!!!!!!", self.occupancies)
         axis[1, 1].plot(self.occupancies.keys(), self.occupancies.values(), color='b')
-        #axis[1, 1].plot(range(0, len(self.occupancies_by_attackers)), self.occupancies_by_attackers, color='r')
-        #axis[1, 1].plot(range(0, len(self.occupancies)), [x - y for x, y in zip(self.occupancies, self.occupancies_by_attackers)], color='g')
+        #print("~~~~~~~~~~~~~~~~~~", self.occupancies_by_attackers)
+        #quit()
+        axis[1, 1].plot(self.occupancies_by_attackers.keys(), self.occupancies_by_attackers.values(), color='r')
+        axis[1, 1].plot(self.occupancies.keys(), [x - y for x, y in zip(self.occupancies.values(), self.occupancies_by_attackers.values())], color='g')
         axis[1, 1].set_title("Occupancy over time")
         axis[0, 2].scatter([x[0] for x in self.returns], [x[1] for x in self.returns], c=get_colors([x[2] for x in self.returns]))
         axis[0, 2].set_title("Returns")
@@ -154,6 +155,9 @@ class Table(metaclass=abc.ABCMeta):
         axis[1, 2].plot(self.honest_in.keys(), self.honest_in.values(), c='g')
         axis[1, 2].plot(self.malicious_in.keys(), self.malicious_in.values(), c='r')
         axis[1, 2].set_title("Percentage of overal requests in the table")
+
+        print("Occupancy_total", self.extract_total(self.occupancies))
+        print("Malicious total", self.extract_total(self.occupancies_by_attackers))
 
     def add_stats(self, delay, stats):
         self.env.process(self.add_stats_body(delay, stats))
@@ -191,6 +195,8 @@ class Table(metaclass=abc.ABCMeta):
         stats['honest_occupancy_total'].append(total_honest)
         stats['ad_lifetime'].append(self.ad_lifetime)
         stats['occupancy_power'].append(self.occupancy_power)
+        stats['ip_id_power'].append(self.ip_id_power)
+        stats['topic_power'].append(self.topic_power)
         print("sum:", total)
 
     
@@ -222,7 +228,7 @@ class Table(metaclass=abc.ABCMeta):
 
         waiting_time = self.get_waiting_time(req)
         waiting_time = int(waiting_time)
-        print("waiting time:", waiting_time)
+        print("waiting time:", waiting_time, len(self.table), "/", self.capacity)
         if(waiting_time == 0):
             self.log("Admitting right away")
             del self.pending_req[req['req_id']]
@@ -258,7 +264,7 @@ class SimpleTable(Table):
     
     
 class DiversityTable(Table):
-    def __init__(self, capacity, ad_lifetime, amplify = 1, occupancy_power = 1):
+    def __init__(self, capacity, ad_lifetime, amplify = 1, occupancy_power = 10, ip_id_power = 0.1, topic_power = 10, base_multiplier = 10):
         super().__init__(capacity, ad_lifetime)
         #self.tree = Tree()
         self.ip_modifiers = {}
@@ -266,31 +272,45 @@ class DiversityTable(Table):
         self.topic_modifiers = {}
         self.amplify = amplify
         self.occupancy_power = occupancy_power
+        self.ip_id_power = ip_id_power
+        self.topic_power = topic_power
+        self.base_multiplier = base_multiplier
     
     def get_ip_modifier(self, ip):
         current_ips = [x['ip'] for x in self.table.values()]
-        return math.pow((current_ips.count(ip)/self.capacity) + 1, self.amplify*20)
+        return math.pow(((current_ips.count(ip))/len(self.table)), self.ip_id_power)
         #return self.tree.tryAdd(ip)
     
     def get_id_modifier(self, iD):
         current_ids = [x['id'] for x in self.table.values()]
-        return math.pow((current_ids.count(iD)/self.capacity) + 1, self.amplify*20)
+        return math.pow(((current_ids.count(iD))/len(self.table)), self.ip_id_power)
 
     def get_topic_modifier(self, topic):
         current_topics = [x['topic'] for x in self.table.values()]
-        return math.pow((current_topics.count(topic)/self.capacity) + 1, self.amplify*1)
+        return math.pow(((current_topics.count(topic))/len(self.table)), self.topic_power)
 
 
     def get_waiting_time(self, req):
-        needed_time = self.ad_lifetime
+        if(len(self.table) == 0):
+            return 0
         waited_time = (self.env.now - req['arrived'])
-        #if (len(self.table) >= self.capacity):
-        #    return  needed_time - waited_time
-        #else:
-        #    return max(0, needed_time - waited_time)
-        base_waiting_time = self.ad_lifetime/math.pow(1-len(self.table)/self.capacity, self.occupancy_power)
-        needed_time = base_waiting_time
-        return max(0, needed_time - (self.env.now - req['arrived']))
+        if((1-len(self.table)/self.capacity) == 0):
+            print("Will be 0!")
+            print("Occupancy:", len(self.table))
+            print("Capacity:", self.capacity)
+            quit()
+        base_waiting_time = (self.base_multiplier*self.ad_lifetime)/math.pow(1-len(self.table)/self.capacity, self.occupancy_power)
+        topic_modifier = self.get_topic_modifier(req['topic'])
+        id_modifier = self.get_id_modifier(req['id'])
+        ip_modifier = self.get_ip_modifier(req['ip'])
+        self.ip_modifiers[self.env.now] = (self.env.now, ip_modifier, req['attack'])
+        self.id_modifiers[self.env.now] = (self.env.now, id_modifier, req['attack'])
+        self.topic_modifiers[self.env.now] = (self.env.now, topic_modifier, req['attack'])
+        needed_time = base_waiting_time * max(sum([topic_modifier, id_modifier, ip_modifier]), 1/1000000)
+        print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
+        print("self.occupancy_power:", self.occupancy_power, "self.base_multiplier:", self.base_multiplier, "self.ad_lifetime:", self.ad_lifetime)
+        #needed_time = base_waiting_time
+        return max(0, needed_time - waited_time)
     
         topic_modifier = self.get_topic_modifier(req['topic'])
         id_modifier = self.get_id_modifier(req['id'])
@@ -323,16 +343,20 @@ class DiversityTable(Table):
 
     def report_modifiers(self, delay):
         yield self.env.timeout(delay)
+        #print("self.topic_modifiers", self.topic_modifiers)
+        #quit()
         figure, axis = plt.subplots(3, 1)
-        axis[0].scatter(list(self.ip_modifiers.keys()), [x[0] for x in list(self.ip_modifiers.values())], c=get_colors([x[1] for x in list(self.ip_modifiers.values())]))
+        axis[0].scatter([x[0] for x in list(self.ip_modifiers.values())], [x[1] for x in list(self.ip_modifiers.values())], c=get_colors([x[2] for x in list(self.ip_modifiers.values())]))
         axis[0].set_title("IP modifier")
-        axis[0].set_yscale('log')
-        axis[1].scatter(list(self.id_modifiers.keys()), [x[0] for x in list(self.id_modifiers.values())], c=get_colors([x[1] for x in list(self.id_modifiers.values())]))
+        #axis[0].set_yscale('log')
+        axis[1].scatter([x[0] for x in list(self.id_modifiers.values())], [x[1] for x in list(self.id_modifiers.values())], c=get_colors([x[2] for x in list(self.id_modifiers.values())]))
         axis[1].set_title("ID modifier")
-        axis[1].set_yscale('log')
-        axis[2].scatter(list(self.topic_modifiers.keys()), [x[0] for x in list(self.topic_modifiers.values())], c=get_colors([x[1] for x in list(self.topic_modifiers.values())]))
+        #axis[1].set_yscale('log')
+        axis[2].scatter([x[0] for x in list(self.topic_modifiers.values())], [x[1] for x in list(self.topic_modifiers.values())], c=get_colors([x[2] for x in list(self.topic_modifiers.values())]))
         axis[2].set_title("Topic modifier")
-        axis[2].set_yscale('log')
+        #axis[2].set_yscale('log')
+        #print("Topic modifiers ys:", [x[1] for x in list(self.topic_modifiers.values())])
+        #print("ip honest modifiers", list(filter(lambda x: x[2] == 0, self.ip_modifiers.values())))
 
         figure.suptitle("Diversity Table Modifiers")
 
@@ -412,12 +436,8 @@ class Tree:
         balanced_score = (self.root.getCounter()-1) * 32
         max_score = -(self.root.getCounter()-1) * (1 - pow(2, 33))
         print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
-        #quit()
+
         return score
-        #if(balanced_score == 0 or (math.log(score/balanced_score, 10)) < 1):
-        #    return 1
-        #else:
-        #    return (math.log(score/balanced_score, 10))
             
 	
     def tryAddRecursive(self, current, addr, depth):
