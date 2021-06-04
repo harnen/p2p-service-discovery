@@ -126,9 +126,6 @@ We use the following default parameters. Note that the waiting times are calcula
 </p>
 
 
-
-#### Registration/discovery time
-
 #### Discovered nodes distribution
 
 <p align="center">
