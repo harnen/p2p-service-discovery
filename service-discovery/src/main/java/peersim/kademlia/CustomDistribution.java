@@ -38,7 +38,6 @@ public class CustomDistribution implements peersim.core.Control {
     // Zipf exponent to generate topic IDs in requsts by honest nodes
     private final static String PAR_ZIPF = "zipf";
     
-<<<<<<< HEAD
     private int protocolID;
     private int evilProtocolID;
     private double percentEvil;
@@ -52,18 +51,7 @@ public class CustomDistribution implements peersim.core.Control {
     private String attackType;
     private int ipPoolSize;
     private int idPoolSize;
-=======
-    protected int protocolID;
-    protected int evilProtocolID;
-    protected double percentEvil;
-    protected UniformRandomGenerator urg;
-    protected final int topicNum;
-    protected final double exp;
-    protected ZipfDistribution zipf;
-    protected String idDist;
-    protected int[] subtract; 
-    protected int attackTopicNo;
->>>>>>> add_ips
+
 
     public CustomDistribution(String prefix) {
         protocolID = Configuration.getPid(prefix + "." + PAR_PROT);
@@ -91,7 +79,6 @@ public class CustomDistribution implements peersim.core.Control {
         }
     }
 
-<<<<<<< HEAD
     private BigInteger generate_id(String idDist, int topicNo, Topic t) {
         BigInteger id;
 
@@ -108,9 +95,7 @@ public class CustomDistribution implements peersim.core.Control {
     }
 
     private BigInteger generate_non_uniform_id(int topicNo, Topic t) {
-=======
-    protected BigInteger generate_non_uniform_id(int topicNo, Topic t) {
->>>>>>> add_ips
+
         int amountToSubstract = subtract[topicNo-1];
         subtract[topicNo-1] += 1;
         String str = String.valueOf(amountToSubstract); 
