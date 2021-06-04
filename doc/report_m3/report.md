@@ -53,11 +53,11 @@ We use the following default parameters. Note that the waiting times are calcula
 
 ### Results 
 
-  <img src="./img/python_results/occupancy_size.png" width="100%" />
-  <img src="./img/python_results/occupancy_ips.png" width="100%" />
-  <img src="./img/python_results/occupancy_ids.png" width="100%" />
-  <img src="./img/python_results/occupancy_ids_ips.png" width="6100%" />
-  <img src="./img/python_results/occupancy_malicious_rate.png" width="100%" />
+  <p align="center"><img src="./img/python_results/occupancy_size.png" width="60%" /></p>
+  <p align="center"><img src="./img/python_results/occupancy_ips.png" width="60%" /></p>
+  <p align="center"><img src="./img/python_results/occupancy_ids.png" width="60%" /></p>
+  <p align="center"><img src="./img/python_results/occupancy_ids_ips.png" width="60%" /></p>
+  <p align="center"><img src="./img/python_results/occupancy_malicious_rate.png" width="60%" /></p>
 
 
 
