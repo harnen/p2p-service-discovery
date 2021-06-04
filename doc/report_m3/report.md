@@ -111,7 +111,35 @@ For the security analysis we performed two different evaluations:
   <img src="./img/hybrid/registrant_distribution_t5.png" width="30%" />
 </p>
 
-### Random Topic Spam Attack
+### Random Topic Spam Attack 
+
+* Active Registrations for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="./img/random_topic_attack/5Percent_Attackers/registration_origin_withmalicious.png" width="30%" />
+  <img src="./img/random_topic_attack/10Percent_Attackers/registration_origin_withmalicious.png" width="30%" />
+  <img src="./img/random_topic_attack/20Percent_Attackers/registration_origin_withmalicious.png" width="30%" />
+</p>
+
+* Average time to register for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="./img/random_topic_attack/5Percent_Attackers/avg_time_register.png" width="30%" />
+  <img src="./img/random_topic_attack/10Percent_Attackers/avg_time_register.png" width="30%" />
+  <img src="./img/random_topic_attack/20Percent_Attackers/avg_time_register.png" width="30%" />
+</p>
+
+* Average lookup hop count for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="./img/random_topic_attack/5Percent_Attackers/lookup_hopcount.png" width="30%" />
+  <img src="./img/random_topic_attack/10Percent_Attackers/lookup_hopcount.png" width="30%" />
+  <img src="./img/random_topic_attack/20Percent_Attackers/lookup_hopcount.png" width="30%" />
+</p>
+
+* Discovered nodes distribution for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="./img/random_topic_attack/5Percent_Attackers/registrant_distribution.png" width="30%" />
+  <img src="./img/random_topic_attack/10Percent_Attackers/registrant_distribution.png" width="30%" />
+  <img src="./img/random_topic_attack/20Percent_Attackers/registrant_distribution.png" width="30%" />
+</p>
 
 ### DoS Registrar Attack
 
