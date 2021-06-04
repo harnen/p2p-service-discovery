@@ -71,6 +71,7 @@ We use the following default parameters. Note that the waiting times are calcula
 * Kademlia buckets: 16
 * Ticket table bucket size: 3
 * Ticket table buckets: 10
+* Evil node Ticket table bucket size: 100
 * Search table bucket size: 16
 * Search table buckets: 10
 * Registration lifetime: 5 minutes
