@@ -40,7 +40,6 @@ For the security analysis we performed two different evaluations:
 ### Setup
 
 * Network size: 2000 nodes
-* Size: 2000 nodes
 * Simulation time: 4h
 * Kademlia Bucket size: 16
 * Kademlia buckets: 16
@@ -48,7 +47,7 @@ For the security analysis we performed two different evaluations:
 * Ticket table buckets: 10
 * Search table bucket size: 16
 * Search table buckets: 10
-* Ad lifetime: 5 minutes
+* Registration lifetime: 5 minutes
 * Topics: 5
 * Zipf exp: 0.7
 * Lookup bucket strategy - all_bucket
