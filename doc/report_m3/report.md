@@ -117,6 +117,21 @@ For the security analysis we performed two different evaluations:
 
 
 ## Table Occupancy analysis (Python)
+In this section, we analyze resiliance of a single registrar against 3 types of attacks:
+* **spam attack** - the attacker tries to fill the topic table with registrations for random topics. Each registration sent back the attacker is for different topic. 
+* **topic popular** - the attacker tries to fill the topic table with registrations for the most popular topic. Each registration sent back the attacker is for the same topic. 
+* **topic unpopular** - the attacker tries to fill the topic table with registrations for the least popular topic. Each registration sent back the attacker is for the same topic. 
+We comapre the results against a scenario with no attacks present. 
+
+### Setup
+We use the following default parameters. Note that the waiting times are calculated based on the occupancy/capacity ratio of the table. Thus the result are the same regardless of the actuall size of the table. 
+* **ad_lifetime(3000)** - time in ms that a registration spend in the table
+* **capacity(200)** - capacity of the table
+* **size(300)** - the number of all the registrants (malicious + honest)
+* **malicious rate(5)** - ratio malicious/honest registrants. For the default values, there are 50 honest registrants and 250 malicious ones.
+* **malicious ips(3)** - the number of IPs shared across the malicious registrants
+* **malicious ids(10)** - the number of IDs shared across the malicious registrants
+
 
 ## Conclusions
 
