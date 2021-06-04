@@ -48,7 +48,7 @@ We use the following default parameters. Note that the waiting times are calcula
 * **capacity(200)** - capacity of the table
 * **size(300)** - the number of all the registrants (malicious + honest)
 * **malicious rate(5)** - ratio malicious/honest registrants. For the default values, there are 50 honest registrants and 250 malicious ones.
-* **malicious ips(3)** - the number of IPs shared across the malicious registrants
+* **malicious ips(10)** - the number of IPs shared across the malicious registrants
 * **malicious ids(10)** - the number of IDs shared across the malicious registrants
 
 ### Results 
