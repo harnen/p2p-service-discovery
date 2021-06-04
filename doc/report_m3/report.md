@@ -110,6 +110,11 @@ For the security analysis we performed two different evaluations:
 
 #### Discovered nodes distribution
 
+<p align="center">
+  <img src="./img/hybrid/registrant_distribution_t1.png" width="30%" />
+  <img src="./img/hybrid/registrant_distribution_t3.png" width="30%" />
+  <img src="./img/hybrid/registrant_distribution_t5.png" width="30%" />
+</p>
 
 ### Random Topic Spam Attack
 
