@@ -88,9 +88,14 @@ public class Discv5TrafficGenerator implements Control {
 		if(counter >= limit){
 			return false;
 		}
+<<<<<<< HEAD
 		counter++;
 		//first = false;
 		System.out.println("Discv5 Traffic generator called");
+=======
+		first = false;
+		//System.out.println("Discv5 Traffic generator called");
+>>>>>>> add_ips
 		Node start;
 		do {
 			start = Network.get(CommonState.r.nextInt(Network.size()));

@@ -718,6 +718,13 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 	public void sendTopicLookup(Message m, Topic t, int myPid) {
 
+<<<<<<< HEAD
+=======
+  
+    }
+    
+    public void sendTopicLookup(Message m,Topic t,int myPid) {
+>>>>>>> add_ips
 		KademliaObserver.lookup_total.add(1);
 
 		LookupTicketOperation lop = new LookupTicketOperation(this.node.getId(), this.searchTables.get(t.getTopicID()),
@@ -768,6 +775,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		}
 		super.handleResponse(m, myPid);
 	}
+<<<<<<< HEAD
 
 	public void sendTicketRequest(BigInteger dest, Topic t, int myPid) {
 		logger.info("Sending ticket request to " + dest + " for topic " + t.topic);
@@ -782,6 +790,22 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		top.available_requests = KademliaCommonConfig.ALPHA;
 
 		Message m = new Message(Message.MSG_TICKET_REQUEST, t);
+=======
+	
+   public void sendTicketRequest(BigInteger dest,Topic t,int myPid) {
+    	logger.warning("Sending ticket request to " + t.topic);
+        TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
+ 		top.body = t;
+ 		operations.put(top.operationId, top);
+         
+         // Lookup the target address in the routing table
+ 		BigInteger[] neighbours = new BigInteger[] {dest};
+ 		
+        top.elaborateResponse(neighbours); 
+ 		top.available_requests = KademliaCommonConfig.ALPHA;
+ 		
+ 		Message m = new Message(Message.MSG_TICKET_REQUEST, t);
+>>>>>>> add_ips
 		m.timestamp = CommonState.getTime();
 		// set message operation id
 		m.operationId = top.operationId;
