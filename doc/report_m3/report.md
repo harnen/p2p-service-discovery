@@ -39,6 +39,26 @@ For the security analysis we performed two different evaluations:
 
 ### Setup
 
+* Network size: 2000 nodes
+* Size: 2000 nodes
+* Simulation time: 4h
+* Kademlia Bucket size: 16
+* Kademlia buckets: 16
+* Ticket table bucket size: 3
+* Ticket table buckets: 10
+* Search table bucket size: 16
+* Search table buckets: 10
+* Ad lifetime: 5 minutes
+* Topics: 5
+* Zipf exp: 0.7
+* Lookup bucket strategy - all_bucket
+* Max registration retries: 10
+* IP used in the attack [1,10,50]
+* Malicious node % [5,10,20]
+
+* Nodes for Topic: t1: 2000, t2 1272, t3: 803, t4: 496, t5: 218
+
+
 ### Attacks evaluated
 
 * Hybrid attack: It combines spamming attack to existing topic attacks, where evil 'registrants' try to place as much as registrations as possible by using bigger ticket size , with malicious registrars attack, where evil registrars replies with only malicious nodes when receiving a topic query.
