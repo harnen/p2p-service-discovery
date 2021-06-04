@@ -92,25 +92,18 @@ For the security analysis we performed two different evaluations:
 </p>
 
 #### Lookup performance
-* Malicious nodes 5%
+* 50 Sybil IP, different % malicious nodes
 <p align="center">
-  <img src="./img/hybrid/lookup_hopcount_t1_0.2.png" width="30%" />
-  <img src="./img/hybrid/lookup_hopcount_t3_0.2.png" width="30%" />
-  <img src="./img/hybrid/lookup_hopcount_t5_0.2.png" width="30%" />
+  <img src="./img/hybrid/lookup_hopcount_t1.png" width="30%" />
+  <img src="./img/hybrid/lookup_hopcount_t3.png" width="30%" />
+  <img src="./img/hybrid/lookup_hopcount_t5.png" width="30%" />
 </p>
 
-* Malicious nodes 10%
+* 20% Malicious, different Sybil size
 <p align="center">
-  <img src="./img/hybrid/lookup_hopcount_t1_0.2.png" width="30%" />
-  <img src="./img/hybrid/lookup_hopcount_t3_0.2.png" width="30%" />
-  <img src="./img/hybrid/lookup_hopcount_t5_0.2.png" width="30%" />
-</p>
-
-* Malicious nodes 20%
-<p align="center">
-  <img src="./img/hybrid/lookup_hopcount_t1_0.2.png" width="30%" />
-  <img src="./img/hybrid/lookup_hopcount_t3_0.2.png" width="30%" />
-  <img src="./img/hybrid/lookup_hopcount_t5_0.2.png" width="30%" />
+  <img src="./img/hybrid/lookup_hopcount_t1sybil.png" width="30%" />
+  <img src="./img/hybrid/lookup_hopcount_t3sybil.png" width="30%" />
+  <img src="./img/hybrid/lookup_hopcount_t5sybil.png" width="30%" />
 </p>
 
 #### Registration/discovery time
