@@ -22,6 +22,7 @@ public class Timeout extends SimpleEvent {
 	
 	
 	public static final int REG_TIMEOUT = 102;
+	
 	/**
 	 * The node wich failed to response
 	 */
@@ -44,6 +45,7 @@ public class Timeout extends SimpleEvent {
     
     
     public BigInteger nodeSrc; 
+    
 
 	// ______________________________________________________________________________________________
 	/**
@@ -73,4 +75,6 @@ public class Timeout extends SimpleEvent {
     	this.topic = topic;
     	this.nodeSrc = nodeSrc;
 	}
+    
+
 }

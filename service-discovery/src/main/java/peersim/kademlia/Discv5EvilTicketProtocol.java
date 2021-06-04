@@ -74,8 +74,8 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             System.out.println("Attacker type Malicious Registrar");
         else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM))
             System.out.println("Attacker type Topic Spam");
-        else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K))
-            System.out.println("Attacker type K");
+        else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS))
+            System.out.println("Attacker type Dos");
         else {
             System.out.println("Invalid attacker type");
             System.exit(1);
@@ -110,36 +110,13 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         Topic t = (Topic) m.body;
         
         logger.warning("In handleInitRegister of EVIL "+t.getTopic()+" "+t.getTopicID()+" "+Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_BUCKET_SIZE, KademliaCommonConfig.TICKET_BUCKET_SIZE));
-        // Fill up the evilTopicTable only with other malicious nodes
         
-    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K)) {
-    	 	//Topic t = (Topic) m.body;
-        	
-        	logger.warning("handleInitRegisterTopic "+t.getTopic()+" "+t.getTopicID()+" "+KademliaCommonConfig.TICKET_BUCKET_SIZE);
 
-
-        	//restore the IF statement
-        	KademliaObserver.addTopicRegistration(t, this.node.getId());
-
-            //TicketTable rou = new TicketTable(KademliaCommonConfig.NBUCKETS,3,10,this,t,myPid);
-            TicketTable rou;
-            if(KademliaCommonConfig.TICKET_BUCKET_SIZE==0)
-            	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
-            else
-            	rou = new TicketTable(KademliaCommonConfig.NBUCKETS,16,KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS,this,t,myPid,KademliaCommonConfig.TICKET_REFRESH==1);
-            rou.setNodeId(t.getTopicID());
-            ticketTables.put(t.getTopicID(),rou);
-            	
-            for(int i = 0; i<= KademliaCommonConfig.BITS;i++) {
-            	BigInteger[] neighbours = routingTable.getNeighbours(i);
-            	rou.addNeighbour(neighbours);
-            }
-            if(printSearchTable)rou.print();
+        if(this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
+        // if only a spammer than follow the normal protocol
+            //super.handleInitRegisterTopic(m, myPid);
             return;
-            //Register messages are automatically sent when adding Neighbours
-            
-    	}
-        
+        }
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
             first = false;
             logger.info("Filling up the topic table with malicious entries");
@@ -217,17 +194,10 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      */
     protected void handleTopicQuery(Message m, int myPid) {
     	
-    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K)) {
-            super.handleTopicQuery(m, myPid);
-            return;
-    	}
-        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM))
-            super.handleTopicQuery(m, myPid);
-
         Topic t = (Topic) m.body;
         TopicRegistration[] registrations = new TopicRegistration[0];
 
-        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)) {
+        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
         // if only a spammer than follow the normal protocol
             super.handleTopicQuery(m, myPid);
         }
@@ -237,9 +207,15 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
                 registrations = (TopicRegistration []) regList.toArray(new TopicRegistration[regList.size()]);
             }
         
+            int result_len = KademliaCommonConfig.K > registrations.length ? registrations.length : KademliaCommonConfig.K;
+            TopicRegistration[] final_results = new TopicRegistration[result_len];
+
+            for (int i = 0; i < result_len; i++) 
+                final_results[i] = registrations[CommonState.r.nextInt(registrations.length)];
+            
             BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 
-            Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
+            Message.TopicLookupBody body = new Message.TopicLookupBody(final_results, neighbours);
             Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
             response.operationId = m.operationId;
             response.src = this.node;
@@ -255,7 +231,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      */
     protected void handleTicketRequest(Message m, int myPid) {
         
-    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K)) {
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)) {
             super.handleTicketRequest(m, myPid);
             return;
     	}
@@ -272,6 +248,10 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 		//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
 
     	Message.TicketReplyBody body = new Message.TicketReplyBody(ticket, neighbours);
+    	
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
+    		body = new Message.TicketReplyBody(new Ticket (topic, curr_time, 100000000, advertiser, rtt_delay, 0), new BigInteger[0]);
+    	}
 		Message response  = new Message(Message.MSG_TICKET_RESPONSE, body);
 	
         //Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
@@ -330,7 +310,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 	 */
 	protected void handleFind(Message m, int myPid, int dist) {
 		
-    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_K)) {
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
             super.handleFind(m, myPid,dist);
             return;
     	}

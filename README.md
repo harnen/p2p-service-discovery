@@ -25,48 +25,48 @@ The project is organised in three main milestones of the project together with t
 * [ ] Pending or uncomplete tasks
 
 * Objective 1: Traffic optimization and load balancing
-  * [ ] Task: Improve the current discv5 to avoid hotspots in the network and avoid unnecessary load on participating nodes
-  * Deliverable: Updated Discv5 specification and evaluation results (TBC)
+  * [X] Task: Improve the current discv5 to avoid hotspots in the network and avoid unnecessary load on participating nodes
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [evaluation results](doc/report_m1/report.md).
   * Deadline: 31/3/2021
 
 * Objective 2: Investigate topic table structure
-  * [ ] Task: Investigate on the optimal structure of the topic table to ensure fairness among all topics
-  * Deliverable: Updated Discv5 specification and evaluation results (TBC)
+  * [X] Task: Investigate on the optimal structure of the topic table to ensure fairness among all topics
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [evaluation results](doc/report_m2/report.md).
   * Deadline: 30/4/2021
 
 * Objective 3: Additional security analysis
   * [ ] Task: Extend on security analysis to avoid any malicious behaviour and measure the risk of sybil attacks.
-  * Deliverable: Updated Discv5 specification and evaluation results (TBC)
-  * Deadline: 30/4/2021
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [security analysis report](doc/report_m3/report.md).
+  * Deadline: 21/5/2021
 
 * Objective 4: Configuration parameters analysis
   * [ ] Task: Extend existing evaluation to test multiple configuration parameters to choose the optimal ones to be used in production software.
   * Deliverable: Evaluation report (TBC)
-  * Deadline: 31/5/2021
+  * Deadline: 21/6/2021
 
 * Objective 5: Publication-ready technical report
   * [ ] Task: Write a technical report including the final specs of the discovery mechanism, all results of the evaluation and the conclusions of the investigation.
   * Deliverable: Technical report including specs, evaluation and documentation (TBC)
-  * Deadline: 30/6/2021
+  * Deadline: 21/7/2021
   
 * Objective 6: Evaluation on a real testbed
   * [ ] Task: Evaluate the service discovery mechanism using production software in a real testbed.
   * Deliverable: Testbed instructions and evaluation report using final parameters (TBC)
-  * Deadline: 30/6/2021
+  * Deadline: 30/7/2021
 
-  
-## Service Discovery Requirements
+## Discv5 Service Discovery Requirements
 
 [Requirements](doc/requirements.md)
+
+## Discv5 Service Discovery Specifications
+
+[Specifications](doc/specs.md)
+
 
 ## Security Analysis
 
 [Security](doc/security.md)
 
-
-## Discv5 Service Discovery Design
-
-[Design](doc/design.md)
 
 ## Service Discovery Simulator
 
@@ -133,7 +133,7 @@ We should decide how to implement it.
 
 [Security report comparing two discovery protocols](doc/security_report/report.md)
 
-[Security report for final protocol](doc/ticket_security_report/report.md)-->
+[Security report for final protocol](doc/ticket_security_report/report.md)
 
 [Evaluation results](doc/FinalReport.pdf)
 
@@ -158,4 +158,4 @@ We should decide how to implement it.
 
 ## Other
 
-[Service discovery implementation](doc/discovery.md)
+[Service discovery implementation](doc/discovery.md)-->

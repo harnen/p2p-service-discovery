@@ -14,6 +14,7 @@ import peersim.core.CommonState;
 import peersim.core.Node;
 import peersim.edsim.EDSimulator;
 
+import java.util.logging.Logger;
 public class TicketTable extends RoutingTable {
 
     /**
@@ -42,9 +43,8 @@ public class TicketTable extends RoutingTable {
     private List<Integer> seenOccupancy;
     private int seenNotFull = 0; 
     
-    public int available_requests = KademliaCommonConfig.ALPHA;
+    private int available_requests;
 
-    
 	public TicketTable(int nBuckets, int k, int maxReplacements,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
 		
 		super(nBuckets,k,maxReplacements);
@@ -72,40 +72,10 @@ public class TicketTable extends RoutingTable {
 		
 		seenOccupancy = new ArrayList<Integer>();
 		
+		available_requests = KademliaCommonConfig.ALPHA;
+		
 	}
 
-	public TicketTable(int nBuckets,Discv5TicketProtocol protocol,Topic t, int myPid, boolean refresh) {
-		
-		super(0, 0, 0);
-		k_buckets = new KBucket[nBuckets];
-		this.nBuckets = nBuckets;
-		this.maxReplacements=0;
-		bucketMinDistance = KademliaCommonConfig.BITS - nBuckets;
-		
-		this.k=3;
-		
-		for (int i = 0; i < k_buckets.length; i++) {
-			k_buckets[i] = new KBucket(this,k,maxReplacements);
-		}
-		
-		pendingTickets = new ArrayList<BigInteger>();
-
-		this.protocol = protocol;
-		
-		this.t = t;
-		
-		this.nodeId = t.getTopicID();
-		
-		this.myPid = myPid;
-		
-		logger = Logger.getLogger(protocol.getNode().getId().toString());
-		
-		this.refresh = refresh;
-		
-		registeredPerDist = new HashMap<Integer, Integer>();
-
-		registeredNodes = new ArrayList<BigInteger>();
-	}
 	
 	public boolean addNeighbour(BigInteger node) {
 		logger.info("Adding neighbour "+bucketWithRegs()+" "+KademliaCommonConfig.MAX_REG_BUCKETS+" "+Util.logDistance(nodeId, node)+" "+(Util.logDistance(nodeId, node) - bucketMinDistance - 1)+" "+(nBuckets-KademliaCommonConfig.MAX_REG_BUCKETS));
@@ -122,7 +92,7 @@ public class TicketTable extends RoutingTable {
 		if(!pendingTickets.contains(node)&&!registeredNodes.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
-				//protocol.sendTicketRequest(node,t,myPid);
+				if(KademliaCommonConfig.PARALLELREGISTRATIONS==1)protocol.sendTicketRequest(node,t,myPid);
 				addRegisteredList(node);
 
 				return true;
@@ -140,11 +110,11 @@ public class TicketTable extends RoutingTable {
 	public BigInteger getNeighbour() {
 		BigInteger res = null;
 		
-		if(!shallContinueRegistration()) {
+		/*if(!shallContinueRegistration()) {
 			System.out.println("Decided not to continue registration anymore");
 			this.available_requests = -KademliaCommonConfig.ALPHA;
 			return null;
-		}
+		}*/
 		
 		while(lastAskedBucket > bucketMinDistance && triesWithinBucket >= super.bucketAtDistance(lastAskedBucket).occupancy()) {
 			lastAskedBucket--;
@@ -154,7 +124,7 @@ public class TicketTable extends RoutingTable {
 			res = super.bucketAtDistance(lastAskedBucket).neighbours.get(triesWithinBucket);
 			triesWithinBucket++;
 		}
-		System.out.println("returning neighbour " + triesWithinBucket + " from bucket " + lastAskedBucket);
+		//System.out.println("returning neighbour " + triesWithinBucket + " from bucket " + lastAskedBucket);
 		return res;
 		//protocol.sendTicketRequest(node,t,myPid);
 	}
@@ -244,17 +214,17 @@ public class TicketTable extends RoutingTable {
 	}
 	
 	public void print() {
-		System.out.println("Ticket table:");
+		logger.warning("Ticket table topic "+t.getTopic()+" :");
 		int sum = 0;
 		for(int dist = 256; dist > bucketMinDistance ; dist-- ) {
 			int removed = 0;
 			if(registeredPerDist.containsKey(dist))
 				removed = registeredPerDist.get(dist);
 			
-			System.out.println("b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() +" replacements:"+super.bucketAtDistance(dist).replacements.size()+" +" + removed);
+			logger.warning("Ticket "+t.getTopic()+" b[" + dist + "]: " + super.bucketAtDistance(dist).occupancy() +" replacements:"+super.bucketAtDistance(dist).replacements.size()+" +" + removed);
 			sum += removed;
 		}
-		System.out.println("Asked " + sum + " nodes.");
+		logger.warning("Asked "+t.getTopic()+" " + sum + " nodes.");
 	}
 	
 	public BigInteger getTopicId() {
@@ -315,8 +285,23 @@ public class TicketTable extends RoutingTable {
 	}
 
 	public void reportResponse(Ticket ticket) {
-		seenOccupancy.add(ticket.topicOccupancy);
+		seenOccupancy.add(ticket.getOccupancy());
 	}
 
+	public void increaseAvailableRequests() {
+		available_requests++;
+	}
+	
+	public void decreaseAvailableRequests() {
+		available_requests--;
+	}
+	
+	public int getAvailableRequests() {
+		return available_requests;
+	}
+	
+	public Topic getTopic() {
+		return t;
+	}
 
 }

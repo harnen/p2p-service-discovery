@@ -18,9 +18,11 @@ import peersim.core.CommonState;
 public class Discv5TopicTable { // implements TopicTable {
     
     protected int tableCapacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
-    private int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
+    protected int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
     protected int adLifeTime = KademliaCommonConfig.AD_LIFE_TIME;
-    private BigInteger hostID;
+    protected BigInteger hostID;
+    
+    protected HashMap<String,Integer> ticketCompetingList;
 
     // Per-topic registration table
     protected HashMap<Topic, ArrayDeque<TopicRegistration>> topicTable;
@@ -28,17 +30,17 @@ public class Discv5TopicTable { // implements TopicTable {
     protected HashMap<Topic, ArrayList<Ticket>> competingTickets;
     // All topic advertisements ordered by registration
     protected ArrayDeque<TopicRegistration> allAds;
-    private HashMap<Topic, Long> nextDecisionTime;
+    protected HashMap<Topic, Long> nextDecisionTime;
 
     protected Logger logger;
     
-
 
     public Discv5TopicTable() {
         topicTable = new HashMap<Topic, ArrayDeque<TopicRegistration>>(); 
         competingTickets = new HashMap<Topic, ArrayList<Ticket>>();
         allAds = new ArrayDeque<TopicRegistration>();
         nextDecisionTime = new HashMap<Topic, Long>();
+        ticketCompetingList = new HashMap<String,Integer>();
     }
 
     public void setHostID(BigInteger id){
@@ -112,10 +114,10 @@ public class Discv5TopicTable { // implements TopicTable {
         return false;
     }
     
-    private int topicQueueOccupancy(Topic topic) {
+    protected int topicQueueOccupancy(Topic topic) {
     	ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
     	if (topicQ != null) {
-    		System.out.println("topicQ: " + topicQ.size() + "/" + this.adsPerQueue);
+    		//System.out.println("topicQ: " + topicQ.size() + "/" + this.adsPerQueue);
     		return topicQ.size();
     	}
         /*
@@ -204,6 +206,8 @@ public class Discv5TopicTable { // implements TopicTable {
     
     protected Ticket [] makeRegisterDecision(long curr_time) {   
         // Determine which topics are up for decision
+    	
+    	ticketCompetingList.clear();
         HashSet<Topic> topicSet = new HashSet<Topic>();
         for (Topic topic : this.competingTickets.keySet()) {
             ArrayList<Ticket> tickets = this.competingTickets.get(topic);
@@ -220,6 +224,8 @@ public class Discv5TopicTable { // implements TopicTable {
         ArrayList<Ticket> ticketList = new ArrayList<Ticket>();
         for (Topic topic : topicSet) {
             ArrayList<Ticket> tickets = this.competingTickets.get(topic);
+        	//System.out.println("Get Competing by topic "+topic.getTopic()+" "+tickets.size());
+            ticketCompetingList.put(topic.getTopic(),tickets.size());
             ticketList.addAll(tickets);
             nextDecisionTime.remove(topic);
             competingTickets.remove(topic);
@@ -329,7 +335,7 @@ public class Discv5TopicTable { // implements TopicTable {
 
         // Random selection of K results
         TopicRegistration[] results = (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);
-        int result_len = KademliaCommonConfig.K > results.length ? results.length : KademliaCommonConfig.K;
+        int result_len = KademliaCommonConfig.MAX_TOPIC_REPLY > results.length ? results.length : KademliaCommonConfig.MAX_TOPIC_REPLY;
         TopicRegistration[] final_results = new TopicRegistration[result_len];
 
         for (int i = 0; i < result_len; i++) 
@@ -388,7 +394,8 @@ public class Discv5TopicTable { // implements TopicTable {
         HashMap<Topic,Integer> numOfCompetingTickets = new HashMap<Topic,Integer>();
         for(Topic t: topicTable.keySet())
         {
-        	ArrayList<Ticket> tickets = competingTickets.get(t);       
+        	ArrayList<Ticket> tickets = competingTickets.get(t); 
+
             int size;
             if (tickets == null)
                 size = 0;
@@ -404,11 +411,41 @@ public class Discv5TopicTable { // implements TopicTable {
 
     }
     
+    /*public HashMap<String, Integer> getRegbyRegistrar(){
+    	HashMap<String, Integer> topicOccupancy= new HashMap<String, Integer>();
+    	for(Topic t: topicTable.keySet())
+    		if(topicTable.get(t).size()>0)topicOccupancy.put(t.getTopic(),topicTable.get(t).size());
+        return topicOccupancy;
+    }*/
+    
     public HashMap<String, Integer> getRegbyRegistrar(){
     	HashMap<String, Integer> topicOccupancy= new HashMap<String, Integer>();
-    	topicTable.forEach((key,value) -> topicOccupancy.put(key.getTopic(),value.size()));
+    	for(Topic t: topicTable.keySet()) {
+    		Iterator<TopicRegistration> iterate_value = topicTable.get(t).iterator();
+    		int count=0;
+    		while (iterate_value.hasNext()) {
+               if(!iterate_value.next().getNode().is_evil)count++;
+            }
+    		if(topicTable.get(t).size()>0)topicOccupancy.put(t.getTopic(),count);
+    	}
+    		
         return topicOccupancy;
     }
+    
+    public HashMap<String, Integer> getRegEvilbyRegistrar(){
+    	HashMap<String, Integer> topicOccupancy= new HashMap<String, Integer>();
+    	for(Topic t: topicTable.keySet()) {
+    		Iterator<TopicRegistration> iterate_value = topicTable.get(t).iterator();
+    		int count=0;
+    		while (iterate_value.hasNext()) {
+               if(iterate_value.next().getNode().is_evil)count++;
+            }
+    		if(topicTable.get(t).size()>0)topicOccupancy.put(t.getTopic(),count);
+    	}
+    		
+        return topicOccupancy;
+    }
+    
     
     public HashMap<String, HashMap<BigInteger,Integer>> getRegbyRegistrant(){
         HashMap<String, HashMap<BigInteger,Integer>> regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
@@ -421,7 +458,7 @@ public class Discv5TopicTable { // implements TopicTable {
     		{
     			int count=0;
     			if(register.get(((TopicRegistration)reg).getNode().getId())!=null)count=register.get(((TopicRegistration)reg).getNode().getId());
-    			count++;
+    			if(!((TopicRegistration)reg).getNode().is_evil)count++;
     			register.put(((TopicRegistration)reg).getNode().getId(),count);
     	    	//System.out.println("Table "+((TopicRegistration)reg).getNode().getId()+" "+count);
     		}
@@ -430,4 +467,32 @@ public class Discv5TopicTable { // implements TopicTable {
         return regByRegistrant;
 
     }
+    
+    public HashMap<String, HashMap<BigInteger,Integer>> getRegEvilbyRegistrant(){
+        HashMap<String, HashMap<BigInteger,Integer>> regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
+
+    	 for(Topic t: topicTable.keySet())
+         {
+    		Object[] treg = topicTable.get(t).toArray();
+            HashMap<BigInteger,Integer> register = new HashMap<BigInteger,Integer>();
+    		for(Object reg : treg)
+    		{
+    			int count=0;
+    			if(register.get(((TopicRegistration)reg).getNode().getId())!=null)count=register.get(((TopicRegistration)reg).getNode().getId());
+    			if(((TopicRegistration)reg).getNode().is_evil)count++;
+    			register.put(((TopicRegistration)reg).getNode().getId(),count);
+    	    	//System.out.println("Table "+((TopicRegistration)reg).getNode().getId()+" "+count);
+    		}
+    		regByRegistrant.put(t.getTopic(), register);
+         }
+        return regByRegistrant;
+
+    }
+    
+    
+    public HashMap<String,Integer> getCompetingTickets(){
+		
+    	return ticketCompetingList;
+    }
+    
 }

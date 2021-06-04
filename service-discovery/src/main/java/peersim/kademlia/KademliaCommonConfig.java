@@ -16,31 +16,38 @@ public class KademliaCommonConfig {
 	public static int TOPIC_TABLE_CAP = 10000; //the number of topics per node we can regiter
 	public static int MAXREPLACEMENT = 10; //the number of nodes saved in the replacement list
 	public static int REFRESHTIME = 10*100; //periodic time used to check nodes down in k-buckets
-	public static int MAXCONNECTIONS = 50; //periodic time used to check nodes down in k-buckets
+	public static int MAXCONNECTIONS = 150; //periodic time used to check nodes down in k-buckets
 	public static int MAXFINDNODEFAILURES = 5; //periodic time used to check nodes down in k-buckets
     public static int ADS_PER_QUEUE = 200; //the number of ads per topic queue
     public static int AD_LIFE_TIME = 250000; //life time of ads the topic table
     public static int MAX_REGISTRATION_RETRIES = 10; //life time of ads the topic table
     public static int ONE_UNIT_OF_TIME = 1; // smallest time value
-    public static int TOPIC_PEER_LIMIT = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
+    public static int TOPIC_PEER_LIMIT = MAXCONNECTIONS; //how many high quality nodes do we want to find for each topic; after this number we stop
     public static int MAX_SEARCH_HOPS = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
     public static int MAX_TICKETS = 100;
     public static int MAX_REG_BUCKETS = 0;
-
+    public static int PARALLELREGISTRATIONS = 0;
+    public static int TTNBUCKETS = 10; 
+    public static int STNBUCKETS = 16; 
+    
+    public static int MAX_TOPIC_REPLY = 15;
+	public static int SLOT = 1000;
+	public static int REG_TIMEOUT = 1000000000;
     public static int REG_WINDOW = 10000;
     public static int SEARCH_REFRESH = 0;
     public static int TICKET_REFRESH = 0;
     public static int TICKET_NEIGHBOURS = 0;
     public static int TICKET_BUCKET_SIZE = 3;
     public static int SEARCH_BUCKET_SIZE = 3;
-    public static int TICKET_TABLE_REPLACEMENTS=10;
-    public static int SEARCH_TABLE_REPLACEMENTS=10;
+    public static int TICKET_TABLE_REPLACEMENTS=0;
+    public static int SEARCH_TABLE_REPLACEMENTS=0;
     public static int TICKET_REMOVE_AFTER_REG=0;
     // Attack Types:
     public static String ATTACK_TYPE_TOPIC_SPAM = "TopicSpam";
+    public static String ATTACK_TYPE_RANDOM_SPAM = "RandomSpam";
     public static String ATTACK_TYPE_MALICIOUS_REGISTRAR = "MaliciousRegistrar";
+    public static String ATTACK_TYPE_DOS = "DosAttack";
     public static String ATTACK_TYPE_HYBRID = "HybridAttacker";
-    public static String ATTACK_TYPE_K = "HigherK";
     //TODO show the distribution of nodes discovered (do everyone discover the same? Or different?)
     // Settings for CustomDistribution (id distribution setting for nodes)
     public static String NON_UNIFORM_ID_DISTRIBUTION = "nonUniform";
@@ -49,11 +56,15 @@ public class KademliaCommonConfig {
     public static final int RANDOM_BUCKET_ORDER = 0;
     public static final int CLOSEST_BUCKET_ORDER = 1;
     public static final int ALL_BUCKET_ORDER = 2;
-    public static int LOOKUP_BUCKET_ORDER = 1;
+    public static final int COMPLETE_WALK = 3;
+
+    public static int LOOKUP_BUCKET_ORDER = 0;
     
     public static int STOP_REGISTER_WINDOW_SIZE = 0;
     public static int STOP_REGISTER_MIN_REGS = 3;
     
+    // By default, topic table is not round-robin 
+    public static int ROUND_ROBIN_TOPIC_TABLE = 2;
     
     public static int REPORT_MSG_ACTIVATED = 0; 
     

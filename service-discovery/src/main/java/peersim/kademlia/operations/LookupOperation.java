@@ -13,11 +13,13 @@ public class LookupOperation extends Operation {
     public final Topic topic;
     private HashSet<KademliaNode> discovered;
 
+    private int malQueried;
     
     public LookupOperation(BigInteger srcNode, Long timestamp, Topic t) {
         super(srcNode, t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
         this.topic = t;
         discovered = new HashSet<KademliaNode>();
+        malQueried=0;
 
     }
     
@@ -35,16 +37,42 @@ public class LookupOperation extends Operation {
         String result = "\"";
         boolean first = true;
         for(KademliaNode n: discovered) {
-            if(first) {
-                result += n.getId();
-                first = false;
-            }else {
-                result += " " + n.getId();
-            }
+        	if(!n.is_evil) {
+	            if(first) {
+	                result += n.getId();
+	                first = false;
+	            }else {
+	                result += " " + n.getId();
+	            }
+        	}
         }
         result += "\"";
         return result;
     }
+    
+    public String discoveredMaliciousToString() {
+        if(discovered.size() == 0) return "";
+        
+        String result = "\"";
+        boolean first = true;
+        for(KademliaNode n: discovered) {
+        	if(n.is_evil) {
+	            if(first) {
+	                result += n.getId();
+	                first = false;
+	            }else {
+	                result += " " + n.getId();
+	            }
+        	}
+        }
+        result += "\"";
+        return result;
+    }
+    
+    public void increaseMaliciousQueries() {
+    	malQueried++;
+    }
+    
     
     public List<KademliaNode> getDiscoveredArray()
     {
@@ -62,5 +90,9 @@ public class LookupOperation extends Operation {
                 num_malicious += 1;
         }
         return num_malicious;
+    }
+    
+    public int maliciousNodesQueries() {
+    	return malQueried;
     }
 }

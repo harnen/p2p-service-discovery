@@ -117,6 +117,9 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 				    Message registerMessage = generateRegisterMessage(topicList[topicIndex].getTopic());
 				    Message lookupMessage = generateTopicLookupMessage(topicList[topicIndex].getTopic());
                     //System.out.println();
+				    
+					prot.getNode().setTopic(topicList[topicIndex].getTopic(), start);
+
 				    if(registerMessage != null) {
 					    //int time = CommonState.r.nextInt(900000);
 						int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
