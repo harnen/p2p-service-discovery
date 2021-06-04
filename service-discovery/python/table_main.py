@@ -16,7 +16,7 @@ def restore_default():
     occupancy_power = 10
     ip_id_power = 0.1
     topic_power = 10
-    attacker_ip_num = 3
+    attacker_ip_num = 10
     attacker_id_num = 10
     base_multiplier = 10
 
@@ -180,6 +180,7 @@ def run_all():
 
     restore_default()
     for i in occupancy_powers:
+        break
         occupancy_power = i
         run(stats)
 
@@ -201,16 +202,19 @@ def run_all():
 
     restore_default()
     for i in ip_id_powers:
+        break
         ip_id_power = i
         run(stats)
     
     restore_default()
     for i in topic_powers:
+        break
         topic_power = i
         run(stats)
     
     restore_default()
     for i in base_multipliers:
+        break
         base_multiplier = i
         run(stats)
 
@@ -318,8 +322,8 @@ def special(input_file = 'dump.csv'):
 runtime = 200000
 
 restore_default()
-run_single()
+#run_single()
 
-#run_all()
-#analyze()
+run_all()
+analyze()
 #special('attacks.csv')
