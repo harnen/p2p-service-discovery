@@ -51,7 +51,6 @@ For the security analysis we performed two different evaluations:
 * Topics: 5
 * Zipf exp: 0.7
 * Lookup bucket strategy - all_bucket
-* Max registration retries: 10
 * IP used in the attack [1,10,50]
 * Malicious node % [5,10,20]
 
