@@ -6,6 +6,7 @@ import java.util.List;
 //import java.util.Random;
 import java.util.TreeMap;
 
+
 import peersim.core.CommonState;
 import peersim.core.Network;
 import peersim.core.Node;
@@ -22,6 +23,8 @@ public class KBucket implements Cloneable {
 	//protected TreeMap<BigInteger, Long> neighbours = null;
 	protected List<BigInteger> neighbours;
 
+	
+	protected List<String> addresses;
 	//replacementList
 	//protected TreeMap<BigInteger, Long> replacements = null;
 	protected List<BigInteger> replacements;
@@ -40,6 +43,7 @@ public class KBucket implements Cloneable {
 		this.rTable = rTable;
 		neighbours = new ArrayList<BigInteger>();
 		replacements = new ArrayList<BigInteger>();
+		addresses = new ArrayList<String>();
 	}
 
 	public int occupancy()
@@ -47,14 +51,24 @@ public class KBucket implements Cloneable {
 		return neighbours.size();
 	}
 	// add a neighbour to this k-bucket
+	
 	public boolean addNeighbour(BigInteger node) {
 		//long time = CommonState.getTime();
+		KademliaNode kad= Util.nodeIdtoNode(node).getKademliaProtocol().getNode();
+		//System.out.println(kad+" "+kad.getAddr());
 		for(BigInteger n : neighbours) {
-			if(n.compareTo(node)==0)return false;
+			if(n.compareTo(node)==0) {
+				return false;
+			} else {
+				
+				if(addresses.contains(kad.getAddr()))
+						return false;
+			}
 		}
 		if (neighbours.size() < k) { // k-bucket isn't full
 			//neighbours.put(node, time); // add neighbour to the tail of the list
 			neighbours.add(node);
+			addresses.add(kad.getAddr());
 			removeReplacement(node);
 			return true;
 		} else {
@@ -146,6 +160,10 @@ public class KBucket implements Cloneable {
 
 		}
 		
+	}
+	
+	public List<String> getAddresses() {
+		return addresses;
 	}
 	
 
