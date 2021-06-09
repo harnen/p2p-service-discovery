@@ -2,6 +2,8 @@ package peersim.kademlia;
 
 import org.junit.jupiter.api.Test;
 
+import peersim.kademlia.Util;
+
 public class IPTest {
 	int[] comparators = new int[] {128, 64, 32, 16, 8, 4, 2, 1};
 	TreeNode root;
@@ -43,6 +45,22 @@ public class IPTest {
 		printBits("192.168.0.2");
 		this.add("192.168.0.2");
 		System.out.println("~~~~~~~~~~~~~~~~~~~~~~");*/
+	}
+	
+	@Test
+	public void compareAddresses() {
+		String addr1 = new String("192.168.1.2");
+		String addr2 = new String("192.168.1.3");
+		
+		String addr3 = new String("200.34.32.21");
+		String addr4 = new String("80.34.23.23");
+		
+		if(Util.compareAddr(addr1, addr2))System.out.println("Addr1:"+addr1+" and Addr2:"+addr2+" are same /24");
+		if(!Util.compareAddr(addr3, addr4))System.out.println("Addr3:"+addr3+" and Addr4:"+addr4+" are not");
+
+        assert(Util.compareAddr(addr1, addr2));
+        assert(!Util.compareAddr(addr3, addr4));
+
 	}
 	
 	class TreeNode {

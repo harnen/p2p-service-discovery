@@ -275,5 +275,21 @@ public class Util {
 			return false;
 		}
 	}
+	
+	public static final boolean compareAddr(String addr1, String addr2) {
+		
+		String[] split1 = addr1.split("\\.");
+		String[] split2 = addr2.split("\\.");
+		
+		//System.out.println("Split 1 "+addr1+" "+split1+ " "+split1.length);
+		//System.out.println("Split 2 "+addr2+" "+split2+ " "+split2.length);
+
+		if(split1.length!=4||split2.length!=4)
+			return false;
+		
+		if(split1[0].equals(split2[0])&&split1[1].equals(split2[1])&&split1[2].equals(split2[2])) return true;
+		
+		return false;
+	}
 
 }
