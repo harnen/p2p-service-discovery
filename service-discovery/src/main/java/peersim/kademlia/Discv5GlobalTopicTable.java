@@ -21,12 +21,12 @@ import peersim.core.CommonState;
 public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements TopicTable 
 
     private static final int amplify = 1; 
-    private static final int minimumBaseWaitingTime = 100;
-    private static final double groupModifierExp = 1;
-    private static final double topicModifierExp = 2;
-    private static final double ipModifierExp = 5;
-    private static final double idModifierExp = 5;
-
+    private static final int minimumBaseWaitingTime = 1000;
+    //private static final double groupModifierExp = 1;
+    private static final double topicModifierExp = 10;
+    private static final double ipModifierExp = 0.1;
+    private static final double idModifierExp =0.1;
+    private static final int occupancyPower = 10;
 	public Discv5GlobalTopicTable() {
         super();
     }
@@ -105,20 +105,24 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         }
     
         //baseWaitingTime = KademliaCommonConfig.AD_LIFE_TIME / this.tableCapacity;
-        baseWaitingTime = minimumBaseWaitingTime;
-        double modifier = Math.pow(getTopicModifier(reg)*getIPModifier(reg)*getIdModifier(reg),groupModifierExp);
-        long neededTime = (long) (baseWaitingTime * modifier);
+        //baseWaitingTime = minimumBaseWaitingTime;
+        baseWaitingTime = (long) (10*adLifeTime/Math.pow(1-(allAds.size()/(this.tableCapacity+1)),occupancyPower));
+
+       // double modifier = Math.pow(getTopicModifier(reg)*getIPModifier(reg)*getIdModifier(reg),groupModifierExp);
+        //long neededTime = (long) (baseWaitingTime * modifier);
+        long neededTime  = (long) (baseWaitingTime * (getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg)));
+
         //long neededTime = minimumBaseWaitingTime*(long)getTopicModifier(reg);
-        waiting_time = neededTime - cumWaitingTime;
+        //waiting_time = neededTime - cumWaitingTime;
         
         int size = topicQ!=null?topicQ.size():0;
         //System.out.println("Modifiers topic "+reg.getTopic().getTopic()+" "+getTopicModifier(reg)+" "+getIPModifier(reg)+" "+getIdModifier(reg)+" "+size);
-        //System.out.println("Waiting time "+baseWaitingTime+" "+modifier+" "+neededTime+" "+cumWaitingTime+" "+waiting_time);
+        //System.out.println("Waiting time "+baseWaitingTime+" "+neededTime+" "+cumWaitingTime+" "+allAds.size()+" "+tableCapacity+" "+Math.pow(1-(allAds.size()/this.tableCapacity),occupancyPower));
 
-        if(waiting_time<0)
-            waiting_time = getWaitingTime(reg, curr_time);
+        //if(waiting_time<0)
+         //   waiting_time = getWaitingTime(reg, curr_time);
  
-        return waiting_time;
+        return Math.max(0, neededTime - cumWaitingTime);
     }
     
     /*protected long getWaitingTime(TopicRegistration reg, long curr_time, Ticket ticket) {
@@ -157,7 +161,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 
         int topicSize = topicQ!=null?topicQ.size():0;
 
-    	return Math.pow(topicSize+competing,amplify*topicModifierExp);
+    	return Math.pow((topicSize+1)/(allAds.size()+1),amplify*topicModifierExp);
     }
     
     private double getIPModifier(TopicRegistration reg) {
@@ -169,7 +173,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     		if(r.getNode().getAddr().equals(reg.getNode().getAddr()))counter++;
 		}
 
-    	return Math.pow(counter+1,amplify*ipModifierExp);
+    	return Math.pow(counter+1/(allAds.size()+1),amplify*ipModifierExp);
     }
     
     private double getIdModifier(TopicRegistration reg) {
@@ -195,7 +199,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
                     counter++;
 		}
 
-    	return Math.pow(counter+1,amplify*idModifierExp);
+    	return Math.pow(counter+1/(allAds.size()+1),amplify*idModifierExp);
     }
     
     private int getNumberOfCompetingTickets() {

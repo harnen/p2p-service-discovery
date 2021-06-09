@@ -34,7 +34,7 @@ public class Discv5GlobalTopicTableSameIpTest{
     public void ticketWaitingTimes() {
         Discv5TopicTable table = new Discv5GlobalTopicTable();
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
-        table.setCapacity(50000);
+        table.setCapacity(200);
         table.setAdLifeTime(300000);
 
         long rtt_delay = 1;
@@ -96,6 +96,7 @@ public class Discv5GlobalTopicTableSameIpTest{
                     pendingTickets.add(t);
                     failedTimes.put(t,curr_time);
                     occupancy[Integer.valueOf(t.getTopic().getTopic().substring(5,t.getTopic().getTopic().length()))-1] = t.getOccupancy();
+                    //System.out.println("At:" + curr_time + " unsuccessful registration for topic: " + t.getTopic().getTopic()+" "+t.getCumWaitTime()+" "+t.getOccupancy());
 
                 	//previousTime=curr_time;
 
