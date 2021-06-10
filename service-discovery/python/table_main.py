@@ -322,8 +322,8 @@ def special(input_file = 'dump.csv'):
 runtime = 200000
 
 restore_default()
-#run_single()
+run_single()
 
-run_all()
-analyze()
+#run_all()
+#analyze()
 #special('attacks.csv')

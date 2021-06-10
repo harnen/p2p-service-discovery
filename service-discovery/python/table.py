@@ -312,33 +312,6 @@ class DiversityTable(Table):
         #needed_time = base_waiting_time
         return max(0, needed_time - waited_time)
     
-        topic_modifier = self.get_topic_modifier(req['topic'])
-        id_modifier = self.get_id_modifier(req['id'])
-        ip_modifier = self.get_ip_modifier(req['ip'])
-
-        needed_time = base_waiting_time * ((topic_modifier * id_modifier * ip_modifier)**0.2)
-        returned_time = max(0, needed_time - (self.env.now - req['arrived']))
-        #if(returned_time < 1):
-        #    returned_time = 0
-        #    self.tree.add(req['ip'])
-        
-        #just for stats
-        self.ip_modifiers[self.env.now] = (ip_modifier, req['attack'])
-        self.id_modifiers[self.env.now] = (id_modifier, req['attack'])
-        self.topic_modifiers[self.env.now] = (topic_modifier, req['attack'])
-        if (len(self.table) >= self.capacity):
-            first_to_expire = list(self.table.values())[0]
-            print("First to expire", first_to_expire)
-            print("Expiry time", first_to_expire['expire'], 'now', self.env.now)
-            self.log("Table is full returning time", first_to_expire['expire'] - self.env.now)
-            return max(first_to_expire['expire'] - self.env.now, returned_time)
-
-        print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
-        print("returning:", returned_time, "now:", self.env.now, "arrived:", req['arrived'])
-        return returned_time
-        
-        #return base_waiting_time * topic_modifier * id_modifier * ip_modifier
-    
     
 
     def report_modifiers(self, delay):
