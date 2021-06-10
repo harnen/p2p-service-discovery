@@ -1,6 +1,9 @@
 package peersim.kademlia;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import peersim.core.CommonState;
@@ -19,6 +22,8 @@ public class NodeConnections {
     private List<KademliaNode> incomingConnections;
     private List<KademliaNode> outgoingConnections;
     
+    private HashSet<String> addresses;
+    
     private KademliaNode n;
     boolean requested;
 	public NodeConnections(String topic,KademliaNode n) {
@@ -36,6 +41,7 @@ public class NodeConnections {
 		this.topic = topic;
 		this.requested = false;
 		this.n = n;
+		this.addresses = new HashSet<String>();
 	}
 	
 	
@@ -72,7 +78,8 @@ public class NodeConnections {
 	
 	public boolean removeOutgoingNode(KademliaNode node) {
 		if(outgoingConnections.contains(node)) {
-	   		//System.out.println(CommonState.getTime()+" outgoing connections removed "+(outgoingConnections.size()-1));
+	   		//System.out.println(CommonState.getTime()+" outgoing connections removed "+(outgoingConnections.size()-1))
+			addresses.remove(node.getAddr());
 			return outgoingConnections.remove(node);
 		} else {
 			return false;
@@ -88,6 +95,7 @@ public class NodeConnections {
 
 			if(success) {
 				addOutgoingConnection(lookupResultBuffer.get(n));
+				addresses.add(lookupResultBuffer.get(n).getAddr());
 				count++;
 			}
 			lookupResultBuffer.remove(n);
@@ -99,7 +107,7 @@ public class NodeConnections {
     
     private boolean startConnection(KademliaNode node) {
     	Node nd = Util.nodeIdtoNode(node.getId());
-    	if(!nd.isUp()) {
+    	if(!nd.isUp()||addresses.contains(node.getAddr())) {
     		//System.out.println(CommonState.getTime()+" node is down");
     		return false;
     	} else {

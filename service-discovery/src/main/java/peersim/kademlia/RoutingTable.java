@@ -57,7 +57,7 @@ public class RoutingTable implements Cloneable {
 	}
 	
 	public boolean compareAddresses(String addr) {
-		int counter=0;
+
 		for(int i = 0; i < nBuckets; i++){
 			HashSet<String> addresses = k_buckets[i].getAddresses();
 			if(addresses.contains(addr))return true;
