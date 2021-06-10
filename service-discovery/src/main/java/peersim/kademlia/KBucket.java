@@ -2,10 +2,14 @@ package peersim.kademlia;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 //import java.util.Random;
 import java.util.TreeMap;
 
+import com.google.common.net.InetAddresses;
 
 import peersim.core.CommonState;
 import peersim.core.Network;
@@ -24,7 +28,8 @@ public class KBucket implements Cloneable {
 	protected List<BigInteger> neighbours;
 
 	
-	protected List<String> addresses;
+	protected HashSet<String> addresses;
+	protected HashMap<BigInteger,String> addrMap;
 	//replacementList
 	//protected TreeMap<BigInteger, Long> replacements = null;
 	protected List<BigInteger> replacements;
@@ -43,7 +48,8 @@ public class KBucket implements Cloneable {
 		this.rTable = rTable;
 		neighbours = new ArrayList<BigInteger>();
 		replacements = new ArrayList<BigInteger>();
-		addresses = new ArrayList<String>();
+		addresses = new HashSet<String>();
+		addrMap = new HashMap<>();
 	}
 
 	public int occupancy()
@@ -56,19 +62,26 @@ public class KBucket implements Cloneable {
 		//long time = CommonState.getTime();
 		//KademliaNode kad= Util.nodeIdtoNode(node).getKademliaProtocol().getNode();
 		//System.out.println(kad+" "+kad.getAddr());
+		
+		//Random random = new Random();
+
+		//String ipString = InetAddresses.fromInteger(random.nextInt()).getHostAddress();
+		String ipString = Util.nodeIdtoNode(node).getKademliaProtocol().getNode().getAddr();
+		
 		for(BigInteger n : neighbours) {
 			if(n.compareTo(node)==0) {
 				return false;
-			} /*else {
+			} else {
 				
-				if(addresses.contains(kad.getAddr()))
+				if(addresses.contains(ipString))
 						return false;
-			}*/
+			}
 		}
 		if (neighbours.size() < k) { // k-bucket isn't full
 			//neighbours.put(node, time); // add neighbour to the tail of the list
 			neighbours.add(node);
-			//addresses.add(kad.getAddr());
+			addresses.add(ipString);
+			addrMap.put(node, ipString);
 			removeReplacement(node);
 			return true;
 		} else {
@@ -94,6 +107,8 @@ public class KBucket implements Cloneable {
 	// remove a neighbour from this k-bucket
 	public void removeNeighbour(BigInteger node) {
 		neighbours.remove(node);
+		addresses.remove(addrMap.get(node));
+		addrMap.remove(node);
 	}
 	
 	// remove a replacement node in the list
@@ -162,7 +177,7 @@ public class KBucket implements Cloneable {
 		
 	}
 	
-	public List<String> getAddresses() {
+	public HashSet<String> getAddresses() {
 		return addresses;
 	}
 	

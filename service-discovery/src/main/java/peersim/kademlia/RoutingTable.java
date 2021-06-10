@@ -29,7 +29,7 @@ public class RoutingTable implements Cloneable {
 
 	protected int nBuckets,k,maxReplacements;
 	
-	protected int maxAddresses = KademliaCommonConfig.MAX_ADDRESSES_TABLE;
+	//protected int maxAddresses = KademliaCommonConfig.MAX_ADDRESSES_TABLE;
 	// ______________________________________________________________________________________________
 	/**
 	 * instanciates a new empty routing table with the specified size
@@ -56,15 +56,13 @@ public class RoutingTable implements Cloneable {
 		return -1;
 	}
 	
-	public int countAddresses(String addr) {
+	public boolean compareAddresses(String addr) {
 		int counter=0;
 		for(int i = 0; i < nBuckets; i++){
-			for(String nodeAddr: k_buckets[i].getAddresses()){
-				if(Util.compareAddr(nodeAddr, addr))
-					counter++;
-			}
+			HashSet<String> addresses = k_buckets[i].getAddresses();
+			if(addresses.contains(addr))return true;
 		}
-		return counter;
+		return false;
 	}
 
 	// add a neighbour to the correct k-bucket
@@ -73,7 +71,8 @@ public class RoutingTable implements Cloneable {
 		if(node.compareTo(nodeId)==0) return false;
 			
 		KademliaNode kadNode = Util.nodeIdtoNode(node).getKademliaProtocol().getNode();
-		if(countAddresses(kadNode.getAddr())>maxAddresses) return false;
+		//if(countAddresses(kadNode.getAddr())>maxAddresses) return false;
+		if(compareAddresses(kadNode.getAddr()))return false;
 		return getBucket(node).addNeighbour(node);
 	}
 
