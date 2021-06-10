@@ -54,21 +54,21 @@ public class KBucket implements Cloneable {
 	
 	public boolean addNeighbour(BigInteger node) {
 		//long time = CommonState.getTime();
-		KademliaNode kad= Util.nodeIdtoNode(node).getKademliaProtocol().getNode();
+		//KademliaNode kad= Util.nodeIdtoNode(node).getKademliaProtocol().getNode();
 		//System.out.println(kad+" "+kad.getAddr());
 		for(BigInteger n : neighbours) {
 			if(n.compareTo(node)==0) {
 				return false;
-			} else {
+			} /*else {
 				
 				if(addresses.contains(kad.getAddr()))
 						return false;
-			}
+			}*/
 		}
 		if (neighbours.size() < k) { // k-bucket isn't full
 			//neighbours.put(node, time); // add neighbour to the tail of the list
 			neighbours.add(node);
-			addresses.add(kad.getAddr());
+			//addresses.add(kad.getAddr());
 			removeReplacement(node);
 			return true;
 		} else {

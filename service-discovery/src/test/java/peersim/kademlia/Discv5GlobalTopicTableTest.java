@@ -43,14 +43,14 @@ public class Discv5GlobalTopicTableTest{
 
         long rtt_delay = 1;
         long curr_time = 0;
-        long totalTime = 1000000;
+        long totalTime = 200000;
         Ticket successful_ticket = null;
         Ticket failed_ticket = null;
         // Register 2 topic0 at times 0 and 1, then make decision at 2;
         //  register 2 topic2 at times 2 and 3, then make decision at 4
         //  ... 
         
-        int[] topicRate= new int [] {1,2,3,4,5,6,7,8,9,10};
+        int[] topicRate= new int [] {1,2,3,4,5};
 
         //Ticket [] tickets = table.makeRegisterDecision(curr_time);
 
@@ -62,7 +62,7 @@ public class Discv5GlobalTopicTableTest{
         int[] occupancy = new int[topicRate.length];
         while(curr_time<totalTime) {
         	int topicnum=1;
-        	if(curr_time%10000==0) {
+        	if(curr_time%100==0) {
 	        	for(int i:topicRate) {
 	        		for(int j=0;j<i;j++) {
 		        	    Topic topic = new Topic(new BigInteger("0"), "topic"+topicnum);
@@ -96,7 +96,7 @@ public class Discv5GlobalTopicTableTest{
 
             for (Ticket t:regTickets) {
                 if (t.isRegistrationComplete()) {
-                    //System.out.println("At:" + curr_time + " successful registration for topic: " + t.getTopic().getTopic()+" "+t.getCumWaitTime()+" "+t.getOccupancy());
+                    //System.out.println("At:" + curr_time + " successful registration for topic: " + t.getTopic().getTopic()+" "+t.getWaitTime()+" "+t.getCumWaitTime()+" "+t.getOccupancy());
                     pendingTickets.remove(t);
                     
                     occupancy[Integer.valueOf(t.getTopic().getTopic().substring(5,t.getTopic().getTopic().length()))-1] = t.getOccupancy();
@@ -106,7 +106,7 @@ public class Discv5GlobalTopicTableTest{
                     pendingTickets.add(t);
                     failedTimes.put(t,curr_time);
                     occupancy[Integer.valueOf(t.getTopic().getTopic().substring(5,t.getTopic().getTopic().length()))-1] = t.getOccupancy();
-                    //System.out.println("At:" + curr_time + " unsuccessful registration for topic: " + t.getTopic().getTopic()+" "+t.getCumWaitTime()+" "+t.getOccupancy());
+                    //System.out.println("At:" + curr_time + " unsuccessful registration for topic: " + t.getTopic().getTopic()+" "+t.getWaitTime()+" "+t.getCumWaitTime()+" "+t.getOccupancy());
 
                 	//previousTime=curr_time;
 
