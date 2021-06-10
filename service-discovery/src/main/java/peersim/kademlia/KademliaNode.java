@@ -130,7 +130,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }
     
     public void setLookupResult(List<KademliaNode> result, String topic) {
-    	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size());
+    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size());
     	//lookupResultBuffer = result;
     	//for(KademliaNode rest : result)
     	//	if(lookupResultBuffer.size()<10)lookupResultBuffer.add(rest);
@@ -255,7 +255,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	
     	connections.get(topic).tryNewConnections();
        	if(connections.get(topic).getLookupBuffer().size()==0){
-       		System.out.println(CommonState.getTime()+" "+id+" emptybuffer:"+connections.get(topic).getLookupBuffer().size()+" "+connections.get(topic).getOutgoingConnections().size());
+       		//System.out.println(CommonState.getTime()+" "+id+" emptybuffer:"+connections.get(topic).getLookupBuffer().size()+" "+connections.get(topic).getOutgoingConnections().size());
        		if(!connections.get(topic).isRequested()) {
        			//client.emptyBufferCallback(n,t);
        			if(n!=null)EDSimulator.add(10000,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
@@ -271,7 +271,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
 	 * @return Message
 	 */
 	protected Message generateTopicLookupMessage(String topic) {
-		System.out.println("New lookup message "+topic);
+		//System.out.println("New lookup message "+topic);
 
 		Topic t = new Topic(topic);
 		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);

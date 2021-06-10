@@ -27,6 +27,8 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     private static final double ipModifierExp = 0.1;
     private static final double idModifierExp =0.1;
     private static final int occupancyPower = 10;
+    private static final int baseMultiplier = 10;
+    
 	public Discv5GlobalTopicTable() {
         super();
     }
@@ -112,7 +114,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         else {
     
 	        //baseWaitingTime = minimumBaseWaitingTime;
-	        baseWaitingTime = (long) (10*adLifeTime/Math.pow(1-(allAds.size()/(this.tableCapacity)),occupancyPower));
+	        baseWaitingTime = (long) (baseMultiplier*adLifeTime/Math.pow(1-(allAds.size()/(this.tableCapacity)),occupancyPower));
 	
 	        long neededTime  = (long) (baseWaitingTime * Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg),1/1000000));
 	

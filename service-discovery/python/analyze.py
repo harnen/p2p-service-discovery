@@ -143,7 +143,20 @@ def analyzeMessages(dirs):
         #df['src'].value_counts().plot(ax=ax3, kind='line', xticks=[], title="Message sent by node", label=log_dir)
 
 
-    ticks = table.index
+    msgs = table.index
+    ticks = []
+    for tick in msgs:
+        tick = tick.replace('MSG_','')
+        tick = tick.replace('RESPONSE','RESP')
+        tick = tick.replace('REGISTER','REG')
+        tick = tick.replace('REQUEST','REQ')
+        tick = tick.replace('TICKET','T')
+        tick = tick.replace('TOPIC_QUERY','LOOKUP')
+        tick = tick.replace('TOPIC_QUERY_REPLY','L_REP')
+
+        ticks.append(tick)
+
+
     ax2.set_xticks(range(len(ticks)))
     ax2.set_xticklabels(ticks)
 
@@ -1195,7 +1208,7 @@ def analyzeMessageReceivedByNodes(dirs):
                     if 't' in row['numMsg']:
                         topics[row['Node']] = row['numMsg']
                     else:
-                        y_vals.append(int(row['numMsg']))
+                        y_vals.append(int(row['numMsg'])/3600)
                         x_vals.append(row['Node'])
 
                 sorted_y_vals = sorted(y_vals)
@@ -1290,7 +1303,7 @@ analyzeStorageUtilisation(sys.argv[1:])
 analyzeWaitingTimes(sys.argv[1:])
 analyzeNumberOfMessages(sys.argv[1:])
 
-#analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
-#analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
+analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
+analyzeMessageReceivedByNodes(sys.argv[1:]) # message received by nodes
 #plt.show()
 #analyzeEclipsedNodeDistribution(sys.argv[1:])

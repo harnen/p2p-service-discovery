@@ -72,7 +72,7 @@ public class NodeConnections {
 	
 	public boolean removeOutgoingNode(KademliaNode node) {
 		if(outgoingConnections.contains(node)) {
-	   		System.out.println(CommonState.getTime()+" outgoing connections removed "+(outgoingConnections.size()-1));
+	   		//System.out.println(CommonState.getTime()+" outgoing connections removed "+(outgoingConnections.size()-1));
 			return outgoingConnections.remove(node);
 		} else {
 			return false;
@@ -92,7 +92,7 @@ public class NodeConnections {
 			}
 			lookupResultBuffer.remove(n);
     	}
-   		System.out.println(CommonState.getTime()+" new connections added "+count+" "+outgoingConnections.size()+" "+lookupResultBuffer.size());
+   		//System.out.println(CommonState.getTime()+" new connections added "+count+" "+outgoingConnections.size()+" "+lookupResultBuffer.size());
         
 	}
 
@@ -100,7 +100,7 @@ public class NodeConnections {
     private boolean startConnection(KademliaNode node) {
     	Node nd = Util.nodeIdtoNode(node.getId());
     	if(!nd.isUp()) {
-    		System.out.println(CommonState.getTime()+" node is down");
+    		//System.out.println(CommonState.getTime()+" node is down");
     		return false;
     	} else {
     		return nd.getKademliaProtocol().getNode().addIncomingConnection(n,topic);
@@ -128,10 +128,10 @@ public class NodeConnections {
     	//if(incomingConnections.size()==maxIncomingConnections)System.out.println(CommonState.getTime()+" node full");
     	
     	if(incomingConnections.size()>=maxIncomingConnections) {
-    		System.out.println(CommonState.getTime()+" incoming connections full");
+    		//System.out.println(CommonState.getTime()+" incoming connections full");
     		return false;
     	} else if (incomingConnections.contains(node)) {
-    		System.out.println(CommonState.getTime()+" incoming connection already existing");
+    		//System.out.println(CommonState.getTime()+" incoming connection already existing");
     		return false;
     	}
     	if(incomingConnections.size()<maxIncomingConnections&&!incomingConnections.contains(node)) {
