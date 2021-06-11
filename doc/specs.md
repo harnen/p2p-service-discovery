@@ -41,7 +41,7 @@ The topic table is shared across multiple nodes and topics and should be diverse
 
 ### Tickets
 In order to place an ad on a registrar, the advertiser must present a valid 'ticket' to the registrar.
-Tickets are opaque objects issued by the registrars. All the information in the ticket are digitally signed by the registrar assuring its integrity. 
+Tickets are opaque objects issued by the registrars. 
 An advertiser willing to register an ad at a registrar must first obtain a ticket by sending a 'ticket request' message to the registrar.  
 In response to the ticket request, the registrar issues an initial ticket containing a 'waiting time' and sends the ticket to the advertiser in a 'ticket response' message. 
 The advertiser can come back to the registrar (to register an ad) after the waiting time has elapsed and present the ticket in a 'registration request' message.
@@ -60,6 +60,7 @@ Also, it prevents attackers from overflowing topic table by regulating registrat
 While tickets are opaque to advertisers, they are readable by the registrar that issued the ticket. 
 The registrar uses the ticket to store the cumulative waiting time, which is sum of all waiting times the advertiser has already spent. 
 Whenever a ticket is presented and a new one issued in response, the cumulative waiting time of the ticket is increased and carries over into the new ticket.
+All the information in the ticket are digitally signed by the registrar assuring its integrity. 
 
 Ads should remain in the queue for a constant amount of time, the `target-ad-lifetime`. To maintain this guarantee, new registrations are throttled and registrants must wait for a certain amount of time before they are admitted. When a node attempts to place an ad, it receives a 'ticket' which tells them how long they must wait before they will be accepted. It is up to the registrant node to keep the ticket and present it to the advertisement
 medium when the waiting time has elapsed. Waiting times calculation are based on topic table occupancy, described in [here](#waiting-time-function) 
@@ -253,3 +254,11 @@ Also, the last node in the bucket is pinged to check it is still alive. In case 
 ## Parameters
 * `topic_table_capacity` - 
 * `target-ad-lifetime` - 
+* `K` - number of nodes per bucket used for topic registration
+* `T` - threshold of unsuccessful registrations after which we restart a process
+* `k` - number of nodes per bucket for the ticket table (same as `K`?)
+* `ALPHA` - parallel lookups
+* `LOOKUP_LIMIT` - 
+* `MAX_LOOKUP_HOPS`
+* `k` - search table per bucket limit (clash with `k` for the ticket table?)
+* `refresh_time` - refresh search table timeout
