@@ -44,7 +44,8 @@ In order to place an ad on a registrar, the advertiser must present a valid 'tic
 Tickets are opaque objects issued by the registrars. 
 An advertiser willing to register an ad at a registrar must first obtain a ticket by sending a 'ticket request' message to the registrar.  
 In response to the ticket request, the registrar issues an initial ticket containing a 'waiting time' and sends the ticket to the advertiser in a 'ticket response' message. 
-The advertiser can come back to the registrar (to register an ad) after the waiting time has elapsed and present the ticket in a 'registration request' message. 
+The advertiser can come back to the registrar (to register an ad) after the waiting time has elapsed and present the ticket in a 'registration request' message.
+'registrations requests' sent before the waiting time indicated in the ticket will be ignored. 
 If the advertiser comes back to the registrar, the advertiser can either place the ad (and notify the advertiser of a successful registration) or issue another ticket with a new waiting time in another ticket response message.
 Assignment of 'waiting times' is the only way the registrars can control the registrations in order to both:
 *  Throttle ad placement rate to prevent overflowing of topic table: when the topic table is full, the advertisers must wait for already placed ads to expire first before they are allowed to register new ads.
@@ -249,3 +250,6 @@ Also, the last node in the bucket is pinged to check it is still alive. In case 
 
 <!--*The search table is initialized and refreshed by performing lookups for the topic hash on using the main node table.*-->
 
+## Parameters
+* `topic_table_capacity` - 
+* `target-ad-lifetime` - 
