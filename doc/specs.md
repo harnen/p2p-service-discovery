@@ -41,7 +41,7 @@ The topic table is shared across multiple nodes and topics and should be diverse
 
 ### Tickets
 In order to place an ad on a registrar, the advertiser must present a valid 'ticket' to the registrar.
-Tickets are opaque objects issued by the registrars. 
+Tickets are opaque objects issued by the registrars. All the information in the ticket are digitally signed by the registrar assuring its integrity. 
 An advertiser willing to register an ad at a registrar must first obtain a ticket by sending a 'ticket request' message to the registrar.  
 In response to the ticket request, the registrar issues an initial ticket containing a 'waiting time' and sends the ticket to the advertiser in a 'ticket response' message. 
 The advertiser can come back to the registrar (to register an ad) after the waiting time has elapsed and present the ticket in a 'registration request' message.
