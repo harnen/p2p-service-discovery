@@ -147,7 +147,7 @@ public class TicketTable extends RoutingTable {
 			}else {
 				registeredPerDist.put(dist, registeredPerDist.get(dist) + 1);
 			}
-		}		
+		}
 	}
 	
 	// remove a neighbour from the correct k-bucket

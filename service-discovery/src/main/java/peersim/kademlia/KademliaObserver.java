@@ -117,10 +117,15 @@ public class KademliaObserver implements Control {
 
     //Waiting times
     private static HashMap<String, Long> waitingTimes = new HashMap<String, Long>();
+    private static HashMap<String, Long> waitingTimesByEvilNodes = new HashMap<String, Long>();
     private static HashMap<String, Integer> numOfReportedWaitingTimes = new HashMap<String, Integer>();
+    private static HashMap<String, Integer> numOfReportedWaitingTimesByEvilNodes = new HashMap<String, Integer>();
     private static HashMap<String, Long> cumWaitingTimes = new HashMap<String, Long>();
+    private static HashMap<String, Long> cumWaitingTimesByEvilNodes = new HashMap<String, Long>();
     private static HashMap<String, Integer> numOfReportedCumWaitingTimes = new HashMap<String, Integer>();
+    private static HashMap<String, Integer> numOfReportedCumWaitingTimesByEvilNodes = new HashMap<String, Integer>();
     private static HashMap<String, Integer> numOfRejectedRegistrations = new HashMap<String, Integer> ();
+    private static HashMap<String, Integer> numOfRejectedRegistrationsByEvilNodes = new HashMap<String, Integer> ();
     private static int ticket_request_to_evil_nodes = 0;
     private static int ticket_request_to_good_nodes = 0;
     
@@ -327,40 +332,70 @@ public class KademliaObserver implements Control {
     }
 
     // Report the cumulative waiting time for accepted tickets
-    public static void reportCumulativeTime(Topic topic, long time) {
-        Long totalCumWaitTime = cumWaitingTimes.get(topic.getTopic());
-        if (totalCumWaitTime == null)
-            cumWaitingTimes.put(topic.getTopic(), time);
-        else
-            cumWaitingTimes.put(topic.getTopic(), totalCumWaitTime+time);
+    public static void reportCumulativeTime(Topic topic, long time, boolean is_evil) {
+        HashMap<String, Long> cum_waiting_times;
+        HashMap<String, Integer> num_reported_cum_waiting_times;
+        if (is_evil) {
+            cum_waiting_times = cumWaitingTimesByEvilNodes;
+            num_reported_cum_waiting_times = numOfReportedCumWaitingTimesByEvilNodes;
+        }
+        else  {
+            cum_waiting_times = cumWaitingTimes;
+            num_reported_cum_waiting_times = numOfReportedCumWaitingTimes;
+        }
 
-        Integer count = numOfReportedCumWaitingTimes.get(topic.getTopic());
-        if (count == null)
-            numOfReportedCumWaitingTimes.put(topic.getTopic(), 1);
+        Long totalCumWaitTime = cum_waiting_times.get(topic.getTopic());
+        if (totalCumWaitTime == null)
+            cum_waiting_times.put(topic.getTopic(), time);
         else
-            numOfReportedCumWaitingTimes.put(topic.getTopic(), count+1);
+            cum_waiting_times.put(topic.getTopic(), totalCumWaitTime+time);
+
+        Integer count = num_reported_cum_waiting_times.get(topic.getTopic());
+        if (count == null)
+            num_reported_cum_waiting_times.put(topic.getTopic(), 1);
+        else
+            num_reported_cum_waiting_times.put(topic.getTopic(), count+1);
     }
 
-    public static void reportWaitingTime(Topic topic, long time) {
+    public static void reportWaitingTime(Topic topic, long time, boolean is_evil) {
         if (time == -1)
         {
-            Integer rejected = numOfRejectedRegistrations.get(topic.getTopic());
+            // report rejected registration
+            HashMap<String, Integer> rejectedRegs;
+            if (is_evil) 
+                rejectedRegs = numOfRejectedRegistrationsByEvilNodes;
+            else
+                rejectedRegs = numOfRejectedRegistrations;
+                
+            Integer rejected = rejectedRegs.get(topic.getTopic());
             if (rejected == null) 
-                numOfRejectedRegistrations.put(topic.getTopic(), 1);
+                rejectedRegs.put(topic.getTopic(), 1);
             else 
-                numOfRejectedRegistrations.put(topic.getTopic(), rejected + 1);
+                rejectedRegs.put(topic.getTopic(), rejected + 1);
             return;
-        }
+}
 
-        Long totalWaitTime = waitingTimes.get(topic.getTopic());
-        Integer count = numOfReportedWaitingTimes.get(topic.getTopic());
-        if (count == null) {
-            waitingTimes.put(topic.getTopic(), time);
-            numOfReportedWaitingTimes.put(topic.getTopic(), 1);
+        // report waiting time
+        HashMap<String, Long> waiting_times;
+        HashMap<String, Integer> reported_waiting_times;
+        if (is_evil) {
+            waiting_times = waitingTimesByEvilNodes;
+            reported_waiting_times = numOfReportedWaitingTimesByEvilNodes;
         }
         else {
-            waitingTimes.put(topic.getTopic(), time+totalWaitTime);
-            numOfReportedWaitingTimes.put(topic.getTopic(), count+1);
+            waiting_times = waitingTimes;
+            reported_waiting_times = numOfReportedWaitingTimes;
+        }
+
+        Long totalWaitTime = waiting_times.get(topic.getTopic());
+        Integer count = reported_waiting_times.get(topic.getTopic());
+        if (count == null) {
+            waiting_times.put(topic.getTopic(), time);
+            reported_waiting_times.put(topic.getTopic(), 1);
+        }
+        else {
+            waiting_times.put(topic.getTopic(), time+totalWaitTime);
+            reported_waiting_times.put(topic.getTopic(), count+1);
         }
     }
 
@@ -425,12 +460,15 @@ public class KademliaObserver implements Control {
                 String title = "time";
                 for (String topic: all_topics) {
                     title += "," + topic + "_wait";
+                    title += "," + topic + "_evil_wait";
                 }
                 for (String topic: all_topics) {
                     title += "," + topic + "_cumWait";
+                    title += "," + topic + "_evil_cumWait";
                 }
                 for (String topic: all_topics) {
                     title += "," + topic + "_reject";
+                    title += "," + topic + "_evil_reject";
                 }
                 title += "\n";
                 writer.write(title);
@@ -446,6 +484,13 @@ public class KademliaObserver implements Control {
                     writer.write(",0.0");   
                 else
                     writer.write("," + totalWaitTime.doubleValue()/numOfReported.intValue());
+
+                totalWaitTime = waitingTimesByEvilNodes.get(topic);
+                numOfReported = numOfReportedWaitingTimesByEvilNodes.get(topic);
+                if (numOfReported == null)
+                    writer.write(",0.0");
+                else
+                    writer.write("," + totalWaitTime.doubleValue()/numOfReported.intValue());
             }
             for (String topic: all_topics) {
                 Long totalWaitTime = cumWaitingTimes.get(topic);
@@ -453,12 +498,23 @@ public class KademliaObserver implements Control {
                 if (numOfReported == null)
                     writer.write(",0.0");   
                 else
-                {
                     writer.write("," + totalWaitTime.doubleValue()/numOfReported.intValue());
-                }
+
+                totalWaitTime = cumWaitingTimesByEvilNodes.get(topic);
+                numOfReported = numOfReportedCumWaitingTimesByEvilNodes.get(topic);
+                if (numOfReported == null)
+                    writer.write(",0.0");   
+                else
+                    writer.write("," + totalWaitTime.doubleValue()/numOfReported.intValue());
             }
             for (String topic: all_topics) {
                 Integer rejected = numOfRejectedRegistrations.get(topic);
+                if (rejected == null)
+                    writer.write(",0");
+                else
+                    writer.write("," + rejected);
+
+                rejected = numOfRejectedRegistrationsByEvilNodes.get(topic);
                 if (rejected == null)
                     writer.write(",0");
                 else
@@ -1356,14 +1412,17 @@ public class KademliaObserver implements Control {
         write_registered_registrant_average();
         write_registered_topics_average();
         write_registered_registrar_average();
-        write_eclipsing_results();
-        write_registration_stats();
+        if (CommonState.getTime() > KademliaCommonConfig.AD_LIFE_TIME) {
+            // write these stats once all the register msgs are sent (all_topics list is finalised)
+            write_eclipsing_results();
+            write_registration_stats();
+            write_waiting_times();
+            write_average_storage_utilisation_per_topic();
+        }
     	if(CommonState.getTime() > 3000000)
             write_node_info();
         write_registered_topics_timing();
-        write_average_storage_utilisation_per_topic();
         write_exchanged_msg_stats_over_time();
-        write_waiting_times();
         if ( CommonState.getEndTime() <= (this.observerStep + CommonState.getTime()) ) {
             // Last execute cycle of the experiment 
             write_msg_received_by_nodes();

@@ -170,7 +170,7 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
                         if ( !t.isRegistered() && ( t.getWaitTime() == 0 ) ) {
                             long waiting_time = getRRWaitingTime(t.getTopic(), curr_time);
                             t.setWaitTime(waiting_time);
-                            KademliaObserver.reportWaitingTime(t.getTopic(), waiting_time);
+                            KademliaObserver.reportWaitingTime(t.getTopic(), waiting_time, t.getSrc().is_evil);
                         }
                     }
 
@@ -214,7 +214,7 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
                     first = false;
                     ticket.setRegistrationComplete(true);
                     ticket.setWaitTime(0);
-                    KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime());
+                    KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime(), ticket.getSrc().is_evil);
                     register(reg);
                     this.nextTopicIndex += 1;
                     competing_tickets_for_topic.remove(ticket);
@@ -231,7 +231,7 @@ public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTa
                     //waiting_time -= KademliaCommonConfig.ONE_UNIT_OF_TIME;
                     waiting_time = (waiting_time - ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
                     ticket.setWaitTime(waiting_time);
-                    KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time);
+                    KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time, ticket.getSrc().is_evil);
                     num_competing_tickets--;
                 }
             }
