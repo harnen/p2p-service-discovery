@@ -119,7 +119,7 @@ public class TurbulenceMultiTopic extends Turbulence{
 				    System.out.println("Topic " + topicList.get(i) + " will be registered by "+newKad.getNode().getId());
 				    EDSimulator.add(0, initLookupMessage, newNode, kademliaid);
 				    EDSimulator.add(10000, registerMessage, newNode, kademliaid);
-				    EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, lookupMessage, newNode, kademliaid);
+				    EDSimulator.add(10000, lookupMessage, newNode, kademliaid);
 
 			    }
 		    }

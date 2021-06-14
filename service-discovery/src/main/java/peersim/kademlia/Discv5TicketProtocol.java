@@ -87,7 +87,9 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	final String PAR_STNBUCKETS = "STNBUCKETS";
 
 	final String PAR_REGTIMEOUT = "REG_TIMEOUT";
+	final String PAR_FILTERESULTS = "FILTER_RESULTS";
 
+	
 	boolean firstRegister;
 	boolean printSearchTable = false;
 	
@@ -176,6 +178,10 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		
 		KademliaCommonConfig.REG_TIMEOUT = Configuration.getInt(prefix + "." + PAR_REGTIMEOUT,
 				KademliaCommonConfig.REG_TIMEOUT);
+		
+		
+		KademliaCommonConfig.FILTER_RESULTS = Configuration.getInt(prefix + "." + PAR_FILTERESULTS,
+				KademliaCommonConfig.FILTER_RESULTS);
 
 		// KademliaCommonConfig.SLOT = Configuration.getInt(prefix + "." + PAR_SLOT,
 		// KademliaCommonConfig.SLOT);
@@ -471,9 +477,10 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 			logger.info("Registration failed " + backoff.getTimesFailed() + " backing off " + +backoff.getTimeToWait()
 					+ " " + backoff.shouldRetry() + " " + ticket.getWaitTime());
 
-			if ((backoff.shouldRetry() && ticket.getWaitTime() >= 0)|| ticket.getCumWaitTime()<=registrationTimeout) {
+			if ((backoff.shouldRetry() && ticket.getWaitTime() >= 0)&&(ticket.getCumWaitTime()<=registrationTimeout)) {
 				scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
 			} else {
+				logger.warning("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime()+" or too many tries "+backoff.getTimesFailed());
 				ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId());
 				// ticketTables.get(topic.getTopicID()).removeRegisteredList(m.src.getId());
 				RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
@@ -556,7 +563,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 		if(m.src.is_evil)lop.increaseMaliciousQueries();
 		for (TopicRegistration r : registrations) {
-			lop.addDiscovered(r.getNode());
+			lop.addDiscovered(r.getNode(),m.src.getId());
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
 
 		}
@@ -594,7 +601,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 				}
 				KademliaObserver.register_total.add(all);
 				KademliaObserver.register_ok.add(found);
-				node.setLookupResult(lop.getDiscoveredArray(),lop.topic.getTopic());
+				node.setLookupResult(lop.getDiscovered(),lop.topic.getTopic());
 				if (printSearchTable)
 					searchTables.get(lop.topic.getTopicID()).print();
 
@@ -711,8 +718,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		message.timestamp = CommonState.getTime();
 
 		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);
-		// System.out.println("Send init lookup to node "+Util.logDistance(node,
-		// this.getNode().getId()));
+		System.out.println("Send init lookup to node "+Util.logDistance(node,
+		this.getNode().getId()));
 
 	}
 

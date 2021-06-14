@@ -129,7 +129,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
         return 0;
     }
     
-    public void setLookupResult(List<KademliaNode> result, String topic) {
+    public void setLookupResult(HashMap<KademliaNode,BigInteger> result, String topic) {
     	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size());
     	//lookupResultBuffer = result;
     	//for(KademliaNode rest : result)
@@ -143,7 +143,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size()+" Sending lookup");
    
     		if(n!=null&&!connections.get(topic).isRequested()) {
-    			EDSimulator.add(0,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
+    			EDSimulator.add(10000,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
     			connections.get(topic).setRequested(true);
     		}
 

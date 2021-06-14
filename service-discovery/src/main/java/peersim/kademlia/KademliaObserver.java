@@ -378,6 +378,10 @@ public class KademliaObserver implements Control {
     }
 
     private static void accountMsg(Message m) {
+    	
+    	if (CommonState.getIntTime() <= 300000)
+    		return;
+    		 
         Integer numMsg = msgSentPerType.get(m.getType());
         if (numMsg == null)
             msgSentPerType.put(m.getType(), 1);
