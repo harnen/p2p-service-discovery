@@ -52,11 +52,11 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 
         //compute ticket waiting time
         long waiting_time = getWaitingTime(reg, curr_time, null);
+        KademliaObserver.reportWaitingTime(topic, waiting_time, advertiser.is_evil);
         int queueOccupancy = topicQueueOccupancy(t);
         
         if (waiting_time == -1) {
             //already registered
-            KademliaObserver.reportWaitingTime(topic, waiting_time);
             return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
         }
         
@@ -307,7 +307,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
                 register(reg);
                 ticket.setRegistrationComplete(true);
                 ticket.setOccupancy(topicOccupancy);
-                KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime());
+                KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime(), ticket.getSrc().is_evil);
             }
             else { //waiting_time > 0, reject (for now) due to space
                 waiting_time = (waiting_time- ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
@@ -316,7 +316,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
                 ticket.setOccupancy(topicOccupancy);
                 
             }
-            KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time);
+            KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time, ticket.getSrc().is_evil);
         }
         for (Topic topic: topicSet) {
             nextDecisionTime.remove(topic);

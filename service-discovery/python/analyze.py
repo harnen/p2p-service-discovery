@@ -888,20 +888,66 @@ def analyzeWaitingTimes(dirs):
                 topics.add(parts[0])
         log_dir1 = extractAlphanumeric(log_dir)
         ax1.set_title("Average waiting times over time for " + log_dir1)
+        topics = sorted(topics)
         for topic in topics:
-            ax1.plot(df['time']/1000, df[topic+'_wait'], label=topic)
-
+            ax1.plot(df['time']/1000, df[topic+'_wait']/1000, label=topic)
+        
         ax1.legend()
-        ax1.set_ylabel('Waiting time in msec')
+        ax1.set_ylabel('Waiting time in sec')
         ax1.set_xlabel('time (sec)')
         plt.savefig(OUTDIR + '/waiting_times_' + log_dir1 + '.png')
 
         fig, ax2 = plt.subplots()
         ax2.set_title("Average cumulative waiting times over time for " + log_dir1)
         for topic in topics:
-            ax2.plot(df['time']/1000, df[topic+'_cumWait'], label=topic)
+            ax2.plot(df['time']/1000, df[topic+'_cumWait']/1000, label=topic)
         ax2.legend()
-        ax2.set_ylabel('Cumulative waiting time in msec')
+        ax2.set_ylabel('Cumulative waiting time in sec')
+        ax2.set_xlabel('time (sec)')
+        plt.savefig(OUTDIR + '/cumulative_waiting_times_' + log_dir1 + '.png')
+
+        fig, ax3 = plt.subplots()
+        ax3.set_title("Quantity of rejected ticket requests (already registered) over time for " + log_dir1)
+        for topic in topics:
+            ax3.plot(df['time']/1000, df[topic+'_reject']/1000, label=topic)
+        ax3.legend()
+        ax3.set_ylabel('Number of ticket requests')
+        ax3.set_xlabel('time (sec)')
+        plt.savefig(OUTDIR + '/rejected_tickets.png')
+
+def analyzeWaitingTimesWithMaliciousNodes(dirs, attackTopics=['t1']):
+
+    for log_dir in dirs:
+        fig, ax1 = plt.subplots()
+        df = pd.read_csv(log_dir + '/waiting_times.csv')
+        topics = set()
+        for column_name in df.columns:
+            if column_name == "time":
+                continue
+            if 'wait' in column_name:
+                parts = column_name.split('_')
+                topics.add(parts[0])
+        log_dir1 = extractAlphanumeric(log_dir)
+        ax1.set_title("Average waiting times over time for " + log_dir1)
+        topics = sorted(topics)
+        for topic in topics:
+            ax1.plot(df['time']/1000, df[topic+'_wait']/1000, label=topic)
+        for topic in attackTopics:
+            ax1.plot(df['time']/1000, df[topic+'_evil_wait']/1000, label=topic+'_by_evil_nodes')
+
+        ax1.legend()
+        ax1.set_ylabel('Waiting time in sec')
+        ax1.set_xlabel('time (sec)')
+        plt.savefig(OUTDIR + '/waiting_times_' + log_dir1 + '.png')
+
+        fig, ax2 = plt.subplots()
+        ax2.set_title("Average cumulative waiting times over time for " + log_dir1)
+        for topic in topics:
+            ax2.plot(df['time']/1000, df[topic+'_cumWait']/1000, label=topic)
+        for topic in attackTopics:
+            ax2.plot(df['time']/1000, df[topic+'_evil_cumWait']/1000, label=topic+'_by_evil_nodes')
+        ax2.legend()
+        ax2.set_ylabel('Cumulative waiting time in sec')
         ax2.set_xlabel('time (sec)')
         plt.savefig(OUTDIR + '/cumulative_waiting_times_' + log_dir1 + '.png')
 
@@ -909,6 +955,8 @@ def analyzeWaitingTimes(dirs):
         ax3.set_title("Quantity of rejected ticket requests (already registered) over time for " + log_dir1)
         for topic in topics:
             ax3.plot(df['time']/1000, df[topic+'_reject'], label=topic)
+        for topic in attackTopics:
+            ax3.plot(df['time']/1000, df[topic+'_evil_reject'], label=topic+'_by_evil_nodes')
         ax3.legend()
         ax3.set_ylabel('Number of ticket requests')
         ax3.set_xlabel('time (sec)')
@@ -1289,12 +1337,13 @@ if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
     exit(1)
 
-OUTDIR = './'
+OUTDIR = './plots'
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
 
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
+
 
 analyzeMessages(sys.argv[1:])
 analyzeRegistrations(sys.argv[1:])
@@ -1308,7 +1357,10 @@ analyzeActiveRegistrations(sys.argv[1:])
 analyzeActiveRegistrationsMalicious(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:])
 analyzeStorageUtilisation(sys.argv[1:])
+
 analyzeWaitingTimes(sys.argv[1:])
+#analyzeWaitingTimesWithMaliciousNodes(sys.argv[1:], attackTopics=['t1'])
+
 analyzeNumberOfMessages(sys.argv[1:])
 
 analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
