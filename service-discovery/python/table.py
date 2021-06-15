@@ -188,7 +188,6 @@ class Table(metaclass=abc.ABCMeta):
 
         stats['table'].append(type(self).__name__)
         #stats['malicious_count'].append(self.malicious_count)
-        stats['size'].append(self.honest_count +self.malicious_count)
         stats['capacity'].append(self.capacity)
         stats['occupancy_total'].append(total)
         stats['malicious_occupancy_total'].append(total_malicious)
@@ -218,25 +217,29 @@ class Table(metaclass=abc.ABCMeta):
         yield self.env.timeout(delay)
         
         if('req_id' in req):
-            self.log("-> old request arrived:", req)
+            if(req['attack'] == 1):
+                self.log("-> old request arrived:", req)
         else:
             req['req_id'] = self.req_counter
             self.req_counter += 1
-            self.log("-> new request arrived:", req)
+            if(req['attack'] == 1):
+                self.log("-> new request arrived:", req)
             assert(req['req_id'] not in self.pending_req)
             self.pending_req[req['req_id']] = req
 
         waiting_time = self.get_waiting_time(req)
         waiting_time = int(waiting_time)
-        print("waiting time:", waiting_time, len(self.table), "/", self.capacity)
+        self.admission_times.append((self.env.now, waiting_time, req['attack']))
+        #print("waiting time:", waiting_time, len(self.table), "/", self.capacity)
         if(waiting_time == 0):
-            self.log("Admitting right away")
+            if(req['attack'] == 1):
+                self.log("Admitting right away")
             del self.pending_req[req['req_id']]
             req['expire'] = self.env.now + self.ad_lifetime
             self.table[self.ad_ids] = req
             self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
             self.ad_ids += 1
-            self.admission_times.append((self.env.now, self.env.now - req['arrived'], req['attack']))
+            #self.admission_times.append((self.env.now, self.env.now - req['arrived'], req['attack']))
             self.returns.append((self.env.now, req['returned'], req['attack']))
             self.report_occupancy()
             
@@ -247,11 +250,12 @@ class Table(metaclass=abc.ABCMeta):
             new_req['expire'] = 0
             new_req['arrived'] = self.env.now + self.ad_lifetime + rand_time
             new_req['returned'] = 0
-            self.log("Will attempt to re-register at:", self.env.now + self.ad_lifetime)
+            #self.log("Will attempt to re-register at:", self.env.now + self.ad_lifetime)
             self.env.process(self.new_request(new_req, self.ad_lifetime + rand_time))
         else:
             req['returned'] += 1
-            #self.log("Need to wait for", waiting_time)
+            if(req['attack'] == 1):
+                self.log("Need to wait for", waiting_time)
             self.env.process(self.new_request(req, waiting_time))
     
 
@@ -307,8 +311,11 @@ class DiversityTable(Table):
         self.id_modifiers[self.env.now] = (self.env.now, id_modifier, req['attack'])
         self.topic_modifiers[self.env.now] = (self.env.now, topic_modifier, req['attack'])
         needed_time = base_waiting_time * max(sum([topic_modifier, id_modifier, ip_modifier]), 1/1000000)
-        print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
-        print("self.occupancy_power:", self.occupancy_power, "self.base_multiplier:", self.base_multiplier, "self.ad_lifetime:", self.ad_lifetime)
+        if(req['attack'] == 1):
+            print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
+            print("waited time:", waited_time)
+            print("returning:", max(0, needed_time - waited_time))
+            #print("self.occupancy_power:", self.occupancy_power, "self.base_multiplier:", self.base_multiplier, "self.ad_lifetime:", self.ad_lifetime)
         #needed_time = base_waiting_time
         return max(0, needed_time - waited_time)
     
