@@ -975,6 +975,8 @@ def analyzeNumberOfMessages(dirs):
         ax.plot(df['time']/1000, df['MSG_TICKET_RESPONSE'], label='ticket_response')
         ax.plot(df['time']/1000, df['MSG_TOPIC_QUERY'], label='query')
         ax.plot(df['time']/1000, df['MSG_TOPIC_QUERY_REPLY'], label='query_reply')
+        ax.plot(df['time']/1000, df['MSG_FIND'], label='find')
+        ax.plot(df['time']/1000, df['MSG_RESPONSE'], label='find_reply')
 
         ax.legend()
         ax.set_xlabel('time (sec)')
@@ -1243,11 +1245,17 @@ def analyzeMessageReceivedByNodes(dirs):
         fig, ax = plt.subplots()
         i=0
         labels=['NoSpam','Spam']
+
+
+
         for log_dir in dirs:
             me = extractAlphanumeric(log_dir)
             x_vals = []
             y_vals = []
             topics = {}
+
+            df = pd.read_csv(log_dir + '/storage_utilisation.csv')
+            time = df['time'].max() / 1000
 
             logdirname = extractAlphanumeric(log_dir)
             with open(log_dir + '/msg_received.csv', newline='') as csvfile:
@@ -1256,7 +1264,7 @@ def analyzeMessageReceivedByNodes(dirs):
                     if 't' in row['numMsg']:
                         topics[row['Node']] = row['numMsg']
                     else:
-                        y_vals.append(int(row['numMsg'])/3600)
+                        y_vals.append(int(row['numMsg'])/(time-300))
                         x_vals.append(row['Node'])
 
                 sorted_y_vals = sorted(y_vals)

@@ -42,6 +42,10 @@ public class KademliaCommonConfig {
     public static int TICKET_TABLE_REPLACEMENTS=0;
     public static int SEARCH_TABLE_REPLACEMENTS=0;
     public static int TICKET_REMOVE_AFTER_REG=0;
+    
+    public static int FILTER_RESULTS = 1;
+
+    
     // Attack Types:
     public static String ATTACK_TYPE_TOPIC_SPAM = "TopicSpam";
     public static String ATTACK_TYPE_RANDOM_SPAM = "RandomSpam";

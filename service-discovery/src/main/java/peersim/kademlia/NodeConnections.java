@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import peersim.core.CommonState;
 import peersim.core.Node;
@@ -17,12 +18,13 @@ public class NodeConnections {
     
     private String topic;
 
-    private List<KademliaNode> lookupResultBuffer;
+    private HashMap<KademliaNode,BigInteger> lookupResultBuffer;
         
     private List<KademliaNode> incomingConnections;
     private List<KademliaNode> outgoingConnections;
     
-    private HashSet<String> addresses;
+    private HashMap<BigInteger,Integer> sources;
+    private HashMap<KademliaNode,BigInteger> used;
     
     private KademliaNode n;
     boolean requested;
@@ -37,11 +39,12 @@ public class NodeConnections {
         	this.maxIncomingConnections = KademliaCommonConfig.MAXCONNECTIONS*1000;
         	this.maxOutgoingConnections = KademliaCommonConfig.MAXCONNECTIONS*1000;
         }*/
-        this.lookupResultBuffer = new ArrayList<KademliaNode>();
+        this.lookupResultBuffer = new HashMap<>();
 		this.topic = topic;
 		this.requested = false;
 		this.n = n;
-		this.addresses = new HashSet<String>();
+		this.sources = new HashMap<>();
+		this.used = new HashMap<>();
 	}
 	
 	
@@ -53,15 +56,19 @@ public class NodeConnections {
 		this.requested = req;
 	}
 	
-	public void addLookupResult(List<KademliaNode> lookupResultBuffer) {
-		this.lookupResultBuffer.addAll(lookupResultBuffer);
+	public void addLookupResult(HashMap<KademliaNode,BigInteger> lookupResultBuffer) {
+		//System.out.println(CommonState.getTime()+" addLookupResult "+lookupResultBuffer.size());
+		this.lookupResultBuffer.putAll(lookupResultBuffer);
+		/*for(KademliaNode node : lookupResultBuffer.keySet()) {
+			System.out.println(CommonState.getTime()+" Result "+node+" origin:"+lookupResultBuffer.get(node));
+		}*/
 	}
-	public void setLookupBuffer(List<KademliaNode> lookupResultBuffer) {
+	/*public void setLookupBuffer(List<KademliaNode> lookupResultBuffer) {
 		this.lookupResultBuffer = lookupResultBuffer;
-	}
+	}*/
 	
 	public List<KademliaNode> getLookupBuffer(){
-		return this.lookupResultBuffer;
+		return new ArrayList<>(this.lookupResultBuffer.keySet());
 	}
 	
 	public List<KademliaNode> getIncomingConnections() {
@@ -79,7 +86,8 @@ public class NodeConnections {
 	public boolean removeOutgoingNode(KademliaNode node) {
 		if(outgoingConnections.contains(node)) {
 	   		//System.out.println(CommonState.getTime()+" outgoing connections removed "+(outgoingConnections.size()-1))
-			addresses.remove(node.getAddr());
+			sources.remove(used.get(node));
+			used.remove(node);
 			return outgoingConnections.remove(node);
 		} else {
 			return false;
@@ -88,18 +96,56 @@ public class NodeConnections {
 	
 	public void tryNewConnections() {
 		
-		int count=0;
-    	while(outgoingConnections.size()<maxOutgoingConnections&&lookupResultBuffer.size()>0) {
-       		int n = CommonState.r.nextInt(lookupResultBuffer.size());
-       		boolean success = startConnection(lookupResultBuffer.get(n));
+       		//
 
-			if(success) {
-				addOutgoingConnection(lookupResultBuffer.get(n));
-				addresses.add(lookupResultBuffer.get(n).getAddr());
-				count++;
-			}
-			lookupResultBuffer.remove(n);
-    	}
+
+   		if(KademliaCommonConfig.FILTER_RESULTS==0){
+   	    	while(outgoingConnections.size()<maxOutgoingConnections&&lookupResultBuffer.size()>0) {
+   	    		List<KademliaNode> valuesList = new ArrayList<KademliaNode>(lookupResultBuffer.keySet());
+
+        		int n = CommonState.r.nextInt(lookupResultBuffer.size());
+           		KademliaNode randomNode = valuesList.get(n);
+       			boolean success = startConnection(randomNode);
+
+				if(success) {
+					addOutgoingConnection(randomNode);
+
+				}
+				lookupResultBuffer.remove(randomNode);
+   	    	}
+
+   		} else {
+   			System.out.println(CommonState.getTime()+" filter results");
+   			HashSet<BigInteger> valuesSources = new HashSet<BigInteger>(lookupResultBuffer.values());
+   				
+			while(outgoingConnections.size()<maxOutgoingConnections&&lookupResultBuffer.size()>0) {
+   	    		List<KademliaNode> valuesList = new ArrayList<KademliaNode>(lookupResultBuffer.keySet());
+
+        		int n = CommonState.r.nextInt(lookupResultBuffer.size());
+           		KademliaNode randomNode = valuesList.get(n);
+           		
+    			if(valuesSources.size()>2||sources.keySet().size()>2||!sources.containsKey(lookupResultBuffer.get(randomNode))) {
+
+   	       			boolean success = startConnection(randomNode);
+
+   					if(success) {
+   						addOutgoingConnection(randomNode);
+   						int i=0;
+   						if(sources.get(randomNode)!=null)i+=sources.get(randomNode);
+   						sources.put(lookupResultBuffer.get(randomNode),i);
+   						used.put(randomNode, lookupResultBuffer.get(randomNode));
+
+   					}
+   					
+    			} 
+				lookupResultBuffer.remove(randomNode);
+
+   	    	}
+
+   		} 
+   			
+       		//}
+    	
    		//System.out.println(CommonState.getTime()+" new connections added "+count+" "+outgoingConnections.size()+" "+lookupResultBuffer.size());
         
 	}
@@ -107,7 +153,7 @@ public class NodeConnections {
     
     private boolean startConnection(KademliaNode node) {
     	Node nd = Util.nodeIdtoNode(node.getId());
-    	if(!nd.isUp()||addresses.contains(node.getAddr())) {
+    	if(!nd.isUp()) {
     		//System.out.println(CommonState.getTime()+" node is down");
     		return false;
     	} else {

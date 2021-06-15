@@ -258,14 +258,14 @@ public class Turbulence implements Control {
 	 * 
 	 * @return Message
 	 */
-	protected Message generateFindNodeMessage(Topic topic) {
+	protected Message generateFindNodeMessage() {
 		// existing active destination node
 		Node n = Network.get(CommonState.r.nextInt(Network.size()));
 		while (!n.isUp()) {
 			n = Network.get(CommonState.r.nextInt(Network.size()));
 		}
 
-		Message m = Message.makeInitFindNode(topic.getTopicID());
+		Message m = Message.makeInitFindNode(n.getKademliaProtocol().getNode().getId());
 		m.timestamp = CommonState.getTime();
 
 		return m;

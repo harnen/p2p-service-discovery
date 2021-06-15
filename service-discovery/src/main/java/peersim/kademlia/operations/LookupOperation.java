@@ -2,6 +2,7 @@ package peersim.kademlia.operations;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -11,23 +12,23 @@ import peersim.kademlia.Topic;
 
 public class LookupOperation extends Operation {
     public final Topic topic;
-    private HashSet<KademliaNode> discovered;
+    private HashMap<KademliaNode,BigInteger> discovered;
 
     private int malQueried;
     
     public LookupOperation(BigInteger srcNode, Long timestamp, Topic t) {
         super(srcNode, t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
         this.topic = t;
-        discovered = new HashSet<KademliaNode>();
+        discovered = new HashMap<KademliaNode,BigInteger>();
         malQueried=0;
 
     }
     
-    public void addDiscovered(KademliaNode n) {
-        discovered.add(n);
+    public void addDiscovered(KademliaNode n,BigInteger sourceId) {
+        discovered.put(n,sourceId);
     }
     
-    public HashSet<KademliaNode> getDiscovered(){
+    public HashMap<KademliaNode,BigInteger> getDiscovered(){
         return discovered;
     }
     
@@ -36,7 +37,7 @@ public class LookupOperation extends Operation {
         
         String result = "\"";
         boolean first = true;
-        for(KademliaNode n: discovered) {
+        for(KademliaNode n: discovered.keySet()) {
         	if(!n.is_evil) {
 	            if(first) {
 	                result += n.getId();
@@ -55,7 +56,7 @@ public class LookupOperation extends Operation {
         
         String result = "\"";
         boolean first = true;
-        for(KademliaNode n: discovered) {
+        for(KademliaNode n: discovered.keySet()) {
         	if(n.is_evil) {
 	            if(first) {
 	                result += n.getId();
@@ -74,18 +75,18 @@ public class LookupOperation extends Operation {
     }
     
     
-    public List<KademliaNode> getDiscoveredArray()
+    /*public List<KademliaNode> getDiscoveredArray()
     {
-        return new ArrayList<KademliaNode>(discovered);
+        return new ArrayList<KademliaNode>(discovered.keySet());
     }
-    
+    */
     public int discoveredCount() {
         return discovered.size();
     }
 
     public int maliciousDiscoveredCount() {
         int num_malicious = 0;
-        for (KademliaNode n: this.discovered) {
+        for (KademliaNode n: this.discovered.keySet()) {
             if (n.is_evil)
                 num_malicious += 1;
         }
