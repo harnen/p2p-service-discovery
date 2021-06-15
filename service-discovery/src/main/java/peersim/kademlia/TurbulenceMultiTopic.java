@@ -25,6 +25,8 @@ public class TurbulenceMultiTopic extends Turbulence{
 	private final static String PAR_MINTOPIC = "mintopicnum";
 	private final static String PAR_MAXTOPIC = "maxtopicnum";
 	private final static String PAR_ZIPF = "zipf";
+	private final int randomLookups;
+    private final static String PAR_LOOKUPS = "randomlookups";
 
 	/**
 	 * MSPastry Protocol ID to act
@@ -40,6 +42,8 @@ public class TurbulenceMultiTopic extends Turbulence{
 			mintopicNum = Configuration.getInt(prefix + "." + PAR_MINTOPIC,1);
 			maxtopicNum = Configuration.getInt(prefix + "." + PAR_MAXTOPIC);
 			zipf = new ZipfDistribution(maxtopicNum,exp);
+	        randomLookups = Configuration.getInt(prefix + "." + PAR_LOOKUPS, 0);
+
 			// TODO Auto-generated constructor stub
 		}
 
@@ -113,16 +117,29 @@ public class TurbulenceMultiTopic extends Turbulence{
                 //System.out.print(topicList.get(i)+" ");
 			    Message registerMessage = generateRegisterMessage(topicList.get(i));
 			    Message lookupMessage = generateTopicLookupMessage(topicList.get(i));
-			    Message initLookupMessage = generateFindNodeMessage(new Topic(topicList.get(i)));
+			    //Message initLookupMessage = generateFindNodeMessage(new Topic(topicList.get(i)));
 
 			    if(registerMessage != null) {
 				    System.out.println("Topic " + topicList.get(i) + " will be registered by "+newKad.getNode().getId());
-				    EDSimulator.add(0, initLookupMessage, newNode, kademliaid);
+				    //EDSimulator.add(0, initLookupMessage, newNode, kademliaid);
 				    EDSimulator.add(10000, registerMessage, newNode, kademliaid);
 				    EDSimulator.add(10000, lookupMessage, newNode, kademliaid);
 
 			    }
 		    }
+            
+			 if(randomLookups==1) {
+					
+					for(int i = 0;i<Network.size();i++) 
+					{
+						for(int j = 0;j<3;j++) {
+							Node start = Network.get(i);
+							Message lookup = generateFindNodeMessage();
+							EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
+						}
+			
+					}
+			 }
             //System.out.println();
 
 			return false;
