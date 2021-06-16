@@ -1112,7 +1112,7 @@ public class KademliaObserver implements Control {
                     int count = topics.get(t);
                     double util;
 
-                    util = ((double) count) / KademliaCommonConfig.ADS_PER_QUEUE;
+                    util = ((double) count) / KademliaCommonConfig.TOPIC_TABLE_CAP;
                     if (utilisations.get(t.getTopic()) != null) {
                         double total_util_so_far = utilisations.get(t.getTopic());
                         utilisations.put(t.getTopic(), total_util_so_far + util);
