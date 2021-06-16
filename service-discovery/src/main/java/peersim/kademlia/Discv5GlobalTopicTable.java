@@ -111,7 +111,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
             return waiting_time;
         }
         else {
-            double occupancy = 1.0 - (allAds.size()/this.tableCapacity);
+            double occupancy = 1.0 - ( ((double) allAds.size()) / this.tableCapacity);
             if (occupancy < 0.01)
                 occupancy = 0.01; //shouldn't be less than 1 percent
 	        baseWaitingTime = (long) (adLifeTime/Math.pow(occupancy, occupancyPower));
