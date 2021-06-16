@@ -130,15 +130,13 @@ public class TurbulenceMultiTopic extends Turbulence{
             
 			 if(randomLookups==1) {
 					
-					for(int i = 0;i<Network.size();i++) 
-					{
-						for(int j = 0;j<3;j++) {
-							Node start = Network.get(i);
-							Message lookup = generateFindNodeMessage();
-							EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
-						}
-			
-					}
+
+				for(int j = 0;j<3;j++) {
+					Node start = Network.get(i);
+					Message lookup = generateFindNodeMessage();
+					EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
+				}
+
 			 }
             //System.out.println();
 

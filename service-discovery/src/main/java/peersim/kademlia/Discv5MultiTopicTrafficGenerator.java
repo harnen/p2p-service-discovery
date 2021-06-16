@@ -110,6 +110,8 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 				//System.out.println("Topic hash: " + t.getTopicID());
 				//System.out.println("Closest node is " + getClosestNode(t.getTopicID()));
 				
+				int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
+
                 for (int topicIndex = 0; topicIndex < numTopics; topicIndex++) {
 				    //kad.setClient(this);
 			    	//prot.getNode().setCallBack(this,start,topicList[topicIndex-1]);
@@ -122,7 +124,6 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 
 				    if(registerMessage != null) {
 					    //int time = CommonState.r.nextInt(900000);
-						int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
 					    //int time = 0;
 					    //System.out.println("Topic " + topicList[topicIndex-1].getTopic() + " will be registered by "+prot.getNode().getId()+" at "+time);
 					    EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
@@ -130,23 +131,21 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 
 				    }
 			    }
+                
+                if(randomLookups==1) {
+					for(int j = 0;j<3;j++) {
+						Node nod = Network.get(i);
+						Message lookup = generateFindNodeMessage();
+						EDSimulator.add(time, lookup, nod, nod.getKademliaProtocol().getProtocolID());
+					}
+                	
+                }
             }
 
 			for (Map.Entry<String, Integer> i :n.entrySet()) 
 				System.out.println("Topic "+i.getKey()+" "+i.getValue()+" times");
 			
-			 if(randomLookups==1) {
-					
-					for(int i = 0;i<Network.size();i++) 
-					{
-						for(int j = 0;j<3;j++) {
-							Node start = Network.get(i);
-							Message lookup = generateFindNodeMessage();
-							EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
-						}
-			
-					}
-			 }
+
 			
 			first=false;
 			
