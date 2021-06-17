@@ -10,14 +10,14 @@ import pandas as pd
 def restore_default():
     global ad_lifetime, input_file, capacity, honest_size, malicious_size, occupancy_power, ip_id_power, topic_power, base_multiplier, attacker_ip_id_num, attacker_id_num
     ad_lifetime = 3000
-    capacity = 10000
+    capacity = 50
     honest_size = 50
     malicious_size = 250
-    occupancy_power = 3
-    ip_id_power = 0.1
+    occupancy_power = 5
+    ip_id_power = 0.5
     topic_power = 5
     attacker_ip_id_num = 5
-    base_multiplier = 100
+    base_multiplier = 30
 
 
 
@@ -67,8 +67,23 @@ def plot_feature(ax, df, label, y, x_title, y_title, key_suffix = None, color='b
         x_new, y_new = zip(*sorted(zip(group_specific[label], group_specific[y])))
         print("x_new", x_new)
         print("y_new", y_new)
-        ax.plot(x_new, y_new, linestyle = styles[counter%len(styles)], linewidth = 5, c=color)
-        ax.scatter(x_new, y_new, c = color, linewidth = 5)
+        out_x = []
+        out_y = []
+        prev = None
+        for val in sorted(set(x_new)):
+            i = x_new.index(val)
+            c = x_new.count(val)
+            out_x.append(val)
+            
+            sum_y = 0
+            for j in range(0, c):
+                sum_y += y_new[i+j]          
+            out_y.append(sum_y/c)    
+
+        print("out_x", out_x)
+        print("out_y", out_y)
+        ax.plot(out_x, out_y, linestyle = styles[counter%len(styles)], linewidth = 5, c=color)
+        ax.scatter(out_x, out_y, c = color, linewidth = 5)
         
         #ax.plot(group_specific[label], group_specific[y], label=key, linewidth = 5)
         counter += 1
@@ -154,51 +169,58 @@ def run_all():
     ip_id_powers = [0.01, 0.05, 0.1, 0.2, 1]
     topic_powers = [1, 5, 10, 20, 50]
     attacker_ip_id_nums = [1, 5, 15, 20, 30, 40, 50]
-    base_multipliers = [1, 5, 10, 20, 30, 40, 50, 100, 150, 200, 300]
+    base_multipliers = [1, 5, 10, 20, 30, 40, 50, 100]
     
 
 
     restore_default()
     global capacity, honest_size, occupancy_power, attacker_ip_id_num, ip_id_power, topic_power, base_multiplier, malicious_size
     for i in honest_sizes:
+        break
         honest_size = i
         run(stats)
 
 
     restore_default()
     for i in capacities:
+        break
         capacity = i
         run(stats)
         
     restore_default()
     for i in malicious_sizes:
+        break
         malicious_size = i
         run(stats)
 
+    
+
+    restore_default()
+    for i in attacker_ip_id_nums:
+        break
+        attacker_ip_id_num = i
+        run(stats)
+    
     restore_default()
     for i in occupancy_powers:
         occupancy_power = i
         run(stats)
 
     restore_default()
-    for i in attacker_ip_id_nums:
-        attacker_ip_id_num = i
-        run(stats)
-    
-
-    restore_default()
     for i in ip_id_powers:
+        #break
         ip_id_power = i
         run(stats)
     
     restore_default()
     for i in topic_powers:
-        break
+        #break
         topic_power = i
         run(stats)
     
     restore_default()
     for i in base_multipliers:
+        #break
         base_multiplier = i
         run(stats)
 
@@ -210,6 +232,7 @@ def run_all():
     df.to_csv('dump.csv')
 
 def analyze(input_file = 'dump.csv'):
+    #pd.set_option('display.max_columns', None)
     df = pd.read_csv(input_file)
     df.drop(df.columns[[0]], axis=1, inplace=True)
     df.drop_duplicates(inplace=True)
@@ -225,46 +248,44 @@ def analyze(input_file = 'dump.csv'):
 
 
     
-    fig, ax = plt.subplots(figsize=(10, 4))
-    plot_feature(ax, df, 'honest_size', 'occupancy_total', '#honest registrants', 'avg occupancy', color='b')
-    plot_feature(ax, df, 'honest_size', 'honest_occupancy_total', '#honest registrants', 'avg occupancy', '_honest', color='g')
-    plot_feature(ax, df, 'honest_size', 'malicious_occupancy_total', '#honest registrants', 'avg occupancy', '_malicious', color='r')
+    #fig, ax = plt.subplots(figsize=(10, 4))
+    #plot_feature(ax, df, 'honest_size', 'occupancy_total', '#honest registrants', 'avg occupancy', color='b')
+    #plot_feature(ax, df, 'honest_size', 'honest_occupancy_total', '#honest registrants', 'avg occupancy', '_honest', color='g')
+    #plot_feature(ax, df, 'honest_size', 'malicious_occupancy_total', '#honest registrants', 'avg occupancy', '_malicious', color='r')
 
-    fig, ax = plt.subplots(figsize=(10, 4))
-    plot_feature(ax, df, 'capacity', 'occupancy_abs', 'capacity', '#in the table', color='b')
-    plot_feature(ax, df, 'capacity', 'honest_abs', 'capacity', '#in the table', color='g')
-    plot_feature(ax, df, 'capacity', 'malicious_abs', 'capacity', '#in the table', color='r')
+    #fig, ax = plt.subplots(figsize=(10, 4))
+    #plot_feature(ax, df, 'capacity', 'occupancy_abs', 'capacity', '#in the table', color='b')
+    #plot_feature(ax, df, 'capacity', 'honest_abs', 'capacity', '#in the table', color='g')
+    #plot_feature(ax, df, 'capacity', 'malicious_abs', 'capacity', '#in the table', color='r')
 
     fig, ax = plt.subplots(figsize=(10, 4))
     plot_feature(ax, df, 'occupancy_power', 'occupancy_total', 'Occupancy power', 'avg occupancy', color='b')
     plot_feature(ax, df, 'occupancy_power', 'honest_occupancy_total', 'Occupancy power', 'avg occupancy', color='g')
     plot_feature(ax, df, 'occupancy_power', 'malicious_occupancy_total', 'Occupancy power', 'avg occupancy', color='r')
+    
+    
 
     #fig, ax = plt.subplots(figsize=(10, 4))
-    #plot_feature(ax, df, 'attacker_id_num', 'occupancy_total', '#attacker IDs', 'avg occupancy', color='b')
-    #plot_feature(ax, df, 'attacker_id_num', 'honest_occupancy_total', '#attacker IDs', 'avg occupancy', '_honest', color='g')
-    #plot_feature(ax, df, 'attacker_id_num', 'malicious_occupancy_total', '#attacker IDs', 'avg occupancy', '_malicious', color='r')
-
+    #plot_feature(ax, df, 'attacker_ip_id_num', 'occupancy_total', '#attacker IPs/IDs', 'avg occupancy', color='b')
+    #plot_feature(ax, df, 'attacker_ip_id_num', 'honest_occupancy_total', '#attacker IPs/IDs', 'avg occupancy', '_honest', color='g')
+    #plot_feature(ax, df, 'attacker_ip_id_num', 'malicious_occupancy_total', '#attacker IPs/IDs', 'avg occupancy', '_malicious', color='r')
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    plot_feature(ax, df, 'attacker_ip_id_num', 'occupancy_total', '#attacker IPs/IDs', 'avg occupancy', color='b')
-    plot_feature(ax, df, 'attacker_ip_id_num', 'honest_occupancy_total', '#attacker IPs/IDs', 'avg occupancy', '_honest', color='g')
-    plot_feature(ax, df, 'attacker_ip_id_num', 'malicious_occupancy_total', '#attacker IPs/IDs', 'avg occupancy', '_malicious', color='r')
+    plot_feature(ax, df, 'ip_id_power', 'occupancy_total', 'id_ip_power', 'avg occupancy', color='b')
+    plot_feature(ax, df, 'ip_id_power', 'honest_occupancy_total', 'id_ip_power', 'avg occupancy', '_honest', color='g')
+    plot_feature(ax, df, 'ip_id_power', 'malicious_occupancy_total', 'id_ip_power', 'avg occupancy', '_malicious', color='r')
+    plt.show()
+    quit()
 
     #fig, ax = plt.subplots(figsize=(10, 4))
-    #plot_feature(ax, df, 'ip_id_power', 'occupancy_total', 'id_ip_power', 'avg occupancy', color='b')
-    #plot_feature(ax, df, 'ip_id_power', 'honest_occupancy_total', 'id_ip_power', 'avg occupancy', '_honest', color='g')
-    #plot_feature(ax, df, 'ip_id_power', 'malicious_occupancy_total', 'id_ip_power', 'avg occupancy', '_malicious', color='r')
+    #plot_feature(ax, df, 'malicious_size', 'occupancy_total', '#malicious registrants', 'avg occupancy', color='b')
+    #plot_feature(ax, df, 'malicious_size', 'honest_occupancy_total', '#malicious registrants', 'avg occupancy', '_honest', color='g')
+    #plot_feature(ax, df, 'malicious_size', 'malicious_occupancy_total', '#malicious registrants', 'avg occupancy', '_malicious', color='r')
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    plot_feature(ax, df, 'malicious_size', 'occupancy_total', '#malicious registrants', 'avg occupancy', color='b')
-    plot_feature(ax, df, 'malicious_size', 'honest_occupancy_total', '#malicious registrants', 'avg occupancy', '_honest', color='g')
-    plot_feature(ax, df, 'malicious_size', 'malicious_occupancy_total', '#malicious registrants', 'avg occupancy', '_malicious', color='r')
-
-    #fig, ax = plt.subplots(figsize=(10, 4))
-    #plot_feature(ax, df, 'topic_power', 'occupancy_total', 'topic_power', 'avg occupancy', color='b')
-    #plot_feature(ax, df, 'topic_power', 'honest_occupancy_total', 'topic_power', 'avg occupancy', '_honest', color='g')
-    #plot_feature(ax, df, 'topic_power', 'malicious_occupancy_total', 'topic_power', 'avg occupancy', '_malicious', color='r')
+    plot_feature(ax, df, 'topic_power', 'occupancy_total', 'topic_power', 'avg occupancy', color='b')
+    plot_feature(ax, df, 'topic_power', 'honest_occupancy_total', 'topic_power', 'avg occupancy', '_honest', color='g')
+    plot_feature(ax, df, 'topic_power', 'malicious_occupancy_total', 'topic_power', 'avg occupancy', '_malicious', color='r')
 
     fig, ax = plt.subplots(figsize=(10, 4))
     plot_feature(ax, df, 'base_multiplier', 'occupancy_total', 'base_multiplier', 'avg occupancy', color='b')
@@ -313,11 +334,11 @@ def special(input_file = 'dump.csv'):
     ax.legend(custom_lines, ['none(solid)', 'spam(dashed)', 'topic_popular(dotted)', 'topic_unpopular(dashdotted)'])
     plt.show()
 
-runtime = 50000
+runtime = 10000
 
 restore_default()
 #run_single()
 
-run_all()
+#run_all()
 analyze()
 #special('attacks.csv')

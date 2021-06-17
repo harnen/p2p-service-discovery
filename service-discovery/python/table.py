@@ -317,7 +317,7 @@ class DiversityTable(Table):
             print("returning:", max(0, needed_time - waited_time))
             #print("self.occupancy_power:", self.occupancy_power, "self.base_multiplier:", self.base_multiplier, "self.ad_lifetime:", self.ad_lifetime)
         #needed_time = base_waiting_time
-        return max(0, needed_time - waited_time)
+        return min(self.ad_lifetime, max(0, needed_time - waited_time))
     
     
 
