@@ -83,7 +83,8 @@ public class TurbulenceSingleTopic extends Turbulence{
 		    String topic = new String("t"+zipf.sample());
 			node.setTopic(topic, newNode);
 
-		    Message initLookupMessage = generateFindNodeMessage(new Topic(topic));
+		    //Message initLookupMessage = generateFindNodeMessage(new Topic(topic));
+		    Message initLookupMessage = generateFindNodeMessage();
 			Message registerMessage = generateRegisterMessage(topic);
 		    Message lookupMessage = generateTopicLookupMessage(topic);
 		    if(registerMessage != null) {

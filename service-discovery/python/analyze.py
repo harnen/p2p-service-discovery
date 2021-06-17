@@ -569,6 +569,7 @@ def analyzeRegistrantDistribution(dirs):
                     else:
                         x.append(int(node))
                         y.append(topic_index + dir_num*0.3)
+
                         c.append(colors[topic_index])
                         s.append(stats[node][topic])
                         if topic not in discovered_per_topic:
@@ -891,7 +892,7 @@ def analyzeWaitingTimes(dirs):
         topics = sorted(topics)
         for topic in topics:
             ax1.plot(df['time']/1000, df[topic+'_wait']/1000, label=topic)
-        
+
         ax1.legend()
         ax1.set_ylabel('Waiting time in sec')
         ax1.set_xlabel('time (sec)')

@@ -68,6 +68,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 
 	}
 
+
 	// ______________________________________________________________________________________________
 	/**
 	 * generates a random find node message, by selecting randomly the destination.

@@ -21,12 +21,11 @@ import peersim.core.CommonState;
 public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements TopicTable 
 
     private static final int amplify = 1; 
-    private static final int minimumBaseWaitingTime = 1000;
     //private static final double groupModifierExp = 1;
-    private static final double topicModifierExp = 10;
+    private static final double topicModifierExp = 5;
     private static final double ipModifierExp = 0.1;
     private static final double idModifierExp =0.1;
-    private static final int occupancyPower = 10;
+    private static final int occupancyPower = 2;
     private static final int baseMultiplier = 10;
     
 	public Discv5GlobalTopicTable() {
@@ -112,9 +111,10 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
             return waiting_time;
         }
         else {
-    
-	        //baseWaitingTime = minimumBaseWaitingTime;
-	        baseWaitingTime = (long) (baseMultiplier*adLifeTime/Math.pow(1-(allAds.size()/(this.tableCapacity)),occupancyPower));
+            double occupancy = 1.0 - ( ((double) allAds.size()) / this.tableCapacity);
+            if (occupancy < 0.01)
+                occupancy = 0.01; //shouldn't be less than 1 percent
+	        baseWaitingTime = (long) (adLifeTime/Math.pow(occupancy, occupancyPower));
 	
 	        long neededTime  = (long) (baseWaitingTime * Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg),1/1000000));
 	
@@ -179,7 +179,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 
         if(allAds.size()==0)return 0;
 
-    	return Math.pow((double)counter/(allAds.size()),amplify*ipModifierExp);
+    	return baseMultiplier*Math.pow((double)counter/(allAds.size()),amplify*ipModifierExp);
     }
     
     private double getIdModifier(TopicRegistration reg) {
@@ -207,7 +207,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 
         if(allAds.size()==0)return 0;
 
-    	return Math.pow((double)counter/(allAds.size()),amplify*idModifierExp);
+    	return baseMultiplier * Math.pow((double)counter/(allAds.size()),amplify*idModifierExp);
     }
     
     private int getNumberOfCompetingTickets() {
