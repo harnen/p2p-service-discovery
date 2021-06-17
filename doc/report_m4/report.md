@@ -1,8 +1,7 @@
 # Milestone 4 - Performance evaluation / configation parameters report
 
 ## Intro
-The document presents a security analysis of the proposed discovery protocol for the Ethereum  P2P network (discv5) following the described [specs](https://github.com/datahop/p2p-service-discovery/blob/d67a7ccd2b4c2c6bec38f5987c99cb13ea074cdc/doc/specs.md).
-
+The document shows the results of an extensive evaleation for the Ethereum  P2P network (discv5), following the described [specs](https://github.com/datahop/p2p-service-discovery/blob/d67a7ccd2b4c2c6bec38f5987c99cb13ea074cdc/doc/specs.md), to test multiple configuration parameters and evaluate which ones perform the best. 
 
 ## Setup (default parameters)
 
@@ -28,17 +27,29 @@ The document presents a security analysis of the proposed discovery protocol for
 
 ### Waiting time parameters
 
+[Waiting time evaluation](reports/waiting_time.md)
+
 ### Registration lifetime
+
+[Registration lifetime evaluation](reports/ad_lifetime.md)
 
 ### Ticket table parameters
 
+[Ticket table parameters evaluation](reports/tickettable.md)
+
 ### Search table parameters
 
+[Search table parameters evaluation](reports/tickettable.md)
+
 ### Topic table size
+
+[Topic table size evaluation](reports/tickettable.md)
 
 ## Other evaluation
 
 ### Network size 
+
+### Variable topic number
 
 ### Search strategies
 
