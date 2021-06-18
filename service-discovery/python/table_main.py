@@ -10,7 +10,7 @@ import pandas as pd
 def restore_default():
     global ad_lifetime, input_file, capacity, honest_size, malicious_size, occupancy_power, ip_id_power, topic_power, base_multiplier, attacker_ip_id_num, attacker_id_num
     ad_lifetime = 3000
-    capacity = 50
+    capacity = 15000
     honest_size = 50
     malicious_size = 250
     occupancy_power = 5
@@ -274,8 +274,7 @@ def analyze(input_file = 'dump.csv'):
     plot_feature(ax, df, 'ip_id_power', 'occupancy_total', 'id_ip_power', 'avg occupancy', color='b')
     plot_feature(ax, df, 'ip_id_power', 'honest_occupancy_total', 'id_ip_power', 'avg occupancy', '_honest', color='g')
     plot_feature(ax, df, 'ip_id_power', 'malicious_occupancy_total', 'id_ip_power', 'avg occupancy', '_malicious', color='r')
-    plt.show()
-    quit()
+
 
     #fig, ax = plt.subplots(figsize=(10, 4))
     #plot_feature(ax, df, 'malicious_size', 'occupancy_total', '#malicious registrants', 'avg occupancy', color='b')
