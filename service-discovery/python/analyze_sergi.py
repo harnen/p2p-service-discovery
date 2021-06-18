@@ -1387,7 +1387,8 @@ print('Plots will be saved in ', OUTDIR);
 #labels = ['500 nodes','1000 nodes','2000 nodes','5000 nodes','10000 nodes']
 #labels = ['0.5 AdLifeTime','1 AdLifeTime','1.5 AdLifeTime','2 AdLifeTime']
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
-labels = ['5 Buckets','10 Buckets','17 Buckets','256 Buckets']
+#labels = ['5 Buckets','10 Buckets','17 Buckets','256 Buckets']
+labels = ['No refresh','Refresh']
 #analyzediscovered(sys.argv[1:])
 #analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
