@@ -938,27 +938,46 @@ def analyzeEclipsedNodeDistribution(dirs):
     plt.savefig(OUTDIR + '/node_type_dist.png')
 
 
-def analyzeStorageUtilisation(dirs):
+def analyzeStorageUtilisation(dirs,labels):
 
+    fig, ax = plt.subplots()
+    width=0.22
+    j=0
     for log_dir in dirs:
-        fig, ax = plt.subplots()
         df = pd.read_csv(log_dir + '/storage_utilisation.csv')
         topics = []
-        for column_name in df.columns:
-            if column_name == "time":
+        average = []
+        std = []
+        for col_name in df.columns:
+            if col_name=="time":
                 continue
-            topics.append(column_name)
-        log_dir1 = extractAlphanumeric(log_dir)
-        ax.set_title("Storage utilisation over time in " + log_dir1)
-        for topic in topics:
-            ax.plot(df['time']/1000, df[topic], label=topic)
+            if col_name.startswith("t"):
+                topics.append(col_name)
 
-        ax.legend()
+
+        for topic in topics:
+            print(topic)
+            print(df[topic].mean())
+            average.append(df[topic].mean()*100)
+            std.append(df[topic].std()*100)
+
+        print(average)
+        margin=width*j
+        #log_dir1 = extractAlphanumeric(log_dir)
+        ax.bar(np.arange(len(average))+margin,average,yerr=std,width=width,label=labels[j])
+        j=j+1
+
+        ax.set_xticks(np.arange(len(topics))+margin/2)
+        ax.set_xticklabels(topics)
+    ax.set_title("Storage utilisation")
+        #for topic in topics:
+        #    ax.plot(df['time']/1000, df[topic], label=topic)
+    ax.legend()
         #ax.set_xlim([10000,None])
 
-        ax.set_ylabel('Average utilisation of storage space')
-        ax.set_xlabel('time (sec)')
-        plt.savefig(OUTDIR + '/storage_utilisation.png')
+    ax.set_ylabel('Average utilisation of topic table (%)')
+    ax.set_xlabel('Topic')
+    plt.savefig(OUTDIR + '/storage_utilisation.png')
 
 # plot per-topic, average waiting times and number of rejected
 def analyzeWaitingTimes(dirs):
@@ -1003,22 +1022,37 @@ def analyzeWaitingTimes(dirs):
 
 def analyzeNumberOfMessages(dirs,labels):
 
-    for log_dir in dirs:
-        fig, ax = plt.subplots()
-        df = pd.read_csv(log_dir + '/msg_stats.csv')
-        log_dir1 = extractAlphanumeric(log_dir)
-        ax.set_title("Exchanged messages over time for  " + log_dir1)
-        ax.plot(df['time']/1000, df['MSG_REGISTER'], label='reg')
-        ax.plot(df['time']/1000, df['MSG_REGISTER_RESPONSE'], label='reg_response')
-        ax.plot(df['time']/1000, df['MSG_TICKET_REQUEST'], label='ticket_req')
-        ax.plot(df['time']/1000, df['MSG_TICKET_RESPONSE'], label='ticket_response')
-        ax.plot(df['time']/1000, df['MSG_TOPIC_QUERY'], label='query')
-        ax.plot(df['time']/1000, df['MSG_TOPIC_QUERY_REPLY'], label='query_reply')
+    fig, ax = plt.subplots()
+    width=0.22
+    j=0
 
-        ax.legend()
-        ax.set_xlabel('time (sec)')
-        ax.set_ylabel('Number of exchanged regiser/response messages')
-        plt.savefig(OUTDIR + '/message_quantity.png')
+    msgs=['MSG_REGISTER','MSG_TICKET_REQUEST','MSG_TOPIC_QUERY','MSG_FIND']
+    msg_labels=['REGISTER REQ/REPLY','TICKET REQ/REPLY','TOPIC QUERY/RESP','FIND MSG/RESP']
+    for log_dir in dirs:
+        df = pd.read_csv(log_dir + '/msg_stats.csv')
+        average = []
+        std = []
+        for msg in msgs:
+            average.append(df[msg].mean())
+            std.append(df[msg].std())
+            print(df[msg].mean())
+
+        margin=width*j
+
+        ax.bar(np.arange(len(average))+margin,average,yerr=std,width=width,label=labels[j])
+
+        j=j+1
+
+        ax.set_xticks(np.arange(len(msg_labels))+margin/2)
+        ax.set_xticklabels(msg_labels,fontsize=8)
+    ax.set_ylim(bottom=0)
+    ax.set_title("Overall Exchanged messages")
+
+    ax.legend()
+#    ax.set_xlabel('time (sec)')
+    ax.set_ylabel('Number of exchanged messages')
+    plt.savefig(OUTDIR + '/message_quantity.png')
+
 
 def analyzeRegistrations2(dirs,labels):
 
@@ -1131,7 +1165,7 @@ def analyzeRegistrations2(dirs,labels):
             for key in sorted(meanregistrarevil.keys()) :
                 meanevil[key] = meanregistrarevil[key]
 
-            print(j)
+            #print(j)
             ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),width=width,label=labels[j])
             ax4.bar(np.arange(len(meanevil.keys()))+margin, meanevil.values(),width=width,color='red')
             j=j+1
@@ -1384,28 +1418,20 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 #labels = ['AdLifeTime 5 min','AdLifeTime 15 min','AdLifeTime 30 min','AdLifeTime 60 min']
-#labels = ['500 nodes','1000 nodes','2000 nodes','5000 nodes','10000 nodes']
+labels = ['500 nodes','1000 nodes','2000 nodes','5000 nodes','10000 nodes']
 #labels = ['0.5 AdLifeTime','1 AdLifeTime','1.5 AdLifeTime','2 AdLifeTime']
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
 #labels = ['5 Buckets','10 Buckets','17 Buckets','256 Buckets']
-labels = ['No refresh','Refresh']
-#analyzediscovered(sys.argv[1:])
-#analyzeMessages(sys.argv[1:])
-#analyzeRegistrations(sys.argv[1:])
+#labels = ['No refresh','Refresh']
+
+
 analyzeRegistrations2(sys.argv[1:],labels)
 analyzeOperations(sys.argv[1:],labels)
 analyzeRegistrantDistribution(sys.argv[1:],labels)
-#analyzeRegistrarDistribution(sys.argv[1:])
-#analyzeEclipsedNodesOverTime(sys.argv[1:])
-#analyzeEclipsedNodes(sys.argv[1:])
 analyzeActiveRegistrations(sys.argv[1:],labels)
-#analyzeActiveRegistrationsMalicious(sys.argv[1:])
 analyzeRegistrationTime(sys.argv[1:],labels)
-#analyzeStorageUtilisation(sys.argv[1:])
-#analyzeWaitingTimes(sys.argv[1:])
 analyzeNumberOfMessages(sys.argv[1:],labels)
 
-#analyzeRegistrationOverhead(sys.argv[1:]) # G5 (overhead of registrations)
 analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
-#plt.show()
-#analyzeEclipsedNodeDistribution(sys.argv[1:])
+
+analyzeStorageUtilisation(sys.argv[1:],labels)
