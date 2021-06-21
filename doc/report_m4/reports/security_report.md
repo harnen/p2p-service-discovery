@@ -16,6 +16,13 @@
  <img src="../imgs/security_existing_topic/sybil_number/topic5/registration_origin.png" width="30%" />
 </p>
 
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_ipfs/topic1/registration_origin.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_ipfs/topic3/registration_origin.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_ipfs/topic5/registration_origin.png" width="30%" />
+</p>
+
+
 * 20 % sybils, modifying sybil IP Size. Topic 1, Topic 3, Topic 5.
 
 ## Traffic load
