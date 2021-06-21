@@ -58,9 +58,9 @@ The document shows the results of an extensive evaleation for the Ethereum  P2P 
 
 ### Variable topic number
 
-### Search strategies
-
 ### Security evaluation
+
+[Security evaluation](reports/security_report.md)
 
 ## Conclusions
 
