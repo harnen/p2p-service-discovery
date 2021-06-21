@@ -102,8 +102,35 @@ Topic 1, Topic 3, Topic 5
 
 # Dos Attack
 
-
 # Random Topic Attack
+
+* Active Registrations for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="../imgs/security_random_topic/attackPercent0.05/registration_origin_withmalicious.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.1/registration_origin_withmalicious.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.2/registration_origin_withmalicious.png" width="30%" />
+</p>
+
+* Average time to register for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="../imgs/security_random_topic/attackPercent0.05/avg_time_register.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.1/avg_time_register.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.2/avg_time_register.png" width="30%" />
+</p>
+
+* Average lookup hop count for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="../imgs/security_random_topic/attackPercent0.05/lookup_hopcount.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.1/lookup_hopcount.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.2/lookup_hopcount.png" width="30%" />
+</p>
+
+* Discovered nodes distribution for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="../imgs/security_random_topic/attackPercent0.05/registrant_distribution.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.1/registrant_distribution.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.2/registrant_distribution.png" width="30%" />
+</p>
 
 # Conclusions
 
