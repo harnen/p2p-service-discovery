@@ -9,12 +9,14 @@
 # Results
 
 ## Active registrations
-* 50 sybil IPs, modifying sybil %.
+* 50 sybil IPs, modifying sybil %. Topic 1, Topic 3, Topic 5.
 <p align="center">
   <img src="../imgs/security_existing_topic/sybil_number/topic1/registration_origin.png" width="30%" />
  <img src="../imgs/security_existing_topic/sybil_number/topic3/registration_origin.png" width="30%" /> 
  <img src="../imgs/security_existing_topic/sybil_number/topic5/registration_origin.png" width="30%" />
 </p>
+
+* 20 % sybils, modifying sybil IP Size. Topic 1, Topic 3, Topic 5.
 
 ## Traffic load
 
