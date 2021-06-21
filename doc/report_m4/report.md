@@ -41,9 +41,9 @@ The document shows the results of an extensive evaleation for the Ethereum  P2P 
 
 [Search table parameters evaluation](reports/tickettable.md)
 
-### Topic table size
+### Topic table capacity
 
-[Topic table size evaluation](reports/tickettable.md)
+[Topic table size evaluation](reports/topictable.md)
 
 ### Registration Timeout
 
@@ -63,3 +63,13 @@ The document shows the results of an extensive evaleation for the Ethereum  P2P 
 ### Security evaluation
 
 ## Conclusions
+
+* Selected parameters:
+  - Waiting time:
+  - Registration ad lifetime: 15 min.
+  - Ticket table: 10 buckets, bucket size 5.
+  - Search table: 17 buckets, bucket size 16.
+  - Topic table capacity: 500.
+  - Registration lifetime: 1*Adlifetime.
+
+* The system performs well in worst case scenarios (e.g. big network size (10000 nodes), or under topic/hybrid sybil attacks.
