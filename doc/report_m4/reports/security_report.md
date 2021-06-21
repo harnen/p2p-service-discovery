@@ -113,7 +113,7 @@ Topic 1, Topic 3, Topic 5
 * Message quantity. Topic 1, Topic 3, Topic 5 
 
 <p align="center">
-  <img src="../imgs/security_existing_topic/message_quantity_t1.png" width="30%" />
+ <img src="../imgs/security_existing_topic/message_quantity_t1.png" width="30%" />
  <img src="../imgs/security_existing_topic/message_quantity_t3.png" width="30%" /> 
  <img src="../imgs/security_existing_topic/message_quantity_t5.png" width="30%" />
 </p>
