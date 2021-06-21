@@ -9,27 +9,6 @@
 
 # Results
 
-## Active registrations
-<p align="center">
-  <img src="../imgs/search_table/bucket_size/registration_origin.png" width="35%" />
-  <img src="../imgs/search_table/nbucket/registration_origin.png" width="35%" />
-</p>
-
-## Traffic load
-
-* Message quantity
-<p align="center">
-  <img src="../imgs/search_table/bucket_size/message_quantity.png" width="35%" />
-  <img src="../imgs/search_table/nbucket/message_quantity.png" width="35%" />
-</p>
-
-* Message distribution
-
-<p align="center">
-  <img src="../imgs/search_table/bucket_size/messages_received2.png" width="35%" />
-  <img src="../imgs/search_table/nbucket/messages_received2.png" width="35%" />
-</p>
-
 
 ## Discovery
 
@@ -52,13 +31,6 @@
 <p align="center">
   <img src="../imgs/search_table/bucket_size/lookup_hopcount.png" width="35%" />
   <img src="../imgs/search_table/nbucket/lookup_hopcount.png" width="35%" />
-</p>
-
-## Table occupancy
-
-<p align="center">
-  <img src="../imgs/search_table/bucket_size/storage_utilisation.png" width="35%" />
-  <img src="../imgs/search_table/nbucket/storage_utilisation.png" width="35%" />
 </p>
 
 
