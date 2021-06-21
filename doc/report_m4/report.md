@@ -45,9 +45,16 @@ The document shows the results of an extensive evaleation for the Ethereum  P2P 
 
 [Topic table size evaluation](reports/tickettable.md)
 
+### Registration Timeout
+
+[Registration Timeout evaluation](reports/reg_timeout.md)
+
 ## Other evaluation
 
 ### Network size 
+
+[Network size evaluation](reports/network_size.md)
+
 
 ### Variable topic number
 
