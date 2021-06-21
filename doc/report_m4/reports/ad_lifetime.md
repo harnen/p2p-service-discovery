@@ -8,7 +8,7 @@
 
 * Message quantity
 <p align="center">
-  <img src="../imgs/ad_lifetime/messages_quantity.png" width="50%" />
+  <img src="../imgs/ad_lifetime/message_quantity.png" width="50%" />
 </p>
 
 * Message distribution
