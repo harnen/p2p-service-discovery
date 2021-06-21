@@ -15,21 +15,21 @@
 * Registrant discovery distribution
 
 <p align="center">
-  <img src="../imgs/search_table/bucket_size/registrant_distribution.png" width="35%" />
+  <img src="../imgs/search_table/bucketsize/registrant_distribution.png" width="35%" />
   <img src="../imgs/search_table/nbucket/registrant_distribution.png" width="35%" />
 </p>
 
 * Time between registration to first discovery
 
 <p align="center">
-  <img src="../imgs/search_table/bucket_size/min_time_discovery.png" width="35%" />
+  <img src="../imgs/search_table/bucketsize/min_time_discovery.png" width="35%" />
   <img src="../imgs/search_table/nbucket/min_time_discovery.png" width="35%" />
 </p>
 
 * Lookup hopcount
 
 <p align="center">
-  <img src="../imgs/search_table/bucket_size/lookup_hopcount.png" width="35%" />
+  <img src="../imgs/search_table/bucketsize/lookup_hopcount.png" width="35%" />
   <img src="../imgs/search_table/nbucket/lookup_hopcount.png" width="35%" />
 </p>
 
