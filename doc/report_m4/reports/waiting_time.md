@@ -9,7 +9,7 @@ The waiting time formula:
 * **d(topic)** - number of entries currently in the table with given topic
 * **a** - registration lifetime (time spent in the table)
 * **w** - waiting time
-<img src="https://render.githubusercontent.com/render/math?math=\Large w=sum((\frac{1}{10^9}),(\frac{d(IP)}{d})^\textit{ip\_power},(\frac{d(ID)}{d})^\textit{id\_power},(\frac{d(topic)}{d})^\textit{topic\_power}) \frac{a*\text{base\_multiplier}}{(1-\frac{n}{d})^\textit{occupancy\_power}}">
+<img src="https://render.githubusercontent.com/render/math?math=\Large w=sum((\frac{1}{10^9}),(\frac{d(IP)}{d})^\textit{ip\_power},(\frac{d(ID)}{d})^\textit{id\_power},(\frac{d(topic)}{d})^\textit{topic\_power}) \frac{a*\text{base\_multiplier}}{(1-\frac{d}{n})^\textit{occupancy\_power}}">
 
 We thus have 5 parameters to fix:
 * **ip_power**
