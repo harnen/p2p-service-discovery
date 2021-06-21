@@ -9,9 +9,11 @@
 # Results
 
 ## Active registrations
+* 50 sybil IPs, modifying sybil %.
 <p align="center">
-  <img src="../imgs/ticket_table/bucket_size/registration_origin.png" width="35%" />
-  <img src="../imgs/ticket_table/nbucket/registration_origin.png" width="35%" />
+  <img src="../imgs/security_existing_topic/sybil_number/topic1/registration_origin.png" width="35%" />
+ <img src="../imgs/security_existing_topic/sybil_number/topic3/registration_origin.png" width="35%" /> 
+ <img src="../imgs/security_existing_topic/sybil_number/topic5/registration_origin.png" width="35%" />
 </p>
 
 ## Traffic load
