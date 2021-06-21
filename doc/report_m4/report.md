@@ -56,8 +56,6 @@ The document shows the results of an extensive evaleation for the Ethereum  P2P 
 [Network size evaluation](reports/network_size.md)
 
 
-### Variable topic number
-
 ### Security evaluation
 
 [Security evaluation](reports/security_report.md)
