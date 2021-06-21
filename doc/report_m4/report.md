@@ -39,7 +39,7 @@ The document shows the results of an extensive evaleation for the Ethereum  P2P 
 
 ### Search table parameters
 
-[Search table parameters evaluation](reports/tickettable.md)
+[Search table parameters evaluation](reports/searchtable.md)
 
 ### Topic table capacity
 
