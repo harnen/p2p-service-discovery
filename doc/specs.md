@@ -148,18 +148,13 @@ There is also a refresh bucket process, similar to the Kademlia DHT table, where
 Waiting time function is used to calculate the waiting time reported to registering advertising nodes to regulate and control the ticket registration. The function directly shapes the structure of the topic table, determines its diversity and performs flow control. The function should also protect against all kinds of attacks, where a malicious actor tries to exhaust resources of the registrar. At the same time, no hard limits on the advertiser IPs/IDs/registered topic should be imposed, allowing the table to be used in various environments. 
 
 An important consideration when computing waiting times is to maintain a deterministic behaviour. In other words, there should not be a randomness in the waiting time computation; otherwise, advertisers will be tempted to send multiple requests to the same registrar in an effort to obtain different (i.e., smaller) waiting times. The waiting for a specific request follows the formula below (we assume that the ads contain advertiser IP, ID and topic):
-```
-waiting_time(ad) = base_time * sum(IP_modifier, ID_modifier, topic_modifier)
-base_time = `10 * ad-lifetime` / ( 1 -  ( (topic table size / topic_table_capacity) ^ 10) )
-```
-The base time is determined based on a multiple of ad-lifetime and the current utilisation (i.e., occupancy divided by capacity) of the table. When the utilisation becomes closer to 1.0, the base time becomes very large due to a very small denominator. Before the waiting time becomes infinite (when utilisation becomes 1), the waiting time becomes extremely high, in which case the advertisers give up as explained in the [ad distribution process](#distributing-ads).
 
-```
-IP_modifier = ( count(already_in_topic_table(ad[IP]))/topic table capacity )^(0.1)
-ID_modifier = ( count(already_in_topic_table(ad[ID]))/topic table capacity )^(0.1)
-topic_modifier = count(already_in_topic_table(ad[topic]))^2
-```
-All the modifiers increase with increasing number of the same items that are already in the table, i.e., reduction in diversity. Thus it's getting increasingly difficult to register ads for the same IP/ID/topic. For instance, ads for less popular topic will receive lower waiting times than popular ones. Note that the table does not prevent anyone from registering, but rather makes it slower for already popular items. Such a mechanism promotes diversity in the table and protects against Sybil attacks so that an attacker who is in control of a limited pool of IP addresses won't be able to dominate the table with many ads. The low exponent for the `topic_modifier` is motivated by the topics in the network that are likely to follow a skewed (e.g., a zipf-like) distribution. In contrast, honest nodes' IPs/IDs should follow a uniform distribution. 
+<img src="https://render.githubusercontent.com/render/math?math=\Large w=sum((\frac{1}{10^9}),(\frac{d(IP)}{d})^{0.2},(\frac{d(ID)}{d})^{0.2},(\frac{d(topic)}{d})^{10}) \frac{50a}{(1-\frac{n}{d})^\textit{5}}">
+
+All the modifiers from the first part of the equation increase with increasing number of the same items that are already in the table, i.e., reduction in diversity. Thus it's getting increasingly difficult to register ads for the same IP/ID/topic. For instance, ads for less popular topic will receive lower waiting times than popular ones. Note that the table does not prevent anyone from registering, but rather makes it slower for already popular items. Such a mechanism promotes diversity in the table and protects against Sybil attacks so that an attacker who is in control of a limited pool of IP addresses won't be able to dominate the table with many ads. The low exponent for the topics is motivated by the topics in the network that are likely to follow a skewed (e.g., a zipf-like) distribution. In contrast, honest nodes' IPs/IDs should follow a uniform distribution. 
+
+The latter part of the formula is determined based on a multiple of ad-lifetime and the current utilisation (i.e., occupancy divided by capacity) of the table. When the utilisation becomes closer to 1.0, the base time becomes very large due to a very small denominator. Before the waiting time becomes infinite (when utilisation becomes 1), the waiting time becomes extremely high, in which case the advertisers give up as explained in the [ad distribution process](#distributing-ads).
+
 
 ## Topic Search
 
