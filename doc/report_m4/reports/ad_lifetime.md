@@ -52,5 +52,5 @@
 
 # Conclusions
 
-* Despite seeing longer registrations lifetime leads to more active registrations and better table occupancies, long registration lifetimes also causes more traffic load, in terms of overall message quantity in the simulation but also in terms of messages distribution between nodes, causing nodes with ids close to topic hash to receive higher peak of traffic. 
-* For that reason, we selected 15 min registration lifetime as a configuration parameter since it seems to have a good balance between active registrations and traffic load.
+* Despite seeing longer registrations lifetime leads to more active registrations and better table occupancies and traffic load, in terms of overall message quantity in the simulation but also in terms of messages distribution between nodes, we believe is better to have short registrations times because this leads to a more dynamic network being easier for new nodes to register, with better distribution of discovered nodes and more resistant to sybil and dos attacks.
+* For that reason, we selected 15 min registration lifetime as a configuration parameter.

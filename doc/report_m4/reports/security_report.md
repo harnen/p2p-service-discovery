@@ -100,7 +100,47 @@ Topic 1, Topic 3, Topic 5
  <img src="../imgs/security_existing_topic/eclipsed_nodes_t5.png" width="30%" />
 </p>
 
+## Search filter
+
+* Lookup hopcount. Topic 1, Topic 3, Topic 5
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/lookup_hopcount_t1.png" width="30%" />
+ <img src="../imgs/security_existing_topic/lookup_hopcount_t3.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/lookup_hopcount_t5.png" width="30%" />
+</p>
+
+* Message quantity. Topic 1, Topic 3, Topic 5 
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/message_quantity_t1.png" width="30%" />
+ <img src="../imgs/security_existing_topic/message_quantity_t3.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/message_quantity_t5.png" width="30%" />
+</p>
+
+
+
 # Dos Attack
+
+## Registrations
+
+<p align="center">
+  <img src="../imgs/security_dos/registration_origin.png" width="35%" />
+</p>
+
+## Time to register
+
+<p align="center">
+  <img src="../imgs/security_dos/avg_time_register.png" width="35%" />
+</p>
+
+## Time to discovery
+
+<p align="center">
+  <img src="../imgs/security_dos/min_time_discovery.png" width="35%" />
+</p>
+
+
 
 # Random Topic Attack
 
@@ -134,4 +174,3 @@ Topic 1, Topic 3, Topic 5
 
 # Conclusions
 
-*
