@@ -15,8 +15,8 @@ def restore_default():
     malicious_size = 250
     occupancy_power = 5
     ip_id_power = 0.5
-    topic_power = 5
-    attacker_ip_id_num = 5
+    topic_power = 10
+    attacker_ip_id_num = 10
     base_multiplier = 30
 
 
@@ -165,7 +165,7 @@ def run_all():
 
     honest_sizes = [50, 100, 200, 300, 400, 500, 600, 800, 1000, 1500]
     malicious_sizes = [50, 100, 200, 300, 400, 500, 600, 800, 1000, 1500]
-    occupancy_powers = [3, 4, 5, 6, 7, 8, 9, 10]
+    occupancy_powers = [4, 5, 6, 7, 8, 9, 10]
     ip_id_powers = [0.01, 0.05, 0.1, 0.2, 1]
     topic_powers = [1, 5, 10, 20, 50]
     attacker_ip_id_nums = [1, 5, 15, 20, 30, 40, 50]
@@ -333,11 +333,11 @@ def special(input_file = 'dump.csv'):
     ax.legend(custom_lines, ['none(solid)', 'spam(dashed)', 'topic_popular(dotted)', 'topic_unpopular(dashdotted)'])
     plt.show()
 
-runtime = 10000
+runtime = 500000
 
 restore_default()
 #run_single()
 
-#run_all()
+run_all()
 analyze()
 #special('attacks.csv')
