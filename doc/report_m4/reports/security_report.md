@@ -90,6 +90,15 @@
  <img src="../imgs/security_existing_topic/sybil_ips/topic5/storage_utilisation.png" width="30%" />
 </p>
 
+## Eclipsed nodes
+
+Topic 1, Topic 3, Topic 5
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/eclipsed_nodes_t1.png" width="30%" />
+ <img src="../imgs/security_existing_topic/eclipsed_nodes_t3.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/eclipsed_nodes_t5.png" width="30%" />
+</p>
 
 # Conclusions
 
