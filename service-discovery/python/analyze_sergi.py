@@ -1440,7 +1440,8 @@ print('Plots will be saved in ', OUTDIR);
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
 #labels = ['5 Buckets','10 Buckets','17 Buckets','256 Buckets']
 #labels = ['No refresh','Refresh']
-labels = ['5%','10%','20%']
+#labels = ['5%','10%','20%']
+labels = ['1 IP','10 IP','50 IP']
 
 analyzeRegistrations2(sys.argv[1:],labels)
 analyzeOperations(sys.argv[1:],labels)
