@@ -1,3 +1,8 @@
+# Parameters evaluated
+
+* Registrations lifetime: 5 min, 15 min, 30 min, 1 hour.
+
+# Results
 
 ## Active registrations
 <p align="center">
@@ -42,3 +47,7 @@
 <p align="center">
   <img src="../imgs/ad_lifetime/storage_utilisation.png" width="50%" />
 </p>
+
+# Conclusions
+
+
