@@ -102,23 +102,24 @@ Topic 1, Topic 3, Topic 5
 
 # Dos Attack
 
+## Registrations
+
+<p align="center">
+  <img src="../imgs/security_dos/registration_origin.png" width="35%" />
+</p>
+
 ## Time to register
 
 <p align="center">
-  <img src="../imgs/security_dos/avg_time_register.png" width="50%" />
+  <img src="../imgs/security_dos/avg_time_register.png" width="35%" />
 </p>
 
 ## Time to discovery
 
 <p align="center">
-  <img src="../imgs/security_dos/min_time_discovery.png" width="50%" />
+  <img src="../imgs/security_dos/min_time_discovery.png" width="35%" />
 </p>
 
-## Registrations
-
-<p align="center">
-  <img src="../imgs/security_dos/registration_origin.png" width="50%" />
-</p>
 
 
 # Random Topic Attack
