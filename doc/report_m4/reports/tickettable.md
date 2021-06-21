@@ -63,4 +63,6 @@
 
 # Conclusions
 
-*
+* We selected bucket size 5 and 10 buckets as configuration parameters.
+* As we increase bucket size seems to increase the number of registrations but also traffic load in the same way. The lookup hopcount performance does not seem to improve in the same way, so we choose 5 as a bucket size to control the traffic load at nodes close to topic hash id. 
+* For the bucket number, it does not seem to improve the registrations with more than 10 buckets, with a significant increase of the traffic load. We choose 10 bucket as optimal parameter.

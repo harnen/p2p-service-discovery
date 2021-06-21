@@ -39,7 +39,7 @@
 
 # Conclusions
 
-* 
+* We selected 500 registrations as a capacity of the topic table, since it appears to have the best balance between number of registrations and traffic generated.
 
 
 
