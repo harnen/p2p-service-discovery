@@ -102,6 +102,25 @@ Topic 1, Topic 3, Topic 5
 
 # Dos Attack
 
+## Time to register
+
+<p align="center">
+  <img src="../imgs/security_dos/avg_time_register.png" width="50%" />
+</p>
+
+## Time to discovery
+
+<p align="center">
+  <img src="../imgs/security_dos/min_time_discovery.png" width="50%" />
+</p>
+
+## Registrations
+
+<p align="center">
+  <img src="../imgs/security_dos/registration_origin.png" width="50%" />
+</p>
+
+
 # Random Topic Attack
 
 * Active Registrations for 5, 10 and 20 percent malicious nodes
