@@ -1,22 +1,41 @@
-import numpy as np
-from sympy import *
-# define what is the variable
+import math
 
-#print(fderivative)
+class Model:
 
-# get a valua of the derivate for a specific x
-# let's say f'(0)
-#print(fderivative.evalf(subs= {x:0}))
+    def __init__(self):
+        self.capacity = 10
+        self.table = {}
+        self.counter = 0
+        self.ad_lifetime = 10
 
-results = 100
-for power in range(2, 20):
-    x = symbols('x')
-    # define the function
-    f = x**power+x-1000
-    # find the first derivative
-    fderivative = f.diff(x)
-    xn = 1
-    for i in range(100):
-        xn = xn - np.float(f.evalf(subs= {x:xn})) / np.float(fderivative.evalf(subs= {x:xn}))
-        #print(f'The {i+1} iteration xn is {xn:.2} and f(xn) is {np.float(f.evalf(subs= {x:xn})):.2}')
-    print("pow", power, "->", xn)
+    def get_id_modifier(self, iD, table):
+        current_ids = [x['id'] for x in table.values()]
+        return math.pow(((current_ids.count(iD))/len(table)), 0.2)
+    def get_basetime(self, table):
+        return (30*self.ad_lifetime)/math.pow(1-len(table)/self.capacity, 5)
+
+
+    def add(self, req):
+        self.table[self.counter] = req
+        self.counter += 1
+
+    def get_waiting_time(self, ID):
+        table = self.table
+        if(len(table) > 0):
+            base_waiting_time = self.get_basetime(table)
+            id_modifier = self.get_id_modifier(ID, table)
+            return base_waiting_time * id_modifier
+        else:
+            return 0
+
+
+m = Model()
+print(m.get_waiting_time('id1'))
+
+req = {'id': 'id1'}
+m.add(req)
+print(m.get_waiting_time('id1'))
+
+req = {'id': 'id2'}
+m.add(req)
+print(m.get_waiting_time('id1'))
