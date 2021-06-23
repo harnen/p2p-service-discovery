@@ -189,6 +189,7 @@ def analyzeActiveRegistrations(dirs,labels):
     i=0
     for log_dir in dirs:
         normal_registration_count_per_topic = {}
+        evil_registration_count_per_topic = {}
         with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             ncol = len(next(reader)) # Read first line and count columns
@@ -197,6 +198,8 @@ def analyzeActiveRegistrations(dirs,labels):
             topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
             for topic in topics:
                 normal_registration_count_per_topic[topic] = 0
+                evil_registration_count_per_topic[topic] = 0
+
         with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             nrows = 0
@@ -205,14 +208,21 @@ def analyzeActiveRegistrations(dirs,labels):
                     #print(topic+'-normal')
                     normal = int(row[topic + '-normal'])
                     normal_registration_count_per_topic[topic] += normal
+                    evil = int(row[topic + '-evil'])
+                    evil_registration_count_per_topic[topic] += evil
+
                 nrows += 1
 
         normal_counts = [normal_registration_count_per_topic[topic]/nrows for topic in topics]
+        evil_counts = [evil_registration_count_per_topic[topic]/nrows for topic in topics]
+
         width=0.22
         margin=width*i
     #    print(np.arange(len(topics)))
     #    print(normal_counts)
-        ax1.bar(np.arange(len(topics))+margin, normal_counts, width,label=labels[i])
+        ax1.bar(np.arange(len(topics))+margin, normal_counts, width,label=labels[i],bottom=evil_counts)
+        ax1.bar(np.arange(len(topics))+margin, evil_counts, width,color='red')
+
         i=i+1
 
 
@@ -226,56 +236,6 @@ def analyzeActiveRegistrations(dirs,labels):
 
     plt.savefig(OUTDIR + '/registration_origin.png')
 
-def analyzeActiveRegistrationsMalicious(dirs):
-    """ Plot a bar chart showing the number of registrations by malicious and good nodes.
-    """
-
-    topics = []
-    evil_registration_count_per_topic = {}
-    normal_registration_count_per_topic = {}
-    for log_dir in dirs:
-        evil_registration_count_per_topic = {}
-        normal_registration_count_per_topic = {}
-        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            ncol = len(next(reader)) # Read first line and count columns
-            numOfTopics = int((ncol-1)/2)
-            #print('Number of topics: ', numOfTopics)
-            topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
-            for topic in topics:
-                normal_registration_count_per_topic[topic] = 0
-                evil_registration_count_per_topic[topic] = 0
-        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            nrows = 0
-            for row in reader:
-                for topic in topics:
-                    normal = int(row[topic + '-normal'])
-                    evil = int(row[topic + '-evil'])
-                    normal_registration_count_per_topic[topic] += normal
-                    evil_registration_count_per_topic[topic] += evil
-                nrows += 1
-        normal_counts = [normal_registration_count_per_topic[topic]/nrows for topic in topics]
-        evil_counts = [evil_registration_count_per_topic[topic]/nrows for topic in topics]
-        width = 0.35  # the width of the bars
-
-        fig, ax = plt.subplots()
-        x_values = [x-width/2 for x in range(1, numOfTopics+1)]
-        rects1 = ax.bar(x_values, normal_counts, width,
-                label='Good registrations')
-        x_values = [x+width/2 for x in range(1, numOfTopics+1)]
-        rects2 = ax.bar(x_values, evil_counts, width,
-                label='Malicious registrations')
-
-        # Add some text for labels, title and custom x-axis tick labels, etc.
-        ax.set_ylabel('Number of registrations')
-        ax.set_xlabel('Topics')
-        ax.set_title('Active Registrations ' + log_dir)
-        ax.set_xticks(x_values)
-        ax.set_xticklabels(topics)
-        ax.legend()
-
-        plt.savefig(OUTDIR + '/registration_origin_withmalicious.png')
 
 def analyzeRegistrations(dirs):
 
@@ -727,16 +687,16 @@ def analyzeEclipsedNodes(dirs):
     #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
     colors = ['red', 'green', 'blue','orange']
-    topiclabel = str(1)
+    topiclabel = str(5)
     maxlabel = ['5%','10%','20%']
     j=0
-    dirs = ['logs_attackTopic'+topiclabel+'_sybilSize1','logs_attackTopic'+topiclabel+'_sybilSize10','logs_attackTopic'+topiclabel+'_sybilSize20']
+    dirs = ['logs_attackTopic'+topiclabel+'_sybilSize1','logs_attackTopic'+topiclabel+'_sybilSize10','logs_attackTopic'+topiclabel+'_sybilSize50']
     for log_dir in dirs:
     #print(log_dir)
         maxset = []
 
         topics = []
-        dirs2 = ['_attackPercent0.05','_attackPercent0.1_randomsearch','_attackPercent0.2_randomsearch']
+        dirs2 = ['_attackPercent0.05_randomsearch','_attackPercent0.1_randomsearch','_attackPercent0.2_randomsearch']
         for log_dir2 in dirs2:
             df = pd.read_csv(log_dir+log_dir2 + '/eclipse_counts.csv')
             for col_name in df.columns:
@@ -756,7 +716,7 @@ def analyzeEclipsedNodes(dirs):
         margin=width*j
         #
         #ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
-        sybils = ['Sybil 1 IP','Sybil 10 IP','Sybil 20 IP']
+        sybils = ['Sybil 1 IP','Sybil 10 IP','Sybil 50 IP']
         ax1.bar(np.arange(len(dirs2))+margin, maxset,width=width,label=sybils[j])
         j=j+1
 
@@ -951,8 +911,8 @@ def analyzeStorageUtilisation(dirs,labels):
         for col_name in df.columns:
             if col_name=="time":
                 continue
-            if col_name.startswith("t"):
-                topics.append(col_name)
+            #if col_name.startswith("t"):
+            topics.append(col_name)
 
 
         for topic in topics:
@@ -1166,8 +1126,13 @@ def analyzeRegistrations2(dirs,labels):
                 meanevil[key] = meanregistrarevil[key]
 
             #print(j)
-            ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),width=width,label=labels[j])
-            ax4.bar(np.arange(len(meanevil.keys()))+margin, meanevil.values(),width=width,color='red')
+            regCounts = mean.values()
+            evilCounts = meanevil.values()
+
+            ax4.bar(np.arange(len(mean.keys()))+margin, regCounts,width=width,label=labels[j])
+
+            ax4.bar(np.arange(len(meanevil.keys()))+margin, evilCounts,width=width,color='red')
+
             j=j+1
 
     ax3.legend()
@@ -1188,11 +1153,63 @@ def analyzeRegistrations2(dirs,labels):
     ax5.set_xticks(range(len(ticks)))
     ax5.set_xticklabels(ticks)
 
-    fig1.savefig(OUTDIR + '/registrations_registrant.png')
-    fig2.savefig(OUTDIR + '/registrations_registrar.png')
-    fig3.savefig(OUTDIR + '/registrations_registrant_bar.png')
+    #fig1.savefig(OUTDIR + '/registrations_registrant.png')
+    #fig2.savefig(OUTDIR + '/registrations_registrar.png')
+    #fig3.savefig(OUTDIR + '/registrations_registrant_bar.png')
     fig4.savefig(OUTDIR + '/registrations_registrar_bar.png')
-    fig5.savefig(OUTDIR + '/registrations_topic.png')
+    #fig5.savefig(OUTDIR + '/registrations_topic.png')
+
+
+def analyzeActiveRegistrationsMalicious(dirs):
+    """ Plot a bar chart showing the number of registrations by malicious and good nodes.
+    """
+
+    topics = []
+    evil_registration_count_per_topic = {}
+    normal_registration_count_per_topic = {}
+    for log_dir in dirs:
+        evil_registration_count_per_topic = {}
+        normal_registration_count_per_topic = {}
+        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            ncol = len(next(reader)) # Read first line and count columns
+            numOfTopics = int((ncol-1)/2)
+            #print('Number of topics: ', numOfTopics)
+            topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
+            for topic in topics:
+                normal_registration_count_per_topic[topic] = 0
+                evil_registration_count_per_topic[topic] = 0
+        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            nrows = 0
+            for row in reader:
+                for topic in topics:
+                    normal = int(row[topic + '-normal'])
+                    evil = int(row[topic + '-evil'])
+                    normal_registration_count_per_topic[topic] += normal
+                    evil_registration_count_per_topic[topic] += evil
+                nrows += 1
+        normal_counts = [normal_registration_count_per_topic[topic]/nrows for topic in topics]
+        evil_counts = [evil_registration_count_per_topic[topic]/nrows for topic in topics]
+        width = 0.35  # the width of the bars
+
+        fig, ax = plt.subplots()
+        x_values = [x-width/2 for x in range(1, numOfTopics+1)]
+        rects1 = ax.bar(x_values, normal_counts, width,
+                label='Good registrations')
+        x_values = [x+width/2 for x in range(1, numOfTopics+1)]
+        rects2 = ax.bar(x_values, evil_counts, width,
+                label='Malicious registrations')
+
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Number of registrations')
+        ax.set_xlabel('Topics')
+        ax.set_title('Active Registrations ' + log_dir)
+        ax.set_xticks(x_values)
+        ax.set_xticklabels(topics)
+        ax.legend()
+
+        plt.savefig(OUTDIR + '/registration_origin_withmalicious.png')
 
 def analyzeRegistrationTime(dirs,labels):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -1307,8 +1324,8 @@ def analyzeRegistrationTime(dirs,labels):
     ax4.set_ylabel("Time (sec)")
 #    ax5.set_ylabel("Time (sec)")
     #ax5.legend()
-    fig1.savefig(OUTDIR + '/total_reg_by_registrant.png')
-    fig2.savefig(OUTDIR + '/min_time_register.png')
+#    fig1.savefig(OUTDIR + '/total_reg_by_registrant.png')
+#    fig2.savefig(OUTDIR + '/min_time_register.png')
     fig3.savefig(OUTDIR + '/avg_time_register.png')
     fig4.savefig(OUTDIR + '/min_time_discovery.png')
 #    fig5.savefig(OUTDIR + '/registrants_topic.png')
@@ -1418,12 +1435,14 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 #labels = ['AdLifeTime 5 min','AdLifeTime 15 min','AdLifeTime 30 min','AdLifeTime 60 min']
-labels = ['500 nodes','1000 nodes','2000 nodes','5000 nodes','10000 nodes']
+#labels = ['500 nodes','1000 nodes','5000 nodes','10000 nodes']
 #labels = ['0.5 AdLifeTime','1 AdLifeTime','1.5 AdLifeTime','2 AdLifeTime']
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
 #labels = ['5 Buckets','10 Buckets','17 Buckets','256 Buckets']
 #labels = ['No refresh','Refresh']
-
+#labels = ['5%','10%','20%']
+labels = ['Filter','No filter']
+#labels = ['1 IP','10 IP','50 IP']
 
 analyzeRegistrations2(sys.argv[1:],labels)
 analyzeOperations(sys.argv[1:],labels)
@@ -1431,7 +1450,6 @@ analyzeRegistrantDistribution(sys.argv[1:],labels)
 analyzeActiveRegistrations(sys.argv[1:],labels)
 analyzeRegistrationTime(sys.argv[1:],labels)
 analyzeNumberOfMessages(sys.argv[1:],labels)
-
+analyzeEclipsedNodes(sys.argv[1:])
 analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
-
 analyzeStorageUtilisation(sys.argv[1:],labels)
