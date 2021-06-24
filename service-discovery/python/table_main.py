@@ -333,7 +333,7 @@ def special(input_file = 'dump.csv'):
     ax.legend(custom_lines, ['none(solid)', 'spam(dashed)', 'topic_popular(dotted)', 'topic_unpopular(dashdotted)'])
     plt.show()
 
-runtime = 1000000
+runtime = 100000
 
 restore_default()
 run_single()

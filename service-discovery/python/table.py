@@ -33,6 +33,10 @@ class Table(metaclass=abc.ABCMeta):
         self.malicious_in = {}
         self.honest_in = {}
 
+        self.ip_counter = {}
+        self.id_counter = {}
+        self.topic_counter = {}
+
     def load(self, file):
         counter = 0
         self.input_file = file
@@ -211,7 +215,15 @@ class Table(metaclass=abc.ABCMeta):
     def remove_ad(self, ad_id, delay):
         yield self.env.timeout(delay)
         self.log("Removing", self.table[ad_id])
-        self.table.pop(ad_id)
+        req = self.table.pop(ad_id)
+
+        self.ip_counter[req['ip']] -= 1
+        assert(self.ip_counter[req['ip']] >= 0)
+        self.id_counter[req['id']] -= 1
+        assert(self.id_counter[req['id']] >= 0)
+        self.topic_counter[req['topic']] -= 1
+        assert(self.topic_counter[req['topic']] >= 0)
+        
         self.report_occupancy()
 
     def new_request(self, req, delay):
@@ -238,6 +250,17 @@ class Table(metaclass=abc.ABCMeta):
             del self.pending_req[req['req_id']]
             req['expire'] = self.env.now + self.ad_lifetime
             self.table[self.ad_ids] = req
+            
+            if(req['id'] not in self.id_counter):
+                self.id_counter[req['id']] = 0
+            self.id_counter[req['id']] += 1
+            if(req['ip'] not in self.ip_counter):
+                self.ip_counter[req['ip']] = 0
+            self.ip_counter[req['ip']] += 1
+            if(req['topic'] not in self.topic_counter):
+                self.topic_counter[req['topic']] = 0
+            self.topic_counter[req['topic']] += 1
+
             self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
             self.ad_ids += 1
             #self.admission_times.append((self.env.now, self.env.now - req['arrived'], req['attack']))
@@ -282,17 +305,25 @@ class DiversityTable(Table):
         self.base_multiplier = base_multiplier
     
     def get_ip_modifier(self, ip, table):
-        current_ips = [x['ip'] for x in table.values()]
-        return math.pow(((current_ips.count(ip))/len(table)), self.ip_id_power)
-        #return self.tree.tryAdd(ip)
+        if(ip in self.ip_counter):
+            counter = self.ip_counter[ip]
+        else:
+            counter = 0
+        return math.pow((counter/len(table)), self.ip_id_power)
     
     def get_id_modifier(self, iD, table):
-        current_ids = [x['id'] for x in table.values()]
-        return math.pow(((current_ids.count(iD))/len(table)), self.ip_id_power)
+        if(id in self.id_counter):
+            counter = self.id_counter[id]
+        else:
+            counter = 0
+        return math.pow((counter/len(table)), self.ip_id_power)
 
     def get_topic_modifier(self, topic, table):
-        current_topics = [x['topic'] for x in table.values()]
-        return math.pow(((current_topics.count(topic))/len(table)), self.topic_power)
+        if(topic in self.topic_counter):
+            counter = self.topic_counter[topic]
+        else:
+            counter = 0
+        return math.pow((counter/len(table)), self.topic_power)
 
     def get_basetime(self, table):
         return (self.base_multiplier*self.ad_lifetime)/math.pow(1-len(table)/self.capacity, self.occupancy_power)
