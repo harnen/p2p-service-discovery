@@ -318,23 +318,37 @@ class DiversityTable(Table):
     def get_ip_modifier(self, ip, table):
         if(ip in self.ip_counter):
             counter = self.ip_counter[ip]['counter']
+            modifier = math.pow((counter/len(table)), self.ip_id_power)
+            wtime = modifier * self.get_basetime(table)
+            self.ip_counter[ip]['wtime'] = wtime
+            self.ip_counter[ip]['timestamp'] = self.env.now
+            return modifier
         else:
-            counter = 0
-        return math.pow((counter/len(table)), self.ip_id_power)
+            return 0
     
     def get_id_modifier(self, iD, table):
         if(id in self.id_counter):
             counter = self.id_counter[id]['counter']
+            modifier = math.pow((counter/len(table)), self.ip_id_power)
+            wtime = modifier * self.get_basetime(table)
+            self.id_counter[id]['wtime'] = wtime
+            self.id_counter[id]['timestamp'] = self.env.now
+            return modifier
         else:
-            counter = 0
-        return math.pow((counter/len(table)), self.ip_id_power)
+            return 0
+
 
     def get_topic_modifier(self, topic, table):
         if(topic in self.topic_counter):
             counter = self.topic_counter[topic]['counter']
+            modifier = math.pow((counter/len(table)), self.topic_power)
+            wtime = modifier * self.get_basetime(table)
+            self.topic_counter[topic]['wtime'] = wtime
+            self.topic_counter[topic]['timestamp'] = self.env.now
+            return modifier
         else:
-            counter = 0
-        return math.pow((counter/len(table)), self.topic_power)
+            return 0
+        
 
     def get_basetime(self, table):
         return (self.base_multiplier*self.ad_lifetime)/math.pow(1-len(table)/self.capacity, self.occupancy_power)
