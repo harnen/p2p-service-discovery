@@ -217,12 +217,12 @@ class Table(metaclass=abc.ABCMeta):
         self.log("Removing", self.table[ad_id])
         req = self.table.pop(ad_id)
 
-        self.ip_counter[req['ip']] -= 1
-        assert(self.ip_counter[req['ip']] >= 0)
-        self.id_counter[req['id']] -= 1
-        assert(self.id_counter[req['id']] >= 0)
-        self.topic_counter[req['topic']] -= 1
-        assert(self.topic_counter[req['topic']] >= 0)
+        self.ip_counter[req['ip']]['counter'] -= 1
+        assert(self.ip_counter[req['ip']]['counter'] >= 0)
+        self.id_counter[req['id']]['counter'] -= 1
+        assert(self.id_counter[req['id']]['counter'] >= 0)
+        self.topic_counter[req['topic']]['counter'] -= 1
+        assert(self.topic_counter[req['topic']]['counter'] >= 0)
         
         self.report_occupancy()
 
@@ -252,14 +252,25 @@ class Table(metaclass=abc.ABCMeta):
             self.table[self.ad_ids] = req
             
             if(req['id'] not in self.id_counter):
-                self.id_counter[req['id']] = 0
-            self.id_counter[req['id']] += 1
+                self.id_counter[req['id']] = {}
+                self.id_counter[req['id']]['counter'] = 0
+                self.id_counter[req['id']]['wtime'] = 0
+                self.id_counter[req['id']]['timestamp'] = 0
+            self.id_counter[req['id']]['counter'] += 1
+
             if(req['ip'] not in self.ip_counter):
-                self.ip_counter[req['ip']] = 0
-            self.ip_counter[req['ip']] += 1
+                self.ip_counter[req['ip']] = {}
+                self.ip_counter[req['ip']]['counter'] = 0
+                self.ip_counter[req['ip']]['wtime'] = 0
+                self.ip_counter[req['ip']]['timestamp'] = 0
+            self.ip_counter[req['ip']]['counter'] += 1
+
             if(req['topic'] not in self.topic_counter):
-                self.topic_counter[req['topic']] = 0
-            self.topic_counter[req['topic']] += 1
+                self.topic_counter[req['topic']] = {}
+                self.topic_counter[req['topic']]['counter'] = 0
+                self.topic_counter[req['topic']]['wtime'] = 0
+                self.topic_counter[req['topic']]['timestamp'] = 0
+            self.topic_counter[req['topic']]['counter'] += 1
 
             self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
             self.ad_ids += 1
@@ -306,21 +317,21 @@ class DiversityTable(Table):
     
     def get_ip_modifier(self, ip, table):
         if(ip in self.ip_counter):
-            counter = self.ip_counter[ip]
+            counter = self.ip_counter[ip]['counter']
         else:
             counter = 0
         return math.pow((counter/len(table)), self.ip_id_power)
     
     def get_id_modifier(self, iD, table):
         if(id in self.id_counter):
-            counter = self.id_counter[id]
+            counter = self.id_counter[id]['counter']
         else:
             counter = 0
         return math.pow((counter/len(table)), self.ip_id_power)
 
     def get_topic_modifier(self, topic, table):
         if(topic in self.topic_counter):
-            counter = self.topic_counter[topic]
+            counter = self.topic_counter[topic]['counter']
         else:
             counter = 0
         return math.pow((counter/len(table)), self.topic_power)
