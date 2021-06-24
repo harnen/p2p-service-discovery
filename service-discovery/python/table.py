@@ -319,10 +319,12 @@ class DiversityTable(Table):
         if(ip in self.ip_counter):
             counter = self.ip_counter[ip]['counter']
             modifier = math.pow((counter/len(table)), self.ip_id_power)
+            bound = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
             wtime = modifier * self.get_basetime(table)
+            print("ip:", ip, "wtime:", wtime, "bound:", bound)
             self.ip_counter[ip]['wtime'] = wtime
             self.ip_counter[ip]['timestamp'] = self.env.now
-            return wtime
+            return max(wtime, bound)
         else:
             return 0
     
@@ -330,10 +332,12 @@ class DiversityTable(Table):
         if(id in self.id_counter):
             counter = self.id_counter[id]['counter']
             modifier = math.pow((counter/len(table)), self.ip_id_power)
+            bound = max(0, self.id_counter[id]['wtime'] - (self.env.now - self.id_counter[id]['timestamp']))
             wtime = modifier * self.get_basetime(table)
+            print("id:", id, "wtime:", wtime, "bound:", bound)
             self.id_counter[id]['wtime'] = wtime
             self.id_counter[id]['timestamp'] = self.env.now
-            return wtime
+            return max(wtime, bound)
         else:
             return 0
 
@@ -342,10 +346,12 @@ class DiversityTable(Table):
         if(topic in self.topic_counter):
             counter = self.topic_counter[topic]['counter']
             modifier = math.pow((counter/len(table)), self.topic_power)
+            bound = max(0, self.topic_counter[topic]['wtime'] - (self.env.now - self.topic_counter[topic]['timestamp']))
             wtime = modifier * self.get_basetime(table)
+            print("t:", topic, "wtime:", wtime, "bound:", bound)
             self.topic_counter[topic]['wtime'] = wtime
             self.topic_counter[topic]['timestamp'] = self.env.now
-            return wtime
+            return max(wtime, bound)
         else:
             return 0
         
@@ -355,41 +361,29 @@ class DiversityTable(Table):
 
 
     def get_waiting_time(self, req):
-        
-        if(len(self.table) == 0):
-            return 0
         #print("Table:", self.table)
         table  = deepcopy(self.table)
         waited_time = (self.env.now - req['arrived'])
         needed_time = 0
         missing_time = 0
-        expiry_time = 0
-        while(len(table) > 0):
+        if(len(table) > 0):
             base_waiting_time = self.get_basetime(table)
             topic_modifier = self.get_topic_modifier(req['topic'], table)
             id_modifier = self.get_id_modifier(req['id'], table)
             ip_modifier = self.get_ip_modifier(req['ip'], table)
             needed_time =  max(sum([topic_modifier, id_modifier, ip_modifier]), base_waiting_time * 1/1000000)
             print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
-            missing_time = max(0, needed_time - (waited_time + expiry_time)) + expiry_time
+            missing_time = max(0, needed_time - waited_time)
 
-            first_to_expire = table[list(table.keys())[0]]
-            print("first to expire:", first_to_expire)
-            print("now:", self.env.now)
-            if((missing_time + self.env.now) > first_to_expire['expire']):
-                expiry_time = first_to_expire['expire'] - self.env.now
-                del table[list(table.keys())[0]]
-            else:
-                break
 
         #self.ip_modifiers[self.env.now] = (self.env.now, ip_modifier, req['attack'])
         #self.id_modifiers[self.env.now] = (self.env.now, id_modifier, req['attack'])
         #self.topic_modifiers[self.env.now] = (self.env.now, topic_modifier, req['attack'])
         
-        if(req['attack'] == 0):
-            print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
-            print("waited time:", waited_time)
-            print("returning:", missing_time)
+        #if(req['attack'] == 0):
+        #    print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
+        #    print("waited time:", waited_time)
+        #    print("returning:", missing_time)
             #print("self.occupancy_power:", self.occupancy_power, "self.base_multiplier:", self.base_multiplier, "self.ad_lifetime:", self.ad_lifetime)
         #needed_time = base_waiting_time
         return missing_time

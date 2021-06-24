@@ -11,7 +11,7 @@ def restore_default():
     global ad_lifetime, input_file, capacity, honest_size, malicious_size, occupancy_power, ip_id_power, topic_power, base_multiplier, attacker_ip_id_num, attacker_id_num
     ad_lifetime = 3000
     capacity = 50
-    honest_size = 50
+    honest_size = 5
     malicious_size = 250
     occupancy_power = 5
     ip_id_power = 0.5
@@ -118,7 +118,7 @@ def run(stats):
         table.run(runtime)
 
 def run_single():
-    filename = generate_input_file('spam')
+    filename = generate_input_file('none')
     table = DiversityTable(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
     table.load(filename)
     table.display(runtime - 1)
@@ -333,7 +333,7 @@ def special(input_file = 'dump.csv'):
     ax.legend(custom_lines, ['none(solid)', 'spam(dashed)', 'topic_popular(dotted)', 'topic_unpopular(dashdotted)'])
     plt.show()
 
-runtime = 100000
+runtime = 10 * 1000
 
 restore_default()
 run_single()
