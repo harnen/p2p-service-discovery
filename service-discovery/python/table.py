@@ -322,8 +322,9 @@ class DiversityTable(Table):
             bound = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("ip:", ip, "wtime:", wtime, "bound:", bound)
-            self.ip_counter[ip]['wtime'] = wtime
-            self.ip_counter[ip]['timestamp'] = self.env.now
+            if(bound < wtime):
+                self.ip_counter[ip]['wtime'] = wtime
+                self.ip_counter[ip]['timestamp'] = self.env.now
             return max(wtime, bound)
         else:
             return 0
@@ -335,8 +336,9 @@ class DiversityTable(Table):
             bound = max(0, self.id_counter[id]['wtime'] - (self.env.now - self.id_counter[id]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("id:", id, "wtime:", wtime, "bound:", bound)
-            self.id_counter[id]['wtime'] = wtime
-            self.id_counter[id]['timestamp'] = self.env.now
+            if(bound < wtime):
+                self.id_counter[id]['wtime'] = wtime
+                self.id_counter[id]['timestamp'] = self.env.now
             return max(wtime, bound)
         else:
             return 0
@@ -349,8 +351,9 @@ class DiversityTable(Table):
             bound = max(0, self.topic_counter[topic]['wtime'] - (self.env.now - self.topic_counter[topic]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("t:", topic, "wtime:", wtime, "bound:", bound)
-            self.topic_counter[topic]['wtime'] = wtime
-            self.topic_counter[topic]['timestamp'] = self.env.now
+            if(bound < wtime):
+                self.topic_counter[topic]['wtime'] = wtime
+                self.topic_counter[topic]['timestamp'] = self.env.now
             return max(wtime, bound)
         else:
             return 0
@@ -386,7 +389,7 @@ class DiversityTable(Table):
         #    print("returning:", missing_time)
             #print("self.occupancy_power:", self.occupancy_power, "self.base_multiplier:", self.base_multiplier, "self.ad_lifetime:", self.ad_lifetime)
         #needed_time = base_waiting_time
-        return missing_time
+        return min(missing_time, self.ad_lifetime)
     
     
 
