@@ -322,7 +322,7 @@ class DiversityTable(Table):
             wtime = modifier * self.get_basetime(table)
             self.ip_counter[ip]['wtime'] = wtime
             self.ip_counter[ip]['timestamp'] = self.env.now
-            return modifier
+            return wtime
         else:
             return 0
     
@@ -333,7 +333,7 @@ class DiversityTable(Table):
             wtime = modifier * self.get_basetime(table)
             self.id_counter[id]['wtime'] = wtime
             self.id_counter[id]['timestamp'] = self.env.now
-            return modifier
+            return wtime
         else:
             return 0
 
@@ -345,7 +345,7 @@ class DiversityTable(Table):
             wtime = modifier * self.get_basetime(table)
             self.topic_counter[topic]['wtime'] = wtime
             self.topic_counter[topic]['timestamp'] = self.env.now
-            return modifier
+            return wtime
         else:
             return 0
         
@@ -369,7 +369,7 @@ class DiversityTable(Table):
             topic_modifier = self.get_topic_modifier(req['topic'], table)
             id_modifier = self.get_id_modifier(req['id'], table)
             ip_modifier = self.get_ip_modifier(req['ip'], table)
-            needed_time = base_waiting_time * max(sum([topic_modifier, id_modifier, ip_modifier]), 1/1000000)
+            needed_time =  max(sum([topic_modifier, id_modifier, ip_modifier]), base_waiting_time * 1/1000000)
             print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
             missing_time = max(0, needed_time - (waited_time + expiry_time)) + expiry_time
 
