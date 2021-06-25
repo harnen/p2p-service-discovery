@@ -10,14 +10,14 @@ import pandas as pd
 def restore_default():
     global ad_lifetime, input_file, capacity, honest_size, malicious_size, occupancy_power, ip_id_power, topic_power, base_multiplier, attacker_ip_id_num, attacker_id_num
     ad_lifetime = 3000
-    capacity = 50
+    capacity = 15000
     honest_size = 50
     malicious_size = 250
     occupancy_power = 5
     ip_id_power = 0.5
     topic_power = 10
     attacker_ip_id_num = 10
-    base_multiplier = 30
+    base_multiplier = 50
 
 
 
@@ -333,7 +333,7 @@ def special(input_file = 'dump.csv'):
     ax.legend(custom_lines, ['none(solid)', 'spam(dashed)', 'topic_popular(dotted)', 'topic_unpopular(dashdotted)'])
     plt.show()
 
-runtime = 300 * 1000
+runtime = 100 * 1000
 
 restore_default()
 run_single()
