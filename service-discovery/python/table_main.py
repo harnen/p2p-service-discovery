@@ -10,13 +10,13 @@ import pandas as pd
 def restore_default():
     global ad_lifetime, input_file, capacity, honest_size, malicious_size, occupancy_power, ip_id_power, topic_power, base_multiplier, attacker_ip_id_num, attacker_id_num
     ad_lifetime = 3000
-    capacity = 15000
-    honest_size = 50
-    malicious_size = 250
+    capacity = 1500
+    honest_size = 5
+    malicious_size = 10
     occupancy_power = 5
     ip_id_power = 0.5
     topic_power = 10
-    attacker_ip_id_num = 10
+    attacker_ip_id_num = 1
     base_multiplier = 50
 
 

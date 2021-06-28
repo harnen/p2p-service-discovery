@@ -230,13 +230,11 @@ class Table(metaclass=abc.ABCMeta):
         yield self.env.timeout(delay)
         
         if('req_id' in req):
-            if(req['attack'] == 0):
-                self.log("-> old request arrived:", req)
+            self.log("-> old request arrived:", req)
         else:
             req['req_id'] = self.req_counter
             self.req_counter += 1
-            if(req['attack'] == 0):
-                self.log("-> new request arrived:", req)
+            self.log("-> new request arrived:", req)
             assert(req['req_id'] not in self.pending_req)
             self.pending_req[req['req_id']] = req
 
@@ -245,8 +243,7 @@ class Table(metaclass=abc.ABCMeta):
         self.admission_times.append((self.env.now, waiting_time, req['attack']))
         #print("waiting time:", waiting_time, len(self.table), "/", self.capacity)
         if(waiting_time == 0):
-            if(req['attack'] == 0):
-                self.log("Admitting right away")
+            self.log("Admitting right away")
             del self.pending_req[req['req_id']]
             req['expire'] = self.env.now + self.ad_lifetime
             self.table[self.ad_ids] = req
@@ -289,8 +286,7 @@ class Table(metaclass=abc.ABCMeta):
             self.env.process(self.new_request(new_req, self.ad_lifetime + rand_time))
         else:
             req['returned'] += 1
-            if(req['attack'] == 1):
-                self.log("Need to wait for", waiting_time)
+            self.log("Need to wait for", waiting_time)
             self.env.process(self.new_request(req, waiting_time))
     
 
@@ -316,13 +312,17 @@ class DiversityTable(Table):
         self.base_multiplier = base_multiplier
     
     def get_ip_modifier(self, ip, table):
+        #print("Get IP Modifier", self.ip_counter)
         if(ip in self.ip_counter):
             counter = self.ip_counter[ip]['counter']
-            modifier = math.pow((counter/len(table)), self.ip_id_power)
+            modifier = 0
+            if( len(table) > 0):
+                modifier = math.pow((counter/len(table)), self.ip_id_power)
             bound = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("ip:", ip, "wtime:", wtime, "bound:", bound)
             if(bound < wtime):
+                print("In if")
                 self.ip_counter[ip]['wtime'] = wtime
                 self.ip_counter[ip]['timestamp'] = self.env.now
             return max(wtime, bound)
@@ -330,15 +330,18 @@ class DiversityTable(Table):
             return 0
     
     def get_id_modifier(self, iD, table):
-        if(id in self.id_counter):
-            counter = self.id_counter[id]['counter']
-            modifier = math.pow((counter/len(table)), self.ip_id_power)
-            bound = max(0, self.id_counter[id]['wtime'] - (self.env.now - self.id_counter[id]['timestamp']))
+        #print("Get ID Modifier", self.id_counter)
+        if(iD in self.id_counter):
+            counter = self.id_counter[iD]['counter']
+            modifier = 0
+            if( len(table) > 0):
+                modifier = math.pow((counter/len(table)), self.ip_id_power)
+            bound = max(0, self.id_counter[iD]['wtime'] - (self.env.now - self.id_counter[iD]['timestamp']))
             wtime = modifier * self.get_basetime(table)
-            print("id:", id, "wtime:", wtime, "bound:", bound)
+            print("id:", iD, "wtime:", wtime, "bound:", bound)
             if(bound < wtime):
-                self.id_counter[id]['wtime'] = wtime
-                self.id_counter[id]['timestamp'] = self.env.now
+                self.id_counter[iD]['wtime'] = wtime
+                self.id_counter[iD]['timestamp'] = self.env.now
             return max(wtime, bound)
         else:
             return 0
@@ -347,7 +350,9 @@ class DiversityTable(Table):
     def get_topic_modifier(self, topic, table):
         if(topic in self.topic_counter):
             counter = self.topic_counter[topic]['counter']
-            modifier = math.pow((counter/len(table)), self.topic_power)
+            modifier = 0
+            if( len(table) > 0):
+                modifier = math.pow((counter/len(table)), self.topic_power)
             bound = max(0, self.topic_counter[topic]['wtime'] - (self.env.now - self.topic_counter[topic]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("t:", topic, "wtime:", wtime, "bound:", bound)
@@ -369,14 +374,14 @@ class DiversityTable(Table):
         waited_time = (self.env.now - req['arrived'])
         needed_time = 0
         missing_time = 0
-        if(len(table) > 0):
-            base_waiting_time = self.get_basetime(table)
-            topic_modifier = self.get_topic_modifier(req['topic'], table)
-            id_modifier = self.get_id_modifier(req['id'], table)
-            ip_modifier = self.get_ip_modifier(req['ip'], table)
-            needed_time =  max(sum([topic_modifier, id_modifier, ip_modifier]), base_waiting_time * 1/1000000)
-            print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
-            missing_time = max(0, needed_time - waited_time)
+
+        base_waiting_time = self.get_basetime(table)
+        topic_modifier = self.get_topic_modifier(req['topic'], table)
+        id_modifier = self.get_id_modifier(req['id'], table)
+        ip_modifier = self.get_ip_modifier(req['ip'], table)
+        needed_time =  max(sum([topic_modifier, id_modifier, ip_modifier]), base_waiting_time * 1/1000000)
+        print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
+        missing_time = max(0, needed_time - waited_time)
 
 
         #self.ip_modifiers[self.env.now] = (self.env.now, ip_modifier, req['attack'])
@@ -421,26 +426,6 @@ class DiversityTable(Table):
     #    print("after super().display_body")
         #quit()
 
-
-class TreeNode:
-    def __init__(self):
-        self.counter = 0
-        self.zero = None
-        self.one = None
-
-	    
-    def getCounter(self):
-        return self.counter
-
-    def increment(self):
-        self.counter += 1
-        return self.counter
-
-	    
-    def decrement(self):
-        self.counter -= 1
-        return self.counter
-
 #helper for bar charts
 def get_widths(l):
     widths = []
@@ -455,99 +440,3 @@ def get_colors(l):
     for i in l:
         result.append(colors[i%len(colors)])
     return result
-
-def get_entropy(labels, base=2):
-  value,counts = np.unique(labels, return_counts=True)
-  #print("Counts:", counts)
-  #print("value", value, "counts", counts, "Max entropy", entropy([1]*len(counts), base=base))
-  #efficiency - entropy, deviced by max entropy
-  return entropy(counts, base=base)
-
-class Tree:	
-    
-    def __init__(self):
-        self.comparators = [128, 64, 32, 16, 8, 4, 2, 1]
-        self.root = TreeNode()
-
-    def tryAdd(self, addr):
-        result = self.tryAddRecursive(self.root, addr, 0)
-        score = result[1]
-        balanced_score = (self.root.getCounter()) * 32
-        max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
-        #print("TryAdd final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
-        if(balanced_score == 0 or (math.log(score/balanced_score, 10)) < 1):
-            return 1
-        else:
-            return (math.log(score/balanced_score, 10))
-            
-
-    def add(self, addr):
-        result = self.addRecursive(self.root, addr, 0)
-        self.root = result[0]
-        score = result[1]
-        balanced_score = (self.root.getCounter()-1) * 32
-        max_score = -(self.root.getCounter()-1) * (1 - pow(2, 33))
-        print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
-
-        return score
-            
-	
-    def tryAddRecursive(self, current, addr, depth):
-        if (current == None):
-            current = TreeNode()
-        
-        score = current.getCounter() * pow(2, depth)
-        #print("Depth", depth, "Score", score)
-        #current.increment()
-        #print("Increment counter to ", current.getCounter())
-	    
-        if(depth < 32):
-            #print("Octet: ",  addr.split('.')[int(depth/8)])
-            octet = int(addr.split('.')[int(depth/8)])
-            comparator = self.comparators[int(depth % 8)]
-            result = None
-            if((octet & comparator) == 0):
-                #print("Going towards 0")
-                result = self.tryAddRecursive(current.zero, addr, depth + 1)
-                #current.zero = result[0]
-            else:
-                #print("Going towards 1")
-                result = self.tryAddRecursive(current.one, addr, depth + 1)
-                #current.one = result[0]; 
-
-            score += result[1]
-        else:
-            pass
-            #print("Reached depth ", depth, " going back.")
-        
-        return (current, score)
-	    
-    def addRecursive(self, current, addr, depth):
-        if (current == None):
-            current = TreeNode()
-        
-        score = current.getCounter() * pow(2, depth)
-        #print("Depth", depth, "Score", score)
-        current.increment()
-        #print("Increment counter to ", current.getCounter())
-	    
-        if(depth < 32):
-            #print("Octet: ",  addr.split('.')[int(depth/8)])
-            octet = int(addr.split('.')[int(depth/8)])
-            comparator = self.comparators[int(depth % 8)]
-            result = None
-            if((octet & comparator) == 0):
-                #print("Going towards 0")
-                result = self.addRecursive(current.zero, addr, depth + 1)
-                current.zero = result[0]
-            else:
-                #print("Going towards 1")
-                result = self.addRecursive(current.one, addr, depth + 1)
-                current.one = result[0]; 
-
-            score += result[1]
-        else:
-            pass
-            #print("Reached depth ", depth, " going back.")
-        
-        return (current, score)
