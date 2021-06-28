@@ -41,6 +41,8 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
     private boolean first=true;
     private HashMap<Topic, ArrayList<TopicRegistration>> evilTopicTable;
 	private RoutingTable evilRoutingTable; // routing table only containing evil neighbors
+	private HashMap <Topic, HashMap<BigInteger,Long> >initTicketRequestTime;
+	private HashMap <Topic, HashMap<BigInteger,Long> >previousTicketRequestTime;
 
     /**
      * Replicate this object by returning an identical copy.<br>
@@ -66,7 +68,6 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         this.targetNumOfRegistrations = Configuration.getInt(prefix + "." + PAR_NUMBER_OF_REGISTRATIONS, 0);
         this.evilTopicTable = new HashMap<Topic, ArrayList<TopicRegistration>>();
 		this.evilRoutingTable = new RoutingTable(KademliaCommonConfig.NBUCKETS,KademliaCommonConfig.K,KademliaCommonConfig.MAXREPLACEMENT);
-        
         // logger is not initialised at this point
         if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID)) 
             System.out.println("Attacker type Hybrid");
@@ -76,6 +77,12 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             System.out.println("Attacker type Topic Spam");
         else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS))
             System.out.println("Attacker type Dos");
+        else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_WAITING_TIME_SPAM)) {
+            System.out.println("Attacker type waiting time spam");
+			this.initTicketRequestTime = new HashMap<>();
+			this.previousTicketRequestTime = new HashMap<>();
+
+        }
         else {
             System.out.println("Invalid attacker type");
             System.exit(1);
@@ -116,6 +123,14 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         // if only a spammer than follow the normal protocol
             //super.handleInitRegisterTopic(m, myPid);
             return;
+        }
+        if(this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_WAITING_TIME_SPAM)) {
+        	HashMap<BigInteger,Long> init = new HashMap<BigInteger,Long>();
+            initTicketRequestTime.put(t,init);
+            logger.warning("Log"+initTicketRequestTime.get(t));
+            previousTicketRequestTime.put(t, new HashMap<BigInteger,Long>());
+            
+            super.handleInitRegisterTopic(m, myPid);
         }
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
             first = false;
@@ -197,7 +212,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         Topic t = (Topic) m.body;
         TopicRegistration[] registrations = new TopicRegistration[0];
 
-        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
+        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)||this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_WAITING_TIME_SPAM)) {
         // if only a spammer than follow the normal protocol
             super.handleTopicQuery(m, myPid);
         }
@@ -235,6 +250,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             super.handleTicketRequest(m, myPid);
             return;
     	}
+
         long curr_time = CommonState.getTime();
 		//System.out.println("Ticket request received from " + m.src.getId()+" in node "+this.node.getId());
         Topic topic = (Topic) m.body;
@@ -259,6 +275,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 		response.operationId = m.operationId;
         
         sendMessage(response, m.src.getId(), myPid);
+        
 
         /*long curr_time = CommonState.getTime();
         Topic topic = (Topic) m.body;
@@ -282,6 +299,78 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         sendMessage(response, m.src.getId(), myPid);*/
     }
 
+    /**
+	 * Process a ticket response and schedule a register message
+	 *
+	 */
+	private void handleTicketResponse(Message m, int myPid) {
+		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
+		Ticket ticket = body.ticket;
+		logger.info("Got response! Is topic queue full?" + ticket.getOccupancy() + " " + ticket.getWaitTime());
+		Topic topic = ticket.getTopic();
+		TicketTable tt = ticketTables.get(topic.getTopicID());
+		tt.reportResponse(ticket);
+
+		if (KademliaCommonConfig.TICKET_NEIGHBOURS == 1) {
+
+			for (BigInteger node : body.neighbours)
+				routingTable.addNeighbour(node);
+
+			if (tt != null) {
+				tt.addNeighbour(body.neighbours);
+			}
+			SearchTable st = searchTables.get(topic.getTopicID());
+			if (st != null)
+				st.addNeighbour(body.neighbours);
+
+		}
+
+		/*if (ticket.getWaitTime() == -1 || ticket.getCumWaitTime()>registrationTimeout) {
+
+			if(ticket.getWaitTime()==-1)
+				logger.warning("Attempted to re-register topic on the same node " + m.src.getId() + " for topic "
+					+ topic.getTopic());
+			else 
+				logger.warning("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime());
+			tt.removeNeighbour(m.src.getId());
+			RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
+			EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()),
+					myPid);
+			if (KademliaCommonConfig.PARALLELREGISTRATIONS == 0) {
+				ticketTables.get(ticket.getTopic().getTopicID()).increaseAvailableRequests();
+
+				if (ticketTables.get(ticket.getTopic().getTopicID()).getAvailableRequests() > 0) {
+					BigInteger nextNode = ticketTables.get(ticket.getTopic().getTopicID()).getNeighbour();
+					if (nextNode != null) {
+						sendTicketRequest(nextNode, ticket.getTopic(), myPid);
+					}
+				}
+			}
+			return;
+		}*/
+
+        if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_WAITING_TIME_SPAM)) {
+        	
+        		
+    		if(initTicketRequestTime.get(topic).get(m.src.getId())==null)
+    			initTicketRequestTime.get(topic).put(m.src.getId(), CommonState.getTime());
+        	
+        	if(previousTicketRequestTime.get(topic).get(m.src.getId())!=null)
+        		if(previousTicketRequestTime.get(topic).get(m.src.getId())>(CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId())+ticket.getWaitTime()))
+                    logger.warning("Received smaller waiting time than before "+ticket.getWaitTime()+" "+previousTicketRequestTime.get(topic).get(m.src.getId()));
+
+        			
+        	
+            previousTicketRequestTime.get(topic).put(m.src.getId(), ticket.getWaitTime());            
+
+        } else {
+        	
+
+        	tt.addTicket(m, ticket);
+        }
+        
+
+	}
     /**
      *  Process register requests
      *  The malicious node simply approves all tickets
@@ -310,7 +399,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 	 */
 	protected void handleFind(Message m, int myPid, int dist) {
 		
-    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
+    	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS)||this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_WAITING_TIME_SPAM)) {
             super.handleFind(m, myPid,dist);
             return;
     	}

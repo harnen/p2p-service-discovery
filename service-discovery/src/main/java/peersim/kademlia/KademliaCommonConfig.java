@@ -52,6 +52,8 @@ public class KademliaCommonConfig {
     public static String ATTACK_TYPE_MALICIOUS_REGISTRAR = "MaliciousRegistrar";
     public static String ATTACK_TYPE_DOS = "DosAttack";
     public static String ATTACK_TYPE_HYBRID = "HybridAttacker";
+    public static String ATTACK_TYPE_WAITING_TIME_SPAM = "WaitingTimeSpam";
+
     //TODO show the distribution of nodes discovered (do everyone discover the same? Or different?)
     // Settings for CustomDistribution (id distribution setting for nodes)
     public static String NON_UNIFORM_ID_DISTRIBUTION = "nonUniform";
