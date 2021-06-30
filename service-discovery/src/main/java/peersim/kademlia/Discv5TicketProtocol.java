@@ -50,7 +50,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	/**
 	 * Table to search for topics
 	 */
-	private HashMap<BigInteger, SearchTable> searchTables;
+	protected HashMap<BigInteger, SearchTable> searchTables;
 
 	protected HashMap<Ticket, BackoffService> registrationFailed;
 
@@ -122,6 +122,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 			this.topicTable = new Discv5RRTopicTable();
 		} else if (KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE == 2) {
 			this.topicTable = new Discv5GlobalTopicTable();
+        }else if (KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE == 3) {
+            this.topicTable = new Discv5StatefulTopicTable();
 		} else {
 			this.topicTable = new Discv5TopicTable();
 		}

@@ -20,13 +20,13 @@ import peersim.core.CommonState;
 // Round-robin Discv5 Topic table
 public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements TopicTable 
 
-    private static final int amplify = 1; 
+    protected static final int amplify = 1; 
     //private static final double groupModifierExp = 1;
-    private static final double topicModifierExp = 5;
-    private static final double ipModifierExp = 0.1;
-    private static final double idModifierExp =0.1;
-    private static final int occupancyPower = 2;
-    private static final int baseMultiplier = 10;
+    protected static final double topicModifierExp = 5;
+    protected static final double ipModifierExp = 0.1;
+    protected static final double idModifierExp =0.1;
+    protected static final int occupancyPower = 2;
+    protected static final int baseMultiplier = 10;
     
 	public Discv5GlobalTopicTable() {
         super();
@@ -112,8 +112,6 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         }
         else {
             double occupancy = 1.0 - ( ((double) allAds.size()) / this.tableCapacity);
-            if (occupancy < 0.01)
-                occupancy = 0.01; //shouldn't be less than 1 percent
 	        baseWaitingTime = (long) (adLifeTime/Math.pow(occupancy, occupancyPower));
 	
 	        long neededTime  = (long) (baseWaitingTime * Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg),1/1000000));
@@ -155,7 +153,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         return waiting_time;
     }*/
     
-    private double getTopicModifier(TopicRegistration reg) {
+    protected double getTopicModifier(TopicRegistration reg) {
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
 
         //int competing=getNumberOfCompetingTicketsPerTopic(reg.getTopic());
@@ -168,7 +166,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     	return Math.pow((double)(topicSize)/(allAds.size()),amplify*topicModifierExp);
     }
     
-    private double getIPModifier(TopicRegistration reg) {
+    protected double getIPModifier(TopicRegistration reg) {
 
     	double counter=0.0;
 		Iterator<TopicRegistration> it = allAds.iterator();
@@ -182,7 +180,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     	return baseMultiplier*Math.pow((double)counter/(allAds.size()),amplify*ipModifierExp);
     }
     
-    private double getIdModifier(TopicRegistration reg) {
+    protected double getIdModifier(TopicRegistration reg) {
 
     	double counter=0.0;
 		Iterator<TopicRegistration> it = allAds.iterator();
