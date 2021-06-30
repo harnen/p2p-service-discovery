@@ -9,37 +9,38 @@ import peersim.core.CommonState;
 import peersim.kademlia.Topic;
 import peersim.kademlia.TopicRegistration;
 
+import java.math.BigInteger;
+
 // This topic table ensures that subsequent waiting times returned to users 
 // follow a linear reduction trend by maintaining state of previously computed
 // modifiers for users.
 public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 
     // Count of each IP, ID, topic in the topic table
-    //private HashMap<String, Integer> ip_counter;
-    //private HashMap<String, Integer> id_counter;
-    //private HashMap<Topic, Integer> topic_counter;
+    private HashMap<String, Integer> ip_counter;
+    private HashMap<BigInteger, Integer> id_counter;
     // Last computed modifier for each IP, ID, and topic
     private HashMap<String, Double> ip_last_modifier;
-    private HashMap<String, Double> id_last_modifier;
+    private HashMap<BigInteger, Double> id_last_modifier;
     private HashMap<Topic, Double> topic_last_modifier;
     // The time of last modifier computation for each IP, ID, and topic
     private HashMap<String, Long> ip_timestamp;
-    private HashMap<String, Long> id_timestamp;
+    private HashMap<BigInteger, Long> id_timestamp;
     private HashMap<Topic, Long> topic_timestamp;
 
     public Discv5StatefulTopicTable() {
         super();
 
         // Modifer state initialisation
-        //ip_counter = new HashMap<String, Integer>();
-        //id_counter = new HashMap<String, Integer>();
+        ip_counter = new HashMap<String, Integer>();
+        id_counter = new HashMap<BigInteger, Integer>();
 
         ip_last_modifier = new HashMap<String, Double>();
-        id_last_modifier = new HashMap<String, Double>();
+        id_last_modifier = new HashMap<BigInteger, Double>();
         topic_last_modifier = new HashMap<Topic, Double>();
 
         ip_timestamp = new HashMap<String, Long>();
-        id_timestamp = new HashMap<String, Long>();
+        id_timestamp = new HashMap<BigInteger, Long>();
         topic_timestamp = new HashMap<Topic, Long>();
     }
 
@@ -99,20 +100,47 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
                 iter_ip.remove();
             }
          }
-         Iterator<Entry<String, Long>> iter_id = id_timestamp.entrySet().iterator();
+         Iterator<Entry<BigInteger, Long>> iter_id = id_timestamp.entrySet().iterator();
          while(iter_id.hasNext()) {
-            Entry<String, Long> entry = iter_id.next();
+            Entry<BigInteger, Long> entry = iter_id.next();
             long timestamp = entry.getValue();
             if (curr_time - timestamp > adLifeTime)
             {
-                String id = entry.getKey(); 
+                BigInteger id = entry.getKey(); 
                 id_last_modifier.remove(id);
                 iter_id.remove();
             }
          }
         
-        // TODO update the counters for ip and id with the admitted registrations
-        return super.makeRegisterDecision(curr_time);
+        // update the ip and id counters with the admitted registrations
+        Ticket [] tickets = super.makeRegisterDecision(curr_time);
+        for (Ticket ticket : tickets) {
+            if (ticket.isRegistrationComplete()) {
+                String ip = ticket.getSrc().getAddr();
+                Integer ip_count = ip_counter.get(ip);
+                if (ip_count == null) {
+                    ip_counter.put(ip, 1);
+                }
+                else {
+                    ip_counter.put(ip, ip_count+1);
+                }
+                BigInteger id;
+                if (ticket.getSrc().is_evil) {
+                    id = ticket.getSrc().getAttackerId();
+                }
+                else {
+                    id = ticket.getSrc().getId();
+                }
+                Integer id_count = id_counter.get(id);
+                if (id_count == null) {
+                    id_counter.put(id, 1);
+                }
+                else {
+                    id_counter.put(id, id_count+1);
+                }
+            }
+        }
+        return tickets;
     }
     
     protected void updateTopicTable(long curr_time) {
@@ -125,8 +153,29 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 	            topicQ.pop(); 
                 //assert r_same.equals(r);
 				it.remove(); //removes from allAds
-
-        // TODO update the counters for ip and id with the removed registrations
+                
+                // update ip, id counts
+                String ip = r.getNode().getAddr();
+                Integer ip_count = ip_counter.get(ip);
+                ip_count -= 1;
+                if (ip_count == 0)
+                    ip_counter.remove(ip);
+                else {
+                    ip_counter.put(ip, ip_count);
+                }
+                BigInteger id;
+                if (r.getNode().is_evil)
+                    id = r.getNode().getAttackerId();
+                else
+                    id = r.getNode().getId();
+                Integer id_count = id_counter.get(id);
+                id_count -= 1;
+                if (id_count == 0) {
+                    id_counter.remove(id);
+                }
+                else {
+                    id_counter.put(id, id_count);
+                }
 			}
 		}
     }
@@ -156,8 +205,23 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
     }
 
     protected double getIPModifier(TopicRegistration reg) {
-        double modifier = super.getIPModifier(reg);
-        modifier = modifier * getBaseTime();
+
+        if(allAds.size()==0)
+            return 0;
+    	
+        //TODO remove the manual counter below 
+        int counter1=0;
+		Iterator<TopicRegistration> it = allAds.iterator();
+		while (it.hasNext()) {
+    		TopicRegistration r = it.next();
+    		if(r.getNode().getAddr().equals(reg.getNode().getAddr()))counter1++;
+		}
+        Integer ip_count = ip_counter.get(reg.getNode().getAddr());
+        if (ip_count == null)
+            ip_count = 0;
+        assert ip_count == counter1;
+        
+        double modifier = getBaseTime() * Math.pow((double)ip_count/(allAds.size()),amplify*ipModifierExp);
 
         Long last_timestamp = ip_timestamp.get(reg.getNode().getAddr());
         if (last_timestamp != null) {
@@ -174,19 +238,46 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
     }
 
     protected double getIdModifier(TopicRegistration reg) {
-        double modifier = super.getIdModifier(reg);
-        modifier = modifier * getBaseTime();
+		Iterator<TopicRegistration> it = allAds.iterator();
+        BigInteger reg_id;
+
+        // Use attackerID for registrant ID if node is evil
+        if (reg.getNode().is_evil)
+            reg_id = reg.getNode().getAttackerId(); 
+        else
+            reg_id = reg.getNode().getId();
+
+        // TODO remove manual counter
+    	int counter=0;
+		while (it.hasNext()) {
+    		TopicRegistration r = it.next();
+            if (r.getNode().is_evil) { // if node is evil, use its attackerId as node id
+                if(r.getNode().getAttackerId().equals(reg_id))
+                    counter++;
+            }
+            else 
+    		    if(r.getNode().getId().equals(reg_id))
+                    counter++;
+		}
+
+        Integer id_count = id_counter.get(reg_id);
+        if (id_count == null)
+            id_count = 0;
+
+        assert id_count == counter;
+
+        double modifier = getBaseTime() * Math.pow((double)counter/(allAds.size()),amplify*idModifierExp); 
         
-        Long last_timestamp = id_timestamp.get(reg.getNode().getAddr());
+        Long last_timestamp = id_timestamp.get(reg_id);
 
         if (last_timestamp != null) {
             long delta_time = CommonState.getTime() - last_timestamp;
-            double lower_bound = Math.max(0, id_last_modifier.get(reg.getNode().getAddr()) - delta_time);
+            double lower_bound = Math.max(0, id_last_modifier.get(reg_id) - delta_time);
             modifier = Math.max(modifier, lower_bound);
         }
         if (modifier > 0) {
-            id_last_modifier.put(reg.getNode().getAddr(), modifier);
-            id_timestamp.put(reg.getNode().getAddr(), CommonState.getTime());
+            id_last_modifier.put(reg_id, modifier);
+            id_timestamp.put(reg_id, CommonState.getTime());
         }
 
         return modifier;
