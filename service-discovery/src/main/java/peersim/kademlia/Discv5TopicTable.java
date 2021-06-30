@@ -192,6 +192,7 @@ public class Discv5TopicTable { // implements TopicTable {
 
     protected void register(TopicRegistration reg) {
         ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
+        System.out.println("Registering ip: " + reg.getNode().getAddr());
         if (topicQ != null) {
             topicQ.add(reg);
             //System.out.println(this +" Add topictable "+reg.getTopic().getTopic()+" "+topicQ.size());

@@ -320,6 +320,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
             competingTickets.remove(topic);
         }
         Ticket [] tickets = (Ticket []) ticketList.toArray(new Ticket[ticketList.size()]);
+        //Ticket [] tickets = (Ticket []) ticketList.toArray(new Ticket[0]);
         return tickets;
     }
     

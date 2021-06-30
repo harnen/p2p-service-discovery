@@ -76,6 +76,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
     }
     
     protected Ticket [] makeRegisterDecision(long curr_time) {   
+        Ticket [] tickets = super.makeRegisterDecision(curr_time);
         
          // Remove expired state (in case of discontinued registrations from Turbulence)   
          Iterator<Entry<Topic, Long>> iter_topic = topic_timestamp.entrySet().iterator();
@@ -111,36 +112,35 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
                 iter_id.remove();
             }
          }
-        
+
+         return tickets;
+    }
+
+    protected void register(TopicRegistration reg) {
+        super.register(reg);   
         // update the ip and id counters with the admitted registrations
-        Ticket [] tickets = super.makeRegisterDecision(curr_time);
-        for (Ticket ticket : tickets) {
-            if (ticket.isRegistrationComplete()) {
-                String ip = ticket.getSrc().getAddr();
-                Integer ip_count = ip_counter.get(ip);
-                if (ip_count == null) {
-                    ip_counter.put(ip, 1);
-                }
-                else {
-                    ip_counter.put(ip, ip_count+1);
-                }
-                BigInteger id;
-                if (ticket.getSrc().is_evil) {
-                    id = ticket.getSrc().getAttackerId();
-                }
-                else {
-                    id = ticket.getSrc().getId();
-                }
-                Integer id_count = id_counter.get(id);
-                if (id_count == null) {
-                    id_counter.put(id, 1);
-                }
-                else {
-                    id_counter.put(id, id_count+1);
-                }
-            }
+        String ip = reg.getNode().getAddr();
+        Integer ip_count = ip_counter.get(ip);
+        if (ip_count == null) {
+            ip_counter.put(ip, 1);
         }
-        return tickets;
+        else {
+            ip_counter.put(ip, ip_count+1);
+        }
+        BigInteger id;
+        if (reg.getNode().is_evil) {
+            id = reg.getNode().getAttackerId();
+        }
+        else {
+            id = reg.getNode().getId();
+        }
+        Integer id_count = id_counter.get(id);
+        if (id_count == null) {
+            id_counter.put(id, 1);
+        }
+        else {
+            id_counter.put(id, id_count+1);
+        }
     }
     
     protected void updateTopicTable(long curr_time) {
@@ -157,7 +157,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
                 // update ip, id counts
                 String ip = r.getNode().getAddr();
                 Integer ip_count = ip_counter.get(ip);
-                ip_count -= 1;
+                ip_count = ip_count - 1;
                 if (ip_count == 0)
                     ip_counter.remove(ip);
                 else {
@@ -214,11 +214,15 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
-    		if(r.getNode().getAddr().equals(reg.getNode().getAddr()))counter1++;
+    		if(r.getNode().getAddr().equals(reg.getNode().getAddr())) {
+                counter1++;
+            }
 		}
         Integer ip_count = ip_counter.get(reg.getNode().getAddr());
-        if (ip_count == null)
+        if (ip_count == null) {
             ip_count = 0;
+        }
+
         assert ip_count == counter1;
         
         double modifier = getBaseTime() * Math.pow((double)ip_count/(allAds.size()),amplify*ipModifierExp);
