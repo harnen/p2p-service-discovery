@@ -24,6 +24,8 @@ class Table(metaclass=abc.ABCMeta):
         self.admission_times = []
         self.occupancies = {}
         self.occupancies_by_attackers = {}
+        self.per_topic_occupancies = {}
+        self.per_topic_occupancies_by_attackers = {}
         self.returns = []
         
         self.req_counter = 0
@@ -82,7 +84,7 @@ class Table(metaclass=abc.ABCMeta):
         if(len(self.occupancies_by_attackers) > 0):
             self.occupancies_by_attackers[self.env.now-1] = list(self.occupancies_by_attackers.values())[-1]
         self.occupancies_by_attackers[self.env.now] = len(attacker_entries) / self.capacity
-        
+
         if(self.malicious_count > 0):
             if(len(self.malicious_in) > 0):
                 self.malicious_in[self.env.now - 1] = list(self.malicious_in.values())[-1]
@@ -137,7 +139,7 @@ class Table(metaclass=abc.ABCMeta):
 
     def display_body(self, delay):
         yield self.env.timeout(delay)
-        figure, axis = plt.subplots(2, 3)
+        figure, axis = plt.subplots(2, 4)
 
         requests_table = [x['attack'] for x in self.table.values()]
         requests_workload = [x['attack'] for x in self.workload.values()]
@@ -147,18 +149,40 @@ class Table(metaclass=abc.ABCMeta):
         axis[0, 1].set_title("Waiting times")
         #axis[2, 0].set_yscale('log')
         #print("!!!!!!!!!!!!!!!!!!", self.occupancies)
-        axis[1, 1].plot(self.occupancies.keys(), self.occupancies.values(), color='b')
+        axis[1, 1].plot(list(self.occupancies.keys()), list(self.occupancies.values()), color='b')
         #print("~~~~~~~~~~~~~~~~~~", self.occupancies_by_attackers)
         #quit()
-        axis[1, 1].plot(self.occupancies_by_attackers.keys(), self.occupancies_by_attackers.values(), color='r')
-        axis[1, 1].plot(self.occupancies.keys(), [x - y for x, y in zip(self.occupancies.values(), self.occupancies_by_attackers.values())], color='g')
+        axis[1, 1].plot(list(self.occupancies_by_attackers.keys()), list(self.occupancies_by_attackers.values()), color='r')
+        axis[1, 1].plot(list(self.occupancies.keys()), [x - y for x, y in zip(self.occupancies.values(), self.occupancies_by_attackers.values())], color='g')
         axis[1, 1].set_title("Occupancy over time")
         axis[0, 2].scatter([x[0] for x in self.returns], [x[1] for x in self.returns], c=get_colors([x[2] for x in self.returns]))
         axis[0, 2].set_title("Returns")
 
+        # plot top-k (most registered) topics and their num. of registrations in a bar chart
+        k = 5
+        width = 0.10 
+        topics = list(self.per_topic_occupancies.keys())
+        topics = sorted(topics)
+        topics = topics[0:k]
+        x_values = [x-width/2 for x in range(1, len(topics)+1)]
+        good_regs = [self.per_topic_occupancies[x] for x in topics]
+        axis[0, 3].bar(x_values, good_regs, color='g')
+        evil_regs = []
+        for topic in topics:
+            if topic in self.per_topic_occupancies_by_attackers:
+                evil_regs.append(self.per_topic_occupancies_by_attackers[topic])
+            else:
+                evil_regs.append(0)
+        x_values = [x+width/2 for x in range(1, len(topics)+1)]
+        axis[0, 3].bar(x_values, evil_regs, color='r')
+        axis[0, 3].set_ylabel('Number of registrations')
+        axis[0, 3].set_xlabel('Topics')
+        axis[0, 3].set_xticks(x_values)
+        axis[0, 3].set_xticklabels(topics)
+        print('Topics: ', topics, ' per_topic_normal: ', self.per_topic_occupancies, ' per_topic attacker: ', self.per_topic_occupancies_by_attackers)
 
-        axis[1, 2].plot(self.honest_in.keys(), self.honest_in.values(), c='g')
-        axis[1, 2].plot(self.malicious_in.keys(), self.malicious_in.values(), c='r')
+        axis[1, 2].plot(list(self.honest_in.keys()), list(self.honest_in.values()), c='g')
+        axis[1, 2].plot(list(self.malicious_in.keys()), list(self.malicious_in.values()), c='r')
         axis[1, 2].set_title("Percentage of overal requests in the table")
 
         print("Occupancy_total", self.extract_total(self.occupancies))
@@ -268,6 +292,17 @@ class Table(metaclass=abc.ABCMeta):
                 self.topic_counter[req['topic']]['wtime'] = 0
                 self.topic_counter[req['topic']]['timestamp'] = 0
             self.topic_counter[req['topic']]['counter'] += 1
+
+            if req['attack']:
+                if req['topic'] in self.per_topic_occupancies_by_attackers:
+                    self.per_topic_occupancies_by_attackers[ req['topic'] ] += 1
+                else:
+                    self.per_topic_occupancies_by_attackers[ req['topic'] ] = 1
+            else:
+                if req['topic'] in self.per_topic_occupancies:
+                    self.per_topic_occupancies[ req['topic'] ] += 1
+                else:
+                    self.per_topic_occupancies[ req['topic'] ] = 1
 
             self.env.process(self.remove_ad(self.ad_ids, self.ad_lifetime))
             self.ad_ids += 1
