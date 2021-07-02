@@ -33,6 +33,42 @@ def generate_regular(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0, 
             dict_writer.writerow(record)
     print("Generated regular workload in", str(output_filename))
 
+def generate_impatient(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0, output_filename = None):
+    if(output_filename == None):
+        output_filename = './workloads/impatient_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
+    #get ips/ids from ethereum repo
+    ip_file = open('./workloads/ips.txt', "r")
+    id_file = open('./workloads/ids.txt', "r")
+    rand.seed(seed)
+    topics = random.zipf(a=zipf_distribution, size=size)#for topics
+    t_next_req = 0.0 # time of next request
+    flag = True
+    with open(output_filename, 'w') as output_file:
+        fieldnames = ['time', 'id', 'ip', 'topic', 'attack']
+        dict_writer = csv.DictWriter(output_file, fieldnames=fieldnames)
+        dict_writer.writeheader()
+        for i in range(0, size):
+            t_next_req += rand.expovariate(rate)
+            record = {}
+            ip = ip_file.readline().rstrip()
+            iD = id_file.readline().rstrip()
+            if(not ip or not iD):
+                print("Not enough IPs/IDs in the files")
+                exit(1)
+            #record['time'] = int(1000*t_next_req)
+            record['time'] = int(10*i)
+            record['id'] = iD
+            record['ip'] =ip
+            record['topic'] = 't' + str(topics[i])
+            if(flag == True):
+                record['attack'] = 0
+            else:
+                record['attack'] = 3
+            flag = not flag
+            #print(record)
+            dict_writer.writerow(record)
+    print("Generated regular workload in", str(output_filename))
+
 def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't11', attacker_ip_num = 3, attacker_id_num=10, rate_normal = 1.0, rate_attack = 10.0, seed = 0.0, output_filename = None):
     if(output_filename == None):
         output_filename = './workloads/attack_topic_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
