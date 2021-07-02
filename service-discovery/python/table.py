@@ -79,7 +79,7 @@ class Table(metaclass=abc.ABCMeta):
             self.occupancies[self.env.now-1]  = list(self.occupancies.values())[-1]
         self.occupancies[self.env.now] = len(self.table) / self.capacity
         
-        attacker_entries = [req for req in self.table.values() if req['attack'] == 1]
+        attacker_entries = [req for req in self.table.values() if req['attack'] != 0]
         honest_entries = [req for req in self.table.values() if req['attack'] == 0]
         if(len(self.occupancies_by_attackers) > 0):
             self.occupancies_by_attackers[self.env.now-1] = list(self.occupancies_by_attackers.values())[-1]
@@ -322,7 +322,11 @@ class Table(metaclass=abc.ABCMeta):
         else:
             req['returned'] += 1
             self.log("Need to wait for", waiting_time)
-            self.env.process(self.new_request(req, waiting_time))
+            #"impatient" clients
+            if(req['attack'] == 3):
+                self.env.process(self.new_request(req, 1000))
+            else:
+                self.env.process(self.new_request(req, waiting_time))
     
 
 class SimpleTable(Table):
