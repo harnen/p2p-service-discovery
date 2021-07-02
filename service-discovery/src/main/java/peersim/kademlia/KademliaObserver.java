@@ -41,7 +41,7 @@ public class KademliaObserver implements Control {
     private static final String PAR_REPORT_MSG = "reportMsg";
     private static final String PAR_REPORT_REG = "reportReg";
 
-    private String logFolderName; 
+    private static String logFolderName; 
     private String parameterName;
     private double parameterValue; 
 
@@ -629,6 +629,35 @@ public class KademliaObserver implements Control {
 	        }
         }
     }
+	
+	public static void reportBetterWaitingTime(BigInteger id, long previousTime, long newTime, long spentTime) {
+	    try {
+            String filename = logFolderName + "/" + "betterWaitingTimes.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                String title = "time";
+                title+= ",id,previoustTime,newTime,spentTime";
+                title += "\n";
+                writer.write(title);
+            }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+            writer.write("" + CommonState.getTime());
+            writer.write(","+id);
+            writer.write(","+previousTime);
+            writer.write(","+newTime);
+            writer.write(","+spentTime);
+
+            writer.write("\n");
+            writer.close();
+	    }catch (IOException e) {
+            e.printStackTrace();
+        }
+	}
 
     private void write_msg_received_by_nodes() {
 

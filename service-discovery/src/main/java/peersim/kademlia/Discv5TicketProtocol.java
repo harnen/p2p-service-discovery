@@ -399,10 +399,10 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	 * Process a ticket response and schedule a register message
 	 *
 	 */
-	private void handleTicketResponse(Message m, int myPid) {
+	protected void handleTicketResponse(Message m, int myPid) {
 		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
 		Ticket ticket = body.ticket;
-		logger.info("Got response! Is topic queue full?" + ticket.getOccupancy() + " " + ticket.getWaitTime());
+		logger.warning("Got response! Is topic queue full?" + ticket.getOccupancy() + " " + ticket.getWaitTime());
 		Topic topic = ticket.getTopic();
 		TicketTable tt = ticketTables.get(topic.getTopicID());
 		tt.reportResponse(ticket);
