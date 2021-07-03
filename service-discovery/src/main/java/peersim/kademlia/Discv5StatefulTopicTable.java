@@ -94,7 +94,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
          while(iter_ip.hasNext()) {
             Entry<String, Long> entry = iter_ip.next();
             long timestamp = entry.getValue();
-            if (curr_time - timestamp > adLifeTime)
+            if (curr_time - timestamp > 2*adLifeTime)
             {
                 String ip = entry.getKey(); 
                 ip_last_modifier.remove(ip);
@@ -105,7 +105,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
          while(iter_id.hasNext()) {
             Entry<BigInteger, Long> entry = iter_id.next();
             long timestamp = entry.getValue();
-            if (curr_time - timestamp > adLifeTime)
+            if (curr_time - timestamp > 2*adLifeTime)
             {
                 BigInteger id = entry.getKey(); 
                 id_last_modifier.remove(id);
@@ -209,22 +209,11 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         if(allAds.size()==0)
             return 0;
     	
-        //TODO remove the manual counter below 
-        int counter1=0;
-		Iterator<TopicRegistration> it = allAds.iterator();
-		while (it.hasNext()) {
-    		TopicRegistration r = it.next();
-    		if(r.getNode().getAddr().equals(reg.getNode().getAddr())) {
-                counter1++;
-            }
-		}
         Integer ip_count = ip_counter.get(reg.getNode().getAddr());
         if (ip_count == null) {
             ip_count = 0;
         }
 
-        assert ip_count == counter1;
-        
         double modifier = getBaseTime() * Math.pow((double)ip_count/(allAds.size()),amplify*ipModifierExp);
 
         Long last_timestamp = ip_timestamp.get(reg.getNode().getAddr());
@@ -251,26 +240,11 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         else
             reg_id = reg.getNode().getId();
 
-        // TODO remove manual counter
-    	int counter=0;
-		while (it.hasNext()) {
-    		TopicRegistration r = it.next();
-            if (r.getNode().is_evil) { // if node is evil, use its attackerId as node id
-                if(r.getNode().getAttackerId().equals(reg_id))
-                    counter++;
-            }
-            else 
-    		    if(r.getNode().getId().equals(reg_id))
-                    counter++;
-		}
-
         Integer id_count = id_counter.get(reg_id);
         if (id_count == null)
             id_count = 0;
 
-        assert id_count == counter;
-
-        double modifier = getBaseTime() * Math.pow((double)counter/(allAds.size()),amplify*idModifierExp); 
+        double modifier = getBaseTime() * Math.pow((double) id_count/(allAds.size()),amplify*idModifierExp); 
         
         Long last_timestamp = id_timestamp.get(reg_id);
 
