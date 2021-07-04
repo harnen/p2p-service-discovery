@@ -364,7 +364,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         	
         	if(previousTicketRequestTime.get(topic).get(m.src.getId())!=null) {
         		logger.warning("Previous ticket "+previousTicketRequestTime.get(topic).get(m.src.getId())+" previous time "+initTicketRequestTime.get(topic).get(m.src.getId())+" current ticket wait "+ticket.getWaitTime());
-        		if(previousTicketRequestTime.get(topic).get(m.src.getId())>(CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId())+ticket.getWaitTime())) {
+        		if((CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId())>0)&&(previousTicketRequestTime.get(topic).get(m.src.getId())>(CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId())+ticket.getWaitTime()))) {
                     logger.warning("Received smaller waiting time than before "+ticket.getWaitTime()+" "+previousTicketRequestTime.get(topic).get(m.src.getId())+" "+CommonState.getTime()+" "+initTicketRequestTime.get(topic).get(m.src.getId()));
                     KademliaObserver.reportBetterWaitingTime(m.dest.getId(),previousTicketRequestTime.get(topic).get(m.src.getId()),ticket.getWaitTime(),CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId()));
         		}
