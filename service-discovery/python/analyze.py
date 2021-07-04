@@ -896,6 +896,8 @@ def analyzeWaitingTimes(dirs):
         ax1.legend()
         ax1.set_ylabel('Waiting time in sec')
         ax1.set_xlabel('time (sec)')
+        ax1.ticklabel_format(style='plain')
+
         plt.savefig(OUTDIR + '/waiting_times_' + log_dir1 + '.png')
 
         fig, ax2 = plt.subplots()

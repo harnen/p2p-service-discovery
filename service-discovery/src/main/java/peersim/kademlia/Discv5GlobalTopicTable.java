@@ -23,10 +23,10 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     protected static final int amplify = 1; 
     //private static final double groupModifierExp = 1;
     protected static final double topicModifierExp = 10;
-    protected static final double ipModifierExp = 0.3;
-    protected static final double idModifierExp =0.3;
-    protected static final int occupancyPower = 5;
-    protected static final int baseMultiplier = 50;
+    protected static final double ipModifierExp = 0.4;
+    protected static final double idModifierExp =0.4;
+    protected static final int occupancyPower = 4;
+    protected static final int baseMultiplier = 40;
     
 	public Discv5GlobalTopicTable() {
         super();
