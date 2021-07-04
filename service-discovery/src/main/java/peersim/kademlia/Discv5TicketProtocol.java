@@ -402,7 +402,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	protected void handleTicketResponse(Message m, int myPid) {
 		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
 		Ticket ticket = body.ticket;
-		logger.warning("Got response! Is topic queue full?" + ticket.getOccupancy() + " " + ticket.getWaitTime());
+		logger.info("Got response! Is topic queue full?" + ticket.getOccupancy() + " " + ticket.getWaitTime());
 		Topic topic = ticket.getTopic();
 		TicketTable tt = ticketTables.get(topic.getTopicID());
 		tt.reportResponse(ticket);
@@ -426,8 +426,10 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 			if(ticket.getWaitTime()==-1)
 				logger.warning("Attempted to re-register topic on the same node " + m.src.getId() + " for topic "
 					+ topic.getTopic());
-			else 
+			else {
 				logger.warning("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime());
+				KademliaObserver.reportOverThresholdWaitingTime(this.node.getId(),m.src.getId(),ticket.getWaitTime());
+			}
 			tt.removeNeighbour(m.src.getId());
 			RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
 			EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()),
@@ -488,6 +490,11 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 				RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
 				EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()),
 						myPid);
+				
+				if(ticket.getCumWaitTime()>registrationTimeout)
+					KademliaObserver.reportOverThresholdWaitingTime(this.node.getId(),m.src.getId(),ticket.getWaitTime());
+					
+					
 			}
 
 		} else {

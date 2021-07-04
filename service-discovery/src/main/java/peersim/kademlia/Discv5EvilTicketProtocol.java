@@ -248,7 +248,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
     protected void handleTicketRequest(Message m, int myPid) {
         
     	
-    	logger.warning("Handle ticket request EVIL");
+    	logger.info("Handle ticket request EVIL");
     	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_WAITING_TIME_SPAM)) {
             super.handleTicketRequest(m, myPid);
             return;
@@ -309,7 +309,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 	 */
 	protected void handleTicketResponse(Message m, int myPid) {
 		
-		logger.warning("Got response EVIL! Is topic queue full?");
+		logger.info("Got response EVIL! Is topic queue full?");
 
 		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
 		Ticket ticket = body.ticket;
@@ -360,18 +360,20 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             logger.warning("Waiting time attack");
 
         		
-    		if(initTicketRequestTime.get(topic).get(m.src.getId())==null)
-    			initTicketRequestTime.get(topic).put(m.src.getId(), CommonState.getTime());
+    		//if(initTicketRequestTime.get(topic).get(m.src.getId())==null)
         	
-        	if(previousTicketRequestTime.get(topic).get(m.src.getId())!=null)
+        	if(previousTicketRequestTime.get(topic).get(m.src.getId())!=null) {
+        		logger.warning("Previous ticket "+previousTicketRequestTime.get(topic).get(m.src.getId())+" previous time "+initTicketRequestTime.get(topic).get(m.src.getId())+" current ticket wait "+ticket.getWaitTime());
         		if(previousTicketRequestTime.get(topic).get(m.src.getId())>(CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId())+ticket.getWaitTime())) {
-                    logger.warning("Received smaller waiting time than before "+ticket.getWaitTime()+" "+previousTicketRequestTime.get(topic).get(m.src.getId()));
-                    KademliaObserver.reportBetterWaitingTime(m.dest.getId(),previousTicketRequestTime.get(topic).get(m.src.getId()),ticket.getWaitTime(),previousTicketRequestTime.get(topic).get(m.src.getId()));
+                    logger.warning("Received smaller waiting time than before "+ticket.getWaitTime()+" "+previousTicketRequestTime.get(topic).get(m.src.getId())+" "+CommonState.getTime()+" "+initTicketRequestTime.get(topic).get(m.src.getId()));
+                    KademliaObserver.reportBetterWaitingTime(m.dest.getId(),previousTicketRequestTime.get(topic).get(m.src.getId()),ticket.getWaitTime(),CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId()));
         		}
+        	}
 
         	
-        	
-            previousTicketRequestTime.get(topic).put(m.src.getId(), ticket.getWaitTime());            
+			initTicketRequestTime.get(topic).put(m.src.getId(), CommonState.getTime());
+            previousTicketRequestTime.get(topic).put(m.src.getId(), ticket.getWaitTime());   
+            super.sendTicketRequest(m.src.getId(),topic,myPid);
 
         } else {
         	

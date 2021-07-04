@@ -213,6 +213,14 @@ public class KademliaObserver implements Control {
             myFile = new File(filename);
             if(myFile.exists())myFile.delete();
             
+            filename = this.logFolderName + "/" + "overThresholdWaitingTimes.csv";
+            myFile = new File(filename);
+            if(myFile.exists())myFile.delete();
+            
+            filename = this.logFolderName + "/" + "betterWaitingTimes.csv";
+            myFile = new File(filename);
+            if(myFile.exists())myFile.delete();
+            
             
         } catch (IOException e) {
             e.printStackTrace();
@@ -657,6 +665,35 @@ public class KademliaObserver implements Control {
 	    }catch (IOException e) {
             e.printStackTrace();
         }
+	}
+	
+	public static void reportOverThresholdWaitingTime(BigInteger registrant,BigInteger registrar, long  waitingTime) {
+	    /*try {
+            String filename = logFolderName + "/" + "overThresholdWaitingTimes.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                String title = "time";
+                title+= ",registrant,registrar,waitingTime";
+                title += "\n";
+                writer.write(title);
+            }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+            writer.write("" + CommonState.getTime());
+            writer.write(","+registrant);
+            writer.write(","+registrar);
+            writer.write(","+waitingTime);
+
+            writer.write("\n");
+            writer.close();
+	    }catch (IOException e) {
+            e.printStackTrace();
+        }*/
+		
 	}
 
     private void write_msg_received_by_nodes() {
