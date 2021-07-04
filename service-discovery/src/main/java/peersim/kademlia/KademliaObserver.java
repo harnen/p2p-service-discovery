@@ -129,6 +129,12 @@ public class KademliaObserver implements Control {
     private static int ticket_request_to_evil_nodes = 0;
     private static int ticket_request_to_good_nodes = 0;
     
+    
+    private static HashMap<String, Long> betterTimes = new HashMap<String, Long>();
+    private static HashMap<String, Integer> betterTimesCount = new HashMap<String, Integer>();
+
+    
+    
     private static HashMap<BigInteger, Integer> msgReceivedByNodes = new HashMap<BigInteger, Integer>();
     private static HashMap<Integer, Integer> msgSentPerType = new HashMap<Integer, Integer>();
     private static HashMap<String, Integer> registerOverhead = new HashMap<String, Integer>();
@@ -638,33 +644,22 @@ public class KademliaObserver implements Control {
         }
     }
 	
-	public static void reportBetterWaitingTime(BigInteger id, long previousTime, long newTime, long spentTime) {
-	    try {
-            String filename = logFolderName + "/" + "betterWaitingTimes.csv";
-            File myFile = new File(filename);
-            FileWriter writer;
-            if (!myFile.exists()) {
-                myFile.createNewFile();
-                writer = new FileWriter(myFile, true);
-                String title = "time";
-                title+= ",id,previoustTime,newTime,spentTime";
-                title += "\n";
-                writer.write(title);
-            }
-            else {
-                writer = new FileWriter(myFile, true);
-            }
-            writer.write("" + CommonState.getTime());
-            writer.write(","+id);
-            writer.write(","+previousTime);
-            writer.write(","+newTime);
-            writer.write(","+spentTime);
-
-            writer.write("\n");
-            writer.close();
-	    }catch (IOException e) {
-            e.printStackTrace();
-        }
+	public static void reportBetterWaitingTime(String topic, long previousTime, long newTime, long spentTime) {
+		
+		
+	      Long totalWaitTime = betterTimes.get(topic);
+	      Integer count = betterTimesCount.get(topic);
+	      Long time =  previousTime-newTime-spentTime;
+	        if (count == null) {
+	        	betterTimes.put(topic,time);
+	        	betterTimesCount.put(topic, 1);
+	        }
+	        else {
+	        	betterTimes.put(topic, time+totalWaitTime);
+	        	betterTimesCount.put(topic, count+1);
+	        }
+		
+	
 	}
 	
 	public static void reportOverThresholdWaitingTime(BigInteger registrant,BigInteger registrar, long  waitingTime) {
@@ -694,6 +689,47 @@ public class KademliaObserver implements Control {
             e.printStackTrace();
         }*/
 		
+	}
+	
+	
+	private void write_better_waiting_time () {
+	    try {
+            String filename = logFolderName + "/" + "betterWaitingTimes.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                String title = "time";
+                for (String topic: all_topics) {
+                    title += "," + topic + "_timeDifference";
+                    title += "," + topic + "_count";
+                }
+              
+                title += "\n";
+                writer.write(title);
+            }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+            writer.write("" + CommonState.getTime());
+
+            for (String topic: all_topics) {
+            	if(betterTimesCount.get(topic)!=null) {
+            		writer.write(","+betterTimes.get(topic)/betterTimesCount.get(topic));
+            		writer.write(","+betterTimesCount.get(topic));
+            	} else {
+            		writer.write(","+0);
+            		writer.write(","+0);
+            	}
+
+            }
+
+            writer.write("\n");
+            writer.close();
+	    }catch (IOException e) {
+            e.printStackTrace();
+        }
 	}
 
     private void write_msg_received_by_nodes() {
@@ -1482,6 +1518,7 @@ public class KademliaObserver implements Control {
         write_registered_registrant_average();
         write_registered_topics_average();
         write_registered_registrar_average();
+        write_better_waiting_time();
         if (CommonState.getTime() > KademliaCommonConfig.AD_LIFE_TIME) {
             // write these stats once all the register msgs are sent (all_topics list is finalised)
             write_eclipsing_results();
