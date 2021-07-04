@@ -116,7 +116,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
     protected void handleInitRegisterTopic(Message m, int myPid) {
         Topic t = (Topic) m.body;
         
-        logger.warning("In handleInitRegister of EVIL "+t.getTopic()+" "+t.getTopicID()+" "+Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_BUCKET_SIZE, KademliaCommonConfig.TICKET_BUCKET_SIZE));
+        logger.info("In handleInitRegister of EVIL "+t.getTopic()+" "+t.getTopicID()+" "+Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_BUCKET_SIZE, KademliaCommonConfig.TICKET_BUCKET_SIZE));
         
 
         if(this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
@@ -357,13 +357,13 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
 
         if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_WAITING_TIME_SPAM)) {
         	
-            logger.warning("Waiting time attack");
+            logger.info("Waiting time attack");
 
         		
     		//if(initTicketRequestTime.get(topic).get(m.src.getId())==null)
         	
         	if(previousTicketRequestTime.get(topic).get(m.src.getId())!=null) {
-        		logger.warning("Previous ticket "+previousTicketRequestTime.get(topic).get(m.src.getId())+" previous time "+initTicketRequestTime.get(topic).get(m.src.getId())+" current ticket wait "+ticket.getWaitTime());
+        		//logger.warning("Previous ticket "+previousTicketRequestTime.get(topic).get(m.src.getId())+" previous time "+initTicketRequestTime.get(topic).get(m.src.getId())+" current ticket wait "+ticket.getWaitTime());
         		if((CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId())>0)&&(previousTicketRequestTime.get(topic).get(m.src.getId())>(CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId())+ticket.getWaitTime()))) {
                     logger.warning("Received smaller waiting time than before "+ticket.getWaitTime()+" "+previousTicketRequestTime.get(topic).get(m.src.getId())+" "+CommonState.getTime()+" "+initTicketRequestTime.get(topic).get(m.src.getId()));
                     KademliaObserver.reportBetterWaitingTime(m.dest.getId(),previousTicketRequestTime.get(topic).get(m.src.getId()),ticket.getWaitTime(),CommonState.getTime()-initTicketRequestTime.get(topic).get(m.src.getId()));
