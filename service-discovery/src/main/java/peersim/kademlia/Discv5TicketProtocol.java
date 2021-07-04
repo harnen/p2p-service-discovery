@@ -428,7 +428,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 					+ topic.getTopic());
 			else {
 				logger.warning("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime());
-				KademliaObserver.reportOverThresholdWaitingTime(this.node.getId(),m.src.getId(),ticket.getWaitTime());
+				KademliaObserver.reportOverThresholdWaitingTime(topic.getTopic(),this.node.getId(),m.src.getId(),ticket.getWaitTime());
 			}
 			tt.removeNeighbour(m.src.getId());
 			RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
@@ -492,7 +492,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 						myPid);
 				
 				if(ticket.getCumWaitTime()>registrationTimeout)
-					KademliaObserver.reportOverThresholdWaitingTime(this.node.getId(),m.src.getId(),ticket.getWaitTime());
+					KademliaObserver.reportOverThresholdWaitingTime(topic.getTopic(),this.node.getId(),m.src.getId(),ticket.getWaitTime());
 					
 					
 			}

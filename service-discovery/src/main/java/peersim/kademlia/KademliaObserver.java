@@ -133,6 +133,9 @@ public class KademliaObserver implements Control {
     private static HashMap<String, Long> betterTimes = new HashMap<String, Long>();
     private static HashMap<String, Integer> betterTimesCount = new HashMap<String, Integer>();
 
+    private static HashMap<String, Long> timeOverThreshold = new HashMap<String, Long>();
+    private static HashMap<String, Integer> timeOverThresholdCount = new HashMap<String, Integer>();
+
     
     
     private static HashMap<BigInteger, Integer> msgReceivedByNodes = new HashMap<BigInteger, Integer>();
@@ -662,7 +665,18 @@ public class KademliaObserver implements Control {
 	
 	}
 	
-	public static void reportOverThresholdWaitingTime(BigInteger registrant,BigInteger registrar, long  waitingTime) {
+	public static void reportOverThresholdWaitingTime(String topic, BigInteger registrant,BigInteger registrar, long  waitingTime) {
+		
+	      Long totalWaitTime = timeOverThreshold.get(topic);
+	      Integer count = timeOverThresholdCount.get(topic);
+	        if (count == null) {
+	        	timeOverThreshold.put(topic,waitingTime);
+	        	timeOverThresholdCount.put(topic, 1);
+	        }
+	        else {
+	        	timeOverThreshold.put(topic, waitingTime+totalWaitTime);
+	        	timeOverThresholdCount.put(topic, count+1);
+	        }
 	    /*try {
             String filename = logFolderName + "/" + "overThresholdWaitingTimes.csv";
             File myFile = new File(filename);
@@ -718,6 +732,46 @@ public class KademliaObserver implements Control {
             	if(betterTimesCount.get(topic)!=null) {
             		writer.write(","+betterTimes.get(topic)/betterTimesCount.get(topic));
             		writer.write(","+betterTimesCount.get(topic));
+            	} else {
+            		writer.write(","+0);
+            		writer.write(","+0);
+            	}
+
+            }
+
+            writer.write("\n");
+            writer.close();
+	    }catch (IOException e) {
+            e.printStackTrace();
+        }
+	}
+	
+	private void write_overthreshold_time () {
+	    try {
+            String filename = logFolderName + "/" + "overThresholdWaitingTimes.csv";
+            File myFile = new File(filename);
+            FileWriter writer;
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+                writer = new FileWriter(myFile, true);
+                String title = "time";
+                for (String topic: all_topics) {
+                    title += "," + topic + "_waitingtime";
+                    title += "," + topic + "_count";
+                }
+              
+                title += "\n";
+                writer.write(title);
+            }
+            else {
+                writer = new FileWriter(myFile, true);
+            }
+            writer.write("" + CommonState.getTime());
+
+            for (String topic: all_topics) {
+            	if(timeOverThresholdCount.get(topic)!=null) {
+            		writer.write(","+timeOverThreshold.get(topic)/timeOverThresholdCount.get(topic));
+            		writer.write(","+timeOverThresholdCount.get(topic));
             	} else {
             		writer.write(","+0);
             		writer.write(","+0);
@@ -1519,6 +1573,7 @@ public class KademliaObserver implements Control {
         write_registered_topics_average();
         write_registered_registrar_average();
         write_better_waiting_time();
+        write_overthreshold_time();
         if (CommonState.getTime() > KademliaCommonConfig.AD_LIFE_TIME) {
             // write these stats once all the register msgs are sent (all_topics list is finalised)
             write_eclipsing_results();
