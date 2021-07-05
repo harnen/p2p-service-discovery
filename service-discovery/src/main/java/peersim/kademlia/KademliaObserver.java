@@ -411,7 +411,9 @@ public class KademliaObserver implements Control {
             reported_waiting_times.put(topic.getTopic(), 1);
         }
         else {
-            waiting_times.put(topic.getTopic(), time+totalWaitTime);
+        	long reportedTime = time+totalWaitTime;
+        	if(reportedTime<0)reportedTime=Long.MAX_VALUE;
+            waiting_times.put(topic.getTopic(),reportedTime );
             reported_waiting_times.put(topic.getTopic(), count+1);
         }
     }
