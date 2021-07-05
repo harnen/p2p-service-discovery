@@ -163,7 +163,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         if(allAds.size()==0)return 0;
         
         //System.out.println("Topicmodifier "+topicSize+" "+allAds.size()+" "+Math.pow((double)(topicSize)/(allAds.size()),amplify*topicModifierExp));
-    	return Math.pow((double)(topicSize)/(allAds.size()),amplify*topicModifierExp);
+    	return Math.pow((double)(topicSize)/(allAds.size() + 1),amplify*topicModifierExp);
     }
     
     protected double getIPModifier(TopicRegistration reg) {
