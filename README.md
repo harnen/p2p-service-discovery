@@ -41,7 +41,7 @@ The project is organised in three main milestones of the project together with t
 
 * Objective 4: Configuration parameters analysis
   * [X] Task: Extend existing evaluation to test multiple configuration parameters to choose the optimal ones to be used in production software.
-  * Deliverable: [Evaluation report](doc/report_m4/report.md)
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [evaluation report](doc/report_m4_bis/report.md).
   * Deadline: 21/6/2021
 
 * Objective 5: Publication-ready technical report
