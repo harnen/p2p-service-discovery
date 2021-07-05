@@ -314,7 +314,8 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
                 ticket.setRegistrationComplete(false);
                 ticket.setOccupancy(topicOccupancy);
             }
-            KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time, ticket.getSrc().is_evil);
+            if (waiting_time >= 0)
+                KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time, ticket.getSrc().is_evil);
         }
         for (Topic topic: topicSet) {
             nextDecisionTime.remove(topic);

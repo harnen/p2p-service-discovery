@@ -195,10 +195,10 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
             long delta_time = CommonState.getTime() - last_timestamp;
             double lower_bound = Math.max(0, topic_last_modifier.get(reg.getTopic()) - delta_time);
             modifier = Math.max(modifier, lower_bound);
-        }
-        if (modifier > 0) {
-            topic_last_modifier.put(reg.getTopic(), modifier);
-            topic_timestamp.put(reg.getTopic(), CommonState.getTime());
+            if (lower_bound < modifier) {
+                topic_last_modifier.put(reg.getTopic(), modifier);
+                topic_timestamp.put(reg.getTopic(), CommonState.getTime());
+            }
         }
         
         return modifier;
@@ -221,10 +221,10 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
             long delta_time = CommonState.getTime() - last_timestamp;
             double lower_bound = Math.max(0, ip_last_modifier.get(reg.getNode().getAddr()) - delta_time);
             modifier = Math.max(modifier, lower_bound);
-        }
-        if (modifier > 0) {
-            ip_last_modifier.put(reg.getNode().getAddr(), modifier);
-            ip_timestamp.put(reg.getNode().getAddr(), CommonState.getTime());
+            if (lower_bound < modifier) {
+                ip_last_modifier.put(reg.getNode().getAddr(), modifier);
+                ip_timestamp.put(reg.getNode().getAddr(), CommonState.getTime());
+            }
         }
 
         return modifier;
@@ -252,10 +252,10 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
             long delta_time = CommonState.getTime() - last_timestamp;
             double lower_bound = Math.max(0, id_last_modifier.get(reg_id) - delta_time);
             modifier = Math.max(modifier, lower_bound);
-        }
-        if (modifier > 0) {
-            id_last_modifier.put(reg_id, modifier);
-            id_timestamp.put(reg_id, CommonState.getTime());
+            if (lower_bound < modifier) {
+                id_last_modifier.put(reg_id, modifier);
+                id_timestamp.put(reg_id, CommonState.getTime());
+            }
         }
 
         return modifier;
