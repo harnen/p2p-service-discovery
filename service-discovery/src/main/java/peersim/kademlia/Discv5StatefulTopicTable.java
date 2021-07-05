@@ -190,10 +190,14 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         double modifier = super.getTopicModifier(reg);
         modifier = modifier * getBaseTime();
         
-        Long last_timestamp = topic_timestamp.get(reg.getTopic());
-        if (last_timestamp != null) {
-            long delta_time = CommonState.getTime() - last_timestamp;
-            double lower_bound = Math.max(0, topic_last_modifier.get(reg.getTopic()) - delta_time);
+        ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
+        if ( (topicQ != null) && (topicQ.size() > 0) ) {
+            Long last_timestamp = topic_timestamp.get(reg.getTopic());
+            double lower_bound = 0;
+            if (last_timestamp != null) {
+                long delta_time = CommonState.getTime() - last_timestamp;
+                lower_bound = Math.max(0, topic_last_modifier.get(reg.getTopic()) - delta_time);
+            }
             modifier = Math.max(modifier, lower_bound);
             if (lower_bound < modifier) {
                 topic_last_modifier.put(reg.getTopic(), modifier);
@@ -215,11 +219,13 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         }
 
         double modifier = getBaseTime() * Math.pow((double)ip_count/(allAds.size()),amplify*ipModifierExp);
-
-        Long last_timestamp = ip_timestamp.get(reg.getNode().getAddr());
-        if (last_timestamp != null) {
-            long delta_time = CommonState.getTime() - last_timestamp;
-            double lower_bound = Math.max(0, ip_last_modifier.get(reg.getNode().getAddr()) - delta_time);
+        double lower_bound = 0;
+        if (ip_count > 0) {
+            Long last_timestamp = ip_timestamp.get(reg.getNode().getAddr());
+            if (last_timestamp != null) {
+                long delta_time = CommonState.getTime() - last_timestamp;
+                lower_bound = Math.max(0, ip_last_modifier.get(reg.getNode().getAddr()) - delta_time);
+            }
             modifier = Math.max(modifier, lower_bound);
             if (lower_bound < modifier) {
                 ip_last_modifier.put(reg.getNode().getAddr(), modifier);
@@ -245,12 +251,13 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
             id_count = 0;
 
         double modifier = getBaseTime() * Math.pow((double) id_count/(allAds.size()),amplify*idModifierExp); 
-        
-        Long last_timestamp = id_timestamp.get(reg_id);
-
-        if (last_timestamp != null) {
-            long delta_time = CommonState.getTime() - last_timestamp;
-            double lower_bound = Math.max(0, id_last_modifier.get(reg_id) - delta_time);
+        double lower_bound = 0;
+        if (id_count > 0) {
+            Long last_timestamp = id_timestamp.get(reg_id);
+            if (last_timestamp != null) {
+                long delta_time = CommonState.getTime() - last_timestamp;
+                lower_bound = Math.max(0, id_last_modifier.get(reg_id) - delta_time);
+            }
             modifier = Math.max(modifier, lower_bound);
             if (lower_bound < modifier) {
                 id_last_modifier.put(reg_id, modifier);
