@@ -64,7 +64,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         return new Ticket (topic, curr_time, waiting_time, advertiser, rtt_delay, queueOccupancy);
     }
     
-    protected long getWaitingTime(TopicRegistration reg, long curr_time) {
+    /*protected long getWaitingTime(TopicRegistration reg, long curr_time) {
         //System.out.println("Get Waiting time "+reg.getTopic().getTopic());
 
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
@@ -87,7 +87,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         }
 
         return waiting_time;
-    }
+    }*/
     
    protected long getWaitingTime(TopicRegistration reg, long curr_time, Ticket ticket) {
         long waiting_time=0;
@@ -116,6 +116,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 	
 	        long neededTime  = (long) (baseWaitingTime * Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg),1/1000000));
 	
+	        if(neededTime<0)neededTime=Long.MAX_VALUE;
 	        /*int size = topicQ!=null?topicQ.size():0;
 	        System.out.println("Modifiers topic "+reg.getTopic().getTopic()+" "+getTopicModifier(reg)+" "+getIPModifier(reg)+" "+getIdModifier(reg)+" "+size);
 	        System.out.println("Waiting time "+baseWaitingTime+" "+neededTime+" "+cumWaitingTime+" "+allAds.size()+" "+tableCapacity+" "+Math.pow(1-(allAds.size()/this.tableCapacity),occupancyPower));
