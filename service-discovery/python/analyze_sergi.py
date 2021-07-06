@@ -687,7 +687,6 @@ def analyzeEclipsedNodes(dirs):
     #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     fig, ax1 = plt.subplots()
     colors = ['red', 'green', 'blue','orange']
-    topiclabel = str(5)
     maxlabel = ['5%','10%','20%']
     j=0
     dirs = ['logs_attackTopic'+topiclabel+'_sybilSize1','logs_attackTopic'+topiclabel+'_sybilSize10','logs_attackTopic'+topiclabel+'_sybilSize50']
@@ -1438,11 +1437,12 @@ print('Plots will be saved in ', OUTDIR);
 #labels = ['500 nodes','1000 nodes','5000 nodes','10000 nodes']
 #labels = ['0.5 AdLifeTime','1 AdLifeTime','1.5 AdLifeTime','2 AdLifeTime']
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
-labels = ['5 Buckets','10 Buckets','17 Buckets','256 Buckets']
-#labels = ['No refresh','Refresh']
+##labels = ['No refresh','Refresh']
 #labels = ['5%','10%','20%']
+topiclabel = str(1)
+
 #labels = ['Filter','No filter']
-#labels = ['1 IP','10 IP','50 IP']
+labels = ['1 IP','10 IP','50 IP']
 #labels = ['old variant','new variant']
 analyzeRegistrations2(sys.argv[1:],labels)
 analyzeOperations(sys.argv[1:],labels)
@@ -1450,6 +1450,6 @@ analyzeRegistrantDistribution(sys.argv[1:],labels)
 analyzeActiveRegistrations(sys.argv[1:],labels)
 analyzeRegistrationTime(sys.argv[1:],labels)
 analyzeNumberOfMessages(sys.argv[1:],labels)
-#analyzeEclipsedNodes(sys.argv[1:])
+analyzeEclipsedNodes(sys.argv[1:])
 analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
 analyzeStorageUtilisation(sys.argv[1:],labels)
