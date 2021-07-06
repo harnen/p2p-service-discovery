@@ -53,4 +53,4 @@
 
 # Conclusions
 
-* We selected 1 registration lifetime as a timeout parameter for the registrations waiting time. Increase this value does not seem to increase the performance but can be a threat for dos attacks. 
+* We selected 1 registration lifetime as a timeout parameter for the registrations waiting time. Increasing this value does not seem to increase the performance and can be a threat for dos attacks. Registration timeout lower than a registration lifetime can improve performance in terms of number of registrations and registration times, but also significantly increases the traffic of the network.
