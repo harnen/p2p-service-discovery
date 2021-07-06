@@ -181,6 +181,10 @@ class Table(metaclass=abc.ABCMeta):
         axis[0, 3].set_xticklabels(topics)
         print('Topics: ', topics, ' per_topic_normal: ', self.per_topic_occupancies, ' per_topic attacker: ', self.per_topic_occupancies_by_attackers)
 
+        figure, ax = plt.subplots()
+        ax.plot(list(self.honest_in.keys()), list(self.honest_in.values()), c='g')
+        ax.plot(list(self.malicious_in.keys()), list(self.malicious_in.values()), c='r')
+        ax.set_title("Percentage of overal requests in the table")
         axis[1, 2].plot(list(self.honest_in.keys()), list(self.honest_in.values()), c='g')
         axis[1, 2].plot(list(self.malicious_in.keys()), list(self.malicious_in.values()), c='r')
         axis[1, 2].set_title("Percentage of overal requests in the table")
@@ -324,7 +328,7 @@ class Table(metaclass=abc.ABCMeta):
             self.log("Need to wait for", waiting_time)
             #"impatient" clients
             if(req['attack'] == 3):
-                self.env.process(self.new_request(req, 1000))
+                self.env.process(self.new_request(req, min(500, waiting_time)))
             else:
                 self.env.process(self.new_request(req, waiting_time))
     
@@ -356,7 +360,7 @@ class DiversityTable(Table):
             counter = self.ip_counter[ip]['counter']
             modifier = 0
             if( len(table) > 0):
-                modifier = math.pow((counter/len(table)), self.ip_id_power)
+                modifier = math.pow((counter/(len(table)+1)), self.ip_id_power)
             bound = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("ip:", ip, "wtime:", wtime, "bound:", bound)
@@ -374,7 +378,7 @@ class DiversityTable(Table):
             counter = self.id_counter[iD]['counter']
             modifier = 0
             if( len(table) > 0):
-                modifier = math.pow((counter/len(table)), self.ip_id_power)
+                modifier = math.pow((counter/(len(table)+1)), self.ip_id_power)
             bound = max(0, self.id_counter[iD]['wtime'] - (self.env.now - self.id_counter[iD]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("id:", iD, "wtime:", wtime, "bound:", bound)
@@ -391,7 +395,7 @@ class DiversityTable(Table):
             counter = self.topic_counter[topic]['counter']
             modifier = 0
             if( len(table) > 0):
-                modifier = math.pow((counter/len(table)), self.topic_power)
+                modifier = math.pow((counter/(len(table)+1)), self.topic_power)
             bound = max(0, self.topic_counter[topic]['wtime'] - (self.env.now - self.topic_counter[topic]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("t:", topic, "wtime:", wtime, "bound:", bound)
@@ -423,9 +427,9 @@ class DiversityTable(Table):
         missing_time = max(0, needed_time - waited_time)
 
 
-        #self.ip_modifiers[self.env.now] = (self.env.now, ip_modifier, req['attack'])
-        #self.id_modifiers[self.env.now] = (self.env.now, id_modifier, req['attack'])
-        #self.topic_modifiers[self.env.now] = (self.env.now, topic_modifier, req['attack'])
+        self.ip_modifiers[self.env.now] = (self.env.now, ip_modifier, req['attack'])
+        self.id_modifiers[self.env.now] = (self.env.now, id_modifier, req['attack'])
+        self.topic_modifiers[self.env.now] = (self.env.now, topic_modifier, req['attack'])
         
         #if(req['attack'] == 0):
         #    print("needed_time:", needed_time, "base:", base_waiting_time, "ip_modifier:", ip_modifier, "id_modifier:", id_modifier, "topic_modifier:", topic_modifier)
@@ -464,6 +468,47 @@ class DiversityTable(Table):
         
     #    print("after super().display_body")
         #quit()
+
+
+class DiversityTablePlain(DiversityTable):
+    def get_ip_modifier(self, ip, table):
+        if(ip in self.ip_counter):
+            counter = self.ip_counter[ip]['counter']
+            modifier = 0
+            if( len(table) > 0):
+                modifier = math.pow((counter/(len(table)+1)), self.ip_id_power)
+            wtime = modifier * self.get_basetime(table)
+            print("ip:", ip, "wtime:", wtime)
+            return wtime
+        else:
+            return 0
+    
+    def get_id_modifier(self, iD, table):
+        #print("Get ID Modifier", self.id_counter)
+        if(iD in self.id_counter):
+            counter = self.id_counter[iD]['counter']
+            modifier = 0
+            if( len(table) > 0):
+                modifier = math.pow((counter/(len(table)+1)), self.ip_id_power)
+            wtime = modifier * self.get_basetime(table)
+            print("id:", iD, "wtime:", wtime)
+            return wtime
+        else:
+            return 0
+
+
+    def get_topic_modifier(self, topic, table):
+        if(topic in self.topic_counter):
+            counter = self.topic_counter[topic]['counter']
+            modifier = 0
+            if( len(table) > 0):
+                modifier = math.pow((counter/(len(table)+1)), self.topic_power)
+            wtime = modifier * self.get_basetime(table)
+            print("t:", topic, "wtime:", wtime)
+            return wtime
+        else:
+            return 0
+
 
 #helper for bar charts
 def get_widths(l):
