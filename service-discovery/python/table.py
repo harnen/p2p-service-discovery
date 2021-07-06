@@ -161,9 +161,8 @@ class Table(metaclass=abc.ABCMeta):
         # plot top-k (most registered) topics and their num. of registrations in a bar chart
         k = 5
         width = 0.10 
-        topics = list(self.per_topic_occupancies.keys())
-        topics = sorted(topics)
-        topics = topics[0:k]
+        sorted_topics_by_registration = {k: v for k, v in sorted(self.per_topic_occupancies.items(), key=lambda item: item[1], reverse=True)}
+        topics = list(sorted_topics_by_registration.keys())[0:k]
         x_values = [x-width/2 for x in range(1, len(topics)+1)]
         good_regs = [self.per_topic_occupancies[x] for x in topics]
         axis[0, 3].bar(x_values, good_regs, color='g')
