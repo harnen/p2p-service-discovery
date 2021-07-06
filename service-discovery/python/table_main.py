@@ -10,14 +10,14 @@ import pandas as pd
 def restore_default():
     global ad_lifetime, input_file, capacity, honest_size, malicious_size, occupancy_power, ip_id_power, topic_power, base_multiplier, attacker_ip_id_num, attacker_id_num
     ad_lifetime = 3000
-    capacity = 300
+    capacity = 50
     honest_size = 50
     malicious_size = 250
     occupancy_power = 5
-    ip_id_power = 0.5
+    ip_id_power = 0.2
     topic_power = 5
     attacker_ip_id_num = 10
-    base_multiplier = 30
+    base_multiplier = 50
 
 
 
@@ -56,6 +56,7 @@ def plot_feature(ax, df, label, y, x_title, y_title, key_suffix = None, color='b
     counter = 0
     attacks = []
     for key, group in df.groupby('attack'):
+    #for key, group in df.groupby('table'):
         attacks.append(key)
         print("Key:", key)
         print(group)
@@ -104,9 +105,18 @@ def plot_feature(ax, df, label, y, x_title, y_title, key_suffix = None, color='b
 
 def run(stats):
     #for attack in ['none']:
+    print("run")
+    flag = True
+    attack = 'none'
     for attack in ['none', 'spam', 'topic_popular', 'topic_unpopular']:
         filename = generate_input_file(attack)
-        table = DiversityTable(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
+    #for flag in [True, False]:
+        
+        print("after generation")
+        if(flag == True):
+            table = DiversityTable(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
+        else:
+            table = DiversityTablePlain(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
         table.load(filename)
         stats['attack'].append(attack)
         stats['honest_size'].append(honest_size)
@@ -119,7 +129,7 @@ def run(stats):
 
 def run_single():
     filename = generate_input_file('impatient')
-    table = DiversityTable(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
+    table = DiversityTablePlain(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
     table.load(filename)
     table.display(runtime - 1)
     table.run(runtime)
@@ -131,7 +141,7 @@ def generate_input_file(attack):
     filename = 'input' + str(counter) + '.csv'
     if(attack == 'none'):
         generate_regular(size = honest_size, output_filename = filename)
-    if(attack == 'impatient'):
+    elif(attack == 'impatient'):
         generate_impatient(size = honest_size, output_filename = filename)
     elif(attack == 'spam'):
         generate_spam_topic(size = honest_size + malicious_size, attacker_ip_num = attacker_ip_id_num, attacker_id_num = attacker_ip_id_num, rate_normal = 1.0, rate_attack = malicious_size/honest_size, output_filename = filename)
@@ -162,49 +172,48 @@ def run_all():
     stats['input'] = []
     stats['attacker_ip_id_num'] = []
     stats['base_multiplier'] = []
+    print("run all")
+    capacities = [50, 100, 200, 300, 400, 500, 1000, 2000, 3000]
 
-    capacities = [50, 100, 200, 300, 400, 500, 1000, 2000, 3000, 5000, 10000]
-
-    honest_sizes = [50, 100, 200, 300, 400, 500, 600, 800, 1000, 1500]
+    honest_sizes = [50, 100, 200, 300, 400, 500, 600, 800, 1000]
     malicious_sizes = [50, 100, 200, 300, 400, 500, 600, 800, 1000, 1500]
     occupancy_powers = [4, 5, 6, 7, 8, 9, 10]
     ip_id_powers = [0.01, 0.05, 0.1, 0.2, 1]
-    topic_powers = [1, 5, 10, 20, 50]
+    topic_powers = [1, 5, 10, 15]
     attacker_ip_id_nums = [1, 5, 15, 20, 30, 40, 50]
-    base_multipliers = [1, 5, 10, 20, 30, 40, 50, 100]
+    base_multipliers = [1, 5, 10, 20, 30, 40, 50]
     
 
 
     restore_default()
     global capacity, honest_size, occupancy_power, attacker_ip_id_num, ip_id_power, topic_power, base_multiplier, malicious_size
     for i in honest_sizes:
-        #break
+        break
         honest_size = i
         run(stats)
 
 
     restore_default()
     for i in capacities:
-        #break
+        break
         capacity = i
         run(stats)
         
     restore_default()
     for i in malicious_sizes:
-        #break
+        break
         malicious_size = i
         run(stats)
 
-    
-
     restore_default()
     for i in attacker_ip_id_nums:
-        #break
+        break
         attacker_ip_id_num = i
         run(stats)
     
     restore_default()
     for i in occupancy_powers:
+        #break
         occupancy_power = i
         run(stats)
 
@@ -335,11 +344,11 @@ def special(input_file = 'dump.csv'):
     ax.legend(custom_lines, ['none(solid)', 'spam(dashed)', 'topic_popular(dotted)', 'topic_unpopular(dashdotted)'])
     plt.show()
 
-runtime = 100 * 1000
+runtime = 200 * 1000
 
 restore_default()
-run_single()
+#run_single()
 
-#run_all()
-#analyze()
+run_all()
+analyze()
 #special('attacks.csv')
