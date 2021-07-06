@@ -26,7 +26,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     protected static final double ipModifierExp = 0.4;
     protected static final double idModifierExp =0.4;
     protected static final int occupancyPower = 4;
-    protected static final int baseMultiplier = 5;
+    protected static final int baseMultiplier = 30;
     
 	public Discv5GlobalTopicTable() {
         super();
