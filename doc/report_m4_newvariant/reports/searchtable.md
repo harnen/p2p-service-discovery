@@ -36,4 +36,4 @@
 
 # Conclusions
 
-* We selected the same values used in the Ethereum DHT, since we do not have issues with the traffic load by increasing bucket size of bucket number as we have with the ticket table, but increasing it is not going to improve the search performance.
+* We selected the same values used in the Ethereum DHT, since even though big values for bucket size or bucket number do not create issues with the traffic load  as we have with the ticket table, increasing it is not going to improve the search performance.
