@@ -11,6 +11,15 @@ The waiting time formula:
 * **w** - waiting time
 <img src="https://render.githubusercontent.com/render/math?math=\Large w=sum((\frac{1}{10^9}),(\frac{d(IP)}{d})^\textit{ip\_power},(\frac{d(ID)}{d})^\textit{id\_power},(\frac{d(topic)}{d})^\textit{topic\_power}) \frac{a*\text{base\_multiplier}}{(1-\frac{d}{n})^\textit{occupancy\_power}}">
 
+In this report, we investigate the new variant that enforces lower bound  for the waiting time, so that nodes are not incentivized to keep asking for new waiting times. The equivalent evaluation for the old variant can be found [here](https://github.com/datahop/p2p-service-discovery/blob/master/doc/report_m4/reports/waiting_time.md). The vulnerability of the previous variant is showed below. We create 2 populations with the same IDs/IPs/topics distribution. The honest nodes will respect the waiting times, while the "impatient" population will keep asking for a better waiting time every 500ms. Below are the result for the old variant:
+
+<figcaption align = "center"><b>Fig.0.1 - Impatient nodes without the lower bound</b></figcaption>
+<p align="center"><img src="../imgs/waiting_time/impatient_old.png" width="60%" /></p>
+The impatient ones (in red) has a clear advantage over regular nodes. The same simulation is repeated for the new variant (with the lower bound):
+<figcaption align = "center"><b>Fig.0.2 - Impatient nodes with the lower bound</b></figcaption>
+<p align="center"><img src="../imgs/waiting_time/impatient_new.png" width="60%" /></p>
+We do not observe any advatage for the impatient population. We proceed this evaluation with the lower bound version. 
+
 We thus have 5 parameters to fix:
 * **ip_power**
 * **id_power**
