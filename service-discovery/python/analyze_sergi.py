@@ -1434,9 +1434,9 @@ if not os.path.exists(OUTDIR):
 
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
-#labels = ['AdLifeTime 5 min','AdLifeTime 15 min','AdLifeTime 30 min','AdLifeTime 60 min']
+labels = ['AdLifeTime 5 min','AdLifeTime 15 min','AdLifeTime 30 min','AdLifeTime 60 min']
 #labels = ['500 nodes','1000 nodes','5000 nodes','10000 nodes']
-labels = ['0.5 AdLifeTime','1 AdLifeTime','1.5 AdLifeTime','2 AdLifeTime']
+#labels = ['0.5 AdLifeTime','1 AdLifeTime','1.5 AdLifeTime','2 AdLifeTime']
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
 #labels = ['5 Buckets','10 Buckets','17 Buckets','256 Buckets']
 #labels = ['No refresh','Refresh']
