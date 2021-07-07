@@ -84,15 +84,17 @@ Every node stored in the ticket table is a potential registrar. The advertiser a
 
 ### Distributing ads
 
-Below are three naive approaches for the selection of nodes for registering ads and searching the peers for a topic ID: 
+<!--- Below are three naive approaches for the selection of nodes for registering ads and searching the peers for a topic ID: 
  1. "Walk" the DHT, exhaustively finding all neighbors in each bucket starting with the closest bucket. Obviously, such an approach would be unscalable as it would lead to excessive overhead on the network in terms of number of messages and would require huge storage space to register ads. 
  2. A node can select a random subset of nodes by, for instance, picking a random Node ID from each bucket distance and finding the closest node to that ID. 
 This approach would be lightweight, but the downside is the potential inefficiency of search operations; that is, it could potentially take a lot of time and search messages for advertisers to find peers at registrars, especially for less popular services with small sets of peers.  
 NOTE: On the other hand, when the number of nodes advertising a topic is at least a certain percentage of the whole discovery network (rough estimate: at least 1%), ads may simply be placed on random nodes because searching for the topic on randomly selected nodes can locate the ads quickly enough.
  3. Using node(s) closest to the topic hash or hash(topic ID), i.e., mapping the topic ID to the node ID space by using the hash of the topic ID.
-This is an efficient approach, but it leads to poor load-balancing in terms of balance of load across registrars, because registrars whose IDs are close to the hash of a popular topic ID receive a lot of search and registration traffic, while the rest of the nodes receive very little traffic. 
+This is an efficient approach, but it leads to poor load-balancing in terms of balance of load across registrars, because registrars whose IDs are close to the hash of a popular topic ID receive a lot of search and registration traffic, while the rest of the nodes receive very little traffic. )
 
-However, these naive approaches are not efficient in terms of overhead, search time or uniform distribution of discovered nodes, or do not follow the requirements described in [here](requirements.md). Instead, in our approach, advertisers start a limited number of parallel registrations in each bucket distance. More specifically, an advertiser follows the below steps to distribute its ads for a specific topic: 
+However, these naive approaches are not efficient in terms of overhead, search time or uniform distribution of discovered nodes, or do not follow the requirements described in [here](requirements.md). Instead, in -->
+
+In our approach, advertisers start a limited number of parallel registrations in each ticket table bucket distance. More specifically, an advertiser follows the below steps to distribute its ads for a specific topic: 
 
 1. The advertiser selects a set of `K` registrar nodes from each bucket distance of the [ticket table structure](#ticket-table), where the number of bucket distances (B) is a configurable parameter of the ticket table. 
 2.  A TICKETREQUEST message is initially sent to each of the selected registrar nodes in the previous step. 
