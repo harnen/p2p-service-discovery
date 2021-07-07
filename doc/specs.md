@@ -156,9 +156,9 @@ All the modifiers from the first part of the equation increase with increasing n
 The latter part of the formula is determined based on a multiple of ad-lifetime and the current utilisation (i.e., occupancy divided by capacity) of the table. When the utilisation becomes closer to 1.0, the base time becomes very large due to a very small denominator. Before the waiting time becomes infinite (when utilisation becomes 1), the waiting time becomes extremely high, in which case the advertisers give up as explained in the [ad distribution process](#distributing-ads).
 
 #### Lower Bound
-With the formula above, user are incentivized to keep checking the waiting time as frequently as possible hoping for a better one. A registrant may get a better waiting time at t2 if an contribuing to the waiting time received at t1 (t1 < t2) expires before t2. One solution to this problem is to take into account all the expiration times when calculating the waiting time. However, such a solution is computationally expensive (O(n)) and unfeasible in practice. 
+With the formula above, user are incentivized to keep checking the waiting time as frequently as possible hoping for a better one. A searcger may get a better waiting time at t2 if an contribuing to the waiting time received at t1 (t1 < t2) expires before t2. One solution to this problem is to take into account all the expiration times when calculating the waiting time. However, such a solution is computationally expensive (O(n)) and unfeasible in practice. 
 
-We thus enforce a lower bound on the waiting time. I.e., we make sure that a registrant's waiting time received at t2 is not smaller than the waiting time at t1 by more than `w(t1) - w(t2) < t2 - t1`. To achieve that we split the above formula into topic/IP/ID distinctive parts:
+We thus enforce a lower bound on the waiting time. I.e., we make sure that a searcher's waiting time received at t2 is not smaller than the waiting time at t1 by more than `w(t1) - w(t2) < t2 - t1`. To achieve that we split the above formula into topic/IP/ID distinctive parts:
 
 <img src="https://render.githubusercontent.com/render/math?math=\Large w_{IP}=(\frac{d(IP)}{d})^{0.2}\frac{50a}{(1-\frac{n}{d})^\textit{5}}">
 
@@ -170,7 +170,7 @@ The waiting time is equal to:
 <img src="https://render.githubusercontent.com/render/math?math=\Large w = sum(w_{IP}, w_{ID},  w_{topic}">)
 
 
-For each of the components above IP, ID and topic present in the table, we keep a `bound`. When a specific IP enters the table for the first time, the `bound(IP)` is set to 0 and a timestamp `timestamp(IP)` is set to the current time. When a ticket request arrives from the same IP, we calculate the IP waiting time `w_IP` and return the higher value among `w_IP = max(w_IP, bound(IP) - timestamp(IP))`. It makes sure that registrants never receive a better time by frequently coming requesting new tickets. The bound and the bound are updated when a new ticket is issued and `w_IP > (bound(IP) - timestamp(IP))`. The same holds for IDs and topics. 
+For each of the components above IP, ID and topic present in the table, we keep a `bound`. When a specific IP enters the table for the first time, the `bound(IP)` is set to 0 and a timestamp `timestamp(IP)` is set to the current time. When a ticket request arrives from the same IP, we calculate the IP waiting time `w_IP` and return the higher value among `w_IP = max(w_IP, bound(IP) - timestamp(IP))`. It makes sure that searchers never receive a better time by frequently coming requesting new tickets. The bound and the bound are updated when a new ticket is issued and `w_IP > (bound(IP) - timestamp(IP))`. The same holds for IDs and topics. 
 
 ## Topic Search
 
