@@ -63,7 +63,7 @@ The document shows the results of an extensive evaleation for the Ethereum  P2P 
 ## Conclusions
 
 * Selected parameters:
-  - Waiting time:
+  - Waiting time: Topic modifier exp: 15, Id Modifier exp: 0.4, Ip modifier exp: 0.4, Occupancy power: 4, Basemultiplier: 30.
   - Registration ad lifetime: 15 min.
   - Ticket table: 10 buckets, bucket size 5.
   - Search table: 17 buckets, bucket size 16.
