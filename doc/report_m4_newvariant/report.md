@@ -9,9 +9,9 @@ The document shows the results of an extensive evaleation for the Ethereum  P2P 
 * Simulation time: 4h
 * Kademlia Bucket size: 16
 * Kademlia buckets: 16
-* Ticket table bucket size: 3
+* Ticket table bucket size: 5
 * Ticket table buckets: 10
-* Evil node Ticket table bucket size: 100
+* Spam attack Evil node Ticket table bucket size: 100
 * Search table bucket size: 16
 * Search table buckets: 10
 * Registration lifetime: 5 minutes

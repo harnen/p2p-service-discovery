@@ -84,21 +84,23 @@ Every node stored in the ticket table is a potential registrar. The advertiser a
 
 ### Distributing ads
 
-Below are three naive approaches for the selection of nodes for registering ads and searching the peers for a topic ID: 
+<!--- Below are three naive approaches for the selection of nodes for registering ads and searching the peers for a topic ID: 
  1. "Walk" the DHT, exhaustively finding all neighbors in each bucket starting with the closest bucket. Obviously, such an approach would be unscalable as it would lead to excessive overhead on the network in terms of number of messages and would require huge storage space to register ads. 
  2. A node can select a random subset of nodes by, for instance, picking a random Node ID from each bucket distance and finding the closest node to that ID. 
 This approach would be lightweight, but the downside is the potential inefficiency of search operations; that is, it could potentially take a lot of time and search messages for advertisers to find peers at registrars, especially for less popular services with small sets of peers.  
 NOTE: On the other hand, when the number of nodes advertising a topic is at least a certain percentage of the whole discovery network (rough estimate: at least 1%), ads may simply be placed on random nodes because searching for the topic on randomly selected nodes can locate the ads quickly enough.
  3. Using node(s) closest to the topic hash or hash(topic ID), i.e., mapping the topic ID to the node ID space by using the hash of the topic ID.
-This is an efficient approach, but it leads to poor load-balancing in terms of balance of load across registrars, because registrars whose IDs are close to the hash of a popular topic ID receive a lot of search and registration traffic, while the rest of the nodes receive very little traffic. 
+This is an efficient approach, but it leads to poor load-balancing in terms of balance of load across registrars, because registrars whose IDs are close to the hash of a popular topic ID receive a lot of search and registration traffic, while the rest of the nodes receive very little traffic. )
 
-However, these naive approaches are not efficient in terms of overhead, search time or uniform distribution of discovered nodes, or do not follow the requirements described in [here](requirements.md). Instead, in our approach, advertisers start a limited number of parallel registrations in each bucket distance. More specifically, an advertiser follows the below steps to distribute its ads for a specific topic: 
+However, these naive approaches are not efficient in terms of overhead, search time or uniform distribution of discovered nodes, or do not follow the requirements described in [here](requirements.md). Instead, in -->
+
+In our approach, advertisers start a limited number of parallel registrations in each ticket table bucket distance. More specifically, an advertiser follows the below steps to distribute its ads for a specific topic: 
 
 1. The advertiser selects a set of `K` registrar nodes from each bucket distance of the [ticket table structure](#ticket-table), where the number of bucket distances (B) is a configurable parameter of the ticket table. 
 2.  A TICKETREQUEST message is initially sent to each of the selected registrar nodes in the previous step. 
 3.  Registrar node replies with a TICKETRESPONSE. This message includes the TICKET which contains a waiting time and a ticket issue time.
 4.  The advertiser replies after the waiting time expires with a REGTOPIC request containing the previously received TICKET attached to it.
-5.  A registration is successful when the [waiting time calculated](#waiting-time-function) at the registrar is smaller than the cumulative waiting time, which means that the advertiser has waited long enough. If there is currently available space in the topic table (i.e., occupany is below `topic_table_capacity`) to store a new ad, the registrar sends a REGCONFIRMATION response to the advertiser. In general, the topic table occupancy is guaranteed to always remain below the topic table capacity by the [waiting time calculated](#waiting-time-function): the waiting time function returns increasingly large values as the topic table space runs out; the waiting time becomes infinite in case there is no space.
+5.  A registration is successful when the [waiting time calculated](#waiting-time-function) at the registrar is smaller than the cumulative waiting time, which means that the advertiser has waited long enough.The registrar sends a REGCONFIRMATION response to the advertiser. In general, the topic table occupancy is guaranteed to always remain below the topic table capacity by the [waiting time calculated](#waiting-time-function): the waiting time function returns increasingly large values as the topic table space runs out; the waiting time becomes infinite in case there is no space.
 6.  The registrar replies with a REGRESPONSE message containing a new TICKET (containing a new waiting time) in case the registration is not succesful. 
 7.  A registrar gives up and stops the registration process with a registrar (say R) upon either `T` unsuccessful registration attempts (i.e., after being issued `T` tickets in REGRESPONSE messages from the registrar without a REGCONFIRMATION) or receipt of a ticket with a waiting time larger than `LARGEWAIT`. In that case, the advertiser selects a new node located in the same bucket as R, and initiates a TICKETREQUEST (step 2). 
 8.  Similarly, expiration of a previously placed ad (i.e., after the passage of ad-lifetime upon receiving a REGCONFIRMATION message) also triggers TICKETREQUEST to a new node that is in the same bucket as R. 
@@ -145,7 +147,7 @@ There is also a refresh bucket process, similar to the Kademlia DHT table, where
 
 Waiting time function is used to calculate the waiting time reported to registering advertising nodes to regulate and control the ticket registration. The function directly shapes the structure of the topic table, determines its diversity and performs flow control. The function should also protect against all kinds of attacks, where a malicious actor tries to exhaust resources of the registrar. At the same time, no hard limits on the advertiser IPs/IDs/registered topic should be imposed, allowing the table to be used in various environments. 
 
-An important consideration when computing waiting times is to maintain a deterministic behaviour. In other words, there should not be a randomness in the waiting time computation; otherwise, advertisers will be tempted to send multiple requests to the same registrar in an effort to obtain different (i.e., smaller) waiting times. The waiting for a specific request follows the formula below (we assume that the ads contain advertiser IP, ID and topic):
+The waiting for a specific request follows the formula below (we assume that the ads contain advertiser IP, ID and topic):
 
 <img src="https://render.githubusercontent.com/render/math?math=\Large w=sum((\frac{1}{10^9}),(\frac{d(IP)}{d})^{0.2},(\frac{d(ID)}{d})^{0.2},(\frac{d(topic)}{d})^{10}) \frac{50a}{(1-\frac{n}{d})^\textit{5}}">
 
@@ -154,7 +156,7 @@ All the modifiers from the first part of the equation increase with increasing n
 The latter part of the formula is determined based on a multiple of ad-lifetime and the current utilisation (i.e., occupancy divided by capacity) of the table. When the utilisation becomes closer to 1.0, the base time becomes very large due to a very small denominator. Before the waiting time becomes infinite (when utilisation becomes 1), the waiting time becomes extremely high, in which case the advertisers give up as explained in the [ad distribution process](#distributing-ads).
 
 #### Lower Bound
-With the formula above, user are incentivized to keep checking the waiting time as frequently as possible hoping for a better one. A searcger may get a better waiting time at t2 if an contribuing to the waiting time received at t1 (t1 < t2) expires before t2. One solution to this problem is to take into account all the expiration times when calculating the waiting time. However, such a solution is computationally expensive (O(n)) and unfeasible in practice. 
+With the formula above, user are incentivized to keep checking the waiting time as frequently as possible hoping for a better one. An advertiser may get a better waiting time at t2 if an contribuing to the waiting time received at t1 (t1 < t2) expires before t2. One solution to this problem is to take into account all the expiration times when calculating the waiting time. However, such a solution is computationally expensive (O(n)) and unfeasible in practice. 
 
 We thus enforce a lower bound on the waiting time. I.e., we make sure that a searcher's waiting time received at t2 is not smaller than the waiting time at t1 by more than `w(t1) - w(t2) < t2 - t1`. To achieve that we split the above formula into topic/IP/ID distinctive parts:
 
@@ -168,7 +170,7 @@ The waiting time is equal to:
 <img src="https://render.githubusercontent.com/render/math?math=\Large w = sum(w_{IP}, w_{ID},  w_{topic}">)
 
 
-For each of the components above IP, ID and topic present in the table, we keep a `bound`. When a specific IP enters the table for the first time, the `bound(IP)` is set to 0 and a timestamp `timestamp(IP)` is set to the current time. When a ticket request arrives from the same IP, we calculate the IP waiting time `w_IP` and return the higher value among `w_IP = max(w_IP, bound(IP) - timestamp(IP))`. It makes sure that searchers never receive a better time by frequently coming requesting new tickets. The bound and the bound are updated when a new ticket is issued and `w_IP > (bound(IP) - timestamp(IP))`. The same holds for IDs and topics. 
+For each of the components above IP, ID and topic present in the table, we keep a `bound`. When a specific IP enters the table for the first time, the `bound(IP)` is set to 0 and a timestamp `timestamp(IP)` is set to the current time. When a ticket request arrives from the same IP, we calculate the IP waiting time `w_IP` and return the higher value among `w_IP = max(w_IP, bound(IP) - timestamp(IP))`. It makes sure that advertisers never receive a better time by frequently coming requesting new tickets. The bound and the bound are updated when a new ticket is issued and `w_IP > (bound(IP) - timestamp(IP))`. The same holds for IDs and topics. 
 
 ## Topic Search
 
