@@ -174,3 +174,6 @@ Topic 1, Topic 3, Topic 5
 
 # Conclusions
 
+* Although malicious nodes are able to place registrations to the system as they increase the IP addresses used in the attack, the number of registrations are not a majority and is not possible to eclipse other nodes with a limited number of IP addresses used.
+* Registrations timeout are a good tool to limit the impacto of DoS attacks. REgistrations are slightly reduced with increasing DoS attakcs but all nodes are able to place enough registrations.
+* 
