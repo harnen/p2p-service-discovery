@@ -188,13 +188,13 @@ For search, estimation is less necessary and we should try to see how efficient 
 
 ### Search strategies
 
-For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. In case not enough `LOOKUP_LIMIT=50` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `LOOKUP_LIMIT` or `MAX_LOOKUP_HOPS=50`. We implemented and evaluated different search strategies in order to choose which nodes from which buckets ask first when performing a lookup.
+For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. In case not enough `LOOKUP_LIMIT=50` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `LOOKUP_LIMIT` or `MAX_LOOKUP_HOPS=50`. We implemented and evaluated the following strategy in order to choose which nodes from which buckets ask first when performing a lookup.
 
-* Minimum bucket: A random node is picked from the first non-empty bucket starting with the minimum distance to the topic hash bucket.
+<!-- * Minimum bucket: A random node is picked from the first non-empty bucket starting with the minimum distance to the topic hash bucket.
 
-* Random: A random node is picked from a random bucket every time.
+* Random: A random node is picked from a random bucket every time.-->
 
-* All buckets: A random node is picked from a bucket following a round-robin approach. It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list.
+*  A random node is picked from a bucket following a round-robin approach. It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list.
 
 ### Bucket refresh
 
