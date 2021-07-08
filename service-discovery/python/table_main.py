@@ -10,14 +10,14 @@ import pandas as pd
 def restore_default():
     global ad_lifetime, input_file, capacity, honest_size, malicious_size, occupancy_power, ip_id_power, topic_power, base_multiplier, attacker_ip_id_num, attacker_id_num
     ad_lifetime = 3000
-    capacity = 15000
+    capacity = 300
     honest_size = 50
     malicious_size = 250
     occupancy_power = 5
     ip_id_power = 0.2
     topic_power = 5
     attacker_ip_id_num = 10
-    base_multiplier = 50
+    base_multiplier = 40
 
 
 
@@ -109,6 +109,7 @@ def run(stats):
     flag = True
     attack = 'none'
     for attack in ['none', 'spam', 'topic_popular', 'topic_unpopular']:
+    #for attack in ['impatient']:
         filename = generate_input_file(attack)
     #for flag in [True, False]:
         
@@ -129,7 +130,7 @@ def run(stats):
 
 def run_single():
     filename = generate_input_file('impatient')
-    table = DiversityTablePlain(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
+    table = DiversityTable(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
     table.load(filename)
     table.display(runtime - 1)
     table.run(runtime)
