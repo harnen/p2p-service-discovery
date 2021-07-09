@@ -23,10 +23,13 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
     private HashMap<String, Double> ip_last_modifier;
     private HashMap<BigInteger, Double> id_last_modifier;
     private HashMap<Topic, Double> topic_last_modifier;
+    private double base_last_modifier;
     // The time of last modifier computation for each IP, ID, and topic
     private HashMap<String, Long> ip_timestamp;
     private HashMap<BigInteger, Long> id_timestamp;
     private HashMap<Topic, Long> topic_timestamp;
+    private double base_timestamp;
+
 
     public Discv5StatefulTopicTable() {
         super();
@@ -42,6 +45,9 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         ip_timestamp = new HashMap<String, Long>();
         id_timestamp = new HashMap<BigInteger, Long>();
         topic_timestamp = new HashMap<Topic, Long>();
+
+        base_last_modifier = 0;
+        base_timestamp = 0;
     }
 
     protected long getWaitingTime(TopicRegistration reg, long curr_time, Ticket ticket) {
@@ -59,18 +65,22 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         if ( (topicQ != null) && (topicQ.contains(reg)) ) {
             //logger.warning("Ad already registered by this node");
             return -1;
-        } else if(allAds.size() == this.tableCapacity) {
+        } 
+        /*else if(allAds.size() == this.tableCapacity) {
             TopicRegistration r = allAds.getFirst();
             long age = curr_time - r.getTimestamp();
             waiting_time = this.adLifeTime - age;
-        }
+            assert allAds.size() != this.tableCapacity : "Table should not be full"; 
+        }*/
         else {
             baseWaitingTime = getBaseTime();
-	        long neededTime  = (long) (Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg), baseWaitingTime*1/1000000));
+	        //long neededTime  = (long) (Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg), baseWaitingTime*1/1000000));
+	        long neededTime  = (long) (getTopicModifier(reg) + getIPModifier(reg) + getIdModifier(reg) + getBaseModifier());
 	        waiting_time = Math.max(0, neededTime - cumWaitingTime);
         }
 
         waiting_time = Math.min(waiting_time, adLifeTime);
+        assert allAds.size() != this.tableCapacity : "Table should not be full"; 
 
         return waiting_time;
     }
@@ -79,6 +89,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         Ticket [] tickets = super.makeRegisterDecision(curr_time);
         
          // Remove expired state (in case of discontinued registrations from Turbulence)   
+         /* disable removing the state
          Iterator<Entry<Topic, Long>> iter_topic = topic_timestamp.entrySet().iterator();
          while(iter_topic.hasNext()) {
             Entry<Topic, Long> entry = iter_topic.next();
@@ -111,7 +122,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
                 id_last_modifier.remove(id);
                 iter_id.remove();
             }
-         }
+         }*/
 
          return tickets;
     }
@@ -180,6 +191,24 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 		}
     }
 
+    private double getBaseModifier() {
+        double modifier = 0;
+        if (allAds.size() > 0) {
+            modifier = 0.000001;
+            double delta_time = CommonState.getTime() - base_timestamp;
+            double lower_bound = Math.max(0, base_last_modifier - delta_time);
+            modifier = modifier * getBaseTime();
+
+            if (lower_bound < modifier) {
+                base_last_modifier = modifier;
+                base_timestamp = CommonState.getTime();
+            }
+            return Math.max(modifier, lower_bound);
+        }
+
+        return 0;   
+    }
+
     private double getBaseTime() {
         double occupancy = 1.0 - ( ((double) allAds.size()) / this.tableCapacity);
 
@@ -191,8 +220,8 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         modifier = modifier * getBaseTime();
         
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
-        if ( (topicQ != null) && (topicQ.size() > 0) ) {
-            Long last_timestamp = topic_timestamp.get(reg.getTopic());
+        Long last_timestamp = topic_timestamp.get(reg.getTopic());
+        if ( ((topicQ != null) && (topicQ.size() > 0)) || last_timestamp != null ) {
             double lower_bound = 0;
             if (last_timestamp != null) {
                 long delta_time = CommonState.getTime() - last_timestamp;
@@ -220,8 +249,8 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 
         double modifier = getBaseTime() * Math.pow((double)ip_count/(allAds.size()),amplify*ipModifierExp);
         double lower_bound = 0;
-        if (ip_count > 0) {
-            Long last_timestamp = ip_timestamp.get(reg.getNode().getAddr());
+        Long last_timestamp = ip_timestamp.get(reg.getNode().getAddr());
+        if (ip_count > 0 || last_timestamp != null) {
             if (last_timestamp != null) {
                 long delta_time = CommonState.getTime() - last_timestamp;
                 lower_bound = Math.max(0, ip_last_modifier.get(reg.getNode().getAddr()) - delta_time);
@@ -252,8 +281,8 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 
         double modifier = getBaseTime() * Math.pow((double) id_count/(allAds.size()),amplify*idModifierExp); 
         double lower_bound = 0;
-        if (id_count > 0) {
-            Long last_timestamp = id_timestamp.get(reg_id);
+        Long last_timestamp = id_timestamp.get(reg_id);
+        if (id_count > 0 || last_timestamp != null) {
             if (last_timestamp != null) {
                 long delta_time = CommonState.getTime() - last_timestamp;
                 lower_bound = Math.max(0, id_last_modifier.get(reg_id) - delta_time);
