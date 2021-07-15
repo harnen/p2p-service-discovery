@@ -187,26 +187,27 @@ I think the proposed advertisement algorithm will track popularity automatically
 For search, estimation is less necessary and we should try to see how efficient it is in the way specified above. I think it might just work out.-->
 
 
-### Search strategies
+### Search mechanism
 
-For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. In case not enough `LOOKUP_LIMIT=50` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `LOOKUP_LIMIT` or `MAX_LOOKUP_HOPS=50`. We implemented and evaluated the following strategy in order to choose which nodes from which buckets ask first when performing a lookup.
+For the lookup process, we perform `ALPHA=3` parallel lookups to three different nodes. The lookup process is performed by sending TOPICQUERY Request messages to registrars selected from the 'search table'. Nodes are selected picking a random node from a bucket following a round-robin approach. It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list. Registrars reply with a NODES Response message, including up to 16 Ethereum Node Records (ENRs), picked randomly from the ticket table for the specified topic id.
+In case not enough `LOOKUP_LIMIT=50` results have been received for the first `ALPHA` lookups, additional `ALPHA` parallel lookups are performed until reaching `LOOKUP_LIMIT` or `MAX_LOOKUP_HOPS=50`. We implemented and evaluated the following strategy in order to choose which nodes from which buckets ask first when performing a lookup.
 
 <!-- * Minimum bucket: A random node is picked from the first non-empty bucket starting with the minimum distance to the topic hash bucket.
 
-* Random: A random node is picked from a random bucket every time.-->
+* Random: A random node is picked from a random bucket every time.
 
-*  A random node is picked from a bucket following a round-robin approach. It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list.
+*  A random node is picked from a bucket following a round-robin approach. It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list.-->
 
 ### Bucket refresh
 
 Similarly to 'ticket table', 'search table' needs to be initialised and refreshed to fill up all the per-distance k-buckets.
 Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash.
 Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash my create and additional overhead that can create too much traffic in the network.
-To avoid that, initially, 'search table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash'.
-In addition to that, every time an advertiser sends a ticket request and when  performing topic search at a registrar, the registrar replies with the closest nodes to 'the topic hash' that it knows, helping to fill up the k-buckets of ticket tables without advertisers sending additional (Kademlia FINDNODE) lookups.
+To avoid that, initially, 'search table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash', and also with new nodes discovered during ticket requests.
+<!--In addition to that, every time an advertiser sends a ticket request and when  performing topic search at a registrar, the registrar replies with the closest nodes to 'the topic hash' that it knows, helping to fill up the k-buckets of ticket tables without advertisers sending additional (Kademlia FINDNODE) lookups.-->
 
 There is also a refresh process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. 
-The refresh time used is `refresh_time=10 seconds`.
+The refresh time used is `refresh_time=100 seconds`.
 When empty slots during the refresh process, optionally, lookups are performed to the topic hash in case is empty.
 Also, the last node in the bucket is pinged to check it is still alive. In case it is not, it is removed from the table.
 
