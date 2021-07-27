@@ -10,14 +10,17 @@ import copy
 from random import randint
 import simpy
 from copy import deepcopy
+from Tree import *
 
 class Table(metaclass=abc.ABCMeta):
     def __init__(self, capacity, ad_lifetime, interval=1):
         self.capacity = capacity
         self.ad_lifetime = ad_lifetime
         self.interval = interval
+        
 
         self.table = {}
+        self.tree = Tree()
         self.workload = {}
         self.env = simpy.Environment()
         self.ad_ids = 0
@@ -247,8 +250,9 @@ class Table(metaclass=abc.ABCMeta):
         self.log("Removing", self.table[ad_id])
         req = self.table.pop(ad_id)
 
-        self.ip_counter[req['ip']]['counter'] -= 1
-        assert(self.ip_counter[req['ip']]['counter'] >= 0)
+        score = self.tree.remove(req['ip'])
+        #self.ip_counter[req['ip']]['counter'] -= 1
+        assert(score >= 0)
         self.id_counter[req['id']]['counter'] -= 1
         assert(self.id_counter[req['id']]['counter'] >= 0)
         self.topic_counter[req['topic']]['counter'] -= 1
@@ -285,12 +289,13 @@ class Table(metaclass=abc.ABCMeta):
                 self.id_counter[req['id']]['timestamp'] = 0
             self.id_counter[req['id']]['counter'] += 1
 
+            self.tree.add(req['ip'])
             if(req['ip'] not in self.ip_counter):
                 self.ip_counter[req['ip']] = {}
-                self.ip_counter[req['ip']]['counter'] = 0
+                #self.ip_counter[req['ip']]['counter'] = 0
                 self.ip_counter[req['ip']]['wtime'] = 0
                 self.ip_counter[req['ip']]['timestamp'] = 0
-            self.ip_counter[req['ip']]['counter'] += 1
+            #self.ip_counter[req['ip']]['counter'] += 1
 
             if(req['topic'] not in self.topic_counter):
                 self.topic_counter[req['topic']] = {}
@@ -374,6 +379,21 @@ class DiversityTable(Table):
 
 
     def get_ip_modifier(self, ip, table):
+        #print("Get IP Modifier", self.ip_counter)
+        if(ip in self.ip_counter):
+            modifier = self.tree.tryAdd(ip)
+            bound = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
+            wtime = modifier * self.get_basetime(table)
+            print("ip:", ip, "wtime:", wtime, "bound:", bound)
+            if(bound < wtime):
+                print("In if")
+                self.ip_counter[ip]['wtime'] = wtime
+                self.ip_counter[ip]['timestamp'] = self.env.now
+            return max(wtime, bound)
+        else:
+            return 0
+
+    def get_ip_modifier_bck(self, ip, table):
         #print("Get IP Modifier", self.ip_counter)
         if(ip in self.ip_counter):
             counter = self.ip_counter[ip]['counter']

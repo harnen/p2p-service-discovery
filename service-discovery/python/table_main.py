@@ -129,7 +129,7 @@ def run(stats):
         table.run(runtime)
 
 def run_single():
-    filename = generate_input_file('impatient')
+    filename = generate_input_file('spam')
     table = DiversityTable(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
     table.load(filename)
     table.display(runtime - 1)
@@ -348,8 +348,8 @@ def special(input_file = 'dump.csv'):
 runtime = 200 * 1000
 
 restore_default()
-#run_single()
+run_single()
 
-run_all()
-analyze()
+#run_all()
+#analyze()
 #special('attacks.csv')

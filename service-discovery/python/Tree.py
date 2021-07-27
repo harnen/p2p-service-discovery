@@ -37,15 +37,29 @@ class Tree:
         score = result[1]
         balanced_score = (self.root.getCounter()) * 32
         max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
-        #print("TryAdd final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
-        if(balanced_score == 0 or (math.log(score/balanced_score, 10)) < 1):
-            return 1
-        else:
-            return (math.log(score/balanced_score, 10))
+        print("TryAdd final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
+        return score/max_score
+        #if(balanced_score == 0 or (math.log(score/balanced_score, 10)) < 1):
+        #    return 1
+        #else:
+        #    return (math.log(score/balanced_score, 10))
             
 
     def add(self, addr):
         result = self.addRecursive(self.root, addr, 0)
+        self.root = result[0]
+        score = result[1]
+        balanced_score = (self.root.getCounter()-1) * 32
+        max_score = -(self.root.getCounter()-1) * (1 - pow(2, 33))
+        print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
+
+        if(max_score == 0):
+            return 0
+
+        return score/max_score
+
+    def remove(self, addr):
+        result = self.removeRecursive(self.root, addr, 0)
         self.root = result[0]
         score = result[1]
         balanced_score = (self.root.getCounter()-1) * 32
@@ -109,6 +123,36 @@ class Tree:
             else:
                 #print("Going towards 1")
                 result = self.addRecursive(current.one, addr, depth + 1)
+                current.one = result[0]; 
+
+            score += result[1]
+        else:
+            pass
+            #print("Reached depth ", depth, " going back.")
+        
+        return (current, score)
+
+    def removeRecursive(self, current, addr, depth):
+        if (current == None):
+            current = TreeNode()
+        
+        score = current.getCounter() * pow(2, depth)
+        #print("Depth", depth, "Score", score)
+        current.decrement()
+        #print("Increment counter to ", current.getCounter())
+	    
+        if(depth < 32):
+            #print("Octet: ",  addr.split('.')[int(depth/8)])
+            octet = int(addr.split('.')[int(depth/8)])
+            comparator = self.comparators[int(depth % 8)]
+            result = None
+            if((octet & comparator) == 0):
+                #print("Going towards 0")
+                result = self.removeRecursive(current.zero, addr, depth + 1)
+                current.zero = result[0]
+            else:
+                #print("Going towards 1")
+                result = self.removeRecursive(current.one, addr, depth + 1)
                 current.one = result[0]; 
 
             score += result[1]
