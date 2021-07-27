@@ -141,7 +141,7 @@ def test_ip_modifier(input):
         for item in input:
             modifiers['n'].append(counter)
             modifiers['type'].append('tree')
-            modifiers['val'].append(tree.add(item)/(math.pow(2, 32) - 1))
+            modifiers['val'].append(tree.add(item))
             modifiers['input'].append(input_name)
             counter += 1
         
@@ -158,10 +158,22 @@ def test_ip_modifier(input):
     df = pd.DataFrame(modifiers)
     #df.set_index('n', inplace=True)
     print(df)
-    #plot_multi(df, figsize=(6, 3))
-    #plt.show()
 
-size = 10
+    figure, ax = plt.subplots()
+    for type_key,type_group in df.groupby('type'):
+        if(type_key == 'table'):
+            style = '-'
+        else:
+            style = '--'
+        for input_key, input_group in type_group.groupby('input'):
+            print(type_key, input_key)
+            print(input_group)
+            input_group.plot(x='n', y='val', ax=ax, style=style, linewidth = 5, label = type_key + "/" + input_key)
+
+    #plot_multi(df, figsize=(6, 3))
+    plt.show()
+
+size = 20
 
 
 inputs = {}
@@ -174,5 +186,19 @@ ip_file = open('./workloads/ips.txt', "r")
 for i in range(0, size):
     ip = ip_file.readline().rstrip()
     inputs['regular'].append(ip)
+ip_file.close()
+
+inputs['regular_malicious'] = []
+ip_file = open('./workloads/ips.txt', "r")
+malicious = []
+for i in range(1, 10):
+    malicious.append('192.168.0.' + str(i))
+
+for i in range(0, size):
+    if(i%1 == 0):
+        inputs['regular_malicious'].append(malicious[i%len(malicious)])    
+    else:
+        ip = ip_file.readline().rstrip()
+        inputs['regular_malicious'].append(ip)
 
 test_ip_modifier(inputs)

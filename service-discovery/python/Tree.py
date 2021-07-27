@@ -52,7 +52,10 @@ class Tree:
         max_score = -(self.root.getCounter()-1) * (1 - pow(2, 33))
         print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
 
-        return score
+        if(max_score == 0):
+            return 0
+
+        return score/max_score
             
 	
     def tryAddRecursive(self, current, addr, depth):
