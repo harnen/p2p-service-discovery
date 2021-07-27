@@ -1,5 +1,4 @@
-from table import Tree
-from table import get_entropy
+from Tree import *
 import matplotlib.pyplot as plt
 import math
 from numpy import random
@@ -73,7 +72,6 @@ def get_occupancy_modifier(topics, topic, power):
     return 1/math.pow(1-(count/size), power)
 
 def test_topic_modifier(inputs):
-    
     modifiers = {}
     #modifiers['n'] = list(range(0, len(inputs[list(inputs)[0]])))
     for input_name in inputs.keys():
@@ -108,31 +106,63 @@ def test_topic_modifier(inputs):
     ax.set_yscale('log')
     plt.show()
 
+
+class OldTable:
+    def __init__(self):
+        self.counters = {}
+        self.counter_total = 0
+    
+    def add(self, ip):
+        if(ip not in self.counters):
+            self.counters[ip] = 0
+        same_ip = self.counters[ip]
+        total = self.counter_total
+        self.counters[ip] += 1
+        self.counter_total += 1
+
+        if(total == 0):
+            return 0
+        else:
+            return same_ip/total
+
+
 def test_ip_modifier(input):
     modifiers = {}
-    modifiers['n'] = list(range(0, len(inputs[list(inputs)[0]])))
+    modifiers['n'] = []# = list(range(0, len(inputs[list(inputs)[0]])))
+    modifiers['type'] = []
+    modifiers['val'] = []
+    modifiers['input'] = []
+    
     for input_name in inputs.keys():
         input = inputs[input_name]
-        modifiers[input_name] = []
+
+        counter = 0
         tree = Tree()
         for item in input:
-            modifiers[input_name].append(tree.add(item)/(math.pow(2, 32) - 1))
-    
+            modifiers['n'].append(counter)
+            modifiers['type'].append('tree')
+            modifiers['val'].append(tree.add(item)/(math.pow(2, 32) - 1))
+            modifiers['input'].append(input_name)
+            counter += 1
+        
+        counter = 0
+        table = OldTable()
+        for item in input:
+            modifiers['n'].append(counter)
+            modifiers['type'].append('table')
+            modifiers['val'].append(table.add(item))
+            modifiers['input'].append(input_name)
+            counter += 1
+
     print("Modifiers:", modifiers)
     df = pd.DataFrame(modifiers)
-    df.set_index('n', inplace=True)
+    #df.set_index('n', inplace=True)
     print(df)
-    plot_multi(df, figsize=(6, 3))
-    plt.show()
+    #plot_multi(df, figsize=(6, 3))
+    #plt.show()
 
-size = 100
-inputs = {}
-inputs['all_same'] = ['t1']*size
-#inputs['one_different'] = ['t1']*size
-#inputs['one_different'][int(size/5)] = 't2'
-#inputs['zipf'] = random.zipf(a=2, size=size)
-#inputs['all_different'] = list(range(0, size))
-test_topic_modifier(inputs)
+size = 10
+
 
 inputs = {}
 inputs['all_same'] = ['10.0.0.1']*size
@@ -145,4 +175,4 @@ for i in range(0, size):
     ip = ip_file.readline().rstrip()
     inputs['regular'].append(ip)
 
-#test_ip_modifier(inputs)
+test_ip_modifier(inputs)
