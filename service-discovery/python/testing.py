@@ -173,7 +173,7 @@ def test_ip_modifier(input):
     #plot_multi(df, figsize=(6, 3))
     plt.show()
 
-size = 20
+size = 50
 
 
 inputs = {}
@@ -181,24 +181,31 @@ inputs['all_same'] = ['10.0.0.1']*size
 #inputs['one_different'] = ['10.0.0.1']*size
 #inputs['one_different'][int(size/5)] = '255.255.255.255 '
 #inputs['one_different'][int(size/5)+1] = '255.255.255.255 '
-inputs['regular'] = []
+#inputs['regular'] = []
 ip_file = open('./workloads/ips.txt', "r")
 for i in range(0, size):
     ip = ip_file.readline().rstrip()
-    inputs['regular'].append(ip)
+    #inputs['regular'].append(ip)
 ip_file.close()
 
 inputs['regular_malicious'] = []
 ip_file = open('./workloads/ips.txt', "r")
 malicious = []
-for i in range(1, 10):
+for i in range(1, 20):
     malicious.append('192.168.0.' + str(i))
 
 for i in range(0, size):
-    if(i%1 == 0):
+    if(i%2 == 0):
         inputs['regular_malicious'].append(malicious[i%len(malicious)])    
     else:
         ip = ip_file.readline().rstrip()
         inputs['regular_malicious'].append(ip)
+
+inputs['malicious_only'] = []
+for i in range(0, size):
+        inputs['malicious_only'].append(malicious[i%len(malicious)])    
+
+print(inputs)
+#quit()
 
 test_ip_modifier(inputs)

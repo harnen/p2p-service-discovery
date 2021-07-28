@@ -31,6 +31,7 @@ class Tree:
     def __init__(self):
         self.comparators = [128, 64, 32, 16, 8, 4, 2, 1]
         self.root = TreeNode()
+        self.max_score = 0
 
     def tryAdd(self, addr):
         result = self.tryAddRecursive(self.root, addr, 0)
@@ -49,14 +50,18 @@ class Tree:
         result = self.addRecursive(self.root, addr, 0)
         self.root = result[0]
         score = result[1]
+        highest_score = result[2]
+
+        if(highest_score > self.max_score):
+            self.max_score = highest_score
         balanced_score = (self.root.getCounter()-1) * 32
         max_score = -(self.root.getCounter()-1) * (1 - pow(2, 33))
-        print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
+        print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score, "New max score:", self.max_score)
 
         if(max_score == 0):
             return 0
 
-        return score/max_score
+        return score/self.max_score
 
     def remove(self, addr):
         result = self.removeRecursive(self.root, addr, 0)
@@ -109,6 +114,7 @@ class Tree:
         score = current.getCounter() * pow(2, depth)
         #print("Depth", depth, "Score", score)
         current.increment()
+        highest_score = current.getCounter() * pow(2, depth)
         #print("Increment counter to ", current.getCounter())
 	    
         if(depth < 32):
@@ -126,11 +132,12 @@ class Tree:
                 current.one = result[0]; 
 
             score += result[1]
+            highest_score += result[2]
         else:
             pass
             #print("Reached depth ", depth, " going back.")
         
-        return (current, score)
+        return (current, score, highest_score)
 
     def removeRecursive(self, current, addr, depth):
         if (current == None):
@@ -161,3 +168,4 @@ class Tree:
             #print("Reached depth ", depth, " going back.")
         
         return (current, score)
+    
