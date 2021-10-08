@@ -9,25 +9,27 @@ import java.util.Map;
 
 import peersim.core.CommonState;
 import peersim.core.Node;
+import peersim.edsim.EDSimulator;
 
 public class NodeConnections {
 	
     
-    private int maxIncomingConnections;
-    private int maxOutgoingConnections;
+    protected int maxIncomingConnections;
+    protected int maxOutgoingConnections;
     
-    private String topic;
+    protected String topic;
 
-    private HashMap<KademliaNode,BigInteger> lookupResultBuffer;
+    protected HashMap<KademliaNode,BigInteger> lookupResultBuffer;
         
-    private List<KademliaNode> incomingConnections;
-    private List<KademliaNode> outgoingConnections;
+    protected List<KademliaNode> incomingConnections;
+    protected List<KademliaNode> outgoingConnections;
     
     private HashMap<BigInteger,Integer> sources;
     private HashMap<KademliaNode,BigInteger> used;
     
-    private KademliaNode n;
-    boolean requested;
+    protected KademliaNode n;
+    protected boolean requested;
+    
 	public NodeConnections(String topic,KademliaNode n) {
 		
 		this.incomingConnections = new ArrayList<KademliaNode>();
@@ -59,17 +61,18 @@ public class NodeConnections {
 	public void addLookupResult(HashMap<KademliaNode,BigInteger> lookupResultBuffer) {
 		//System.out.println(CommonState.getTime()+" addLookupResult "+lookupResultBuffer.size());
 		this.lookupResultBuffer.putAll(lookupResultBuffer);
+		this.setRequested(false);
 		/*for(KademliaNode node : lookupResultBuffer.keySet()) {
 			System.out.println(CommonState.getTime()+" Result "+node+" origin:"+lookupResultBuffer.get(node));
 		}*/
 	}
 	/*public void setLookupBuffer(List<KademliaNode> lookupResultBuffer) {
 		this.lookupResultBuffer = lookupResultBuffer;
-	}*/
+	}
 	
 	public List<KademliaNode> getLookupBuffer(){
 		return new ArrayList<>(this.lookupResultBuffer.keySet());
-	}
+	}*/
 	
 	public List<KademliaNode> getIncomingConnections() {
 		return this.incomingConnections;
@@ -151,7 +154,7 @@ public class NodeConnections {
 	}
 
     
-    private boolean startConnection(KademliaNode node) {
+    protected boolean startConnection(KademliaNode node) {
     	Node nd = Util.nodeIdtoNode(node.getId());
     	if(!nd.isUp()) {
     		//System.out.println(CommonState.getTime()+" node is down");
@@ -203,5 +206,28 @@ public class NodeConnections {
     		return false;
     }
     
-	
+    public boolean isEmpty() {
+    	return this.lookupResultBuffer.isEmpty();
+    }
+    
+    
+	public void sendLookup(Node n) {
+		EDSimulator.add(0,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
+		setRequested(true);
+	}
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a topic lookup message, by selecting randomly the destination and one of previousely registered topic.
+	 * 
+	 * @return Message
+	 */
+	protected Message generateTopicLookupMessage(String topic) {
+		//System.out.println("New lookup message "+topic);
+
+		Topic t = new Topic(topic);
+		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
+		m.timestamp = CommonState.getTime();
+
+		return m;
+	}
 }

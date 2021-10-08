@@ -58,6 +58,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	protected int tid;
 	protected int kademliaid;
 	//private EthClient client;
+	
+	private boolean discv4;
 
 	/**
 	 * allow to call the service initializer only once
@@ -122,6 +124,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		operations = new LinkedHashMap<Long, Operation>();
 
 		tid = Configuration.getPid(prefix + "." + PAR_TRANSPORT);
+		
+		discv4 = false;
 	}
 
 	/**
@@ -188,7 +192,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
 			logger.info("Found node " + op.destNode);
 			op.finished = true;
-			//node.setLookupResult(op.getNeighboursList());
+			if(discv4) {
+				node.setLookupResult(op.getNeighboursList());
+			}
 			KademliaObserver.find_ok.add(1);
 			return;
 		}
@@ -234,7 +240,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					//logger.warning("Couldn't find node " + op.destNode);
 				}
 					
-				//node.setLookupResult(op.getNeighboursList());
+				node.setLookupResult(op.getNeighboursList());
 				return;
 
 			} else { // no neighbour available but exists outstanding request to wait for
@@ -454,6 +460,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	
 	public KademliaNode getNode() {
 		return this.node;
+	}
+	
+	public void setDiscv4(boolean set) {
+		discv4 = set;
 	}
 	
     /**

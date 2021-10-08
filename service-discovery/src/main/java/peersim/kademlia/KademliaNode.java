@@ -27,6 +27,9 @@ public class KademliaNode implements Comparable<KademliaNode>{
     public boolean is_evil=false;
     
     public HashMap<String,NodeConnections> connections;
+    
+    
+    List<String> topicList;
 
     
     public KademliaNode(BigInteger id, String addr, int port){
@@ -35,6 +38,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.addr = addr;
         this.port = port;
         this.connections = new HashMap<>();
+        this.topicList = new ArrayList<String>();
 
     }
     
@@ -44,6 +48,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.addr = addr;
         this.port = port;
         this.connections = new HashMap<>();
+        this.topicList = new ArrayList<String>();
+
     }
 
     public KademliaNode(BigInteger id){
@@ -52,6 +58,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.port = 666;
         this.attackerID = null;
         this.connections = new HashMap<>();
+        this.topicList = new ArrayList<String>();
+
 
     }
 
@@ -62,6 +70,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.is_evil = n.is_evil;
         this.attackerID = n.attackerID;
         this.connections = new HashMap<>();
+        this.topicList = new ArrayList<String>();
+
 
     }
 
@@ -135,26 +145,31 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	//for(KademliaNode rest : result)
     	//	if(lookupResultBuffer.size()<10)lookupResultBuffer.add(rest);
     	connections.get(topic).addLookupResult(result);
-    	connections.get(topic).setRequested(false);
     	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+lookupResultBuffer.size()+" "+outgoingConnections.size());
-    	if(getLookupResult(topic).size()>0)
+    	if(!connections.get(topic).isEmpty())
     		tryNewConnections(topic);
     	else {
     		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size()+" Sending lookup");
    
     		if(n!=null&&!connections.get(topic).isRequested()) {
-    			EDSimulator.add(10000,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
-    			connections.get(topic).setRequested(true);
+    			//EDSimulator.add(10000,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
+    			connections.get(topic).sendLookup(n);
     		}
 
 
     	}
     }
+    
+    public void setLookupResult(List<BigInteger> results) {
+
+    	for(String topic : topicList) {
+    		NodeConnectionsv4 con = (NodeConnectionsv4) connections.get(topic);
+    		con.addLookupResult(results);    		 
     		
-    public List<KademliaNode> getLookupResult(String topic) {
-    	return connections.get(topic).getLookupBuffer(); 
+    	}
     	
     }
+
     
     public boolean addIncomingConnection(KademliaNode node,String topic) {
     	return connections.get(topic).addIncomingConnection(node);
@@ -218,8 +233,16 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     public void setTopic(String t, Node n) {
     	this.n = n;
+    	this.topicList.add(t);
     	if(connections.get(t)==null) {
     		connections.put(t, new NodeConnections(t,this));
+    	}
+    }
+    
+    public void setTopicDiscv4(String t, Node n) {
+    	this.n = n;
+    	if(connections.get(t)==null) {
+    		connections.put(t, new NodeConnectionsv4(t,this));
     	}
     }
     
@@ -254,30 +277,15 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	//System.out.println(CommonState.getTime()+" "+id+" trying connections "+maxOutgoingConnections);
     	
     	connections.get(topic).tryNewConnections();
-       	if(connections.get(topic).getLookupBuffer().size()==0){
+       	if(connections.get(topic).isEmpty()){
        		//System.out.println(CommonState.getTime()+" "+id+" emptybuffer:"+connections.get(topic).getLookupBuffer().size()+" "+connections.get(topic).getOutgoingConnections().size());
        		if(!connections.get(topic).isRequested()) {
        			//client.emptyBufferCallback(n,t);
-       			if(n!=null)EDSimulator.add(10000,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
-       			connections.get(topic).setRequested(true);
+       			connections.get(topic).sendLookup(n);
        		}
        	}
     }
 
-	// ______________________________________________________________________________________________
-	/**
-	 * generates a topic lookup message, by selecting randomly the destination and one of previousely registered topic.
-	 * 
-	 * @return Message
-	 */
-	protected Message generateTopicLookupMessage(String topic) {
-		//System.out.println("New lookup message "+topic);
 
-		Topic t = new Topic(topic);
-		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
-		m.timestamp = CommonState.getTime();
-
-		return m;
-	}
 	
 }

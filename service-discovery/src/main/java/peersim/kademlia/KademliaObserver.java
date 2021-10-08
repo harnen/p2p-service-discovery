@@ -812,6 +812,8 @@ public class KademliaObserver implements Control {
 
     private void write_register_overhead() {
 
+        if(!(kadProtocol instanceof Discv5TicketProtocol))return;
+
         try {
             String filename = this.logFolderName + "/" + "register_overhead.csv";
             FileWriter writer = new FileWriter(filename);
@@ -1241,6 +1243,9 @@ public class KademliaObserver implements Control {
      */
     private void write_average_storage_utilisation_per_topic() {
         
+    	
+        if(!(kadProtocol instanceof Discv5TicketProtocol))return;
+
         HashMap<String, Double> utilisations = new HashMap<String,Double>();
         HashMap<String, Integer> ticketQLength = new HashMap<String,Integer>();
         double evil_total_utilisations = 0;
