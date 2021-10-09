@@ -240,7 +240,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					//logger.warning("Couldn't find node " + op.destNode);
 				}
 					
-				node.setLookupResult(op.getNeighboursList());
+				if(discv4)node.setLookupResult(op.getNeighboursList());
 				return;
 
 			} else { // no neighbour available but exists outstanding request to wait for

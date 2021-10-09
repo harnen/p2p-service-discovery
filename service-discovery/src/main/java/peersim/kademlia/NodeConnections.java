@@ -156,7 +156,7 @@ public class NodeConnections {
     
     protected boolean startConnection(KademliaNode node) {
     	Node nd = Util.nodeIdtoNode(node.getId());
-    	if(!nd.isUp()) {
+    	if(!nd.isUp() || !node.hasTopic(topic)) {
     		//System.out.println(CommonState.getTime()+" node is down");
     		return false;
     	} else {

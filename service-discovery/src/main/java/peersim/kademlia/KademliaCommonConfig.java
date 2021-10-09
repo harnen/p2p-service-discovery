@@ -16,7 +16,7 @@ public class KademliaCommonConfig {
 	public static int TOPIC_TABLE_CAP = 10000; //the number of topics per node we can regiter
 	public static int MAXREPLACEMENT = 10; //the number of nodes saved in the replacement list
 	public static int REFRESHTIME = 10*100; //periodic time used to check nodes down in k-buckets
-	public static int MAXCONNECTIONS = 150; //periodic time used to check nodes down in k-buckets
+	public static int MAXCONNECTIONS = 50; //periodic time used to check nodes down in k-buckets
 	public static int MAXFINDNODEFAILURES = 5; //periodic time used to check nodes down in k-buckets
     public static int ADS_PER_QUEUE = 200; //the number of ads per topic queue
     public static int AD_LIFE_TIME = 250000; //life time of ads the topic table

@@ -54,25 +54,25 @@ public class NodeConnectionsv4  extends NodeConnections{
 
 	public void tryNewConnections() {
 		
-   		//
+		//System.out.println("Trying connections v4 "+outgoingConnections.size());
 
+    	while(outgoingConnections.size()<maxOutgoingConnections&&result.size()>0) {
+    		//List<KademliaNode> valuesList = new ArrayList<KademliaNode>(lookupResultBuffer.keySet());
 
-		if(KademliaCommonConfig.FILTER_RESULTS==0){
-	    	while(outgoingConnections.size()<maxOutgoingConnections&&lookupResultBuffer.size()>0) {
-	    		List<KademliaNode> valuesList = new ArrayList<KademliaNode>(lookupResultBuffer.keySet());
-
-    		int n = CommonState.r.nextInt(lookupResultBuffer.size());
-       		KademliaNode randomNode = valuesList.get(n);
-   			boolean success = startConnection(randomNode);
-
+			int n = CommonState.r.nextInt(result.size());
+	   		BigInteger randomNode = result.get(n);
+			boolean success = startConnection(randomNode);
+	
 			if(success) {
-				addOutgoingConnection(randomNode);
-
+				addOutgoingConnection(Util.nodeIdtoNode(randomNode).getKademliaProtocol().getNode());
+	
 			}
-			lookupResultBuffer.remove(randomNode);
-	    	}
+			result.remove(randomNode);
+    	}
 
-		} 
+		//System.out.println("Outgoing connections "+outgoingConnections.size());
+
+		
 			
    		//}
 	
@@ -97,6 +97,20 @@ public class NodeConnectionsv4  extends NodeConnections{
 
 		return m;
 	}
+	
+	
+    private boolean startConnection(BigInteger node) {
+    	///System.out.println("Starting connection");
+    	Node nd = Util.nodeIdtoNode(node);
+    	if(!nd.isUp() || !nd.getKademliaProtocol().getNode().hasTopic(topic)) {
+    		//System.out.println(CommonState.getTime()+" node does not have topic");
+    		return false;
+    	} else {
+    		return nd.getKademliaProtocol().getNode().addIncomingConnection(n,topic);
+    	}
+    		
+    }
+    
 
 	
 }

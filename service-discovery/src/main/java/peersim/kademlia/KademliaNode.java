@@ -26,10 +26,10 @@ public class KademliaNode implements Comparable<KademliaNode>{
 
     public boolean is_evil=false;
     
-    public HashMap<String,NodeConnections> connections;
+    private HashMap<String,NodeConnections> connections;
     
     
-    List<String> topicList;
+    private List<String> topicList;
 
     
     public KademliaNode(BigInteger id, String addr, int port){
@@ -162,11 +162,24 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     public void setLookupResult(List<BigInteger> results) {
 
+    	//System.out.println("Received "+results.size()+" nodes topiclist:"+topicList.size());
     	for(String topic : topicList) {
     		NodeConnectionsv4 con = (NodeConnectionsv4) connections.get(topic);
     		con.addLookupResult(results);    		 
-    		
+    		if(!connections.get(topic).isEmpty())
+        		tryNewConnections(topic);
+        	else {
+        		//System.out.println(CommonState.getTime()+" emptybuffer:"+lookupResultBuffer.size()+" Sending lookup");
+       
+        		if(n!=null&&!connections.get(topic).isRequested()) {
+        			//EDSimulator.add(10000,generateTopicLookupMessage(topic),n, n.getKademliaProtocol().getProtocolID());
+        			connections.get(topic).sendLookup(n);
+        		}
+
+
+        	}    	
     	}
+  
     	
     }
 
@@ -241,6 +254,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     public void setTopicDiscv4(String t, Node n) {
     	this.n = n;
+    	this.topicList.add(t);
+
     	if(connections.get(t)==null) {
     		connections.put(t, new NodeConnectionsv4(t,this));
     	}
@@ -273,8 +288,15 @@ public class KademliaNode implements Comparable<KademliaNode>{
 
     }
     
+    public boolean hasTopic(String topic)
+    {
+    	//System.out.println("Has topic "+topic+" "+topicList.contains(topic)+" "+topicList.size());
+    	return topicList.contains(topic);
+    	
+    }
+    
     private void tryNewConnections(String topic) {
-    	//System.out.println(CommonState.getTime()+" "+id+" trying connections "+maxOutgoingConnections);
+    	//System.out.println(CommonState.getTime()+" "+id+" trying connections ");
     	
     	connections.get(topic).tryNewConnections();
        	if(connections.get(topic).isEmpty()){
@@ -285,6 +307,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
        		}
        	}
     }
+    
 
 
 	

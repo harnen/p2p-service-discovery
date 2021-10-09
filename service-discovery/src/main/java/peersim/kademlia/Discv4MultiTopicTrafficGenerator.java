@@ -58,7 +58,7 @@ public class Discv4MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 	 * @return boolean
 	 */
 	public boolean execute() {
-		System.out.println("MultiTopic Traffic generator called");
+		//System.out.println("Discv4 multitopic Traffic generator called");
         int num_topics;
 		HashMap<String,Integer> n = new HashMap<String,Integer>();
         Topic [] topicList = new Topic[maxtopicNum]; //references to topics of a node
@@ -120,9 +120,8 @@ public class Discv4MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 
 					prot.setDiscv4(true);
 				    for(int j = 0;j<3;j++) {
-						Node nod = Network.get(i);
 						Message lookup = generateFindNodeMessage();
-						EDSimulator.add(time, lookup, nod, nod.getKademliaProtocol().getProtocolID());
+						EDSimulator.add(time, lookup, start, start.getKademliaProtocol().getProtocolID());
 					}
 				    
 			    }
