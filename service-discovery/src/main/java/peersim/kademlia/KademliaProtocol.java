@@ -179,6 +179,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		
 		// add message source to my routing table
 
+
 		Operation op = (Operation)	 this.operations.get(m.operationId);
 		if (op == null) {
 			return;
@@ -193,6 +194,17 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			logger.info("Found node " + op.destNode);
 			op.finished = true;
 			if(discv4) {
+				for(String t: this.node.topicQuerying()) {
+					logger.info("Querying topic "+t);
+					((FindOperation)op).addTopic(t);
+					KademliaObserver.reportOperation(op);
+
+				}
+				//logger.warning("Topic query "+((FindOperation)op).getTopics().get(0));
+
+				//KademliaObserver.reportOperation(op);
+				for(String t: this.node.topicQuerying())
+					((FindOperation)op).remTopic(t);
 				node.setLookupResult(op.getNeighboursList());
 			}
 			KademliaObserver.find_ok.add(1);
@@ -234,13 +246,24 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			} else if (op.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 				operations.remove(op.operationId);
 				//op.visualize();
-		//		System.out.println("###################Operaration  finished");
-				KademliaObserver.reportOperation(op);
+				/*System.out.println("###################Operaration  finished");
 				if(!op.finished && op.type == Message.MSG_FIND){
-					//logger.warning("Couldn't find node " + op.destNode);
+					logger.warning("Couldn't find node " + op.destNode);
+				}*/
+				logger.info("Finished lookup node " + op.getUsedCount());
+
+				if(discv4) {
+					for(String t: this.node.topicQuerying()) {
+						((FindOperation)op).addTopic(t);
+						KademliaObserver.reportOperation(op);
+
+					}
+					//logger.warning("Topic query "+((FindOperation)op).getTopics().get(0));
+					//KademliaObserver.reportOperation(op);
+					for(String t: this.node.topicQuerying())
+						((FindOperation)op).remTopic(t);
+					node.setLookupResult(op.getNeighboursList());
 				}
-					
-				if(discv4)node.setLookupResult(op.getNeighboursList());
 				return;
 
 			} else { // no neighbour available but exists outstanding request to wait for

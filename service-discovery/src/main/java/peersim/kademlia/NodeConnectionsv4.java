@@ -39,6 +39,7 @@ public class NodeConnectionsv4  extends NodeConnections{
 	public void sendLookup(Node n) {
 		Message lookup = generateFindNodeMessage();
 		EDSimulator.add(0, lookup, n, n.getKademliaProtocol().getProtocolID());
+		this.setRequested(true);
 
 	}
 	

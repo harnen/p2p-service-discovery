@@ -257,8 +257,14 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	this.topicList.add(t);
 
     	if(connections.get(t)==null) {
-    		connections.put(t, new NodeConnectionsv4(t,this));
+    		//System.out.println("Add topic "+t);
+    		NodeConnections con = new NodeConnectionsv4(t,this);
+    		con.setRequested(true);
+    		connections.put(t, con);
+    	} else {
+    		connections.get(t).setRequested(true);
     	}
+    	
     }
     
     public void setTopicList(List<String> t, Node n) {
@@ -293,6 +299,18 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	//System.out.println("Has topic "+topic+" "+topicList.contains(topic)+" "+topicList.size());
     	return topicList.contains(topic);
     	
+    }
+    
+    public List<String> getTopicList() {
+    	return topicList;
+    }
+    
+    public List<String> topicQuerying(){
+    	List<String> topics = new ArrayList<String>();
+    	for(String topic : connections.keySet())
+    		if(connections.get(topic).isRequested())topics.add(topic);
+    		//topics.add(topic);
+    	return topics;
     }
     
     private void tryNewConnections(String topic) {
