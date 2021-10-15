@@ -22,6 +22,7 @@ import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
+import peersim.kademlia.operations.FindOperation;
 import peersim.kademlia.operations.LookupOperation;
 import peersim.kademlia.operations.RegisterOperation;
 import peersim.kademlia.operations.LookupTicketOperation;
@@ -187,7 +188,7 @@ public class KademliaObserver implements Control {
 				msgWriter.write("id,type,src,dst,topic,bucket,waiting_time,sent/received\n");
 			}
 			opWriter = new FileWriter(this.logFolderName + "/" + "operations.csv");
-            opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,discovered_malicious,queried_malicious,topic,topicID,evil\n");
+            opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,discovered_malicious,queried_malicious,topic,topicID,evil,perhop\n");
             regByTopic = new HashMap<Topic,Integer>();
             regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
             regByRegistrar = new HashMap<String, HashMap<BigInteger,Integer>>();
@@ -308,13 +309,13 @@ public class KademliaObserver implements Control {
             String type = "";
 
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
-                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID + "\n";
+                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
             } else if (op instanceof RegisterOperation) {
             	System.out.println("register operation reported");
             	System.exit(1);
                 result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  + "," + "," + ((RegisterOperation)op).topic.topic + "," + ((LookupOperation)op).topic.topicID + "\n";
-            } else {
-            	;//result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  + "," + "," + "\n";
+            } else if (op instanceof FindOperation&&op.getUsedCount()>0){
+            	result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  +((FindOperation)op).getDiscovered()+ ",,,," + ((FindOperation)op).getTopics().get(0)+",,,"+((FindOperation)op).getDiscovered()/op.getUsedCount()+"\n";
             }
             opWriter.write(result);
             opWriter.flush();
@@ -812,6 +813,8 @@ public class KademliaObserver implements Control {
 
     private void write_register_overhead() {
 
+        if(!(kadProtocol instanceof Discv5TicketProtocol))return;
+
         try {
             String filename = this.logFolderName + "/" + "register_overhead.csv";
             FileWriter writer = new FileWriter(filename);
@@ -1241,6 +1244,9 @@ public class KademliaObserver implements Control {
      */
     private void write_average_storage_utilisation_per_topic() {
         
+    	
+        if(!(kadProtocol instanceof Discv5TicketProtocol))return;
+
         HashMap<String, Double> utilisations = new HashMap<String,Double>();
         HashMap<String, Integer> ticketQLength = new HashMap<String,Integer>();
         double evil_total_utilisations = 0;

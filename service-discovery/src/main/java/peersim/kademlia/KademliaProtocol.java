@@ -58,6 +58,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	protected int tid;
 	protected int kademliaid;
 	//private EthClient client;
+	
+	private boolean discv4;
 
 	/**
 	 * allow to call the service initializer only once
@@ -122,6 +124,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		operations = new LinkedHashMap<Long, Operation>();
 
 		tid = Configuration.getPid(prefix + "." + PAR_TRANSPORT);
+		
+		discv4 = false;
 	}
 
 	/**
@@ -175,6 +179,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		
 		// add message source to my routing table
 
+
 		Operation op = (Operation)	 this.operations.get(m.operationId);
 		if (op == null) {
 			return;
@@ -188,7 +193,20 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
 			logger.info("Found node " + op.destNode);
 			op.finished = true;
-			//node.setLookupResult(op.getNeighboursList());
+			if(discv4) {
+				for(String t: this.node.topicQuerying()) {
+					logger.info("Querying topic "+t);
+					((FindOperation)op).addTopic(t);
+					KademliaObserver.reportOperation(op);
+
+				}
+				//logger.warning("Topic query "+((FindOperation)op).getTopics().get(0));
+
+				//KademliaObserver.reportOperation(op);
+				for(String t: this.node.topicQuerying())
+					((FindOperation)op).remTopic(t);
+				node.setLookupResult(op.getNeighboursList());
+			}
 			KademliaObserver.find_ok.add(1);
 			return;
 		}
@@ -228,13 +246,24 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			} else if (op.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 				operations.remove(op.operationId);
 				//op.visualize();
-		//		System.out.println("###################Operaration  finished");
-				KademliaObserver.reportOperation(op);
+				/*System.out.println("###################Operaration  finished");
 				if(!op.finished && op.type == Message.MSG_FIND){
-					//logger.warning("Couldn't find node " + op.destNode);
+					logger.warning("Couldn't find node " + op.destNode);
+				}*/
+				logger.info("Finished lookup node " + op.getUsedCount());
+
+				if(discv4) {
+					for(String t: this.node.topicQuerying()) {
+						((FindOperation)op).addTopic(t);
+						KademliaObserver.reportOperation(op);
+
+					}
+					//logger.warning("Topic query "+((FindOperation)op).getTopics().get(0));
+					//KademliaObserver.reportOperation(op);
+					for(String t: this.node.topicQuerying())
+						((FindOperation)op).remTopic(t);
+					node.setLookupResult(op.getNeighboursList());
 				}
-					
-				//node.setLookupResult(op.getNeighboursList());
 				return;
 
 			} else { // no neighbour available but exists outstanding request to wait for
@@ -454,6 +483,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	
 	public KademliaNode getNode() {
 		return this.node;
+	}
+	
+	public void setDiscv4(boolean set) {
+		discv4 = set;
 	}
 	
     /**
