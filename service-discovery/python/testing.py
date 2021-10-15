@@ -137,19 +137,19 @@ def test_ip_modifier(input):
         input = inputs[input_name]
 
         counter = 0
-        tree = Tree()
+        tree = Tree(exp=False)
         for item in input:
             modifiers['n'].append(counter)
-            modifiers['type'].append('tree')
+            modifiers['type'].append('sum')
             modifiers['val'].append(tree.add(item))
             modifiers['input'].append(input_name)
             counter += 1
         
         counter = 0
-        table = OldTable()
+        table = Tree(exp=True)
         for item in input:
             modifiers['n'].append(counter)
-            modifiers['type'].append('table')
+            modifiers['type'].append('exp')
             modifiers['val'].append(table.add(item))
             modifiers['input'].append(input_name)
             counter += 1
@@ -161,7 +161,7 @@ def test_ip_modifier(input):
 
     figure, ax = plt.subplots()
     for type_key,type_group in df.groupby('type'):
-        if(type_key == 'table'):
+        if(type_key == 'exp'):
             style = '-'
         else:
             style = '--'
@@ -173,11 +173,11 @@ def test_ip_modifier(input):
     #plot_multi(df, figsize=(6, 3))
     plt.show()
 
-size = 50
+size = 10
 
 
 inputs = {}
-inputs['all_same'] = ['10.0.0.1']*size
+#inputs['all_same'] = ['10.0.0.1']*size
 #inputs['one_different'] = ['10.0.0.1']*size
 #inputs['one_different'][int(size/5)] = '255.255.255.255 '
 #inputs['one_different'][int(size/5)+1] = '255.255.255.255 '
@@ -191,8 +191,9 @@ ip_file.close()
 inputs['regular_malicious'] = []
 ip_file = open('./workloads/ips.txt', "r")
 malicious = []
-for i in range(1, 20):
-    malicious.append('192.168.0.' + str(i))
+for i in range(1, size):
+    #malicious.append(str(i*10) + "." +  str(i*10) + "." +  str(i*10) + "." +  str(i*10))
+    malicious.append("192.168.0."+str(i))
 
 for i in range(0, size):
     if(i%2 == 0):

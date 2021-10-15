@@ -28,16 +28,22 @@ def get_entropy(labels, base=2):
 
 class Tree:	
     
-    def __init__(self):
+    def __init__(self,  exp=False):
         self.comparators = [128, 64, 32, 16, 8, 4, 2, 1]
         self.root = TreeNode()
         self.max_score = 0
+        self.exp = exp
 
     def tryAdd(self, addr):
         result = self.tryAddRecursive(self.root, addr, 0)
         score = result[1]
-        balanced_score = (self.root.getCounter()) * 32
-        max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
+        if(self.exp == True):
+            balanced_score = (self.root.getCounter()) * 32
+            max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
+        else:
+            balanced_score = self.root.getCounter()
+            max_score = self.root.getCounter()*32
+            score -= self.root.getCounter()
         print("TryAdd final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
         return score/max_score
         #if(balanced_score == 0 or (math.log(score/balanced_score, 10)) < 1):
@@ -52,23 +58,33 @@ class Tree:
         score = result[1]
         highest_score = result[2]
 
-        if(highest_score > self.max_score):
-            self.max_score = highest_score
-        balanced_score = (self.root.getCounter()-1) * 32
-        max_score = -(self.root.getCounter()-1) * (1 - pow(2, 33))
-        print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score, "New max score:", self.max_score)
+        #if(highest_score > self.max_score):
+        #    self.max_score = highest_score
+
+        if(self.exp == True):
+            balanced_score = (self.root.getCounter()) * 32
+            max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
+        else:
+            print("Hello")
+            balanced_score = self.root.getCounter()
+            max_score = self.root.getCounter()*32
+        print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)#, "New max score:", self.max_score)
 
         if(max_score == 0):
             return 0
 
-        return score/self.max_score
+        return score/max_score
 
     def remove(self, addr):
         result = self.removeRecursive(self.root, addr, 0)
         self.root = result[0]
         score = result[1]
-        balanced_score = (self.root.getCounter()-1) * 32
-        max_score = -(self.root.getCounter()-1) * (1 - pow(2, 33))
+        if(self.exp == True):
+            balanced_score = (self.root.getCounter()) * 32
+            max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
+        else:
+            balanced_score = self.root.getCounter()
+            max_score = self.root.getCounter()*32
         print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
 
         if(max_score == 0):
@@ -80,8 +96,10 @@ class Tree:
     def tryAddRecursive(self, current, addr, depth):
         if (current == None):
             current = TreeNode()
-        
-        score = current.getCounter() * pow(2, depth)
+        if(self.exp == True):
+            score = current.getCounter() * pow(2, depth)
+        else:
+            score = current.getCounter()
         #print("Depth", depth, "Score", score)
         #current.increment()
         #print("Increment counter to ", current.getCounter())
@@ -111,7 +129,10 @@ class Tree:
         if (current == None):
             current = TreeNode()
         
-        score = current.getCounter() * pow(2, depth)
+        if(self.exp == True):
+            score = current.getCounter() * pow(2, depth)
+        else:
+            score = current.getCounter()
         #print("Depth", depth, "Score", score)
         current.increment()
         highest_score = current.getCounter() * pow(2, depth)
@@ -143,7 +164,10 @@ class Tree:
         if (current == None):
             current = TreeNode()
         
-        score = current.getCounter() * pow(2, depth)
+        if(self.exp == True):
+            score = current.getCounter() * pow(2, depth)
+        else:
+            score = current.getCounter()
         #print("Depth", depth, "Score", score)
         current.decrement()
         #print("Increment counter to ", current.getCounter())
