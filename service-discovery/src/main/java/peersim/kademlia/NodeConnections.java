@@ -118,7 +118,7 @@ public class NodeConnections {
    	    	}
 
    		} else {
-   			System.out.println(CommonState.getTime()+" filter results");
+   			//System.out.println(CommonState.getTime()+" filter results");
    			HashSet<BigInteger> valuesSources = new HashSet<BigInteger>(lookupResultBuffer.values());
    				
 			while(outgoingConnections.size()<maxOutgoingConnections&&lookupResultBuffer.size()>0) {
@@ -156,6 +156,7 @@ public class NodeConnections {
     
     protected boolean startConnection(KademliaNode node) {
     	Node nd = Util.nodeIdtoNode(node.getId());
+    	//System.out.println(CommonState.getTime()+" node topic "+topic+" "+node.getTopicList().size());
     	if(!nd.isUp() || !node.hasTopic(topic)) {
     		//System.out.println(CommonState.getTime()+" node is down");
     		return false;

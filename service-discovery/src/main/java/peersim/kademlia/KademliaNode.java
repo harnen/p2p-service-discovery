@@ -29,7 +29,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     private HashMap<String,NodeConnections> connections;
     
     
-    private List<String> topicList;
+    //private List<String> topicList;
 
     
     public KademliaNode(BigInteger id, String addr, int port){
@@ -38,7 +38,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.addr = addr;
         this.port = port;
         this.connections = new HashMap<>();
-        this.topicList = new ArrayList<String>();
+        //this.topicList = new ArrayList<String>();
 
     }
     
@@ -48,7 +48,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.addr = addr;
         this.port = port;
         this.connections = new HashMap<>();
-        this.topicList = new ArrayList<String>();
+        //this.topicList = new ArrayList<String>();
 
     }
 
@@ -58,7 +58,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.port = 666;
         this.attackerID = null;
         this.connections = new HashMap<>();
-        this.topicList = new ArrayList<String>();
+        //this.topicList = new ArrayList<String>();
 
 
     }
@@ -70,7 +70,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
         this.is_evil = n.is_evil;
         this.attackerID = n.attackerID;
         this.connections = new HashMap<>();
-        this.topicList = new ArrayList<String>();
+        //this.topicList = new ArrayList<String>();
 
 
     }
@@ -163,7 +163,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
     public void setLookupResult(List<BigInteger> results) {
 
     	//System.out.println("Received "+results.size()+" nodes topiclist:"+topicList.size());
-    	for(String topic : topicList) {
+    	for(String topic : connections.keySet()) {
+    	//for(String topic : topicList) {
     		NodeConnectionsv4 con = (NodeConnectionsv4) connections.get(topic);
     		con.addLookupResult(results);    		 
     		if(!connections.get(topic).isEmpty())
@@ -245,8 +246,13 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }*/
     
     public void setTopic(String t, Node n) {
+    	//System.out.println("Set topic "+t+" "+id);
     	this.n = n;
-    	this.topicList.add(t);
+    	//this.topicList.
+    	//this.topicList.add(t);
+    	
+    	//System.out.println(this +" Has topic "+this.id+" "+t+" "+connections.keySet().contains(t)+" "+this.connections.size());
+
     	if(connections.get(t)==null) {
     		connections.put(t, new NodeConnections(t,this));
     	}
@@ -254,7 +260,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     public void setTopicDiscv4(String t, Node n) {
     	this.n = n;
-    	this.topicList.add(t);
+    	//this.topicList.add(t);
 
     	if(connections.get(t)==null) {
     		//System.out.println("Add topic "+t);
@@ -296,13 +302,16 @@ public class KademliaNode implements Comparable<KademliaNode>{
     
     public boolean hasTopic(String topic)
     {
-    	//System.out.println("Has topic "+topic+" "+topicList.contains(topic)+" "+topicList.size());
-    	return topicList.contains(topic);
+    	//System.out.println(this +" Has topic "+this.id+" "+topic+" "+this.connections.containsKey(topic)+" "+this.connections.size());
+    	/*for(String t : this.topicList) {
+    		System.out.println("topic in list "+t); 
+    	}*/
+    	return this.connections.containsKey(topic);
     	
     }
     
     public List<String> getTopicList() {
-    	return topicList;
+    	return new ArrayList<>(this.connections.keySet());
     }
     
     public List<String> topicQuerying(){

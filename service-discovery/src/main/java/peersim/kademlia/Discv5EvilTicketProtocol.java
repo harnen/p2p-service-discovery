@@ -257,7 +257,8 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         long curr_time = CommonState.getTime();
 		//System.out.println("Ticket request received from " + m.src.getId()+" in node "+this.node.getId());
         Topic topic = (Topic) m.body;
-        KademliaNode advertiser = new KademliaNode(m.src); 
+        
+        KademliaNode advertiser = m.src; 
         //System.out.println("TicketRequest handle "+topic.getTopic());
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
         long rtt_delay = 2*transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));

@@ -211,7 +211,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		int destpid = dest.getKademliaProtocol().getProtocolID();
 
 		m.src = this.node;
-		m.dest = new KademliaNode(destId);
+		m.dest = Util.nodeIdtoNode(destId).getKademliaProtocol().getNode();
 
 		logger.info("-> (" + m + "/" + m.id + ") " + destId);
 
@@ -276,7 +276,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		this.routingTable.addNeighbour(destId);
 
 		m.src = this.node;
-		m.dest = new KademliaNode(destId);
+		//m.dest = new KademliaNode(destId);
+		m.dest = Util.nodeIdtoNode(destId).getKademliaProtocol().getNode();
 		Node src = Util.nodeIdtoNode(this.node.getId());
 		Node dest = Util.nodeIdtoNode(destId);
 
@@ -375,7 +376,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		// System.out.println("Ticket request received from " + m.src.getId()+" in node
 		// "+this.node.getId());
 		Topic topic = (Topic) m.body;
-		KademliaNode advertiser = new KademliaNode(m.src);
+		KademliaNode advertiser = m.src;//new KademliaNode(m.src);
 		// logger.warning("TicketRequest handle "+m.src);
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		long rtt_delay = 2 * transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
@@ -624,7 +625,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 					request.operationId = lop.operationId;
 					request.src = this.node;
 					request.body = lop.body;
-					request.dest = new KademliaNode(neighbour);
+					request.dest =  Util.nodeIdtoNode(neighbour).getKademliaProtocol().getNode();//new KademliaNode(neighbour);
 
 					if (request != null) {
 						lop.nrHops++;
@@ -749,7 +750,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		for (int i = 0; i < KademliaCommonConfig.ALPHA; i++) {
 			BigInteger nextNode = lop.getNeighbour();
 			if (nextNode != null) {
-				m.dest = new KademliaNode(nextNode);
+				m.dest = Util.nodeIdtoNode(nextNode).getKademliaProtocol().getNode();//new KademliaNode(nextNode);
 				sendMessage(m.copy(), nextNode, myPid);
 				//System.out.println("Send topic lookup to: " + nextNode +" at distance:"+Util.logDistance(lop.topic.topicID, nextNode));
 				lop.nrHops++;
@@ -821,7 +822,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 				Message m = new Message();
 				m.operationId = op.operationId;
 				m.type = Message.MSG_TOPIC_QUERY_REPLY;
-				m.src = new KademliaNode(unavailableNode);
+				m.src = Util.nodeIdtoNode(unavailableNode).getKademliaProtocol().getNode();//new KademliaNode(unavailableNode);
 				m.dest = this.node;
 				m.ackId = t.msgID;
 				m.body = new Message.TopicLookupBody(new TopicRegistration[0], new BigInteger[0]);
