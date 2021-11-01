@@ -28,8 +28,10 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     protected static final int occupancyPower = 4;
     protected static final int baseMultiplier = 30;
     
+    private IpModifier ips;
 	public Discv5GlobalTopicTable() {
         super();
+        ips = new IpModifier();
     }
   
     
@@ -169,7 +171,7 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
     
     protected double getIPModifier(TopicRegistration reg) {
 
-    	double counter=0.0;
+    	/*double counter=0.0;
 		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
@@ -178,7 +180,13 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
 
         if(allAds.size()==0)return 0;
 
-    	return baseMultiplier*Math.pow((double)counter/(allAds.size()),amplify*ipModifierExp);
+    	return baseMultiplier*Math.pow((double)counter/(allAds.size()),amplify*ipModifierExp);*/
+    	
+    	double mod = ips.getModifier();
+    	
+    	ips.newAddress(reg.getNode().getAddr());
+    	
+    	return mod;
     }
     
     protected double getIdModifier(TopicRegistration reg) {
@@ -375,6 +383,21 @@ public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements Top
         
         System.out.println("Entropy1:"+entropy1+" entropy2:"+entropy2+" return:"+10*entropy1/entropy2);
         return 10*entropy1/entropy2;
+    }
+    
+    protected void updateTopicTable(long curr_time) {
+		Iterator<TopicRegistration> it = allAds.iterator();
+		while (it.hasNext()) {
+    		TopicRegistration r = it.next();
+        	if (curr_time - r.getTimestamp() >= this.adLifeTime) {
+            	ArrayDeque<TopicRegistration> topicQ = topicTable.get(r.getTopic());
+	            //TopicRegistration r_same = topicQ.pop(); 
+	            topicQ.pop(); 
+                //assert r_same.equals(r);
+				it.remove(); //removes from allAds
+
+			}
+		}
     }
     
 }
