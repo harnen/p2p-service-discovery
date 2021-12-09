@@ -621,11 +621,11 @@ public class KademliaObserver implements Control {
 	            if(m.getType() == Message.MSG_TOPIC_QUERY) {
 	                result += ((Topic) m.body).topic +",,," ;
 	            }
-	            else if(m.getType() == Message.MSG_REGISTER) {
+	            else if(m.getType() == Message.MSG_REGISTER && m.body instanceof Ticket) {
 	            	int dist = Util.logDistance(((Ticket) m.body).getTopic().getTopicID(), m.dest.getId());
 	            	if (dist<240)dist=240;
 	                result += ((Ticket) m.body).getTopic() + ","+dist+",,";
-	            }else if(m.getType() == Message.MSG_REGISTER_RESPONSE){
+	            }else if(m.getType() == Message.MSG_REGISTER_RESPONSE && m.body instanceof Ticket){
 	            	Ticket ticket = (Ticket) m.body;
 	            	if(ticket.isRegistrationComplete())
 	            		result += ticket.getTopic() + ",,"+"-1"+",";
@@ -711,9 +711,12 @@ public class KademliaObserver implements Control {
 	
 	private void write_better_waiting_time () {
 	    try {
+            if(all_topics==null)return;
+
             String filename = logFolderName + "/" + "betterWaitingTimes.csv";
             File myFile = new File(filename);
             FileWriter writer;
+
             if (!myFile.exists()) {
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
@@ -751,6 +754,8 @@ public class KademliaObserver implements Control {
 	
 	private void write_overthreshold_time () {
 	    try {
+            if(all_topics==null)return;
+
             String filename = logFolderName + "/" + "overThresholdWaitingTimes.csv";
             File myFile = new File(filename);
             FileWriter writer;

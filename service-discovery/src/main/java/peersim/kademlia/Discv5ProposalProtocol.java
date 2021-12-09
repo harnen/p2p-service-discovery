@@ -187,7 +187,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	protected void handleInitRegister(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(this.node, t);
-    	//System.out.println("Sending topic registration for topic "+t.getTopic());
+    	logger.info("Sending topic registration for topic "+t.getTopic());
 
 		KademliaObserver.addTopicRegistration(t, this.node.getId());
 	
