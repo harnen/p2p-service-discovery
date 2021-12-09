@@ -1,4 +1,4 @@
-package peersim.kademlia;
+package src.main.java.peersim.kademlia;
 
 
 import java.math.BigInteger;
@@ -17,14 +17,14 @@ import peersim.transport.UnreliableTransport;
 
 
 
-public class Discv5ProposalProtocol extends KademliaProtocol {
+public class Discv5DHTProtocol extends KademliaProtocol {
 
-	public Discv5ProposalTopicTable topicTable;
+	public Discv5NoTicketTopicTable topicTable;
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 
-	public Discv5ProposalProtocol(String prefix) {
+	public Discv5DHTProtocol(String prefix) {
 		super(prefix);
-		this.topicTable = new Discv5ProposalTopicTable();
+		this.topicTable = new Discv5NoTicketTopicTable();
 
 		// TODO Auto-generated constructor stub
 	}
@@ -36,7 +36,7 @@ public class Discv5ProposalProtocol extends KademliaProtocol {
 	 * @return Object
 	 */
 	public Object clone() {
-		Discv5ProposalProtocol dolly = new Discv5ProposalProtocol(Discv5ProposalProtocol.prefix);
+		Discv5DHTProtocol dolly = new Discv5DHTProtocol(Discv5DHTProtocol.prefix);
 		return dolly;
 	}
 	

@@ -12,7 +12,7 @@ import peersim.core.CommonState;
 import peersim.kademlia.TopicRegistration;
 
 
-public class Discv5ProposalTopicTable implements TopicTable {
+public class Discv5NoTicketTopicTable implements TopicTable {
 
 
     private int capacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
@@ -22,12 +22,12 @@ public class Discv5ProposalTopicTable implements TopicTable {
     private BigInteger hostID;
     
 
-    public Discv5ProposalTopicTable(BigInteger hostID){
+    public Discv5NoTicketTopicTable(BigInteger hostID){
         table = new TreeMap<Topic, List<TopicRegistration>>();
         this.hostID = hostID;
     }
 
-    public Discv5ProposalTopicTable(){
+    public Discv5NoTicketTopicTable(){
         table = new TreeMap<Topic, List<TopicRegistration>>();
     }
 

@@ -30,7 +30,7 @@ public class Discv5RRTopicTableTest{
 
     @Test
     public void ticketWaitingTimes() {
-        Discv5TopicTable table = new Discv5RRTopicTable();
+        Discv5TicketTopicTable table = new Discv5RRTopicTable();
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
         table.setCapacity(10);
         table.setAdsPerQueue(10);

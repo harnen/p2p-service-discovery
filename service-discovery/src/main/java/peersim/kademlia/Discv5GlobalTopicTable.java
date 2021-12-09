@@ -18,7 +18,7 @@ import peersim.kademlia.TopicRegistration;
 import peersim.core.CommonState;
 
 // Round-robin Discv5 Topic table
-public class Discv5GlobalTopicTable extends Discv5TopicTable { // implements TopicTable 
+public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implements TopicTable 
 
     protected static final int amplify = 1; 
     //private static final double groupModifierExp = 1;

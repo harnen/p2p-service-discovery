@@ -15,7 +15,7 @@ import peersim.kademlia.Topic;
 import peersim.kademlia.TopicRegistration;
 import peersim.core.CommonState;
 
-public class Discv5TopicTable { // implements TopicTable {
+public class Discv5TicketTopicTable { // implements TopicTable {
     
     protected int tableCapacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
     protected int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
@@ -35,7 +35,7 @@ public class Discv5TopicTable { // implements TopicTable {
     protected Logger logger;
     
 
-    public Discv5TopicTable() {
+    public Discv5TicketTopicTable() {
         topicTable = new HashMap<Topic, ArrayDeque<TopicRegistration>>(); 
         competingTickets = new HashMap<Topic, ArrayList<Ticket>>();
         allAds = new ArrayDeque<TopicRegistration>();

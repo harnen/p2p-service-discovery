@@ -17,7 +17,7 @@ import peersim.kademlia.TopicRegistration;
 import peersim.core.CommonState;
 
 // Round-robin Discv5 Topic table
-public class Discv5RRTopicTable extends Discv5TopicTable { // implements TopicTable 
+public class Discv5RRTopicTable extends Discv5TicketTopicTable { // implements TopicTable 
 
     private SortedMap<Topic, Long> registrationTimes; 
     // index to the current topic in the round-robin

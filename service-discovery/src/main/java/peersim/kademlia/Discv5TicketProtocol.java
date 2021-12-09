@@ -40,7 +40,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	/**
 	 * Topic table of this node
 	 */
-	public Discv5TopicTable topicTable;
+	public Discv5TicketTopicTable topicTable;
 
 	/**
 	 * Table to keep track of topic registrations
@@ -125,7 +125,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
         }else if (KademliaCommonConfig.ROUND_ROBIN_TOPIC_TABLE == 3) {
             this.topicTable = new Discv5StatefulTopicTable();
 		} else {
-			this.topicTable = new Discv5TopicTable();
+			this.topicTable = new Discv5TicketTopicTable();
 		}
 		firstRegister = true;
 		registrationTimeout = KademliaCommonConfig.REG_TIMEOUT;
