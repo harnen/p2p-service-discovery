@@ -19,7 +19,7 @@ public class RegisterOperation extends Operation{
 	public Topic topic;
 	private TopicRegistration registration; //FIXME: is this variable used?
 
-
+	private Message message;
 	/**
 	 * defaul constructor
 	 * 
@@ -41,6 +41,14 @@ public class RegisterOperation extends Operation{
     
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+    
+    public void setMessage(Message message) {
+    	this.message = message;
+    }
+    
+    public Message getMessage() {
+    	return this.message;
     }
 
     public Topic getTopic() {

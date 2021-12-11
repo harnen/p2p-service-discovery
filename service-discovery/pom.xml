@@ -165,6 +165,7 @@
                   <configuration>
                       <artifactSet>
                           <includes>
+                              <include>com.github.seancfoley:ipaddress</include>
                               <include>org.json:json</include>
                               <include>com.google.guava:guava</include>
                               <include>org.apache.tuweni:tuweni-io</include>                              

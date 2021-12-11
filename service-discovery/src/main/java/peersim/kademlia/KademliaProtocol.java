@@ -315,7 +315,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	protected void handleInitFind(Message m, int myPid) {
+	protected long handleInitFind(Message m, int myPid) {
 		KademliaObserver.find_total.add(1);
 
 		logger.warning("InitFind from "+this.node.getId()+" to "+(BigInteger) m.body+" at "+CommonState.getTime());
@@ -348,6 +348,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				fop.nrHops++;
 			}
 		}
+		
+		return fop.operationId;
 	}
 	
 	/**
@@ -461,8 +463,8 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		logger = Logger.getLogger(node.getId().toString());
 		logger.setUseParentHandlers(false);
 		ConsoleHandler handler = new ConsoleHandler();
-		//logger.setLevel(Level.WARNING);
-		logger.setLevel(Level.ALL);
+		logger.setLevel(Level.WARNING);
+		//logger.setLevel(Level.ALL);
 		  
       	handler.setFormatter(new SimpleFormatter() {
         	private static final String format = "[%d][%s] %3$s %n";

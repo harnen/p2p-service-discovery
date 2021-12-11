@@ -450,8 +450,11 @@ public class KademliaObserver implements Control {
                 ticket_request_to_good_nodes++;
 
             Topic topic = null;
-            Ticket t = (Ticket) m.body;
+            if (m.body instanceof Ticket) {Ticket t = (Ticket) m.body;
             topic = t.getTopic();
+            } else {
+            	topic = (Topic) m.body;
+            }
             
             Integer count = registerOverhead.get(topic.getTopic());
             if (count == null)

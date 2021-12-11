@@ -96,6 +96,7 @@ public class Operation {
 		// set a new find id
 		operationId = OPERATION_ID_GENERATOR++;
 
+		//System.out.println("Operation type "+type+" "+operationId);
 		// set availabe request to ALPHA
 		available_requests = KademliaCommonConfig.ALPHA;
 

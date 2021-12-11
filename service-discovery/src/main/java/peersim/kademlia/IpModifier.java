@@ -2,7 +2,7 @@ package peersim.kademlia;
 
 import inet.ipaddr.IPAddressString;
 import inet.ipaddr.ipv4.IPv4Address;
-import inet.ipaddr.ipv4.IPv4AddressTrie;
+//import inet.ipaddr.ipv4.IPv4AddressTrie;
 
 public class IpModifier {
 	

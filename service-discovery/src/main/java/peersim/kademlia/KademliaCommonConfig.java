@@ -46,6 +46,9 @@ public class KademliaCommonConfig {
     public static int FILTER_RESULTS = 1;
 
     
+    public static int N = 3;
+
+    
     // Attack Types:
     public static String ATTACK_TYPE_TOPIC_SPAM = "TopicSpam";
     public static String ATTACK_TYPE_RANDOM_SPAM = "RandomSpam";
