@@ -21,17 +21,17 @@ import peersim.transport.UnreliableTransport;
 
 
 
-public class Discv5DHTProtocol extends KademliaProtocol {
+public class Discv5DHTTicketProtocol extends KademliaProtocol {
 
-	public Discv5TopicTable topicTable;
+	public Discv5GlobalTopicTable topicTable;
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 	final String PAR_N = "N_REGS";
 
 	private HashMap<Long,Long> registrationMap;
 
-	public Discv5DHTProtocol(String prefix) {
+	public Discv5DHTTicketProtocol(String prefix) {
 		super(prefix);
-		this.topicTable = new Discv5TopicTable();
+		this.topicTable = new Discv5GlobalTopicTable();
 		this.registrationMap = new HashMap<>();
 		// TODO Auto-generated constructor stub
 	}
@@ -43,7 +43,7 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 	 * @return Object
 	 */
 	public Object clone() {
-		Discv5DHTProtocol dolly = new Discv5DHTProtocol(Discv5DHTProtocol.prefix);
+		Discv5DHTTicketProtocol dolly = new Discv5DHTTicketProtocol(Discv5DHTTicketProtocol.prefix);
 		return dolly;
 	}
 	
@@ -376,7 +376,71 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 
 	}
 	
+	/**
+	 * Process a ticket request
+	 *
+	 */
+	protected void handleTicketRequest(Message m, int myPid) {
+		// FIXME add logs
+		
+		logger.info("Handle ticket request "+m);
+		long curr_time = CommonState.getTime();
+		// System.out.println("Ticket request received from " + m.src.getId()+" in node
+		// "+this.node.getId());
+		Topic topic = (Topic) m.body;
+		KademliaNode advertiser = m.src;//new KademliaNode(m.src);
+		// logger.warning("TicketRequest handle "+m.src);
+		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
+		long rtt_delay = 2 * transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
+		Ticket ticket = topicTable.getTicket(topic, advertiser, rtt_delay, curr_time);
+		// Send a response message with a ticket back to advertiser
+		BigInteger[] neighbours = this.routingTable
+				.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
 
+		Message.TicketReplyBody body = new Message.TicketReplyBody(ticket, neighbours);
+		Message response = new Message(Message.MSG_TICKET_RESPONSE, body);
+
+		// Message response = new Message(Message.MSG_TICKET_RESPONSE, ticket);
+		response.ackId = m.id; // set ACK number
+		response.operationId = m.operationId;
+
+		response.src = this.node;
+		response.dest = Util.nodeIdtoNode(m.src.getId()).getKademliaProtocol().getNode();
+
+		sendMessage(response, m.src.getId(), myPid);
+
+	}
+
+	/**
+	 * Process a ticket response and schedule a register message
+	 *
+	 */
+	protected void handleTicketResponse(Message m, int myPid) {
+		Message.TicketReplyBody body = (Message.TicketReplyBody) m.body;
+		Ticket ticket = body.ticket;
+		logger.info("Got response! Is topic queue full?" + ticket.getOccupancy() + " " + ticket.getWaitTime());
+		Topic topic = ticket.getTopic();
+
+
+		if (ticket.getWaitTime() == -1) {
+
+			logger.warning("Attempted to re-register topic on the same node " + m.src.getId() + " for topic "
+					+ topic.getTopic());
+
+			return;
+		}
+		
+	    Message register = new Message(Message.MSG_REGISTER,topic);
+		register.ackId = m.id; 
+	    register.dest = m.src;//new KademliaNode(m.src);
+	    register.body = ticket;
+	    register.operationId = m.operationId;
+		scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
+
+		//tt.addTicket(m, ticket);
+
+	}
+	
 	/**
 	 * schedule sending a message after a given delay with current transport layer
 	 * and starting the timeout timer (which is an event) if the message is a
@@ -421,34 +485,30 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 	}
 
 	/**
-	 * Response to a register request.<br>
-	 * Tries to register the requesting node under the
-	 * specified topic
 	 * 
-	 * @param m
-	 *            Message
-	 * @param myPid
-	 *            the sender Pid
+	 *
 	 */
-	private void handleRegister(Message m, int myPid) {
-		Topic t = (Topic) m.body;
-		TopicRegistration r = new TopicRegistration(m.src, t);
-        Message response; 
+	protected void handleRegister(Message m, int myPid) {
+		Ticket ticket = (Ticket) m.body;
+		long curr_time = CommonState.getTime();
+		boolean add_event = topicTable.register_ticket(ticket, m, curr_time);
 
-		if(this.topicTable.register(r, t)) {
-			logger.info(t.topic + " registered on " + this.node.getId() + " by " + m.src.getId());
-            response = new Message(Message.MSG_REGISTER_RESPONSE, t);
-            response.ackId = m.id;
-    		response.operationId = m.operationId;
-            response.dest = m.src;
-            response.src = this.node;
-	    	assert m.src != null;
-    		logger.info(" responds with REGISTER_RESPONSE");
-            sendMessage(response, m.src.getId(), myPid);
+		// Setup a timeout event for the registration decision
+		if (add_event) {
+			Timeout timeout = new Timeout(ticket.getTopic());
+			EDSimulator.add(KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()),
+					myPid);
 		}
+		// logger.warning("Slot time "+ CommonState.getTime()+"
+		// "+(CommonState.getTime()-slotTime));
+		/*
+		 * if(firstRegister) { logger.warning("Slot executed"); Timeout timeout = new
+		 * Timeout(ticket.getTopic()); EDSimulator.add(KademliaCommonConfig.SLOT,
+		 * timeout, Util.nodeIdtoNode(this.node.getId()), myPid); firstRegister=false; }
+		 */
+		// slotTime = CommonState.getTime();
 
-		handleFind(m, myPid, Util.logDistance(t.getTopicID(), this.node.getId()));
-    }
+	}
 
      /**
      * Process a register response message.<br>
@@ -494,6 +554,24 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 		
 	}
 	
+	private void makeRegisterDecision(Topic topic, int myPid) {
+
+		long curr_time = CommonState.getTime();
+		Ticket[] tickets = this.topicTable.makeRegisterDecision(curr_time);
+		logger.info("makeRegisterDecision " + tickets.length);
+		for (Ticket ticket : tickets) {
+			Message m = ticket.getMsg();
+			Message response = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
+			response.ackId = m.id;
+			response.operationId = m.operationId;
+			
+			response.src = this.node;
+			response.dest = Util.nodeIdtoNode(ticket.getSrc().getId()).getKademliaProtocol().getNode();
+
+			sendMessage(response, ticket.getSrc().getId(), myPid);
+		}
+	}
+
 	
 	private void handleTimeout(Timeout t, int myPid){
 		Operation op = this.operations.get(t.opID);
@@ -588,6 +666,25 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 			m = (Message) event;
 			handleInitRegister(m, myPid);
 			break;
+
+		case Message.MSG_TICKET_REQUEST:
+			m = (Message) event;
+			handleTicketRequest(m, myPid);
+			break;
+
+		case Message.MSG_TICKET_RESPONSE:
+			m = (Message) event;
+			sentMsg.remove(m.ackId);
+			handleTicketResponse(m, myPid);
+			break;
+
+		case Timeout.TICKET_TIMEOUT:
+			Topic t = ((Timeout) event).topic;
+			makeRegisterDecision(t, myPid);
+			// EDSimulator.add(KademliaCommonConfig.SLOT, (Timeout)event,
+			// Util.nodeIdtoNode(this.node.getId()), myPid);
+			break;
+
 	
 		case Timeout.TIMEOUT: // timeout
 			Timeout timeout = (Timeout) event;
