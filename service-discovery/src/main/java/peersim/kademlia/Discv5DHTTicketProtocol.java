@@ -329,10 +329,10 @@ public class Discv5DHTTicketProtocol extends KademliaProtocol {
 					rop.elaborateResponse(neighbours);
 					rop.available_requests = KademliaCommonConfig.ALPHA;
 				
-					Message message = rop.getMessage(); 
+					/*Message message = rop.getMessage(); 
 					message.operationId = rop.operationId;
 					message.type = Message.MSG_REGISTER;
-					message.src = this.node;
+					message.src = this.node;*/
 					
 					registrationMap.remove(op.operationId);
 				

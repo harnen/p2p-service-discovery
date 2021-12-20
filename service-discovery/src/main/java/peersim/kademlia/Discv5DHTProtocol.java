@@ -341,7 +341,9 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 						BigInteger nextNode = rop.getNeighbour();
 						//System.out.println("Nextnode "+nextNode);
 						if (nextNode != null) {
-							sendTicketRequest(nextNode,rop.topic,myPid);
+							message.dest = new KademliaNode(nextNode);
+							sendMessage(message.copy(), nextNode, myPid);
+							rop.nrHops++;
 						}//nextNode may be null, if the node has less than ALPHA neighbours
 					}
 				}
@@ -354,7 +356,7 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 		}
 	}
 	
-	public void sendTicketRequest(BigInteger dest, Topic t, int myPid) {
+	public void sendRegisterMessage(BigInteger dest, Topic t, int myPid) {
 		logger.info("Sending ticket request to " + dest + " for topic " + t.topic);
 		TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
 		top.body = t;
@@ -462,9 +464,7 @@ public class Discv5DHTProtocol extends KademliaProtocol {
      */
     protected void handleRegisterResponse(Message m, int myPid) {
     	
-		Ticket ticket = (Ticket) m.body;
-
-        Topic t = ticket.getTopic();
+        Topic t = (Topic) m.body;
 
         KademliaObserver.reportActiveRegistration(t,this.node.is_evil);
         
