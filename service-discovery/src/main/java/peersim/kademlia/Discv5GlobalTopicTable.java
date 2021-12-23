@@ -28,10 +28,11 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
     protected static final int occupancyPower = 4;
     protected static final int baseMultiplier = 30;
     
-    private IpModifier ips;
+    private IpModifier ipMod;
+
 	public Discv5GlobalTopicTable() {
         super();
-        ips = new IpModifier();
+        ipMod = new IpModifier();
     }
   
     
@@ -181,12 +182,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
         if(allAds.size()==0)return 0;
 
     	return baseMultiplier*Math.pow((double)counter/(allAds.size()),amplify*ipModifierExp);*/
-    	
-    	double mod = ips.getModifier();
-    	
-    	ips.newAddress(reg.getNode().getAddr());
-    	
-    	return mod;
+    	return ipMod.getModifier(reg.getNode().getAddr());
     }
     
     protected double getIdModifier(TopicRegistration reg) {
@@ -250,6 +246,23 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
         }
         return num_tickets;
 
+    }
+
+    protected void register(TopicRegistration reg) {
+        ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
+        //System.out.println("Registering ip: " + reg.getNode().getAddr());
+        if (topicQ != null) {
+            topicQ.add(reg);
+            //System.out.println(this +" Add topictable "+reg.getTopic().getTopic()+" "+topicQ.size());
+        }else {
+            ArrayDeque<TopicRegistration> q = new ArrayDeque<TopicRegistration>();
+            q.add(reg);
+            this.topicTable.put(reg.getTopic(), q);
+        }
+        // Add ip address to the Trie
+        this.ipMod.newAddress(reg.getNode().getAddr());
+
+        this.allAds.add(reg);
     }
     
     protected Ticket [] makeRegisterDecision(long curr_time) {   
@@ -395,6 +408,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
 	            topicQ.pop(); 
                 //assert r_same.equals(r);
 				it.remove(); //removes from allAds
+                this.ipMod.removeAddress(r.getNode().getAddr());
 
 			}
 		}
