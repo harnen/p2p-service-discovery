@@ -46,6 +46,7 @@ public class KademliaCommonConfig {
     public static int FILTER_RESULTS = 1;
 
     
+    public static int REG_REFRESH = 0;
     public static int N = 3;
 
     

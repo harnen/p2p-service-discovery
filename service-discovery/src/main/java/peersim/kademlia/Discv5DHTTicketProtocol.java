@@ -27,12 +27,16 @@ public class Discv5DHTTicketProtocol extends KademliaProtocol {
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 	final String PAR_N = "N_REGS";
 
+	protected HashMap<Ticket, BackoffService> registrationFailed;
+
 	private HashMap<Long,Long> registrationMap;
 
 	public Discv5DHTTicketProtocol(String prefix) {
 		super(prefix);
 		this.topicTable = new Discv5GlobalTopicTable();
 		this.registrationMap = new HashMap<>();
+		this.registrationFailed = new HashMap<Ticket, BackoffService>();
+
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -199,6 +203,19 @@ public class Discv5DHTTicketProtocol extends KademliaProtocol {
 		return m;
 	}
 
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a register message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	protected Message generateRegisterMessage(String topic) {
+		Topic t = new Topic(topic);
+		Message m = Message.makeRegister(t);
+		m.timestamp = CommonState.getTime();
+
+		return m;
+	}
 
 
 	/**
@@ -525,10 +542,58 @@ public class Discv5DHTTicketProtocol extends KademliaProtocol {
 		Ticket ticket = (Ticket) m.body;
 
         Topic t = ticket.getTopic();
-
-        KademliaObserver.reportActiveRegistration(t,this.node.is_evil);
         
-        KademliaObserver.addAcceptedRegistration(t, this.node.getId(),m.src.getId(),CommonState.getTime());
+        if (!ticket.isRegistrationComplete()) {
+			logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: "
+					+ m.src.getId() + " wait time: " + ticket.getWaitTime() + " " + ticket.getCumWaitTime());
+			Message register = new Message(Message.MSG_REGISTER, ticket);
+			register.operationId = m.operationId;
+			register.body = m.body;
+
+			BackoffService backoff = registrationFailed.get(ticket);
+			if (backoff == null) {
+				backoff = new BackoffService(KademliaCommonConfig.AD_LIFE_TIME,
+						KademliaCommonConfig.MAX_REGISTRATION_RETRIES);
+				backoff.registrationFailed();
+				registrationFailed.put(ticket, backoff);
+			} else {
+				backoff.registrationFailed();
+			}
+			logger.info("Registration failed " + backoff.getTimesFailed() + " backing off " + +backoff.getTimeToWait()
+					+ " " + backoff.shouldRetry() + " " + ticket.getWaitTime());
+
+			if ((backoff.shouldRetry() && ticket.getWaitTime() >= 0)&&(ticket.getCumWaitTime()<=KademliaCommonConfig.REG_TIMEOUT)) {
+				scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
+			} else {
+				logger.warning("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime()+" or too many tries "+backoff.getTimesFailed());
+				// ticketTables.get(topic.getTopicID()).removeRegisteredList(m.src.getId());
+				RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
+				EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()),
+						myPid);
+				
+				if(ticket.getCumWaitTime()>KademliaCommonConfig.REG_TIMEOUT)
+					KademliaObserver.reportOverThresholdWaitingTime(t.getTopic(),this.node.getId(),m.src.getId(),ticket.getWaitTime());
+					
+					
+			}
+
+		} else {
+			logger.info("Registration succesful for topic " + ticket.getTopic().topic + " at node " + m.src.getId()
+					+ " at dist " + Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID()) + " "
+					+ ticket.getCumWaitTime());
+			KademliaObserver.addAcceptedRegistration(t, this.node.getId(), m.src.getId(), ticket.getCumWaitTime());
+			KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
+
+	        
+	        if(KademliaCommonConfig.REG_REFRESH==1) {
+	        	Timeout timeout = new Timeout(t, m.src.getId());
+	        	EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+	        }
+
+
+		}
+
+
         
         operations.remove(m.operationId);
 
@@ -684,7 +749,13 @@ public class Discv5DHTTicketProtocol extends KademliaProtocol {
 			// EDSimulator.add(KademliaCommonConfig.SLOT, (Timeout)event,
 			// Util.nodeIdtoNode(this.node.getId()), myPid);
 			break;
+			
+		case Timeout.REG_TIMEOUT:
 
+		    EDSimulator.add(0,generateRegisterMessage(((Timeout) event).topic.getTopic()), Util.nodeIdtoNode(this.node.getId()),this.getProtocolID());
+
+			break;
+	
 	
 		case Timeout.TIMEOUT: // timeout
 			Timeout timeout = (Timeout) event;

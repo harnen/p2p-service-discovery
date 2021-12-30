@@ -26,6 +26,8 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 	public Discv5TopicTable topicTable;
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 	final String PAR_N = "N_REGS";
+	final String PAR_REG_REFRESH = "REG_REFRESH";
+	final String PAR_REGTIMEOUT = "REG_TIMEOUT";
 
 	private HashMap<Long,Long> registrationMap;
 
@@ -61,6 +63,11 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 		
 		KademliaCommonConfig.N = Configuration.getInt(prefix + "." + PAR_N, KademliaCommonConfig.N);
 
+		KademliaCommonConfig.REG_REFRESH = Configuration.getInt(prefix + "." + PAR_REG_REFRESH, KademliaCommonConfig.REG_REFRESH);
+		
+		KademliaCommonConfig.REG_TIMEOUT = Configuration.getInt(prefix + "." + PAR_REGTIMEOUT,
+				KademliaCommonConfig.REG_TIMEOUT);
+		
 		super._init();
 	}
 	
@@ -235,6 +242,20 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 		logger.info("Registration1 operation id "+rop.operationId+" "+op);
 		
 		
+	}
+	
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a register message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	protected Message generateRegisterMessage(String topic) {
+		Topic t = new Topic(topic);
+		Message m = Message.makeRegister(t);
+		m.timestamp = CommonState.getTime();
+
+		return m;
 	}
 	
 	
@@ -470,6 +491,11 @@ public class Discv5DHTProtocol extends KademliaProtocol {
         
         KademliaObserver.addAcceptedRegistration(t, this.node.getId(),m.src.getId(),CommonState.getTime());
         
+        
+        if(KademliaCommonConfig.REG_REFRESH==1) {
+        	Timeout timeout = new Timeout(t, m.src.getId());
+        	EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+        }
         operations.remove(m.operationId);
 
     }   
@@ -587,6 +613,12 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 		case Message.MSG_INIT_REGISTER:
 			m = (Message) event;
 			handleInitRegister(m, myPid);
+			break;
+			
+		case Timeout.REG_TIMEOUT:
+
+		    EDSimulator.add(0, generateRegisterMessage(((Timeout) event).topic.getTopic()), Util.nodeIdtoNode(this.node.getId()),this.getProtocolID());
+
 			break;
 	
 		case Timeout.TIMEOUT: // timeout
