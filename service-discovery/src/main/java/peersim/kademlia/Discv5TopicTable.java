@@ -263,4 +263,11 @@ public class Discv5TopicTable implements TopicTable {
 
     }
     
+    public double topicTableUtilisation() {
+        
+ 
+        return ((double) size)/capacity;
+     }
+     
+    
 }

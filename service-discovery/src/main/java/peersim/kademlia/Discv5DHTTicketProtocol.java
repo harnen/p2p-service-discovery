@@ -24,7 +24,6 @@ import peersim.transport.UnreliableTransport;
 
 public class Discv5DHTTicketProtocol extends Discv5Protocol {
 
-	public Discv5GlobalTopicTable topicTable;
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 	final String PAR_N = "N_REGS";
 
@@ -34,7 +33,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 
 	public Discv5DHTTicketProtocol(String prefix) {
 		super(prefix);
-		this.topicTable = new Discv5GlobalTopicTable();
+		this.topicTable = new Discv5StatefulTopicTable();
 		this.registrationMap = new HashMap<>();
 		this.registrationFailed = new HashMap<Ticket, BackoffService>();
 
@@ -412,7 +411,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		// logger.warning("TicketRequest handle "+m.src);
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		long rtt_delay = 2 * transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
-		Ticket ticket = topicTable.getTicket(topic, advertiser, rtt_delay, curr_time);
+		Ticket ticket = ((Discv5StatefulTopicTable)topicTable).getTicket(topic, advertiser, rtt_delay, curr_time);
 		// Send a response message with a ticket back to advertiser
 		BigInteger[] neighbours = this.routingTable
 				.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
@@ -511,7 +510,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 	protected void handleRegister(Message m, int myPid) {
 		Ticket ticket = (Ticket) m.body;
 		long curr_time = CommonState.getTime();
-		boolean add_event = topicTable.register_ticket(ticket, m, curr_time);
+		boolean add_event = ((Discv5StatefulTopicTable)topicTable).register_ticket(ticket, m, curr_time);
 
 		// Setup a timeout event for the registration decision
 		if (add_event) {
@@ -625,7 +624,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 	private void makeRegisterDecision(Topic topic, int myPid) {
 
 		long curr_time = CommonState.getTime();
-		Ticket[] tickets = this.topicTable.makeRegisterDecision(curr_time);
+		Ticket[] tickets = ((Discv5StatefulTopicTable)topicTable).makeRegisterDecision(curr_time);
 		logger.info("makeRegisterDecision " + tickets.length);
 		for (Ticket ticket : tickets) {
 			Message m = ticket.getMsg();
@@ -780,7 +779,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 	 *            BigInteger
 	 */
 	public void setNode(KademliaNode node) {
-		this.topicTable.setHostID(node.getId());
+		topicTable.setHostID(node.getId());
 		super.setNode(node);
 		
 	}

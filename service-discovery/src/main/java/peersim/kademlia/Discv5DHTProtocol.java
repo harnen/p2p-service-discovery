@@ -24,7 +24,6 @@ import peersim.transport.UnreliableTransport;
 
 public class Discv5DHTProtocol extends Discv5Protocol  {
 
-	public Discv5TopicTable topicTable;
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
 	final String PAR_N = "N_REGS";
 	final String PAR_REG_REFRESH = "REG_REFRESH";

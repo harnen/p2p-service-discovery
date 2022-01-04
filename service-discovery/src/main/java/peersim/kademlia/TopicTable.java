@@ -16,5 +16,7 @@ interface TopicTable {
     public HashMap<String, Integer> getRegEvilbyRegistrar();
     public HashMap<String, HashMap<BigInteger,Integer>> getRegbyRegistrant();
     public HashMap<String, HashMap<BigInteger,Integer>> getRegEvilbyRegistrant();
+    public double topicTableUtilisation();
+    public void setHostID(BigInteger id);
 
 }
