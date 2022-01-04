@@ -248,7 +248,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
 
     }
 
-    protected void register(TopicRegistration reg) {
+    public boolean register(TopicRegistration reg) {
         ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
         //System.out.println("Registering ip: " + reg.getNode().getAddr());
         if (topicQ != null) {
@@ -263,6 +263,8 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
         this.ipMod.newAddress(reg.getNode().getAddr());
 
         this.allAds.add(reg);
+        
+        return true;
     }
     
     protected Ticket [] makeRegisterDecision(long curr_time) {   

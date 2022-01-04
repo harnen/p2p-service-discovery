@@ -262,7 +262,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         //System.out.println("TicketRequest handle "+topic.getTopic());
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
         long rtt_delay = 2*transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
-        Ticket ticket = topicTable.getTicket(topic, advertiser, rtt_delay, curr_time);
+        Ticket ticket = ((Discv5GlobalTopicTable)this.topicTable).getTicket(topic, advertiser, rtt_delay, curr_time);
         // Send a response message with a ticket back to advertiser
 		BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
 		//BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));

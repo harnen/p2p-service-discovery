@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 
 import peersim.config.Configuration;
+import peersim.core.Cleanable;
 import peersim.core.CommonState;
 import peersim.core.Network;
 import peersim.core.Node;
@@ -21,7 +22,7 @@ import peersim.transport.UnreliableTransport;
 
 
 
-public class Discv5DHTTicketProtocol extends KademliaProtocol {
+public class Discv5DHTTicketProtocol extends Discv5Protocol {
 
 	public Discv5GlobalTopicTable topicTable;
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
@@ -234,6 +235,8 @@ public class Discv5DHTTicketProtocol extends KademliaProtocol {
 
 		KademliaObserver.addTopicRegistration(t, this.node.getId());
 	
+		activeTopics.add(t.getTopic());
+
 		RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
 		rop.body = m.body;
 		rop.type = Message.MSG_REGISTER;

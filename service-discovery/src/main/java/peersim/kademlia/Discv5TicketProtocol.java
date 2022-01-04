@@ -35,12 +35,8 @@ import peersim.kademlia.KademliaNode;
 import peersim.kademlia.Message;
 import peersim.kademlia.TicketTable;
 
-public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable {
+public class Discv5TicketProtocol extends Discv5Protocol {
 
-	/**
-	 * Topic table of this node
-	 */
-	public Discv5TicketTopicTable topicTable;
 
 	/**
 	 * Table to keep track of topic registrations
@@ -300,7 +296,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	private void makeRegisterDecision(Topic topic, int myPid) {
 
 		long curr_time = CommonState.getTime();
-		Ticket[] tickets = this.topicTable.makeRegisterDecision(curr_time);
+		Ticket[] tickets = ((Discv5GlobalTopicTable)this.topicTable).makeRegisterDecision(curr_time);
 		logger.info("makeRegisterDecision " + tickets.length);
 		for (Ticket ticket : tickets) {
 			Message m = ticket.getMsg();
@@ -318,7 +314,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	protected void handleRegister(Message m, int myPid) {
 		Ticket ticket = (Ticket) m.body;
 		long curr_time = CommonState.getTime();
-		boolean add_event = topicTable.register_ticket(ticket, m, curr_time);
+		boolean add_event = ((Discv5GlobalTopicTable)this.topicTable).register_ticket(ticket, m, curr_time);
 
 		// Setup a timeout event for the registration decision
 		if (add_event) {
@@ -377,7 +373,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		// logger.warning("TicketRequest handle "+m.src);
 		transport = (UnreliableTransport) (Network.prototype).getProtocol(tid);
 		long rtt_delay = 2 * transport.getLatency(Util.nodeIdtoNode(m.src.getId()), Util.nodeIdtoNode(m.dest.getId()));
-		Ticket ticket = topicTable.getTicket(topic, advertiser, rtt_delay, curr_time);
+		Ticket ticket = ((Discv5GlobalTopicTable)this.topicTable).getTicket(topic, advertiser, rtt_delay, curr_time);
 		// Send a response message with a ticket back to advertiser
 		BigInteger[] neighbours = this.routingTable
 				.getNeighbours(Util.logDistance(topic.getTopicID(), this.node.getId()));
@@ -951,7 +947,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	 * @param tmp BigInteger
 	 */
 	public void setNode(KademliaNode node) {
-		this.topicTable.setHostID(node.getId());
+		((Discv5GlobalTopicTable)this.topicTable).setHostID(node.getId());
 		super.setNode(node);
 	}
 

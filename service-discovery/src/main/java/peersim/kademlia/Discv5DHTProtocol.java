@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 
 import peersim.config.Configuration;
+import peersim.core.Cleanable;
 import peersim.core.CommonState;
 import peersim.core.Network;
 import peersim.core.Node;
@@ -21,7 +22,7 @@ import peersim.transport.UnreliableTransport;
 
 
 
-public class Discv5DHTProtocol extends KademliaProtocol {
+public class Discv5DHTProtocol extends Discv5Protocol  {
 
 	public Discv5TopicTable topicTable;
 	final String PAR_TOPIC_TABLE_CAP = "TOPIC_TABLE_CAP";
@@ -218,10 +219,14 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 	 *            the sender Pid
 	 */
 	protected void handleInitRegister(Message m, int myPid) {
+		
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(this.node, t);
     	logger.info("Sending topic registration for topic "+t.getTopic());
 
+		activeTopics.add(t.getTopic());
+
+		
 		KademliaObserver.addTopicRegistration(t, this.node.getId());
 	
 		RegisterOperation rop = new RegisterOperation(this.node.getId(), m.timestamp, t, r);
@@ -458,7 +463,7 @@ public class Discv5DHTProtocol extends KademliaProtocol {
 		TopicRegistration r = new TopicRegistration(m.src, t);
         Message response; 
 
-		if(this.topicTable.register(r, t)) {
+		if(this.topicTable.register(r)) {
 			logger.info(t.topic + " registered on " + this.node.getId() + " by " + m.src.getId());
             response = new Message(Message.MSG_REGISTER_RESPONSE, t);
             response.ackId = m.id;

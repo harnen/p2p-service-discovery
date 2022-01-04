@@ -821,7 +821,7 @@ public class KademliaObserver implements Control {
 
     private void write_register_overhead() {
 
-        if(!(kadProtocol instanceof Discv5TicketProtocol))return;
+        if(!(kadProtocol instanceof Discv5Protocol))return;
 
         try {
             String filename = this.logFolderName + "/" + "register_overhead.csv";
@@ -1253,7 +1253,7 @@ public class KademliaObserver implements Control {
     private void write_average_storage_utilisation_per_topic() {
         
     	
-        if(!(kadProtocol instanceof Discv5TicketProtocol))return;
+        if(!(kadProtocol instanceof Discv5Protocol))return;
 
         HashMap<String, Double> utilisations = new HashMap<String,Double>();
         HashMap<String, Integer> ticketQLength = new HashMap<String,Integer>();
@@ -1272,7 +1272,7 @@ public class KademliaObserver implements Control {
             if (!kadProtocol.getNode().is_evil) {
             
                 numUpGoodNodes += 1;
-                topics = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyTopic();
+                topics = ((Discv5Protocol) kadProtocol).topicTable.getRegbyTopic();
 
                 int total_occupancy_topic_table = 0;
                 for (Topic t: topics.keySet()) {
@@ -1409,11 +1409,11 @@ public class KademliaObserver implements Control {
             		regByTopic.put(t, count);
                 }
                 
-                if(kadProtocol instanceof Discv5TicketProtocol) {
+                if(kadProtocol instanceof Discv5Protocol) {
                 	
-                	topics = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyTopic();
+                	topics = ((Discv5Protocol) kadProtocol).topicTable.getRegbyTopic();
                 	
-                	List<String> topicsregistering = ((Discv5TicketProtocol) kadProtocol).getRegisteringTopics();
+                	List<String> topicsregistering = ((Discv5Protocol) kadProtocol).getRegisteringTopics();
                 	for(String t : topicsregistering) {
                 		int n=1;
                 		if(topicsList.get(t)!=null) {
@@ -1439,7 +1439,7 @@ public class KademliaObserver implements Control {
 
                         //FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
                         //writer.write("host,topic,registrant,timestamp\n");
-	                    String registrations = ((Discv5TicketProtocol) kadProtocol).topicTable.dumpRegistrations();
+	                    String registrations = ((Discv5Protocol) kadProtocol).topicTable.dumpRegistrations();
 	                    writer.write(registrations);
 	                    writer.close();
 
@@ -1448,7 +1448,7 @@ public class KademliaObserver implements Control {
                     //topic table registrations by registrar
                     int count;
 
-                    HashMap<String, Integer> registrars = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyRegistrar();
+                    HashMap<String, Integer> registrars = ((Discv5Protocol) kadProtocol).topicTable.getRegbyRegistrar();
                     for(String topic : registrars.keySet())
                     {
                     	count=0;
@@ -1469,7 +1469,7 @@ public class KademliaObserver implements Control {
 
                     }
                     
-                    HashMap<String, Integer> registrarsEvil= ((Discv5TicketProtocol) kadProtocol).topicTable.getRegEvilbyRegistrar();
+                    HashMap<String, Integer> registrarsEvil= ((Discv5Protocol) kadProtocol).topicTable.getRegEvilbyRegistrar();
                     for(String topic : registrarsEvil.keySet())
                     {
                     	count=0;
@@ -1489,27 +1489,30 @@ public class KademliaObserver implements Control {
                     		//regByRegistrar.get(topic).put(kadProtocol.getNode().getId(), registrars.get(topic));
 
                     }
-                    
-                    HashMap<String,Integer> competing = ((Discv5TicketProtocol) kadProtocol).topicTable.getCompetingTickets();
-                    
-                    for(String topic : competing.keySet()) {
-                    	/*count=0;
-                    	if(competingTickets.get(topic)!=null) 
-                    		if(competingTickets.get(topic).get(kadProtocol.getNode().getId())!=null)
-                    			count = competingTickets.get(topic).get(kadProtocol.getNode().getId());
+                    if(kadProtocol instanceof Discv5TicketProtocol || kadProtocol instanceof Discv5DHTTicketProtocol) {
+                        HashMap<String,Integer> competing;
+                        competing = ((Discv5GlobalTopicTable)((Discv5Protocol) kadProtocol).topicTable).getCompetingTickets();
                     	
-                    	count=competing.get(topic);*/
-                    	if(competingTickets.get(topic)==null) {
-                    		HashMap<BigInteger,Integer> tmp = new HashMap<BigInteger,Integer>();
-                    		tmp.put(kadProtocol.getNode().getId(), competing.get(topic));
-                    		competingTickets.put(topic, tmp);
-                    	} else 
-                    		competingTickets.get(topic).put(kadProtocol.getNode().getId(),competing.get(topic));                    		
-                    	
+                    	  for(String topic : competing.keySet()) {
+                          	/*count=0;
+                          	if(competingTickets.get(topic)!=null) 
+                          		if(competingTickets.get(topic).get(kadProtocol.getNode().getId())!=null)
+                          			count = competingTickets.get(topic).get(kadProtocol.getNode().getId());
+                          	
+                          	count=competing.get(topic);*/
+                          	if(competingTickets.get(topic)==null) {
+                          		HashMap<BigInteger,Integer> tmp = new HashMap<BigInteger,Integer>();
+                          		tmp.put(kadProtocol.getNode().getId(), competing.get(topic));
+                          		competingTickets.put(topic, tmp);
+                          	} else 
+                          		competingTickets.get(topic).put(kadProtocol.getNode().getId(),competing.get(topic));                    		
+                          	
+                          }
                     }
+                  
    
                     //topic table registrations by registrant
-                    HashMap<String, HashMap<BigInteger,Integer>> tmpReg = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegbyRegistrant();
+                    HashMap<String, HashMap<BigInteger,Integer>> tmpReg = ((Discv5Protocol) kadProtocol).topicTable.getRegbyRegistrant();
                     for(String topic : tmpReg.keySet())
                     {  
                     	for(BigInteger id : tmpReg.get(topic).keySet()) 
@@ -1539,7 +1542,7 @@ public class KademliaObserver implements Control {
                     }
                     
                     //topic table registrations by registrant
-                    HashMap<String, HashMap<BigInteger,Integer>> tmpRegEvil = ((Discv5TicketProtocol) kadProtocol).topicTable.getRegEvilbyRegistrant();
+                    HashMap<String, HashMap<BigInteger,Integer>> tmpRegEvil = ((Discv5Protocol) kadProtocol).topicTable.getRegEvilbyRegistrant();
                     for(String topic : tmpRegEvil.keySet())
                     {  
                     	for(BigInteger id : tmpRegEvil.get(topic).keySet()) 

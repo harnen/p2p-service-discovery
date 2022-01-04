@@ -127,7 +127,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
          return tickets;
     }
 
-    protected void register(TopicRegistration reg) {
+    public boolean register(TopicRegistration reg) {
         super.register(reg);   
         // update the ip and id counters with the admitted registrations
         String ip = reg.getNode().getAddr();
@@ -152,6 +152,8 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         else {
             id_counter.put(id, id_count+1);
         }
+        
+        return true;
     }
     
     protected void updateTopicTable(long curr_time) {
