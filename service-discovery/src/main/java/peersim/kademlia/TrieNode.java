@@ -7,6 +7,7 @@ public class TrieNode {
     private TrieNode zero;
     private TrieNode one;
     private static final Logger logger = Logger.getLogger(Thread.currentThread().getStackTrace()[0].getClassName()  );
+	int[] comparators = new int[] {128, 64, 32, 16, 8, 4, 2, 1};
 
     public TrieNode(){ 
         count = 0;

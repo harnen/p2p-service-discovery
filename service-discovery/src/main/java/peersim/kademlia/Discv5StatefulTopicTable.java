@@ -16,9 +16,6 @@ import java.math.BigInteger;
 // modifiers for users.
 public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 
-    // Count of each IP, ID, topic in the topic table
-    private HashMap<String, Integer> ip_counter;
-    private HashMap<BigInteger, Integer> id_counter;
     // Last computed modifier for each IP, ID, and topic
     private HashMap<String, Double> ip_last_modifier;
     private HashMap<BigInteger, Double> id_last_modifier;
@@ -35,8 +32,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         super();
 
         // Modifer state initialisation
-        ip_counter = new HashMap<String, Integer>();
-        id_counter = new HashMap<BigInteger, Integer>();
+        //ip_counter = new HashMap<String, Integer>();
 
         ip_last_modifier = new HashMap<String, Double>();
         id_last_modifier = new HashMap<BigInteger, Double>();
@@ -73,7 +69,6 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
             assert allAds.size() != this.tableCapacity : "Table should not be full"; 
         }*/
         else {
-            baseWaitingTime = getBaseTime();
 	        //long neededTime  = (long) (Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg), baseWaitingTime*1/1000000));
 	        long neededTime  = (long) (getTopicModifier(reg) + getIPModifier(reg) + getIdModifier(reg) + getBaseModifier());
 	        waiting_time = Math.max(0, neededTime - cumWaitingTime);
@@ -126,7 +121,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 
          return tickets;
     }
-
+    /*
     protected void register(TopicRegistration reg) {
         super.register(reg);   
         // update the ip and id counters with the admitted registrations
@@ -138,22 +133,10 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         else {
             ip_counter.put(ip, ip_count+1);
         }
-        BigInteger id;
-        if (reg.getNode().is_evil) {
-            id = reg.getNode().getAttackerId();
-        }
-        else {
-            id = reg.getNode().getId();
-        }
-        Integer id_count = id_counter.get(id);
-        if (id_count == null) {
-            id_counter.put(id, 1);
-        }
-        else {
-            id_counter.put(id, id_count+1);
-        }
-    }
+        // Add ip address to the Trie
+    }*/
     
+    /*
     protected void updateTopicTable(long curr_time) {
 		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
@@ -165,31 +148,9 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
                 //assert r_same.equals(r);
 				it.remove(); //removes from allAds
                 
-                // update ip, id counts
-                String ip = r.getNode().getAddr();
-                Integer ip_count = ip_counter.get(ip);
-                ip_count = ip_count - 1;
-                if (ip_count == 0)
-                    ip_counter.remove(ip);
-                else {
-                    ip_counter.put(ip, ip_count);
-                }
-                BigInteger id;
-                if (r.getNode().is_evil)
-                    id = r.getNode().getAttackerId();
-                else
-                    id = r.getNode().getId();
-                Integer id_count = id_counter.get(id);
-                id_count -= 1;
-                if (id_count == 0) {
-                    id_counter.remove(id);
-                }
-                else {
-                    id_counter.put(id, id_count);
-                }
 			}
 		}
-    }
+    }*/
 
     private double getBaseModifier() {
         double modifier = 0;
@@ -209,16 +170,11 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         return 0;   
     }
 
-    private double getBaseTime() {
-        double occupancy = 1.0 - ( ((double) allAds.size()) / this.tableCapacity);
-
-        return ( (long) baseMultiplier * (adLifeTime/Math.pow(occupancy, occupancyPower)) );
-    }
    
     protected double getTopicModifier(TopicRegistration reg) {
         double modifier = super.getTopicModifier(reg);
-        modifier = modifier * getBaseTime();
         
+        // Implement lower bound on the modifier
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
         Long last_timestamp = topic_timestamp.get(reg.getTopic());
         if ( ((topicQ != null) && (topicQ.size() > 0)) || last_timestamp != null ) {
@@ -237,36 +193,17 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         return modifier;
     }
 
+    
     protected double getIPModifier(TopicRegistration reg) {
 
-        if(allAds.size()==0)
-            return 0;
-    	
-        Integer ip_count = ip_counter.get(reg.getNode().getAddr());
-        if (ip_count == null) {
-            ip_count = 0;
-        }
+        double modifier = super.getIPModifier(reg);
 
-        double modifier = getBaseTime() * Math.pow((double)ip_count/(allAds.size()),amplify*ipModifierExp);
-        double lower_bound = 0;
-        Long last_timestamp = ip_timestamp.get(reg.getNode().getAddr());
-        if (ip_count > 0 || last_timestamp != null) {
-            if (last_timestamp != null) {
-                long delta_time = CommonState.getTime() - last_timestamp;
-                lower_bound = Math.max(0, ip_last_modifier.get(reg.getNode().getAddr()) - delta_time);
-            }
-            modifier = Math.max(modifier, lower_bound);
-            if (lower_bound < modifier) {
-                ip_last_modifier.put(reg.getNode().getAddr(), modifier);
-                ip_timestamp.put(reg.getNode().getAddr(), CommonState.getTime());
-            }
-        }
+        //TODO implement the lower-bound
 
         return modifier;
     }
 
     protected double getIdModifier(TopicRegistration reg) {
-		Iterator<TopicRegistration> it = allAds.iterator();
         BigInteger reg_id;
 
         // Use attackerID for registrant ID if node is evil
@@ -279,7 +216,9 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         if (id_count == null)
             id_count = 0;
 
-        double modifier = getBaseTime() * Math.pow((double) id_count/(allAds.size()),amplify*idModifierExp); 
+        double modifier = super.getIdModifier(reg);
+        
+        // incorporate the lower-bound
         double lower_bound = 0;
         Long last_timestamp = id_timestamp.get(reg_id);
         if (id_count > 0 || last_timestamp != null) {
