@@ -651,6 +651,8 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		// restore the IF statement
 		KademliaObserver.addTopicRegistration(t, this.node.getId());
 
+		activeTopics.add(t.getTopic());
+
 		TicketTable tt = new TicketTable(KademliaCommonConfig.TTNBUCKETS, KademliaCommonConfig.TICKET_BUCKET_SIZE,
 				KademliaCommonConfig.TICKET_TABLE_REPLACEMENTS, this, t, myPid,
 				KademliaCommonConfig.TICKET_REFRESH == 1);
@@ -980,14 +982,6 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 
 	}
 
-	public List<String> getRegisteringTopics() {
-
-		List<String> topics = new ArrayList<String>();
-
-		for (TicketTable t : ticketTables.values())
-			topics.add(t.getTopic().getTopic());
-		return topics;
-	}
 
 	public void onKill() {
 		// System.out.println("Node removed");
