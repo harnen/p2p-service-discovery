@@ -70,7 +70,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         }*/
         else {
 	        //long neededTime  = (long) (Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg), baseWaitingTime*1/1000000));
-	        long neededTime  = (long) (getTopicModifier(reg) + getIPModifier(reg) + getIdModifier(reg) + getBaseModifier());
+	        long neededTime  = (long) ( (getTopicModifier(reg) + getIPModifier(reg) + getIdModifier(reg) + getBaseModifier()) );
 	        waiting_time = Math.max(0, neededTime - cumWaitingTime);
         }
 
@@ -152,14 +152,15 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 		}
     }*/
 
-    private double getBaseModifier() {
+    /* Get the occupancy score with lower-bound enforced
+    protected double getOccupancyScore() {
         double modifier = 0;
         if (allAds.size() > 0) {
-            modifier = 0.000001;
+            modifier = super.getOccupancyScore();
+
+            // TODO: do we need to do this for the occupancy score
             double delta_time = CommonState.getTime() - base_timestamp;
             double lower_bound = Math.max(0, base_last_modifier - delta_time);
-            modifier = modifier * getBaseTime();
-
             if (lower_bound < modifier) {
                 base_last_modifier = modifier;
                 base_timestamp = CommonState.getTime();
@@ -168,13 +169,14 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         }
 
         return 0;   
-    }
+    }*/
 
-   
+    
     protected double getTopicModifier(TopicRegistration reg) {
         double modifier = super.getTopicModifier(reg);
+        //modifier = modifier * getOccupancyScore();
         
-        // Implement lower bound on the modifier
+        // incorporate the lower-bound
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
         Long last_timestamp = topic_timestamp.get(reg.getTopic());
         if ( ((topicQ != null) && (topicQ.size() > 0)) || last_timestamp != null ) {
@@ -185,20 +187,37 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
             }
             modifier = Math.max(modifier, lower_bound);
             if (lower_bound < modifier) {
-                topic_last_modifier.put(reg.getTopic(), modifier);
-                topic_timestamp.put(reg.getTopic(), CommonState.getTime());
+                topic_last_modifier.put(new Topic(reg.getTopic()), modifier);
+                topic_timestamp.put(new Topic(reg.getTopic()), CommonState.getTime());
             }
         }
         
         return modifier;
     }
 
+    protected double getBaseModifier() {
+        double modifier = 0;
+
+        if (allAds.size() > 0) {
+            modifier = 0.000001;
+            double delta_time = Math.max(0, CommonState.getTime() - base_timestamp);
+            double lower_bound = Math.max(0, base_last_modifier - delta_time);
+            modifier = modifier * getOccupancyScore()*baseMultiplier;
+            if (lower_bound < modifier) {
+                base_last_modifier = modifier;
+                base_timestamp = CommonState.getTime();
+            }
+            return Math.max(modifier, lower_bound);
+        }
+
+        return 0;
+    }
     
     protected double getIPModifier(TopicRegistration reg) {
 
         double modifier = super.getIPModifier(reg);
 
-        //TODO implement the lower-bound
+        //TODO incorporate the lower-bound
 
         return modifier;
     }
@@ -217,6 +236,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
             id_count = 0;
 
         double modifier = super.getIdModifier(reg);
+        //modifier = modifier * getOccupancyScore();
         
         // incorporate the lower-bound
         double lower_bound = 0;

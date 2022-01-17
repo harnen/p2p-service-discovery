@@ -76,6 +76,10 @@ public class TrieNode {
 
             score += currNode.count();
             currNode.increment();
+
+            String prefix = ip.substring(0, length);
+            //logger.info("Increment prefix: " + prefix + " to " + currNode.count());
+
             char bit = ip.charAt(length);
 
             if (bit == '0') {
@@ -90,7 +94,12 @@ public class TrieNode {
                 }
                 currNode = currNode.one();
             }
+            else { 
+                System.out.println("invalid ip address: " + ip);
+                System.exit(-1);
+            }
         } 
+        score += currNode.count();
         currNode.increment();
         
         return (1.0*score)/(31.0*root.count());
@@ -102,47 +111,55 @@ public class TrieNode {
         TrieNode currNode = root;
         TrieNode prevNode = root;
         boolean delete = false;
-        int length = 0;
+        int length;
 
-        for (; length < 32; length++) {
+        boolean zero = false;
+        for (length = 0; length < 32; length++) {
 
+            String prefix = ip.substring(0, length);
+
+            //logger.info("Before Decrement prefix: " + prefix + " to " + currNode.count());
             currNode.decrement();
+            //logger.info("After Decrement prefix: " + prefix + " to " + currNode.count());
+            
             if (currNode.count() == 0) {
-                delete = true;
-                break;
+                zero = true;
+                if (currNode != root)
+                {
+                    char bit = ip.charAt(length-1);
+                    if (bit == '0') {
+                        prevNode.zero = null;
+                    }
+                    else { //if (bit == '1') 
+                        prevNode.one = null;
+                    }
+                }
             }
-    
+            else {
+                if (zero) {
+                    assert (currNode.count() == 0) : "count must be greater than zero, but count = " + currNode.count() + " " + length;
+                }
+            }
             prevNode = currNode;
+
+            // advance currNode
             char bit = ip.charAt(length);
-            if (bit == '0') 
-               currNode = currNode.zero();
-
-            else if (bit == '1')
+            if (bit == '0') {
+                currNode = currNode.zero();
+            }
+            else { 
                 currNode = currNode.one();
+            }
         }
-
-        if (delete) {
-            if(prevNode.zero() == currNode)
+        currNode.decrement();
+        if (currNode.count() == 0) {
+            char bit = ip.charAt(length-1);
+            if (bit == '0') {
                 prevNode.zero = null;
-            else if (prevNode.one() == currNode)
+            }
+            else { //if (bit == '1') 
                 prevNode.one = null;
-
-            for (; length < 32; length++) {
-                char bit = ip.charAt(length);
-                prevNode = currNode;
-                if (bit == '0') {
-                    currNode = currNode.zero();
-                    prevNode.zero = null;
-                }
-                else if (bit == '1') {
-                    currNode = currNode.one();
-                    prevNode.one = null;
-                }
-                currNode.decrement();
-                //logger.info("currNode count: " + currNode.count());
-
-                assert currNode.count() == 0;
-            } 
+            }
         }
     }
 }

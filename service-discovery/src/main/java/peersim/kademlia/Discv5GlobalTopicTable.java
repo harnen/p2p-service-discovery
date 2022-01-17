@@ -117,10 +117,8 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
             return waiting_time;
         }
         else {
-            double occupancy = 1.0 - ( ((double) allAds.size()) / this.tableCapacity);
-	        baseWaitingTime = (long) (adLifeTime/Math.pow(occupancy, occupancyPower));
 	
-	        long neededTime  = (long) (baseWaitingTime * Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg),1/1000000));
+	        long neededTime  = (long) (baseMultiplier*getOccupancyScore() * Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg), 0.000001));
 	
 	        if(neededTime<0)neededTime=Long.MAX_VALUE;
 	        /*int size = topicQ!=null?topicQ.size():0;
@@ -160,10 +158,10 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
         return waiting_time;
     }*/
     
-    protected double getBaseTime() {
+    protected double getOccupancyScore() {
         double occupancy = 1.0 - ( ((double) allAds.size()) / this.tableCapacity);
 
-        return ( (long) baseMultiplier * (adLifeTime/Math.pow(occupancy, occupancyPower)) );
+        return ( (long) ( (1.0*adLifeTime)/Math.pow(occupancy, occupancyPower) ) );
     }
 
     protected double getTopicModifier(TopicRegistration reg) {
@@ -176,7 +174,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
         if(allAds.size()==0)return 0;
         
         //System.out.println("Topicmodifier "+topicSize+" "+allAds.size()+" "+Math.pow((double)(topicSize)/(allAds.size()),amplify*topicModifierExp));
-    	return getBaseTime() * Math.pow((double)(topicSize)/(allAds.size() + 1),amplify*topicModifierExp);
+    	return Math.pow((double)(topicSize)/(allAds.size() + 1),amplify*topicModifierExp);
     }
     
     protected double getIPModifier(TopicRegistration reg) {
@@ -224,7 +222,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
 
         if(allAds.size()==0)return 0;
 
-    	return getBaseTime() * Math.pow((double)counter/(allAds.size()),amplify*idModifierExp);
+    	return Math.pow((double)counter/(allAds.size()),amplify*idModifierExp);
     }
     
     private int getNumberOfCompetingTickets() {
