@@ -3,17 +3,39 @@ import java.util.logging.Logger;
 
 public class TrieNode {
 
+    //private static final Logger logger = Logger.getLogger(Thread.currentThread().getStackTrace()[0].getClassName()  );
     private int count;
     private TrieNode zero;
     private TrieNode one;
-    private static final Logger logger = Logger.getLogger(Thread.currentThread().getStackTrace()[0].getClassName()  );
-	int[] comparators = new int[] {128, 64, 32, 16, 8, 4, 2, 1};
+    // Lower-bound storage
+    private double last_modifier;
+    private long last_timestamp;
 
     public TrieNode(){ 
         count = 0;
         zero = null;
         one = null; 
+        last_modifier = 0;
+        last_timestamp = 0;
     }
+
+    // Gettter and Setters
+    public double getLastModifier() {
+        return last_modifier;
+    }
+
+    public long getLastTimestamp() {
+        return last_timestamp;
+    }
+
+    public void setLastTimestamp(long timestamp) {
+        last_timestamp = timestamp;
+    }
+
+    public void setLastModifier(double modifier) {
+        last_modifier = modifier;
+    }
+
 
     private TrieNode zero() {
         return zero;
@@ -40,8 +62,8 @@ public class TrieNode {
             return true;
         return false;
     }
-    // adds an ip to trie
-    // returns similarity score
+    // returns a similarity score for the given (binary) ip address
+    // using the trie with the given root node
     public static double getSimilarityScore(TrieNode root, String ip) { 
 
         int score = 0; 
@@ -64,7 +86,7 @@ public class TrieNode {
         return (1.0*score)/(31.0*root.count());
     }
     
-    // adds an ip to trie
+    // adds an ip to the trie whose root node is given and
     // returns similarity score
     public static double addIp(TrieNode root, String ip) { 
 
@@ -77,7 +99,7 @@ public class TrieNode {
             score += currNode.count();
             currNode.increment();
 
-            String prefix = ip.substring(0, length);
+            //String prefix = ip.substring(0, length);
             //logger.info("Increment prefix: " + prefix + " to " + currNode.count());
 
             char bit = ip.charAt(length);
@@ -105,6 +127,7 @@ public class TrieNode {
         return (1.0*score)/(31.0*root.count());
     }
     
+    // Removes an ip address from the trie whose root node is the root
     public static void removeIp(TrieNode root, String ip) {
 
         //logger.info("Removing ip: " + ip);
@@ -116,7 +139,7 @@ public class TrieNode {
         boolean zero = false;
         for (length = 0; length < 32; length++) {
 
-            String prefix = ip.substring(0, length);
+            //String prefix = ip.substring(0, length);
 
             //logger.info("Before Decrement prefix: " + prefix + " to " + currNode.count());
             currNode.decrement();
@@ -136,7 +159,7 @@ public class TrieNode {
                 }
             }
             else {
-                if (zero) {
+                if (zero) { //came across a node with 1 count (0 after decrement) so all its descendants must be 1 (0 after decrement) 
                     assert (currNode.count() == 0) : "count must be greater than zero, but count = " + currNode.count() + " " + length;
                 }
             }
@@ -161,5 +184,33 @@ public class TrieNode {
                 prevNode.one = null;
             }
         }
+    }
+    
+    // Returns the trie node that is the longest prefix match of a given ip address
+    // The returned node is used to store a given IP's lower bound
+    public static TrieNode getLowerBoundNode(TrieNode root, String ip) 
+    {
+        TrieNode currNode = root;
+        for (int length = 0; length < 32; length++) {
+            char bit = ip.charAt(length);
+            if (bit == '0') {
+                if (currNode.zero() == null) {
+                    break;
+                }
+                else {
+                    currNode = currNode.zero();
+                }
+            }
+            else { // (bit == '1') {
+                if (currNode.one() == null) {
+                    break;
+                }
+                else {
+                    currNode = currNode.one();
+                }
+            }
+        }
+
+        return currNode;
     }
 }

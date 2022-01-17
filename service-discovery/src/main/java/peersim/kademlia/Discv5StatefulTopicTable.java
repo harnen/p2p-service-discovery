@@ -217,7 +217,25 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
 
         double modifier = super.getIPModifier(reg);
 
-        //TODO incorporate the lower-bound
+        // Incorporate the lower-bound
+        // The lower-bound logic below associates the longest-prefix match
+        // with the given registration and stores a lower-bound at that 
+        // prefix (i.e., the trie node for that prefix). 
+        // However, this method will fail if a longer ip address is added to the trie (upon a new registration). TODO find a better way to do this. 
+        String ip = reg.getNode().getAddr();
+
+        TrieNode ancestor = ipMod.getLowerBound(ip);
+        long last_timestamp = ancestor.getLastTimestamp();
+        double ip_last_modifier = ancestor.getLastModifier();
+
+        long delta_time = CommonState.getTime() - last_timestamp;
+        double lower_bound = Math.max(0, ip_last_modifier - delta_time);
+
+        modifier = Math.max(modifier, lower_bound);
+        if (lower_bound < modifier) {
+            ancestor.setLastTimestamp(CommonState.getTime());
+            ancestor.setLastModifier(modifier);
+        }
 
         return modifier;
     }

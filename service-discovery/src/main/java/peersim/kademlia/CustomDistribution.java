@@ -121,7 +121,7 @@ public class CustomDistribution implements peersim.core.Control {
      */
     public boolean execute() {
         
-        Random r = new Random();
+        Random r = new Random(5);
         int num_evil_nodes = (int) (Network.size()*percentEvil);
         System.out.println("Number of evil nodes: " + num_evil_nodes);
 
