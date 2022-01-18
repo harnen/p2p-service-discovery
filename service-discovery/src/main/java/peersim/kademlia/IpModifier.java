@@ -35,10 +35,19 @@ public class IpModifier {
 	public void removeAddress(String address) {
 		IPAddressString addr = new IPAddressString(address);
 		IPv4Address ipv4Addr = addr.getAddress().toIPv4();
-		//trie.remove(ip4Addr);
-		
 		String binAddr = ipv4Addr.toBinaryString();
 		
         TrieNode.removeIp(root, binAddr);
 	}
+
+    public TrieNode getLowerBound(String address) {
+
+		IPAddressString addr = new IPAddressString(address);
+		IPv4Address ipv4Addr = addr.getAddress().toIPv4();
+		String binAddr = ipv4Addr.toBinaryString();
+
+        TrieNode n = TrieNode.getLowerBoundNode(root, binAddr);
+
+        return n;
+    }
 }

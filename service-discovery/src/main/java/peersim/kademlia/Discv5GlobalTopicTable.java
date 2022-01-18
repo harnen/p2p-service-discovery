@@ -28,11 +28,14 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
     protected static final int occupancyPower = 4;
     protected static final int baseMultiplier = 30;
     
-    private IpModifier ipMod;
+    protected HashMap<BigInteger, Integer> id_counter;
+    
+    protected IpModifier ipMod;
 
 	public Discv5GlobalTopicTable() {
         super();
         ipMod = new IpModifier();
+        id_counter = new HashMap<BigInteger, Integer>();
     }
   
     
@@ -114,10 +117,8 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
             return waiting_time;
         }
         else {
-            double occupancy = 1.0 - ( ((double) allAds.size()) / this.tableCapacity);
-	        baseWaitingTime = (long) (adLifeTime/Math.pow(occupancy, occupancyPower));
 	
-	        long neededTime  = (long) (baseWaitingTime * Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg),1/1000000));
+	        long neededTime  = (long) (baseMultiplier*getOccupancyScore() * Math.max(getTopicModifier(reg)+getIPModifier(reg)+getIdModifier(reg), 0.000001));
 	
 	        if(neededTime<0)neededTime=Long.MAX_VALUE;
 	        /*int size = topicQ!=null?topicQ.size():0;
@@ -157,6 +158,12 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
         return waiting_time;
     }*/
     
+    protected double getOccupancyScore() {
+        double occupancy = 1.0 - ( ((double) allAds.size()) / this.tableCapacity);
+
+        return ( (long) ( (1.0*adLifeTime)/Math.pow(occupancy, occupancyPower) ) );
+    }
+
     protected double getTopicModifier(TopicRegistration reg) {
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(reg.getTopic());
 
@@ -172,7 +179,8 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
     
     protected double getIPModifier(TopicRegistration reg) {
 
-    	/*double counter=0.0;
+    	/*
+        double counter=0.0;
 		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
@@ -181,8 +189,11 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
 
         if(allAds.size()==0)return 0;
 
-    	return baseMultiplier*Math.pow((double)counter/(allAds.size()),amplify*ipModifierExp);*/
-    	return ipMod.getModifier(reg.getNode().getAddr());
+    	return baseMultiplier*Math.pow((double)counter/(allAds.size()),amplify*ipModifierExp);        */
+        if(allAds.size()==0)
+            return 0;
+    	
+        return ipMod.getModifier(reg.getNode().getAddr());
     }
     
     protected double getIdModifier(TopicRegistration reg) {
@@ -197,6 +208,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
         else
             reg_id = reg.getNode().getId();
 
+        //TODO instead of counter, use the id_counter map
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
             if (r.getNode().is_evil) { // if node is evil, use its attackerId as node id
@@ -210,7 +222,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
 
         if(allAds.size()==0)return 0;
 
-    	return baseMultiplier * Math.pow((double)counter/(allAds.size()),amplify*idModifierExp);
+    	return Math.pow((double)counter/(allAds.size()),amplify*idModifierExp);
     }
     
     private int getNumberOfCompetingTickets() {
@@ -247,8 +259,8 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
         return num_tickets;
 
     }
-
-    public boolean register(TopicRegistration reg) {
+    
+    protected boolean register(TopicRegistration reg) {
         ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
         //System.out.println("Registering ip: " + reg.getNode().getAddr());
         if (topicQ != null) {
@@ -259,14 +271,29 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
             q.add(reg);
             this.topicTable.put(reg.getTopic(), q);
         }
-        // Add ip address to the Trie
-        this.ipMod.newAddress(reg.getNode().getAddr());
-
         this.allAds.add(reg);
+        
+        BigInteger id;
+        if (reg.getNode().is_evil) {
+            id = reg.getNode().getAttackerId();
+        }
+        else {
+            id = reg.getNode().getId();
+        }
+        Integer id_count = id_counter.get(id);
+        if (id_count == null) {
+            id_counter.put(id, 1);
+        }
+        else {
+            id_counter.put(id, id_count+1);
+        }
+        
+        this.ipMod.newAddress(reg.getNode().getAddr());
         
         return true;
     }
-    
+
+  
     protected Ticket [] makeRegisterDecision(long curr_time) {   
         // Determine which topics are up for decision
     	
@@ -411,13 +438,22 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
                 //assert r_same.equals(r);
 				it.remove(); //removes from allAds
                 this.ipMod.removeAddress(r.getNode().getAddr());
-
+                // update id count 
+                BigInteger id;
+                if (r.getNode().is_evil)
+                    id = r.getNode().getAttackerId();
+                else
+                    id = r.getNode().getId();
+                Integer id_count = id_counter.get(id);
+                id_count -= 1;
+                if (id_count == 0) {
+                    id_counter.remove(id);
+                }
+                else {
+                    id_counter.put(id, id_count);
+                }
 			}
 		}
     }
     
 }
-
-
-
-

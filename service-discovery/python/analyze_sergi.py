@@ -1440,7 +1440,7 @@ print('Plots will be saved in ', OUTDIR);
 #labels = ['0.5 AdLifeTime','1 AdLifeTime','1.5 AdLifeTime','2 AdLifeTime']
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
 ##labels = ['No refresh','Refresh']
-labels = ['5%','10%','20%']
+labels = ['Discv5 Ticket','Discv5 DHT Ticket','Discv5 DHT No Ticket','Discv4']
 topiclabel = str(1)
 
 #labels = ['Filter','No filter']
