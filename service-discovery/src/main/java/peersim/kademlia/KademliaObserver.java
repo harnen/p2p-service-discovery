@@ -309,7 +309,9 @@ public class KademliaObserver implements Control {
             String type = "";
 
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
-                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
+                //result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
+                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
+
             } else if (op instanceof RegisterOperation) {
             	System.out.println("register operation reported");
             	System.exit(1);
@@ -838,8 +840,8 @@ public class KademliaObserver implements Control {
             int totalMsgs = 0;
             int totalnoReg = 0;
             for (String topic: all_topics) {
-                Integer noMsg = registerOverhead.get(topic);
-                Integer noReg = numberOfRegistrations.get(topic);
+                int noMsg = registerOverhead.get(topic)!=null?registerOverhead.get(topic):0;
+                int noReg = numberOfRegistrations.get(topic)!=null?numberOfRegistrations.get(topic):0;
                 totalMsgs += noMsg;
                 totalnoReg += noReg;
                 double overhead = ((double) noMsg) / noReg;

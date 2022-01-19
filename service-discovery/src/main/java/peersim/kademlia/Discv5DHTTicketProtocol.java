@@ -96,7 +96,9 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		int found = lop.discoveredCount();
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
 		int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;//Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
-		if(!lop.finished && found >= required) {
+		//if(!lop.finished && found >= required) {
+		if(!lop.finished && Arrays.asList(neighbours).contains(lop.destNode)) 
+		{
 			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic);
 			lop.finished = true;
 		}

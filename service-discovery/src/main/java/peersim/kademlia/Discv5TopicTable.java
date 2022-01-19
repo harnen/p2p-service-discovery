@@ -3,6 +3,7 @@ package peersim.kademlia;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.List;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -81,7 +82,34 @@ public class Discv5TopicTable implements TopicTable {
         return false;
     }
 
+
     public TopicRegistration[] getRegistration(Topic t){
+        // TODO check: we might be returning expired registrations, we shoud update the table
+        Topic topic = new Topic(t.topic);
+        topic.hostID = this.hostID;
+
+        if(table.containsKey(topic)){
+
+	        List<TopicRegistration> topicQ = table.get(topic);
+	
+	
+	        // Random selection of K results
+	        TopicRegistration[] results = (TopicRegistration[]) topicQ.toArray(new TopicRegistration[topicQ.size()]);
+	        int result_len = KademliaCommonConfig.MAX_TOPIC_REPLY > results.length ? results.length : KademliaCommonConfig.MAX_TOPIC_REPLY;
+	        TopicRegistration[] final_results = new TopicRegistration[result_len];
+	
+	        for (int i = 0; i < result_len; i++) 
+	            final_results[i] = results[CommonState.r.nextInt(results.length)];
+	        
+	        //return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
+	        return final_results;
+        } else {
+            return new TopicRegistration[0];
+          
+        }
+    }
+    
+    /*public TopicRegistration[] getRegistration(Topic t){
     	Topic t1 = new Topic(t);
     	t1.hostID = this.hostID;
         if(table.containsKey(t1)){
@@ -94,7 +122,9 @@ public class Discv5TopicTable implements TopicTable {
         }
         
         return new TopicRegistration[0];
-    }
+    }*/
+    
+    
     
     public HashMap<Topic,Integer> getRegbyTopic(){
         HashMap<Topic,Integer> regByTopic = new HashMap<Topic,Integer>();

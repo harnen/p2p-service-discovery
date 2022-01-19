@@ -96,10 +96,13 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		//System.out.println("Topic query reply received for "+lop.topic.getTopic()+" "+this.getNode().getId()+" "+lop.discoveredCount()+" "+lop.getUsedCount()+" "+lop.getReturnedCount());
 
 		
+		 
 		int found = lop.discoveredCount();
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.topic);
 		int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;//Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
-		if(!lop.finished && found >= required) {
+		//if(!lop.finished && found >= required) {
+		if(!lop.finished && Arrays.asList(neighbours).contains(lop.destNode)) 
+		{
 			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic);
 			lop.finished = true;
 		}
@@ -155,6 +158,8 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		
 		Topic t = (Topic) m.body;
 	
+		logger.warning("Send init lookup for topic " + this.node.getId() + " " + t.getTopic());
+
 		//System.out.println("Send topic lookup for topic "+t.getTopic());
 
 		LookupOperation lop = new LookupOperation(this.node.getId(), m.timestamp, t);
@@ -218,6 +223,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 	 *            the sender Pid
 	 */
 	protected void handleInitRegister(Message m, int myPid) {
+
 		
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(this.node, t);
@@ -225,6 +231,9 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 
 		activeTopics.add(t.getTopic());
 
+		
+		logger.warning("handleInitRegisterTopic " + t.getTopic() + " " + t.getTopicID() + " "
+				+ KademliaCommonConfig.TICKET_BUCKET_SIZE);
 		
 		KademliaObserver.addTopicRegistration(t, this.node.getId());
 	
@@ -510,7 +519,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 	
-		logger.info("Topic query received at node "+this.node.getId()+" "+registrations.length+" "+neighbours.length);
+		logger.warning("Topic query received at node "+this.node.getId()+" "+registrations.length+" "+neighbours.length);
 
 		Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
 		Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);

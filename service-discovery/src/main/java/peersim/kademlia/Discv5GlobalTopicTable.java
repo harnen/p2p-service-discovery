@@ -260,7 +260,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
 
     }
     
-    protected boolean register(TopicRegistration reg) {
+    public boolean register(TopicRegistration reg) {
         ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
         //System.out.println("Registering ip: " + reg.getNode().getAddr());
         if (topicQ != null) {
