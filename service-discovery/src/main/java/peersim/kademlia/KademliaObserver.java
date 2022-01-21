@@ -188,7 +188,7 @@ public class KademliaObserver implements Control {
 				msgWriter.write("id,type,src,dst,topic,bucket,waiting_time,sent/received\n");
 			}
 			opWriter = new FileWriter(this.logFolderName + "/" + "operations.csv");
-            opWriter.write("id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,discovered_malicious,queried_malicious,topic,topicID,evil,perhop\n");
+            opWriter.write("time,id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,discovered_malicious,queried_malicious,topic,topicID,evil,perhop\n");
             regByTopic = new HashMap<Topic,Integer>();
             regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
             regByRegistrar = new HashMap<String, HashMap<BigInteger,Integer>>();
@@ -303,21 +303,29 @@ public class KademliaObserver implements Control {
     }
     
     public static void reportOperation(Operation op) {
+
         try {
-            //System.out.println("Report operation "+op.getClass().getSimpleName());
+            //System.out.println("Report operation "+CommonState.getTime()+" "+op.getClass().getSimpleName()+" "+KademliaCommonConfig.AD_LIFE_TIME);
             String result = "";
             String type = "";
+            
+            //if(CommonState.getTime()<KademliaCommonConfig.AD_LIFE_TIME)return;
+
 
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
                 //result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
-                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
+            	double returned_per_hop = (double)((LookupOperation)op).discoveredCount()/op.getUsedCount();
+
+            	result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+returned_per_hop+"\n";
 
             } else if (op instanceof RegisterOperation) {
-            	System.out.println("register operation reported");
-            	System.exit(1);
-                result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  + "," + "," + ((RegisterOperation)op).topic.topic + "," + ((LookupOperation)op).topic.topicID + "\n";
+            	//System.out.println("register operation reported");
+            	//System.exit(1);
+                result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  + "," + "," + ((RegisterOperation)op).topic.topic + "," + ((LookupOperation)op).topic.topicID + "\n";
             } else if (op instanceof FindOperation&&op.getUsedCount()>0){
-            	result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  +((FindOperation)op).getDiscovered()+ ",,,," + ((FindOperation)op).getTopics().get(0)+",,,"+((FindOperation)op).getDiscovered()/op.getUsedCount()+"\n";
+            	double returned_per_hop = (double)((FindOperation)op).getDiscovered()/op.getUsedCount();
+            	//System.out.println("Returned "+returned_per_hop);
+            	result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  +((FindOperation)op).getDiscovered()+ ",,,," + ((FindOperation)op).getTopic()+",,,"+returned_per_hop+"\n";
             }
             opWriter.write(result);
             opWriter.flush();

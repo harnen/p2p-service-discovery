@@ -116,7 +116,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
     protected void handleInitRegisterTopic(Message m, int myPid) {
         Topic t = (Topic) m.body;
         
-        logger.info("In handleInitRegister of EVIL "+t.getTopic()+" "+t.getTopicID()+" "+Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_BUCKET_SIZE, KademliaCommonConfig.TICKET_BUCKET_SIZE));
+        logger.warning("In handleInitRegister of EVIL "+t.getTopic()+" "+t.getTopicID()+" "+Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_BUCKET_SIZE, KademliaCommonConfig.TICKET_BUCKET_SIZE));
         
 
         if(this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
@@ -134,7 +134,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
         }
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
             first = false;
-            logger.info("Filling up the topic table with malicious entries");
+            logger.warning("Filling up the topic table with malicious entries");
             for (int i = 0; i < Network.size(); i++) {
                 Node n = Network.get(i);
                 KademliaProtocol prot = (KademliaProtocol) n.getKademliaProtocol();
@@ -235,7 +235,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             response.operationId = m.operationId;
             response.src = this.node;
             response.ackId = m.id; 
-            logger.info(" responds with Malicious TOPIC_QUERY_REPLY");
+            logger.warning(" responds with Malicious TOPIC_QUERY_REPLY");
             sendMessage(response, m.src.getId(), myPid);
         }
     }
@@ -248,7 +248,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
     protected void handleTicketRequest(Message m, int myPid) {
         
     	
-    	logger.info("Handle ticket request EVIL");
+    	logger.warning("Handle ticket request EVIL");
     	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_WAITING_TIME_SPAM)) {
             super.handleTicketRequest(m, myPid);
             return;

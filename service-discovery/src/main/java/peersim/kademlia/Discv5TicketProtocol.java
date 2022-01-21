@@ -57,7 +57,6 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 	final String PAR_ADS_PER_QUEUE = "ADS_PER_QUEUE";
 	// The lifetime of an advertisement (after which it expires and removed from
 	// topic table)
-	final String PAR_AD_LIFE_TIME = "AD_LIFE_TIME";
 	// Number of buckets in a ticket table
 	final String PAR_TICKET_TABLE_BUCKET_SIZE = "TICKET_TABLE_BUCKET_SIZE";
 	// Number of buckets in a search table
@@ -138,8 +137,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 				KademliaCommonConfig.TOPIC_TABLE_CAP);
 		KademliaCommonConfig.ADS_PER_QUEUE = Configuration.getInt(prefix + "." + PAR_ADS_PER_QUEUE,
 				KademliaCommonConfig.ADS_PER_QUEUE);
-		KademliaCommonConfig.AD_LIFE_TIME = Configuration.getInt(prefix + "." + PAR_AD_LIFE_TIME,
-				KademliaCommonConfig.AD_LIFE_TIME);
+
 		KademliaCommonConfig.TICKET_BUCKET_SIZE = Configuration.getInt(prefix + "." + PAR_TICKET_TABLE_BUCKET_SIZE,
 				KademliaCommonConfig.TICKET_BUCKET_SIZE);
 		KademliaCommonConfig.SEARCH_BUCKET_SIZE = Configuration.getInt(prefix + "." + PAR_SEARCH_TABLE_BUCKET_SIZE,

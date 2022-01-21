@@ -1446,10 +1446,10 @@ topiclabel = str(1)
 #labels = ['Filter','No filter']
 #labels = ['1 IP','10 IP','50 IP']
 #labels = ['old variant','new variant']
-#analyzeRegistrations2(sys.argv[1:],labels)
+analyzeRegistrations2(sys.argv[1:],labels)
 analyzeOperations(sys.argv[1:],labels)
 #analyzeRegistrantDistribution(sys.argv[1:],labels)
-#analyzeActiveRegistrations(sys.argv[1:],labels)
+analyzeActiveRegistrations(sys.argv[1:],labels)
 #analyzeRegistrationTime(sys.argv[1:],labels)
 analyzeNumberOfMessages(sys.argv[1:],labels)
 #analyzeEclipsedNodes(sys.argv[1:])

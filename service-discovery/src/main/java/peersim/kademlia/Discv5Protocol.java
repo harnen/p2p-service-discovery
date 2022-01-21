@@ -33,10 +33,13 @@ public class Discv5Protocol extends KademliaProtocol implements Cleanable  {
 	 */
 	protected HashSet<String> activeTopics;
 	
+
 	public Discv5Protocol(String prefix) {
-		super(prefix);
 		
+		super(prefix);
+
 		activeTopics = new HashSet<String>();
+
 
 		// TODO Auto-generated constructor stub
 	}
@@ -58,9 +61,12 @@ public class Discv5Protocol extends KademliaProtocol implements Cleanable  {
 	 */
 	protected void _init() {
 		// execute once
+		
 		if (_ALREADY_INSTALLED)
 			return;
 
+
+		
 		super._init();
 	}
 	

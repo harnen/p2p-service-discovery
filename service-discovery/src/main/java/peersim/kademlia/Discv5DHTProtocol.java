@@ -133,7 +133,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 				// search operation finished
 				operations.remove(lop.operationId);
 				//lop.visualize();
-				logger.warning("reporting operation " + lop.operationId);
+				logger.info("reporting operation " + lop.operationId);
 				KademliaObserver.reportOperation(lop);
 				//lop.visualize(); uncomment if you want to see visualization of the operation
 				if(!lop.finished) { 
