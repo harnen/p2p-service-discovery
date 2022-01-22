@@ -1306,7 +1306,7 @@ public class KademliaObserver implements Control {
             }
             else { //evil node
                 KademliaProtocol evilKadProtocol = node.getKademliaProtocol(); 
-                double topicTableUtil = ((Discv5EvilTicketProtocol) evilKadProtocol).topicTable.topicTableUtilisation();
+                double topicTableUtil = ((Discv5Protocol) evilKadProtocol).topicTable.topicTableUtilisation();
                 evil_total_utilisations += topicTableUtil;
                 numUpEvilNodes++;
             }

@@ -466,7 +466,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 	 * @param myPid
 	 *            the sender Pid
 	 */
-	private void handleRegister(Message m, int myPid) {
+	protected void handleRegister(Message m, int myPid) {
 		Topic t = (Topic) m.body;
 		TopicRegistration r = new TopicRegistration(m.src, t);
         Message response; 
