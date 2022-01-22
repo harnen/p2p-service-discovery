@@ -844,10 +844,10 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			System.exit(1);
 		}
 
-		if (((SimpleEvent) event).getType() == Timeout.TIMEOUT) {
+		/*if (((SimpleEvent) event).getType() == Timeout.TIMEOUT) {
 			handleTimeout((Timeout) event, myPid);
 			return;
-		}
+		}*/
 
 		SimpleEvent s = (SimpleEvent) event;
 		if (s instanceof Message) {
@@ -935,7 +935,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 						+ timeout.node);
 				// remove form sentMsg
 				sentMsg.remove(timeout.msgID);
-
+				handleTimeout((Timeout) event, myPid);
 			}
 			break;
 		}

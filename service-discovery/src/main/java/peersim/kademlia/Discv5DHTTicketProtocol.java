@@ -257,6 +257,12 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		
 		logger.info("Registration1 operation id "+rop.operationId+" "+op);
 		
+        if(KademliaCommonConfig.REG_REFRESH==1) {
+        	//Timeout timeout = new Timeout(t, m.src.getId());
+        	int timeout = (int) ((int)KademliaCommonConfig.AD_LIFE_TIME*1.1);
+        	EDSimulator.add(timeout, m, Util.nodeIdtoNode(this.node.getId()), myPid);
+        }
+		
 		
 	}
 	
@@ -591,10 +597,10 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
 
 	        
-	        if(KademliaCommonConfig.REG_REFRESH==1) {
+	        /*if(KademliaCommonConfig.REG_REFRESH==1) {
 	        	Timeout timeout = new Timeout(t, m.src.getId());
 	        	EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
-	        }
+	        }*/
 
 
 		}
@@ -756,11 +762,11 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			// Util.nodeIdtoNode(this.node.getId()), myPid);
 			break;
 			
-		case Timeout.REG_TIMEOUT:
+		/*case Timeout.REG_TIMEOUT:
 
 		    EDSimulator.add(0,generateRegisterMessage(((Timeout) event).topic.getTopic()), Util.nodeIdtoNode(this.node.getId()),this.getProtocolID());
 
-			break;
+			break;*/
 	
 	
 		case Timeout.TIMEOUT: // timeout

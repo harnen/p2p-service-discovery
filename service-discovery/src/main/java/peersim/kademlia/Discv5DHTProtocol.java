@@ -232,8 +232,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		activeTopics.add(t.getTopic());
 
 		
-		logger.warning("handleInitRegisterTopic " + t.getTopic() + " " + t.getTopicID() + " "
-				+ KademliaCommonConfig.TICKET_BUCKET_SIZE);
+		logger.warning("handleInitRegisterTopic " + t.getTopic() + " " + t.getTopicID());
 		
 		KademliaObserver.addTopicRegistration(t, this.node.getId());
 	
@@ -253,6 +252,13 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		registrationMap.put(op,rop.operationId);
 		
 		logger.info("Registration1 operation id "+rop.operationId+" "+op);
+		
+		
+        if(KademliaCommonConfig.REG_REFRESH==1) {
+        	//Timeout timeout = new Timeout(t, m.src.getId());
+        	int timeout = (int) ((int)KademliaCommonConfig.AD_LIFE_TIME*1.1);
+        	EDSimulator.add(timeout, m, Util.nodeIdtoNode(this.node.getId()), myPid);
+        }
 		
 		
 	}
@@ -504,11 +510,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
         
         KademliaObserver.addAcceptedRegistration(t, this.node.getId(),m.src.getId(),CommonState.getTime());
         
-        
-        if(KademliaCommonConfig.REG_REFRESH==1) {
-        	Timeout timeout = new Timeout(t, m.src.getId());
-        	EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
-        }
+       
         operations.remove(m.operationId);
 
     }   
@@ -537,7 +539,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 	private void handleTimeout(Timeout t, int myPid){
 		Operation op = this.operations.get(t.opID);
 		if(op!=null) {	
-			//logger.warning("Timeout "+t.getType());
+			logger.warning("Timeout "+t.getType());
 			BigInteger unavailableNode = t.node;
 			if(op.type == Message.MSG_TOPIC_QUERY) {
 				Message m = new Message();
@@ -628,11 +630,14 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 			handleInitRegister(m, myPid);
 			break;
 			
-		case Timeout.REG_TIMEOUT:
+		/*case Timeout.REG_TIMEOUT:
 
-		    EDSimulator.add(0, generateRegisterMessage(((Timeout) event).topic.getTopic()), Util.nodeIdtoNode(this.node.getId()),this.getProtocolID());
+			String topic = ((Timeout) event).topic.getTopic();
+			Message message= generateRegisterMessage(topic);
+			logger.warning("Timeout "+topic);
+		    EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()),myPid);
 
-			break;
+			break;*/
 	
 		case Timeout.TIMEOUT: // timeout
 			Timeout timeout = (Timeout) event;
@@ -641,7 +646,6 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 						+ timeout.node);
 				// remove form sentMsg
 				sentMsg.remove(timeout.msgID);
-
 			}
 			break;
 		}

@@ -1450,7 +1450,7 @@ analyzeRegistrations2(sys.argv[1:],labels)
 analyzeOperations(sys.argv[1:],labels)
 #analyzeRegistrantDistribution(sys.argv[1:],labels)
 analyzeActiveRegistrations(sys.argv[1:],labels)
-#analyzeRegistrationTime(sys.argv[1:],labels)
+analyzeRegistrationTime(sys.argv[1:],labels)
 analyzeNumberOfMessages(sys.argv[1:],labels)
 #analyzeEclipsedNodes(sys.argv[1:])
 analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
