@@ -2,7 +2,7 @@
 
 ATTACK_TOPICS='1 3 5'
 EVIL_PERCENTS='0.2'
-declare -a UNIFORM=("uniform" "nonUniform" "element3")
+UNIFORM=("uniform" "nonUniform")
 
 IN_CONFIG='config/discv5dhtticket_topicattack.cfg'
 
@@ -14,9 +14,9 @@ function run_sim(){
     dos2unix $OUT_CONFIG
     sed -i "s/^init.1uniqueNodeID.attackTopic .*$/init.1uniqueNodeID.attackTopic $TOPIC/g" $OUT_CONFIG
     sed -i "s/^init.1uniqueNodeID.percentEvil .*$/init.1uniqueNodeID.percentEvil $PERCENT_EVIL/g" $OUT_CONFIG
-    sed -i "s/^init.1uniqueNodeID.idDistribution .*$/init.1uniqueNodeID.idDistribution $UNIFORM/g" $OUT_CONFIG
+    sed -i "s/^init.1uniqueNodeID.idDistribution .*$/init.1uniqueNodeID.idDistribution $UNI/g" $OUT_CONFIG
     
-    LOG_FILE="logs_dhtticket_attackTopic${TOPIC}_${UNIFORM}_attackPercent${PERCENT_EVIL}"
+    LOG_FILE="logs_dhtticket_attackTopic${TOPIC}_${UNI}_attackPercent${PERCENT_EVIL}"
     echo log file $LOG_FILE
     sed -i "s/^control.3.rangeExperiment .*$/control.3.rangeExperiment $LOG_FILE/g" $OUT_CONFIG
     ./run.sh $OUT_CONFIG &> /dev/null
@@ -29,11 +29,10 @@ do
     for PERCENT_EVIL in $EVIL_PERCENTS
     do
         echo running percent evil $PERCENT_EVIL
-        for UNI in $UNIFORM
+        for UNI in ${UNIFORM[@]};
         do
         	echo running uniform $UNI
         	run_sim
         done
     done
 done
-
