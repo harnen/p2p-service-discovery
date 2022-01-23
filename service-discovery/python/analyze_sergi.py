@@ -1344,8 +1344,8 @@ def analyzeMessageReceivedByNodes(dirs,labels):
             y_vals = []
             topics = {}
 
-            df = pd.read_csv(log_dir + '/storage_utilisation.csv')
-            time = df['time'].max() / 1000
+            #df = pd.read_csv(log_dir + '/storage_utilisation.csv')
+            #time = df['time'].max() / 1000
 
             logdirname = extractAlphanumeric(log_dir)
             with open(log_dir + '/msg_received.csv', newline='') as csvfile:
@@ -1354,7 +1354,8 @@ def analyzeMessageReceivedByNodes(dirs,labels):
                     if 't' in row['numMsg']:
                         topics[row['Node']] = row['numMsg']
                     else:
-                        y_vals.append(int(row['numMsg'])/(time-300))
+                        #y_vals.append(int(row['numMsg'])/(time-300))
+                        y_vals.append(int(row['numMsg']))
                         x_vals.append(row['Node'])
 
                 sorted_y_vals = sorted(y_vals)
@@ -1450,7 +1451,7 @@ analyzeOperations(sys.argv[1:],labels)
 #analyzeRegistrantDistribution(sys.argv[1:],labels)
 #analyzeActiveRegistrations(sys.argv[1:],labels)
 #analyzeRegistrationTime(sys.argv[1:],labels)
-#analyzeNumberOfMessages(sys.argv[1:],labels)
+analyzeNumberOfMessages(sys.argv[1:],labels)
 #analyzeEclipsedNodes(sys.argv[1:])
-#analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
+analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
 #analyzeStorageUtilisation(sys.argv[1:],labels)

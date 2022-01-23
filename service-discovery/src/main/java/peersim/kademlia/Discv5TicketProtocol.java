@@ -93,8 +93,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 	boolean firstRegister;
 	boolean printSearchTable = false;
 	
-	private long registrationTimeout;
-
 	/**
 	 * Replicate this object by returning an identical copy.<br>
 	 * It is called by the initializer and do not fill any particular field.
@@ -128,7 +126,6 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 			this.topicTable = new Discv5TicketTopicTable();
 		}
 		firstRegister = true;
-		registrationTimeout = KademliaCommonConfig.REG_TIMEOUT;
 	}
 
 	/**
@@ -422,7 +419,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 
 		}
 
-		if (ticket.getWaitTime() == -1 || ticket.getCumWaitTime()>registrationTimeout) {
+		if (ticket.getWaitTime() == -1 || ticket.getCumWaitTime()>KademliaCommonConfig.REG_TIMEOUT) {
 
 			if(ticket.getWaitTime()==-1)
 				logger.warning("Attempted to re-register topic on the same node " + m.src.getId() + " for topic "
@@ -482,7 +479,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 			logger.info("Registration failed " + backoff.getTimesFailed() + " backing off " + +backoff.getTimeToWait()
 					+ " " + backoff.shouldRetry() + " " + ticket.getWaitTime());
 
-			if ((backoff.shouldRetry() && ticket.getWaitTime() >= 0)&&(ticket.getCumWaitTime()<=registrationTimeout)) {
+			if ((backoff.shouldRetry() && ticket.getWaitTime() >= 0)&&(ticket.getCumWaitTime()<=KademliaCommonConfig.REG_TIMEOUT)) {
 				scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
 			} else {
 				logger.warning("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime()+" or too many tries "+backoff.getTimesFailed());
@@ -492,7 +489,7 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 				EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()),
 						myPid);
 				
-				if(ticket.getCumWaitTime()>registrationTimeout)
+				if(ticket.getCumWaitTime()>KademliaCommonConfig.REG_TIMEOUT)
 					KademliaObserver.reportOverThresholdWaitingTime(topic.getTopic(),this.node.getId(),m.src.getId(),ticket.getWaitTime());
 					
 					
@@ -728,8 +725,8 @@ public class Discv5TicketProtocol extends KademliaProtocol implements Cleanable 
 		message.timestamp = CommonState.getTime();
 
 		EDSimulator.add(0, message, Util.nodeIdtoNode(this.node.getId()), myPid);
-		System.out.println("Send init lookup to node "+Util.logDistance(node,
-		this.getNode().getId()));
+		//System.out.println("Send init lookup to node "+Util.logDistance(node,
+		//this.getNode().getId()));
 
 	}
 
