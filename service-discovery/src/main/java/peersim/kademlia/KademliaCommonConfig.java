@@ -47,7 +47,7 @@ public class KademliaCommonConfig {
 
     
     public static int REG_REFRESH = 0;
-    public static int N = 3;
+    public static int N = K;
 
     
     // Attack Types:
