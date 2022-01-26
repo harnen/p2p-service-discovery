@@ -115,10 +115,10 @@ public class Discv4MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
                 for (int topicIndex = 0; topicIndex < numTopics; topicIndex++) {
 				    //kad.setClient(this);
 
-					prot.getNode().setTopicDiscv4(topicList[topicIndex].getTopic(), start);
+					//prot.getNode().setTopicDiscv4(topicList[topicIndex].getTopic(), start);
 					KademliaObserver.addTopicRegistration(topicList[topicIndex], prot.node.getId());
 					
-					prot.setDiscv4(true);
+					//prot.setDiscv4(true);
 				    for(int j = 0;j<3;j++) {
 						Message lookup = generateFindNodeMessage();
 						EDSimulator.add(time, lookup, start, start.getKademliaProtocol().getProtocolID());

@@ -61,7 +61,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	protected int kademliaid;
 	//private EthClient client;
 	
-	private boolean discv4;
+	//private boolean discv4;
 
 	/**
 	 * allow to call the service initializer only once
@@ -127,7 +127,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
 		tid = Configuration.getPid(prefix + "." + PAR_TRANSPORT);
 		
-		discv4 = false;
+		//discv4 = false;
 	}
 
 	/**
@@ -197,7 +197,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
 			logger.warning("Found node " + op.destNode);
 			op.finished = true;
-			if(discv4) {
+			/*if(discv4) {
 				for(String t: this.node.topicQuerying()) {
 					logger.warning("Querying topic "+t);
 					((FindOperation)op).setTopic(t);
@@ -206,7 +206,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				}
 
 				node.setLookupResult(op.getNeighboursList());
-			}
+			}*/
 			KademliaObserver.find_ok.add(1);
 			return;
 		}
@@ -250,9 +250,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				if(!op.finished && op.type == Message.MSG_FIND){
 					logger.warning("Couldn't find node " + op.destNode);
 				}*/
-				logger.warning("Finished lookup node " + op.getUsedCount());
+				logger.info("Finished lookup node " + op.getUsedCount());
 
-				if(discv4) {
+				/*if(discv4) {
 					for(String t: this.node.topicQuerying()) {
 						logger.warning("Querying topic "+t);
 
@@ -264,6 +264,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 					//KademliaObserver.reportOperation(op);
 
 					node.setLookupResult(op.getNeighboursList());
+				}*/
+				KademliaObserver.reportOperation(op);
+				if(!op.finished && op.type == Message.MSG_FIND){
+					logger.warning("Couldn't find node " + op.destNode);
 				}
 				return;
 
@@ -488,9 +492,9 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		return this.node;
 	}
 	
-	public void setDiscv4(boolean set) {
+	/*public void setDiscv4(boolean set) {
 		discv4 = set;
-	}
+	}*/
 	
     /**
 	 * Set the protocol ID for this node.

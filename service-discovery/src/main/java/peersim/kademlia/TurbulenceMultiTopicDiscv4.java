@@ -104,10 +104,10 @@ public class TurbulenceMultiTopicDiscv4 extends Turbulence{
 
             for (int i = 0; i < topicList.size(); i++) {
                 //System.out.print(topicList.get(i)+" ");
-            	newKad.getNode().setTopicDiscv4(topicList.get(i), newNode);
+            	//newKad.getNode().setTopicDiscv4(topicList.get(i), newNode);
 				KademliaObserver.addTopicRegistration(new Topic(topicList.get(i)), newKad.node.getId());
 
-				newKad.setDiscv4(true);
+				//newKad.setDiscv4(true);
 			    for(int j = 0;j<3;j++) {
 					Message lookup = generateFindNodeMessage();
 					EDSimulator.add(0, lookup, newNode, newNode.getKademliaProtocol().getProtocolID());
