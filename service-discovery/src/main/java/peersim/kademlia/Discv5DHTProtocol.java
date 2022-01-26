@@ -158,7 +158,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		
 		Topic t = (Topic) m.body;
 	
-		logger.warning("Send init lookup for topic " + this.node.getId() + " " + t.getTopic());
+		logger.info("Send init lookup for topic " + this.node.getId() + " " + t.getTopic());
 
 		//System.out.println("Send topic lookup for topic "+t.getTopic());
 
@@ -232,7 +232,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		activeTopics.add(t.getTopic());
 
 		
-		logger.warning("handleInitRegisterTopic " + t.getTopic() + " " + t.getTopicID());
+		logger.info("handleInitRegisterTopic " + t.getTopic() + " " + t.getTopicID());
 		
 		KademliaObserver.addTopicRegistration(t, this.node.getId());
 	
@@ -308,6 +308,14 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 			logger.info("Found node " + op.destNode);
 			op.finished = true;
 
+			
+			if(registrationMap.get(op.operationId)!=null) {
+				RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(op.operationId));
+				startRegistration(rop,myPid);
+				registrationMap.remove(op.operationId);
+
+			
+			}
 			KademliaObserver.find_ok.add(1);
 			return;
 		}
@@ -352,42 +360,15 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 					logger.warning("Couldn't find node " + op.destNode);
 				}*/
 				logger.info("Finished lookup node " + op.getUsedCount());
-
 				logger.info("Registration operation id "+registrationMap.get(op.operationId)+" "+op.operationId);
-
 				
 				if(registrationMap.get(op.operationId)!=null) {
 					RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(op.operationId));
-	
-					
-					int distToTopic = Util.logDistance((BigInteger) rop.getTopic().getTopicID(), this.node.getId());
-					neighbours = this.routingTable.getNeighbours(distToTopic);
-					
-					if(neighbours.length < KademliaCommonConfig.ALPHA)
-						neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
-	
-					rop.elaborateResponse(neighbours);
-					rop.available_requests = KademliaCommonConfig.ALPHA;
-				
-					Message message = rop.getMessage(); 
-					message.operationId = rop.operationId;
-					message.type = Message.MSG_REGISTER;
-					message.src = this.node;
-					
+					startRegistration(rop,myPid);
 					registrationMap.remove(op.operationId);
+
 				
-					// send ALPHA messages
-					for (int i = 0; i < KademliaCommonConfig.N; i++) {
-						BigInteger nextNode = rop.getNeighbour();
-						//System.out.println("Nextnode "+nextNode);
-						if (nextNode != null) {
-							message.dest = new KademliaNode(nextNode);
-							sendMessage(message.copy(), nextNode, myPid);
-							rop.nrHops++;
-						}//nextNode may be null, if the node has less than ALPHA neighbours
-					}
 				}
-			
 				return;
 
 			} else { // no neighbour available but exists outstanding request to wait for
@@ -416,6 +397,38 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		sendMessage(m, dest, myPid);
 	
 
+	}
+	
+	private void startRegistration(RegisterOperation rop, int myPid) {
+
+	
+
+			int distToTopic = Util.logDistance((BigInteger) rop.getTopic().getTopicID(), this.node.getId());
+			BigInteger[]  neighbours = this.routingTable.getNeighbours(distToTopic);
+			
+			if(neighbours.length < KademliaCommonConfig.ALPHA)
+				neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
+
+			rop.elaborateResponse(neighbours);
+			rop.available_requests = KademliaCommonConfig.ALPHA;
+		
+			Message message = rop.getMessage(); 
+			message.operationId = rop.operationId;
+			message.type = Message.MSG_REGISTER;
+			message.src = this.node;
+			
+		
+			// send ALPHA messages
+			for (int i = 0; i < KademliaCommonConfig.N; i++) {
+				BigInteger nextNode = rop.getNeighbour();
+				//System.out.println("Nextnode "+nextNode);
+				if (nextNode != null) {
+					message.dest = new KademliaNode(nextNode);
+					sendMessage(message.copy(), nextNode, myPid);
+					rop.nrHops++;
+				}//nextNode may be null, if the node has less than ALPHA neighbours
+			}
+		
 	}
 	
 
@@ -521,7 +534,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 	
-		logger.warning("Topic query received at node "+this.node.getId()+" "+registrations.length+" "+neighbours.length);
+		logger.info("Topic query received at node "+this.node.getId()+" "+registrations.length+" "+neighbours.length);
 
 		Message.TopicLookupBody body = new Message.TopicLookupBody(registrations, neighbours);
 		Message response  = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
@@ -539,7 +552,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 	private void handleTimeout(Timeout t, int myPid){
 		Operation op = this.operations.get(t.opID);
 		if(op!=null) {	
-			logger.warning("Timeout "+t.getType());
+			//logger.warning("Timeout "+t.getType());
 			BigInteger unavailableNode = t.node;
 			if(op.type == Message.MSG_TOPIC_QUERY) {
 				Message m = new Message();
@@ -642,7 +655,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		case Timeout.TIMEOUT: // timeout
 			Timeout timeout = (Timeout) event;
 			if (sentMsg.containsKey(timeout.msgID)) { // the response msg didn't arrived
-				logger.warning("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: "
+				logger.info("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: "
 						+ timeout.node);
 				// remove form sentMsg
 				sentMsg.remove(timeout.msgID);

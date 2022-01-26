@@ -30,7 +30,7 @@ public class Discv5TrafficGenerator implements Control {
 	private int topicCounter = 0;
 	
 	private int counter = 0;
-	private int limit = 10000;
+	private int limit = 1;
 
 	/**
 	 * MSPastry Protocol ID to act
