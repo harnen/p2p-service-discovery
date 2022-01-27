@@ -140,7 +140,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }
     
     public void setLookupResult(HashMap<KademliaNode,BigInteger> result, String topic) {
-    	System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size()+" "+topic);
+    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size()+" "+topic);
     	//lookupResultBuffer = result;
     	//for(KademliaNode rest : result)
     	//	if(lookupResultBuffer.size()<10)lookupResultBuffer.add(rest);

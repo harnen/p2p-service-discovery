@@ -32,12 +32,13 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 
 	private HashMap<Long,Long> registrationMap;
 
+	private HashMap<String,Integer> scheduled;
 	public Discv5DHTTicketProtocol(String prefix) {
 		super(prefix);
 		this.topicTable = new Discv5StatefulTopicTable();
 		this.registrationMap = new HashMap<>();
 		this.registrationFailed = new HashMap<Ticket, BackoffService>();
-
+		this.scheduled= new HashMap<>();
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -101,7 +102,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		//if(!lop.finished && found >= required) {
 		if(!lop.finished && Arrays.asList(neighbours).contains(lop.destNode)) 
 		{
-			logger.warning("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic);
+			logger.info("Found " + found + " registrations out of required " + required + "(" + all + ") for topic " + lop.topic.topic);
 			lop.finished = true;
 		}
 
@@ -135,7 +136,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 				KademliaObserver.reportOperation(lop);
 				//lop.visualize(); uncomment if you want to see visualization of the operation
 				if(!lop.finished) { 
-					logger.warning("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
+					logger.info("Found only " + found + " registrations out of " + all + " for topic " + lop.topic.topic);
 				}
 				//System.out.println("Writing stats");
 				KademliaObserver.register_total.add(all);
@@ -257,11 +258,11 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		
 		logger.info("Registration1 operation id "+rop.operationId+" "+op);
 		
-        if(KademliaCommonConfig.REG_REFRESH==1) {
+        /*if(KademliaCommonConfig.REG_REFRESH==1) {
         	//Timeout timeout = new Timeout(t, m.src.getId());
         	int timeout = (int) ((int)KademliaCommonConfig.AD_LIFE_TIME*1.1);
         	EDSimulator.add(timeout, m, Util.nodeIdtoNode(this.node.getId()), myPid);
-        }
+        }*/
 		
 		
 	}
@@ -398,6 +399,8 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 	}
 	
 	public void sendTicketRequest(BigInteger dest, Topic t, int myPid) {
+		
+
 		logger.warning("Sending ticket request to " + dest + " for topic " + t.topic);
 		TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
 		top.body = t;
@@ -425,7 +428,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 	 */
 	protected void handleTicketRequest(Message m, int myPid) {
 		// FIXME add logs
-		
+
 		logger.info("Handle ticket request "+m);
 		long curr_time = CommonState.getTime();
 		logger.warning("Ticket request received from " + m.src.getId()+" in node "+m.dest.getId());
@@ -611,10 +614,19 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			KademliaObserver.reportActiveRegistration(ticket.getTopic(), this.node.is_evil);
 
 	        
-	        /*if(KademliaCommonConfig.REG_REFRESH==1) {
+	        if(KademliaCommonConfig.REG_REFRESH==1) {
+	        	
+	    		
+	    		if(scheduled.get(t.getTopic())!=null) {
+	    			int sch = scheduled.get(t.getTopic())+1;
+	    			scheduled.put(t.getTopic(),sch);
+	    		} else {
+	    			scheduled.put(t.getTopic(),1);
+	    		}
+
 	        	Timeout timeout = new Timeout(t, m.src.getId());
-	        	EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
-	        }*/
+	        	EDSimulator.add((int) ((int)KademliaCommonConfig.AD_LIFE_TIME), timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
+	        }
 
 
 		}
@@ -776,11 +788,18 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			// Util.nodeIdtoNode(this.node.getId()), myPid);
 			break;
 			
-		/*case Timeout.REG_TIMEOUT:
+		case Timeout.REG_TIMEOUT:
+			KademliaObserver.reportExpiredRegistration(((Timeout) event).topic, this.node.is_evil);
 
-		    EDSimulator.add(0,generateRegisterMessage(((Timeout) event).topic.getTopic()), Util.nodeIdtoNode(this.node.getId()),this.getProtocolID());
-
-			break;*/
+			String top = ((Timeout) event).topic.getTopic();
+			int sch = scheduled.get(top)-1;
+			scheduled.put(top,sch);
+			logger.warning("scheduled Topic "+top+" "+sch);
+			if(sch==0) {
+				logger.warning("Registering again");
+				EDSimulator.add(0,generateRegisterMessage(top), Util.nodeIdtoNode(this.node.getId()),this.getProtocolID());
+			}
+			break;
 	
 	
 		case Timeout.TIMEOUT: // timeout
