@@ -298,6 +298,14 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			op.finished = true;
 
 			KademliaObserver.find_ok.add(1);
+			
+			if(registrationMap.get(op.operationId)!=null) {
+				RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(op.operationId));
+				startRegistration(rop,myPid);
+				registrationMap.remove(op.operationId);
+
+			}
+			
 			return;
 		}
 		
@@ -347,39 +355,45 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 				
 				if(registrationMap.get(op.operationId)!=null) {
 					RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(op.operationId));
-	
-					
-					int distToTopic = Util.logDistance((BigInteger) rop.getTopic().getTopicID(), this.node.getId());
-					neighbours = this.routingTable.getNeighbours(distToTopic);
-					
-					if(neighbours.length < KademliaCommonConfig.ALPHA)
-						neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
-	
-					rop.elaborateResponse(neighbours);
-					rop.available_requests = KademliaCommonConfig.ALPHA;
-				
-					/*Message message = rop.getMessage(); 
-					message.operationId = rop.operationId;
-					message.type = Message.MSG_REGISTER;
-					message.src = this.node;*/
-					
+					startRegistration(rop,myPid);
 					registrationMap.remove(op.operationId);
-				
-					// send ALPHA messages
-					for (int i = 0; i < KademliaCommonConfig.N; i++) {
-						BigInteger nextNode = rop.getNeighbour();
-						//System.out.println("Nextnode "+nextNode);
-						if (nextNode != null) {
-							sendTicketRequest(nextNode,rop.topic,myPid);
-						}//nextNode may be null, if the node has less than ALPHA neighbours
-					}
+
 				}
+				
 			
 				return;
 
 			} else { // no neighbour available but exists outstanding request to wait for
 				return;
 			}
+		}
+	}
+	
+	private void startRegistration(RegisterOperation rop, int myPid) {
+		
+		
+		int distToTopic = Util.logDistance((BigInteger) rop.getTopic().getTopicID(), this.node.getId());
+		BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
+		
+		if(neighbours.length < KademliaCommonConfig.ALPHA)
+			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
+
+		rop.elaborateResponse(neighbours);
+		rop.available_requests = KademliaCommonConfig.ALPHA;
+	
+		/*Message message = rop.getMessage(); 
+		message.operationId = rop.operationId;
+		message.type = Message.MSG_REGISTER;
+		message.src = this.node;*/
+		
+	
+		// send ALPHA messages
+		for (int i = 0; i < KademliaCommonConfig.N; i++) {
+			BigInteger nextNode = rop.getNeighbour();
+			//System.out.println("Nextnode "+nextNode);
+			if (nextNode != null) {
+				sendTicketRequest(nextNode,rop.topic,myPid);
+			}//nextNode may be null, if the node has less than ALPHA neighbours
 		}
 	}
 	

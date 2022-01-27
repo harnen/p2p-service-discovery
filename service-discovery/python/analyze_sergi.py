@@ -611,10 +611,11 @@ def analyzeOperations(dirs,labels):
 
         meantimes={}
         errtimes={}
-        for topic in df['topic'].unique():
+        for topic in df['topic'].dropna().unique():
             meantimes[topic] = df[df.topic == topic]['perhop'].mean()
             errtimes[topic] = df[df.topic == topic]['perhop'].std()
 
+        #print(meantimes)
         mean={}
         err={}
         for key in sorted(meantimes.keys()) :
@@ -1446,11 +1447,11 @@ topiclabel = str(1)
 #labels = ['Filter','No filter']
 #labels = ['1 IP','10 IP','50 IP']
 #labels = ['old variant','new variant']
-analyzeRegistrations2(sys.argv[1:],labels)
+#analyzeRegistrations2(sys.argv[1:],labels)
 analyzeOperations(sys.argv[1:],labels)
 #analyzeRegistrantDistribution(sys.argv[1:],labels)
-analyzeActiveRegistrations(sys.argv[1:],labels)
-analyzeRegistrationTime(sys.argv[1:],labels)
+#analyzeActiveRegistrations(sys.argv[1:],labels)
+#analyzeRegistrationTime(sys.argv[1:],labels)
 analyzeNumberOfMessages(sys.argv[1:],labels)
 #analyzeEclipsedNodes(sys.argv[1:])
 analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes

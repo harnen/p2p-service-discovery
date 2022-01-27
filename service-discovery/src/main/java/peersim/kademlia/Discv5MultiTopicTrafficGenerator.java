@@ -58,7 +58,7 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 	 * @return boolean
 	 */
 	public boolean execute() {
-		System.out.println("MultiTopic Traffic generator called");
+		//System.out.println("MultiTopic Traffic generator called");
         int num_topics;
 		HashMap<String,Integer> n = new HashMap<String,Integer>();
         Topic [] topicList = new Topic[maxtopicNum]; //references to topics of a node
@@ -123,6 +123,7 @@ public class Discv5MultiTopicTrafficGenerator extends Discv5ZipfTrafficGenerator
 					prot.getNode().setTopic(topicList[topicIndex].getTopic(), start);
 
 				    if(registerMessage != null) {
+				    	//System.out.println("Topic "+topicList[topicIndex].getTopic());
 					    //int time = CommonState.r.nextInt(900000);
 					    //int time = 0;
 					    //System.out.println("Topic " + topicList[topicIndex-1].getTopic() + " will be registered by "+prot.getNode().getId()+" at "+time);
