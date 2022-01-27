@@ -41,6 +41,7 @@ public class Discv5TicketTopicTable implements TopicTable{ // implements TopicTa
         allAds = new ArrayDeque<TopicRegistration>();
         nextDecisionTime = new HashMap<Topic, Long>();
         ticketCompetingList = new HashMap<String,Integer>();
+       // System.out.println("adLifeTime "+adLifeTime);
     }
 
     public void setHostID(BigInteger id){

@@ -117,7 +117,7 @@ public class Operation {
 		// update responseNumber
 		available_requests++;
 
-		int max = KademliaCommonConfig.K<KademliaCommonConfig.N?KademliaCommonConfig.K:KademliaCommonConfig.N;
+		int max = KademliaCommonConfig.K; //<KademliaCommonConfig.N?KademliaCommonConfig.K:KademliaCommonConfig.N;
 		
 	
 		// add to closestSet

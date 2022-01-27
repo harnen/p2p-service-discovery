@@ -428,6 +428,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
     }
     
     protected void updateTopicTable(long curr_time) {
+
 		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
     		TopicRegistration r = it.next();
@@ -454,6 +455,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
                 }
 			}
 		}
+
     }
     
 }
