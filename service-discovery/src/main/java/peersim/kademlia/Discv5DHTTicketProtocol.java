@@ -627,14 +627,12 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 	        	Timeout timeout = new Timeout(t, m.src.getId());
 	        	EDSimulator.add((int) ((int)KademliaCommonConfig.AD_LIFE_TIME), timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
 	        }
-
-
+		    // Timeout to report expired ad (i.e., upon expiration of this successful registration)	
+            Timeout timeout = new Timeout(ticket.getTopic(), m.src.getId());
+			EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
 		}
 
-
-        
         operations.remove(m.operationId);
-
     }   
 
 	protected void handleTopicQuery(Message m, int myPid) {
@@ -789,7 +787,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			break;
 			
 		case Timeout.REG_TIMEOUT:
-			KademliaObserver.reportExpiredRegistration(((Timeout) event).topic, this.node.is_evil);
+			//KademliaObserver.reportExpiredRegistration(((Timeout) event).topic, this.node.is_evil);
 
 			String top = ((Timeout) event).topic.getTopic();
 			int sch = scheduled.get(top)-1;
