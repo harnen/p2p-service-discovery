@@ -24,6 +24,10 @@ public class LookupOperation extends Operation {
 
     }
     
+    public Topic getTopic() {
+    	return topic;
+    }
+    
     public void addDiscovered(KademliaNode n,BigInteger sourceId) {
         discovered.put(n,sourceId);
     }

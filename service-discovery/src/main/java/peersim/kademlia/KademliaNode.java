@@ -140,7 +140,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }
     
     public void setLookupResult(HashMap<KademliaNode,BigInteger> result, String topic) {
-    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size());
+    	//System.out.println(CommonState.getTime()+" Kademlianode:"+id+" setLookupResult "+result.size()+" "+topic);
     	//lookupResultBuffer = result;
     	//for(KademliaNode rest : result)
     	//	if(lookupResultBuffer.size()<10)lookupResultBuffer.add(rest);
@@ -160,7 +160,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	}
     }
     
-    public void setLookupResult(List<BigInteger> results) {
+    /*public void setLookupResult(List<BigInteger> results) {
 
     	//System.out.println("Received "+results.size()+" nodes topiclist:"+topicList.size());
     	for(String topic : connections.keySet()) {
@@ -182,7 +182,9 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	}
   
     	
-    }
+    }*/
+    
+    
 
     
     public boolean addIncomingConnection(KademliaNode node,String topic) {
@@ -258,7 +260,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	}
     }
     
-    public void setTopicDiscv4(String t, Node n) {
+    /*public void setTopicDiscv4(String t, Node n) {
     	this.n = n;
     	//this.topicList.add(t);
 
@@ -271,7 +273,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     		connections.get(t).setRequested(true);
     	}
     	
-    }
+    }*/
     
     public void setTopicList(List<String> t, Node n) {
     	for(String topic : t)

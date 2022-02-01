@@ -19,7 +19,7 @@ public class FindOperation extends Operation{
 
 
 	
-	private List<String> topics;
+	private String topic;
 	/**
 	 * defaul constructor
 	 * 
@@ -28,19 +28,16 @@ public class FindOperation extends Operation{
 	 */
 	public FindOperation(BigInteger srcNode, BigInteger destNode, long timestamp) {
 		super(srcNode, destNode, Message.MSG_FIND, timestamp);
-		topics = new ArrayList<String>();
+		//topics = new ArrayList<String>();
 	}
 	
-	public void addTopic(String topic) {
-		topics.add(topic);
-	}
-	
-	public void remTopic(String topic) {
-		topics.remove(topic);
+	public void setTopic(String topic) {
+		this.topic = topic;
 	}
 
-	public List<String> getTopics() { 
-		return topics;
+
+	public String getTopic() { 
+		return topic;
 	}
 	/*public void setDiscovered(int disc) {
 		this.discovered = disc;
@@ -50,14 +47,7 @@ public class FindOperation extends Operation{
 		
 		int discovered = 0;
 		for(BigInteger nodeId : this.getNeighboursList()) {
-			boolean found=false;
-			for(String topic : topics) {
-				if (Util.nodeIdtoNode(nodeId).getKademliaProtocol().getNode().getTopicList().contains(topic)) {
-				found=true;
-				break;
-				}
-			}
-			if(found)discovered++;
+			if (Util.nodeIdtoNode(nodeId).getKademliaProtocol().getNode().getTopicList().contains(topic))discovered++;
 			
 		}
 		return discovered;

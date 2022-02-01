@@ -117,11 +117,14 @@ public class Operation {
 		// update responseNumber
 		available_requests++;
 
+		int max = KademliaCommonConfig.K; //<KademliaCommonConfig.N?KademliaCommonConfig.K:KademliaCommonConfig.N;
+		
+	
 		// add to closestSet
 		for (BigInteger n : neighbours) {
 			if (n != null) {
 				if (!closestSet.containsKey(n)) {
-					if (closestSet.size() < KademliaCommonConfig.K) { // add directly
+					if (closestSet.size() < max) { // add directly
 						closestSet.put(n, false);
 					} else { // find in the closest set if there are nodes whit less distance
 						BigInteger newdist = Util.distance(n, destNode);

@@ -27,7 +27,7 @@ import peersim.kademlia.Message;
 import peersim.kademlia.operations.TicketOperation;
 import peersim.kademlia.TicketTable;
 
-public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
+public class Discv5EvilDHTTicketProtocol extends Discv5TicketProtocol {
 
     // VARIABLE PARAMETERS
     final String PAR_ATTACK_TYPE = "attackType";
@@ -51,7 +51,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      * @return Object
      */
     public Object clone() {
-        Discv5EvilTicketProtocol dolly = new Discv5EvilTicketProtocol(Discv5EvilTicketProtocol.prefix);
+        Discv5EvilDHTTicketProtocol dolly = new Discv5EvilDHTTicketProtocol(Discv5EvilDHTTicketProtocol.prefix);
         return dolly;
     }
     
@@ -61,7 +61,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
      * @param prefix
      *            String
      */
-    public Discv5EvilTicketProtocol(String prefix) {
+    public Discv5EvilDHTTicketProtocol(String prefix) {
         super(prefix);
         this.attackType = Configuration.getString(prefix + "." + PAR_ATTACK_TYPE);
         this.numOfRegistrations = 0;

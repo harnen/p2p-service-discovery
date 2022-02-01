@@ -3,8 +3,10 @@ package peersim.kademlia;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.List;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.math.BigInteger;
 
 import peersim.kademlia.Topic;
@@ -42,10 +44,10 @@ public class Discv5TopicTable implements TopicTable {
         this.size++;
     }
 
-    public boolean register(TopicRegistration ri, Topic ti){
+    public boolean register(TopicRegistration ri){
         //need to create a copy here. Without it - the topic/registration class would be shared among 
         //all the class where it's registered
-        Topic t = new Topic(ti);
+        Topic t = new Topic(ri.getTopic().getTopic());
         t.setHostID(this.hostID);
         TopicRegistration r = new TopicRegistration(ri);
         r.setTimestamp(CommonState.getTime());
@@ -80,7 +82,34 @@ public class Discv5TopicTable implements TopicTable {
         return false;
     }
 
+
     public TopicRegistration[] getRegistration(Topic t){
+        // TODO check: we might be returning expired registrations, we shoud update the table
+        Topic topic = new Topic(t.topic);
+        topic.hostID = this.hostID;
+
+        if(table.containsKey(topic)){
+
+	        List<TopicRegistration> topicQ = table.get(topic);
+	
+	
+	        // Random selection of K results
+	        TopicRegistration[] results = (TopicRegistration[]) topicQ.toArray(new TopicRegistration[topicQ.size()]);
+	        int result_len = KademliaCommonConfig.MAX_TOPIC_REPLY > results.length ? results.length : KademliaCommonConfig.MAX_TOPIC_REPLY;
+	        TopicRegistration[] final_results = new TopicRegistration[result_len];
+	
+	        for (int i = 0; i < result_len; i++) 
+	            final_results[i] = results[CommonState.r.nextInt(results.length)];
+	        
+	        //return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
+	        return final_results;
+        } else {
+            return new TopicRegistration[0];
+          
+        }
+    }
+    
+    /*public TopicRegistration[] getRegistration(Topic t){
     	Topic t1 = new Topic(t);
     	t1.hostID = this.hostID;
         if(table.containsKey(t1)){
@@ -93,7 +122,9 @@ public class Discv5TopicTable implements TopicTable {
         }
         
         return new TopicRegistration[0];
-    }
+    }*/
+    
+    
     
     public HashMap<Topic,Integer> getRegbyTopic(){
         HashMap<Topic,Integer> regByTopic = new HashMap<Topic,Integer>();
@@ -106,7 +137,7 @@ public class Discv5TopicTable implements TopicTable {
 
     }
     
-    public HashMap<BigInteger,Integer> getRegbyRegistrant(){
+    /*public HashMap<BigInteger,Integer> getRegbyRegistrant(){
         HashMap<BigInteger,Integer> regByRegistrant = new HashMap<BigInteger,Integer>();
     	 for(List<TopicRegistration> t: table.values())
          {
@@ -121,9 +152,9 @@ public class Discv5TopicTable implements TopicTable {
     	 //System.out.println("Table "+hostID+" "+count);
         return regByRegistrant;
 
-    }
+    }*/
     
-    public int getRegbyRegistrar(){
+    /*public int getRegbyRegistrar(){
     	int count=0;
     	 for(List<TopicRegistration> t: table.values())
          {
@@ -132,7 +163,7 @@ public class Discv5TopicTable implements TopicTable {
     	 //System.out.println("Table "+hostID+" "+count);
         return count;
 
-    }
+    }*/
 
     public int getCapacity(){
         return this.capacity;
@@ -190,5 +221,83 @@ public class Discv5TopicTable implements TopicTable {
     	}
     	return result;
     }
+    
+    public HashMap<String, Integer> getRegbyRegistrar(){
+    	HashMap<String, Integer> topicOccupancy= new HashMap<String, Integer>();
+    	for(Topic t: table.keySet()) {
+    		Iterator<TopicRegistration> iterate_value = table.get(t).iterator();
+    		int count=0;
+    		while (iterate_value.hasNext()) {
+               if(!iterate_value.next().getNode().is_evil)count++;
+            }
+    		if(table.get(t).size()>0)topicOccupancy.put(t.getTopic(),count);
+    	}
+    		
+        return topicOccupancy;
+    }
+    
+    public HashMap<String, Integer> getRegEvilbyRegistrar(){
+    	HashMap<String, Integer> topicOccupancy= new HashMap<String, Integer>();
+    	for(Topic t: table.keySet()) {
+    		Iterator<TopicRegistration> iterate_value = table.get(t).iterator();
+    		int count=0;
+    		while (iterate_value.hasNext()) {
+               if(iterate_value.next().getNode().is_evil)count++;
+            }
+    		if(table.get(t).size()>0)topicOccupancy.put(t.getTopic(),count);
+    	}
+    		
+        return topicOccupancy;
+    }
+    
+    
+    public HashMap<String, HashMap<BigInteger,Integer>> getRegbyRegistrant(){
+        HashMap<String, HashMap<BigInteger,Integer>> regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
+
+    	 for(Topic t: table.keySet())
+         {
+    		Object[] treg = table.get(t).toArray();
+            HashMap<BigInteger,Integer> register = new HashMap<BigInteger,Integer>();
+    		for(Object reg : treg)
+    		{
+    			int count=0;
+    			if(register.get(((TopicRegistration)reg).getNode().getId())!=null)count=register.get(((TopicRegistration)reg).getNode().getId());
+    			if(!((TopicRegistration)reg).getNode().is_evil)count++;
+    			register.put(((TopicRegistration)reg).getNode().getId(),count);
+    	    	//System.out.println("Table "+((TopicRegistration)reg).getNode().getId()+" "+count);
+    		}
+    		regByRegistrant.put(t.getTopic(), register);
+         }
+        return regByRegistrant;
+
+    }
+    
+    public HashMap<String, HashMap<BigInteger,Integer>> getRegEvilbyRegistrant(){
+        HashMap<String, HashMap<BigInteger,Integer>> regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
+
+    	 for(Topic t: table.keySet())
+         {
+    		Object[] treg = table.get(t).toArray();
+            HashMap<BigInteger,Integer> register = new HashMap<BigInteger,Integer>();
+    		for(Object reg : treg)
+    		{
+    			int count=0;
+    			if(register.get(((TopicRegistration)reg).getNode().getId())!=null)count=register.get(((TopicRegistration)reg).getNode().getId());
+    			if(((TopicRegistration)reg).getNode().is_evil)count++;
+    			register.put(((TopicRegistration)reg).getNode().getId(),count);
+    	    	//System.out.println("Table "+((TopicRegistration)reg).getNode().getId()+" "+count);
+    		}
+    		regByRegistrant.put(t.getTopic(), register);
+         }
+        return regByRegistrant;
+
+    }
+    
+    public double topicTableUtilisation() {
+        
+ 
+        return ((double) size)/capacity;
+     }
+     
     
 }

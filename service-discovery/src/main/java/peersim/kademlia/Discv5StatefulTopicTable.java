@@ -136,6 +136,7 @@ public class Discv5StatefulTopicTable extends Discv5GlobalTopicTable {
         // Add ip address to the Trie
     }*/
     
+
     /*
     protected void updateTopicTable(long curr_time) {
 		Iterator<TopicRegistration> it = allAds.iterator();

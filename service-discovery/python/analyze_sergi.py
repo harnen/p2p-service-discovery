@@ -611,10 +611,11 @@ def analyzeOperations(dirs,labels):
 
         meantimes={}
         errtimes={}
-        for topic in df['topic'].unique():
+        for topic in df['topic'].dropna().unique():
             meantimes[topic] = df[df.topic == topic]['perhop'].mean()
             errtimes[topic] = df[df.topic == topic]['perhop'].std()
 
+        #print(meantimes)
         mean={}
         err={}
         for key in sorted(meantimes.keys()) :
@@ -727,6 +728,51 @@ def analyzeEclipsedNodes(dirs):
     ax1.set_xlabel("% Malicious nodes")
     ax1.legend()
     plt.savefig(OUTDIR + '/eclipsed_nodes_t'+topiclabel+'.png')
+
+def analyzeEclipsedNodes2(dirs,labels):
+    #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    fig, ax1 = plt.subplots()
+    colors = ['red', 'green', 'blue','orange']
+    j=0
+    dirs = ['logs_discv5','logs_dhtticket','logs_dhtnoticket']
+    dirs2 = ['_attackTopic1_nonUniform_attackPercent0.2','_attackTopic3_nonUniform_attackPercent0.2','_attackTopic5_nonUniform_attackPercent0.2']
+    for log_dir in dirs:
+    #print(log_dir)
+        maxset = []
+
+        topics = []
+        for log_dir2 in dirs2:
+            df = pd.read_csv(log_dir+log_dir2 + '/eclipse_counts.csv')
+            for col_name in df.columns:
+                if col_name.startswith("topic-"):
+                    topics.append(col_name[len("topic-"):])
+            max=0
+            for topic in topics:
+                #print(df["topic-"+topic].max())
+                if max < df["topic-"+topic].max():
+                    max = df["topic-"+topic].max()
+
+            maxset.append(max)
+
+        print(maxset)
+        #ax1.plot(df['time'], df["topic-"+topic], label=topic)
+        width=0.3
+        margin=width*j
+        #
+        #ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
+        sybils = ['Sybil 1 IP','Sybil 10 IP','Sybil 50 IP']
+        ax1.bar(np.arange(len(dirs2))+margin, maxset,width=width,label=labels[j])
+        j=j+1
+
+
+    ax1.set_title("Number of total eclipsed nodes")
+    ax1.set_xticks(np.arange(len(dirs))+margin/2)
+    ax1.set_xticklabels(['t1','t2','t3'])
+    ax1.set_ylabel("# Eclipsed Nodes")
+    #ax1.set_xlabel("% Malicious nodes")
+    ax1.legend()
+    plt.savefig(OUTDIR + '/eclipsed_nodes.png')
+
 
 
 def analyzediscovered(dirs):
@@ -1355,7 +1401,7 @@ def analyzeMessageReceivedByNodes(dirs,labels):
                         topics[row['Node']] = row['numMsg']
                     else:
                         #y_vals.append(int(row['numMsg'])/(time-300))
-                        y_vals.append(int(row['numMsg']))
+                        y_vals.append(int(row['numMsg'])/(3600*4))
                         x_vals.append(row['Node'])
 
                 sorted_y_vals = sorted(y_vals)
@@ -1440,18 +1486,18 @@ print('Plots will be saved in ', OUTDIR);
 #labels = ['0.5 AdLifeTime','1 AdLifeTime','1.5 AdLifeTime','2 AdLifeTime']
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
 ##labels = ['No refresh','Refresh']
-labels = ['5%','10%','20%']
+labels = ['Discv5 Ticket','Discv5 DHT Ticket','Discv5 DHT No Ticket','Discv4']
 topiclabel = str(1)
 
 #labels = ['Filter','No filter']
 #labels = ['1 IP','10 IP','50 IP']
 #labels = ['old variant','new variant']
-#analyzeRegistrations2(sys.argv[1:],labels)
-analyzeOperations(sys.argv[1:],labels)
+analyzeRegistrations2(sys.argv[1:],labels)
+#analyzeOperations(sys.argv[1:],labels)
 #analyzeRegistrantDistribution(sys.argv[1:],labels)
-#analyzeActiveRegistrations(sys.argv[1:],labels)
-#analyzeRegistrationTime(sys.argv[1:],labels)
+analyzeActiveRegistrations(sys.argv[1:],labels)
+analyzeRegistrationTime(sys.argv[1:],labels)
 analyzeNumberOfMessages(sys.argv[1:],labels)
-#analyzeEclipsedNodes(sys.argv[1:])
+#analyzeEclipsedNodes2(sys.argv[1:],labels)
 analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
 #analyzeStorageUtilisation(sys.argv[1:],labels)

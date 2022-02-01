@@ -77,8 +77,8 @@ public class LookupTicketOperation extends LookupOperation {
     public boolean completed() {
     	if(KademliaCommonConfig.LOOKUP_BUCKET_ORDER!=KademliaCommonConfig.COMPLETE_WALK) {
 			int all = KademliaObserver.topicRegistrationCount(topic.getTopic());
-			int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
-	
+			//int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
+			int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
 	    	return discoveredCount()>=required;
     	} else {
     		return completed;

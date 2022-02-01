@@ -15,7 +15,7 @@ import peersim.kademlia.Topic;
 import peersim.kademlia.TopicRegistration;
 import peersim.core.CommonState;
 
-public class Discv5TicketTopicTable { // implements TopicTable {
+public class Discv5TicketTopicTable implements TopicTable{ // implements TopicTable {
     
     protected int tableCapacity = KademliaCommonConfig.TOPIC_TABLE_CAP;
     protected int adsPerQueue = KademliaCommonConfig.ADS_PER_QUEUE;
@@ -41,6 +41,7 @@ public class Discv5TicketTopicTable { // implements TopicTable {
         allAds = new ArrayDeque<TopicRegistration>();
         nextDecisionTime = new HashMap<Topic, Long>();
         ticketCompetingList = new HashMap<String,Integer>();
+       // System.out.println("adLifeTime "+adLifeTime);
     }
 
     public void setHostID(BigInteger id){
@@ -190,7 +191,7 @@ public class Discv5TicketTopicTable { // implements TopicTable {
         return setDecisionTime(ticket.getTopic(), curr_time + KademliaCommonConfig.ONE_UNIT_OF_TIME);
     }
 
-    protected void register(TopicRegistration reg) {
+    public boolean register(TopicRegistration reg) {
         ArrayDeque<TopicRegistration> topicQ = this.topicTable.get(reg.getTopic());
         //System.out.println("Registering ip: " + reg.getNode().getAddr());
         if (topicQ != null) {
@@ -203,6 +204,8 @@ public class Discv5TicketTopicTable { // implements TopicTable {
         }
 
         this.allAds.add(reg);
+        
+        return true;
     }
     
     protected Ticket [] makeRegisterDecision(long curr_time) {   
