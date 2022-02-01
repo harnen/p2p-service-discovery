@@ -735,7 +735,7 @@ def analyzeEclipsedNodes2(dirs,labels):
     colors = ['red', 'green', 'blue','orange']
     j=0
     dirs = ['logs_discv5','logs_dhtticket','logs_dhtnoticket']
-    dirs2 = ['_attackTopic1_nonUniform_attackPercent0.2','_attackTopic3_nonUniform_attackPercent0.2']
+    dirs2 = ['_attackTopic1_nonUniform_attackPercent0.2','_attackTopic3_nonUniform_attackPercent0.2','_attackTopic5_nonUniform_attackPercent0.2']
     for log_dir in dirs:
     #print(log_dir)
         maxset = []
@@ -765,13 +765,13 @@ def analyzeEclipsedNodes2(dirs,labels):
         j=j+1
 
 
-    ax1.set_title("Number of total eclipsed nodes Topic "+topiclabel+" Attack")
+    ax1.set_title("Number of total eclipsed nodes")
     ax1.set_xticks(np.arange(len(dirs))+margin/2)
     ax1.set_xticklabels(['t1','t2','t3'])
     ax1.set_ylabel("# Eclipsed Nodes")
-    ax1.set_xlabel("% Malicious nodes")
+    #ax1.set_xlabel("% Malicious nodes")
     ax1.legend()
-    plt.savefig(OUTDIR + '/eclipsed_nodes_t'+topiclabel+'.png')
+    plt.savefig(OUTDIR + '/eclipsed_nodes.png')
 
 
 
@@ -1401,7 +1401,7 @@ def analyzeMessageReceivedByNodes(dirs,labels):
                         topics[row['Node']] = row['numMsg']
                     else:
                         #y_vals.append(int(row['numMsg'])/(time-300))
-                        y_vals.append(int(row['numMsg']))
+                        y_vals.append(int(row['numMsg'])/(3600*4))
                         x_vals.append(row['Node'])
 
                 sorted_y_vals = sorted(y_vals)
@@ -1493,11 +1493,11 @@ topiclabel = str(1)
 #labels = ['1 IP','10 IP','50 IP']
 #labels = ['old variant','new variant']
 #analyzeRegistrations2(sys.argv[1:],labels)
-#analyzeOperations(sys.argv[1:],labels)
+analyzeOperations(sys.argv[1:],labels)
 #analyzeRegistrantDistribution(sys.argv[1:],labels)
 #analyzeActiveRegistrations(sys.argv[1:],labels)
 #analyzeRegistrationTime(sys.argv[1:],labels)
 #analyzeNumberOfMessages(sys.argv[1:],labels)
-analyzeEclipsedNodes2(sys.argv[1:],labels)
+#analyzeEclipsedNodes2(sys.argv[1:],labels)
 #analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
 #analyzeStorageUtilisation(sys.argv[1:],labels)

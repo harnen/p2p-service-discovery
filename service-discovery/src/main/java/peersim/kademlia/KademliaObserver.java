@@ -314,7 +314,7 @@ public class KademliaObserver implements Control {
 
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
                 //result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
-            	double returned_per_hop = (double)((LookupOperation)op).discoveredCount()/op.getUsedCount();
+            	double returned_per_hop = (double)((LookupOperation)op).discoveredCount()/op.getReturnedCount();
 
             	result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+returned_per_hop+"\n";
 
