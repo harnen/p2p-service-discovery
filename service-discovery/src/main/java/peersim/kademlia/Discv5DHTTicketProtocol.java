@@ -256,7 +256,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 
 		registrationMap.put(op,rop.operationId);
 		
-		logger.warning("Registration1 operation id "+rop.operationId+" "+op);
+		logger.info("Registration1 operation id "+rop.operationId+" "+op);
 		
         /*if(KademliaCommonConfig.REG_REFRESH==1) {
         	//Timeout timeout = new Timeout(t, m.src.getId());
@@ -816,7 +816,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 				String top = ((Timeout) event).topic.getTopic();
 				int sch = scheduled.get(top)-1;
 				scheduled.put(top,sch);
-				logger.warning("scheduled Topic "+top+" "+sch);
+				logger.info("scheduled Topic "+top+" "+sch);
 				if(sch==0) {
 					logger.warning("Registering again");
 					EDSimulator.add(0,generateRegisterMessage(top), Util.nodeIdtoNode(this.node.getId()),this.getProtocolID());
