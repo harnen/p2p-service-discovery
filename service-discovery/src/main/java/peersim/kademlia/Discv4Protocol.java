@@ -253,7 +253,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 
 		if(registrationMap.get(op.operationId)!=null) {
 			LookupOperation lop = (LookupOperation) operations.get(registrationMap.get(op.operationId));
-			lop.increaseUsed(m.src.getId());
+			lop.increaseReturned(m.src.getId());
 		}
 		
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
@@ -276,8 +276,10 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 				LookupOperation lop = (LookupOperation) operations.get(registrationMap.get(op.operationId));
 
 				for (BigInteger id : neighbours) {
-					lop.addDiscovered(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
-					KademliaObserver.addDiscovered(lop.topic, m.src.getId(), id);
+					if(Util.nodeIdtoNode(id).getKademliaProtocol().getNode().hasTopic(lop.getTopic().getTopic())){
+						lop.addDiscovered(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
+						KademliaObserver.addDiscovered(lop.topic, m.src.getId(), id);
+					}
 				}
 				KademliaObserver.reportOperation(lop);
 
@@ -334,8 +336,10 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 					LookupOperation lop = (LookupOperation) operations.get(registrationMap.get(op.operationId));
 
 					for (BigInteger id : neighbours) {
-						lop.addDiscovered(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
-						KademliaObserver.addDiscovered(lop.topic, m.src.getId(), id);
+						if(Util.nodeIdtoNode(id).getKademliaProtocol().getNode().hasTopic(lop.getTopic().getTopic())){
+							lop.addDiscovered(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
+							KademliaObserver.addDiscovered(lop.topic, m.src.getId(), id);
+						}
 
 					}
 					KademliaObserver.reportOperation(lop);
