@@ -80,6 +80,7 @@ public class KademliaCommonConfig {
     
     public static int REPORT_MSG_ACTIVATED = 0; 
     
+    public static int DISCV4_STOP = 0;
 	/**
 	 * short information about current mspastry configuration
 	 * 

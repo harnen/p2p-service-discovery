@@ -35,7 +35,9 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 	
 	private HashMap<Long,Long> registrationMap;
 
+	final String PAR_DISC4_STOP = "DISCV4_STOP";
 
+	
 	public Discv4Protocol(String prefix) {
 		
 		super(prefix);
@@ -44,6 +46,8 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		this.registrationMap = new HashMap<>();
 
 
+		KademliaCommonConfig.DISCV4_STOP = Configuration.getInt(prefix + "." + PAR_DISC4_STOP,
+				KademliaCommonConfig.DISCV4_STOP);
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -250,7 +254,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		for(BigInteger neighbour: neighbours)
 			routingTable.addNeighbour(neighbour);
 		
-
+		int discovered = 0;
 		if(registrationMap.get(op.operationId)!=null) {
 			LookupOperation lop = (LookupOperation) operations.get(registrationMap.get(op.operationId));
 			lop.increaseReturned(m.src.getId());
@@ -260,23 +264,15 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 					KademliaObserver.addDiscovered(lop.topic, m.src.getId(), id);
 				}
 			}
+			discovered = lop.discoveredCount();
 		}
 		
 
 		
-		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
+		if(!op.finished && (Arrays.asList(neighbours).contains(op.destNode)||(KademliaCommonConfig.DISCV4_STOP==1&&discovered>=KademliaCommonConfig.TOPIC_PEER_LIMIT))){
 			logger.warning("Found node " + op.destNode);
 			op.finished = true;
-			/*if(discv4) {
-				for(String t: this.node.topicQuerying()) {
-					logger.warning("Querying topic "+t);
-					((FindOperation)op).setTopic(t);
-					KademliaObserver.reportOperation(op);
 
-				}
-
-				node.setLookupResult(op.getNeighboursList());
-			}*/
 			KademliaObserver.find_ok.add(1);
 			
 			if(registrationMap.get(op.operationId)!=null) {
@@ -286,7 +282,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 				KademliaObserver.reportOperation(lop);
 
 				node.setLookupResult(lop.getDiscovered(),lop.getTopic().getTopic());
-				logger.warning("Handle response topic "+lop.getTopic().getTopic());
+				//logger.warning("Handle response topic "+lop.getTopic().getTopic());
 			}
 			
 			return;
@@ -304,8 +300,6 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 					Message request = null;
 					if(op.type == Message.MSG_FIND) {
 						request = new Message(Message.MSG_FIND);
-						//request.body = Util.prefixLen(op.destNode, neighbour);
-						//System.out.println("Request body distance "+Util.prefixLen(op.destNode, neighbour)+" "+Util.logDistance(op.destNode, neighbour));
 						request.body = Util.logDistance(op.destNode, neighbour);
 					}else if(op.type == Message.MSG_REGISTER) {
 						request = new Message(Message.MSG_REGISTER);
@@ -326,11 +320,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 							
 			} else if (op.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 				operations.remove(op.operationId);
-				//op.visualize();
-				/*System.out.println("###################Operaration  finished");
-				if(!op.finished && op.type == Message.MSG_FIND){
-					logger.warning("Couldn't find node " + op.destNode);
-				}*/
+
 				logger.info("Finished lookup node " + op.getUsedCount());
 				
 				if(registrationMap.get(op.operationId)!=null) {
@@ -341,21 +331,9 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 					KademliaObserver.reportOperation(lop);
 
 					node.setLookupResult(lop.getDiscovered(),lop.getTopic().getTopic());
-					logger.warning("Handle response topic "+lop.getTopic().getTopic());
+					//logger.warning("Handle response topic "+lop.getTopic().getTopic());
 				}
-				/*if(discv4) {
-					for(String t: this.node.topicQuerying()) {
-						logger.warning("Querying topic "+t);
 
-						((FindOperation)op).setTopic(t);
-						KademliaObserver.reportOperation(op);
-
-					}
-					//logger.warning("Topic query "+((FindOperation)op).getTopics().get(0));
-					//KademliaObserver.reportOperation(op);
-
-					node.setLookupResult(op.getNeighboursList());
-				}*/
 				KademliaObserver.reportOperation(op);
 				if(!op.finished && op.type == Message.MSG_FIND){
 					logger.warning("Couldn't find node " + op.destNode);
@@ -374,7 +352,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		KademliaObserver.lookup_total.add(1);
 		Topic t = (Topic) m.body;
 		
-		logger.warning("disv4 Send init lookup for topic " + this.node.getId() + " " + t.getTopic());
+		logger.warning("discv4 Send init lookup for topic " + this.node.getId() + " " + t.getTopic());
 
 
 
@@ -391,7 +369,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 
 		registrationMap.put(op,lop.operationId);
 		
-		logger.warning("Lookup operation id "+lop.operationId+" "+op);
+		//logger.warning("Lookup operation id "+lop.operationId+" "+op);
 		
 
 		
@@ -473,7 +451,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		case Timeout.TIMEOUT: // timeout
 			Timeout timeout = (Timeout) event;
 			if (sentMsg.containsKey(timeout.msgID)) { // the response msg didn't arrived
-				logger.warning("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: "
+				logger.info("Node " + this.node.getId() + " received a timeout: " + timeout.msgID + " from: "
 						+ timeout.node);
 				// remove form sentMsg
 				sentMsg.remove(timeout.msgID);

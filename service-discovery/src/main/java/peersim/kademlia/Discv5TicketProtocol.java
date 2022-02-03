@@ -470,7 +470,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			} else {
 				backoff.registrationFailed();
 			}
-			logger.info("Registration failed " + backoff.getTimesFailed() + " backing off " + +backoff.getTimeToWait()
+			logger.warning("Registration failed " + backoff.getTimesFailed() + " backing off " + +backoff.getTimeToWait()
 					+ " " + backoff.shouldRetry() + " " + ticket.getWaitTime());
 
 			if ((backoff.shouldRetry() && ticket.getWaitTime() >= 0)&&(ticket.getCumWaitTime()<=KademliaCommonConfig.REG_TIMEOUT)) {
@@ -490,7 +490,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			}
 
 		} else {
-			logger.info("Registration succesful for topic " + ticket.getTopic().topic + " at node " + m.src.getId()
+			logger.warning("Registration succesful for topic " + ticket.getTopic().topic + " at node " + m.src.getId()
 					+ " at dist " + Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID()) + " "
 					+ ticket.getCumWaitTime());
 			KademliaObserver.addAcceptedRegistration(topic, this.node.getId(), m.src.getId(), ticket.getCumWaitTime());
