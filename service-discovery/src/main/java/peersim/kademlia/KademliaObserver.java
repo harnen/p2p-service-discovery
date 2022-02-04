@@ -314,7 +314,7 @@ public class KademliaObserver implements Control {
 
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
                 //result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
-            	double returned_per_hop = (double)((LookupOperation)op).discoveredCount()/op.getReturnedCount();
+            	double returned_per_hop = (double)((LookupOperation)op).discoveredCount()/op.nrHops;
 
             	result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+returned_per_hop+"\n";
 
@@ -323,9 +323,9 @@ public class KademliaObserver implements Control {
             	//System.exit(1);
                 result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  + "," + "," + ((RegisterOperation)op).topic.topic + "," + ((LookupOperation)op).topic.topicID + "\n";
             } else if (op instanceof FindOperation&&op.getUsedCount()>0){
-            	double returned_per_hop = (double)((FindOperation)op).getDiscovered()/op.getUsedCount();
+            	//double returned_per_hop = (double)((FindOperation)op).getDiscovered()/op.getUsedCount();
             	//System.out.println("Returned "+returned_per_hop);
-            	result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  +((FindOperation)op).getDiscovered()+ ",,,," + ((FindOperation)op).getTopic()+",,,"+returned_per_hop+"\n";
+            	result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount() + "," + ","  +((FindOperation)op).getDiscovered()+ ",,,," + ((FindOperation)op).getTopic()+",,,\n";
             }
             opWriter.write(result);
             opWriter.flush();
@@ -571,7 +571,7 @@ public class KademliaObserver implements Control {
     }
 
     private void write_exchanged_msg_stats_over_time() {
-        int numMsgTypes = 12;
+        int numMsgTypes = 15;
         try {
             String filename = this.logFolderName + "/" + "msg_stats.csv";
             File myFile = new File(filename);

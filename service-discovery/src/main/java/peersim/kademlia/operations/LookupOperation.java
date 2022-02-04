@@ -36,6 +36,10 @@ public class LookupOperation extends Operation {
         return discovered;
     }
     
+    public void removeDiscovered(KademliaNode n) {
+    	discovered.remove(n);
+    }
+    
     public String discoveredToString() {
         if(discovered.size() == 0) return "";
         

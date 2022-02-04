@@ -91,6 +91,11 @@ public class Message extends SimpleEvent {
 	public static final int MSG_TOPIC_QUERY_REPLY = 11;
 
 	public static final int MSG_INIT_TOPIC_LOOKUP = 12;
+	
+	public static final int MSG_HANDSHAKE = 13;
+
+	public static final int MSG_HANDSHAKE_RESPONSE = 14;
+
 
 	// ______________________________________________________________________________________________
 	/**
@@ -266,6 +271,12 @@ public class Message extends SimpleEvent {
 				return "MSG_TOPIC_QUERY_REPLY";
 			case MSG_REGISTER_RESPONSE:
 				return "MSG_REGISTER_RESPONSE";
+			case MSG_INIT_TOPIC_LOOKUP:
+				return "MSG_INIT_TOPIC_LOOKUP";
+			case MSG_HANDSHAKE:
+				return "MSG_HANDSHAKE";
+			case MSG_HANDSHAKE_RESPONSE:
+				return "MSG_HANDSHAKE_RESPONSE";
 			default:
 				return "UNKNOW:" + type;
 		}

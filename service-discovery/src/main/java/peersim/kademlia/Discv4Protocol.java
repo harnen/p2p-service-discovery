@@ -258,11 +258,16 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		if(registrationMap.get(op.operationId)!=null) {
 			LookupOperation lop = (LookupOperation) operations.get(registrationMap.get(op.operationId));
 			lop.increaseReturned(m.src.getId());
+			if(!lop.finished)lop.increaseUsed(m.src.getId());
 			for (BigInteger id : neighbours) {
-				if(Util.nodeIdtoNode(id).getKademliaProtocol().getNode().hasTopic(lop.getTopic().getTopic())){
+				/*if(Util.nodeIdtoNode(id).getKademliaProtocol().getNode().hasTopic(lop.getTopic().getTopic())){
 					lop.addDiscovered(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
 					KademliaObserver.addDiscovered(lop.topic, m.src.getId(), id);
-				}
+				}*/
+				if(!lop.getDiscovered().containsKey(Util.nodeIdtoNode(id).getKademliaProtocol().getNode()))
+					sendHandShake(id,lop.getTopic().getTopic(),registrationMap.get(op.operationId),myPid);
+				lop.addDiscovered(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
+
 			}
 			discovered = lop.discoveredCount();
 		}
@@ -346,6 +351,22 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		}
 	}
 	
+	public void sendHandShake(BigInteger dest, String t, long operationId, int myPid) {
+	
+		Message m = new Message(Message.MSG_HANDSHAKE, t);
+
+		m.timestamp = CommonState.getTime();
+		// set message operation id
+		m.operationId = operationId;
+		m.src = this.node;
+		m.dest = Util.nodeIdtoNode(dest).getKademliaProtocol().getNode();
+
+		logger.info("Send handshake to " + dest + " for topic " + t);
+		sendMessage(m, dest, myPid);
+	
+
+	}
+	
 	private void handleInitTopicLookup(Message m, int myPid) {
 		
 
@@ -374,6 +395,43 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 
 		
 	}
+	
+	private void handleHandShake(Message m, int myPid) {
+		String topic = (String) m.body;
+		//TopicRegistration r = new TopicRegistration(m.src, t);
+        Message response; 
+
+		//if(this.topicTable.register(r)) {
+		//logger.warning(topic + " registered on " + this.node.getId() + " by " + m.src.getId());
+        response = new Message(Message.MSG_HANDSHAKE_RESPONSE, activeTopics.contains(topic));
+        response.ackId = m.id;
+        response.operationId = m.operationId;
+        response.dest = m.src;
+        response.src = this.node;
+	    assert m.src != null;
+    	logger.info(" responds with HANDSHAKE_RESPONSE");
+        sendMessage(response, m.src.getId(), myPid);
+		//}
+
+		//handleFind(m, myPid, Util.logDistance(t.getTopicID(), this.node.getId()));
+	}
+	
+	
+	private void handleHandShakeResponse(Message m, int myPid) {
+		
+		boolean hasTopic = (boolean)m.body;
+		LookupOperation lop = (LookupOperation) operations.get(m.operationId);
+		lop.nrHops++;
+		if(!hasTopic)lop.removeDiscovered(m.src);
+		if(hasTopic)KademliaObserver.addDiscovered(lop.topic, m.src.getId(), m.src.getId());
+		
+    	logger.warning("HANDSHAKE_RESPONSE from "+m.src.getId()+" has topic "+lop.getTopic()+" "+hasTopic+" "+lop.nrHops);
+		lop.increaseReturned(m.src.getId());
+		if(!lop.finished)lop.increaseUsed(m.src.getId());
+
+	}
+	
+	
 	
 	/**
 	 * set the current NodeId
@@ -438,6 +496,17 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 			m = (Message) event;
 			handleInitRegister(m, myPid);
 			break;
+		
+		case Message.MSG_HANDSHAKE:
+			m = (Message) event;
+			handleHandShake(m,myPid);
+			break;
+			
+		case Message.MSG_HANDSHAKE_RESPONSE:
+			m = (Message) event;
+			handleHandShakeResponse(m,myPid);
+			break;
+	
 			
 		/*case Timeout.REG_TIMEOUT:
 
