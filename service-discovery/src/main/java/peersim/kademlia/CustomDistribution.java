@@ -84,7 +84,7 @@ public class CustomDistribution implements peersim.core.Control {
 
         if (idDist.equals(KademliaCommonConfig.NON_UNIFORM_ID_DISTRIBUTION)) {
             id = generate_non_uniform_id(topicNo, t);
-            System.out.println("Generated nonuniform id: " + id);
+            System.out.println("Generated nonuniform id: " + id+" for topic "+t.getTopicID()+" "+Util.logDistance(t.getTopicID(),id));
         }
         else {
             id = urg.generate();

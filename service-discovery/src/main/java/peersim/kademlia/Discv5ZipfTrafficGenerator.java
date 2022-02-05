@@ -75,13 +75,31 @@ public class Discv5ZipfTrafficGenerator implements Control {
 	 * 
 	 * @return Message
 	 */
-	protected Message generateFindNodeMessage() {
+	/*protected Message generateFindNodeMessage() {
 		// existing active destination node
 		Node n = Network.get(CommonState.r.nextInt(Network.size()));
 
         BigInteger dst = n.getKademliaProtocol().getNode().getId();
 
 		Message m = Message.makeInitFindNode(dst);
+		m.timestamp = CommonState.getTime();
+
+		return m;
+	}*/
+	
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a random find node message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	protected Message generateFindNodeMessage() {
+		// existing active destination node
+
+		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
+		BigInteger rand = urg.generate();
+		
+		Message m = Message.makeInitFindNode(rand);
 		m.timestamp = CommonState.getTime();
 
 		return m;
@@ -133,7 +151,7 @@ public class Discv5ZipfTrafficGenerator implements Control {
 		for(int i = 0; i < Network.size(); i++) {
 			Node node = Network.get(i);
             BigInteger nId = node.getKademliaProtocol().getNode().getId();
-			if(closestId == null || (Util.distance(id, closestId).compareTo(Util.distance(id, nId)) == 1)) {
+			if(closestId == null || (Util.logDistance(id, closestId) > (Util.logDistance(id, nId)))) {
 				closestId = nId;
 			}
 		}

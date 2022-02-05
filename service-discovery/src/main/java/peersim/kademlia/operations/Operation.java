@@ -127,15 +127,15 @@ public class Operation {
 					if (closestSet.size() < max) { // add directly
 						closestSet.put(n, false);
 					} else { // find in the closest set if there are nodes whit less distance
-						BigInteger newdist = Util.distance(n, destNode);
+						int newdist = Util.logDistance(n, destNode);
 
 						// find the node with max distance
-						BigInteger maxdist = newdist;
+						int maxdist = newdist;
 						BigInteger nodemaxdist = n;
 						for (BigInteger i : closestSet.keySet()) {
-							BigInteger dist = Util.distance(i, destNode);
+							int dist = Util.logDistance(i, destNode);
 
-							if (dist.compareTo(maxdist) > 0) {
+							if (dist > maxdist) {
 								maxdist = dist;
 								nodemaxdist = i;
 							}
@@ -171,7 +171,7 @@ public class Operation {
 				if (res == null) {
 					//System.out.println("Res = "+n);
 					res = n;
-				} else if (Util.distance(n, destNode).compareTo(Util.distance(res, destNode)) < 0) {
+				} else if (Util.logDistance(n, destNode) < Util.logDistance(res, destNode)) {
 					res = n;
 					//System.out.println("Res = "+n);
 				}
