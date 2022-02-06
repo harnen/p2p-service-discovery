@@ -87,7 +87,9 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 
 		for(TopicRegistration r: registrations) {
 			lop.addDiscovered(r.getNode(),m.src.getId());
-			KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
+			//KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
+			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
+
 		}
 		
 		lop.increaseReturned(m.src.getId());

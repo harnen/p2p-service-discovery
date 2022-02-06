@@ -91,7 +91,9 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 
 		for(TopicRegistration r: registrations) {
 			lop.addDiscovered(r.getNode(),m.src.getId());
-			KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
+			//KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
+			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
+
 		}
 		
 		lop.increaseReturned(m.src.getId());
@@ -511,7 +513,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 
 		if(this.topicTable.register(r)) {
 			logger.warning(t.topic + " registered on " + this.node.getId() + " by " + m.src.getId());
-            response = new Message(Message.MSG_REGISTER_RESPONSE, t);
+            response = new Message(Message.MSG_REGISTER_RESPONSE, r);
             response.ackId = m.id;
     		response.operationId = m.operationId;
             response.dest = m.src;
@@ -536,11 +538,12 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
      */
     protected void handleRegisterResponse(Message m, int myPid) {
     	
-        Topic t = (Topic) m.body;
+        TopicRegistration r = (TopicRegistration) m.body;
 
+        Topic t = r.getTopic();
         KademliaObserver.reportActiveRegistration(t,this.node.is_evil);
         
-        KademliaObserver.addAcceptedRegistration(t, this.node.getId(),m.src.getId(),CommonState.getTime());
+        KademliaObserver.addAcceptedRegistration(t, this.node.getId(),m.src.getId(),CommonState.getTime()-r.getTimestamp());
         
        
         operations.remove(m.operationId);
