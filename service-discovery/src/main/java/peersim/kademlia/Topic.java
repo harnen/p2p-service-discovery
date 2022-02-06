@@ -65,13 +65,15 @@ public class Topic implements Comparable<Topic> {
         
         //System.out.println("Topic 2 "+t.hostID+" "+t.topicID+" "+Util.logDistance(t.hostID, t.topicID));
 
-        if(Util.logDistance(this.hostID, this.topicID) < Util.logDistance(t.hostID, t.topicID))
+        /*if(Util.logDistance(this.hostID, this.topicID) < Util.logDistance(t.hostID, t.topicID))
         	return -1;
         else if(Util.logDistance(this.hostID, this.topicID)==Util.logDistance(t.hostID, t.topicID))
         	return 0;
         
         else 
-        	return -1; 
+        	return -1; */
+        return Util.distance(this.hostID, this.topicID).compareTo(Util.distance(t.hostID, t.topicID));
+
     }
 
     public String toString(){

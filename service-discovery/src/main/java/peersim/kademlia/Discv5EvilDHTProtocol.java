@@ -278,6 +278,8 @@ public class Discv5EvilDHTProtocol extends Discv5DHTProtocol {
 	 */
 	protected void handleFind(Message m, int myPid, int dist) {
 		
+		
+		logger.warning("Handle find evil");
     	if(this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_DOS)||this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_WAITING_TIME_SPAM)) {
             super.handleFind(m, myPid,dist);
             return;

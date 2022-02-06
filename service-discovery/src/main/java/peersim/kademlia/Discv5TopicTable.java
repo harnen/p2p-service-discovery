@@ -34,14 +34,18 @@ public class Discv5TopicTable implements TopicTable {
     }
 
     private void add(TopicRegistration r, Topic t){
+
+    	
         if(!table.containsKey(t)){
             List list = new ArrayList<TopicRegistration>();
             list.add(r);
             table.put(t, list);
         }else{
             table.get(t).add(r);
-        }
+        }   
+        
         this.size++;
+
     }
 
     public boolean register(TopicRegistration ri){
@@ -210,6 +214,8 @@ public class Discv5TopicTable implements TopicTable {
     
     public String dumpRegistrations() {
     	String result = "";
+
+
     	for(Topic topic: table.keySet()) {
     		List<TopicRegistration> regList = table.get(topic);
     		for(TopicRegistration reg: regList) {

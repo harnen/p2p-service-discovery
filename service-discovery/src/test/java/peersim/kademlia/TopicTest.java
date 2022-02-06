@@ -16,8 +16,8 @@ public class TopicTest{
         t1 = new Topic(hostID, "topic1");
         //System.out.println("t1:" + t1);
         t2 = new Topic(hostID, "topic2");
-        //assertEquals(t1.compareTo(t2), -1);
-        assertEquals(t1.compareTo(t2), 0);
+        assertEquals(t1.compareTo(t2), -1);
+        //assertEquals(t1.compareTo(t2), 0);
    }
 
 

@@ -162,7 +162,6 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		
 		Topic t = (Topic) m.body;
 	
-		logger.info("Send init lookup for topic " + this.node.getId() + " " + t.getTopic());
 
 		//System.out.println("Send topic lookup for topic "+t.getTopic());
 
@@ -172,6 +171,9 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		operations.put(lop.operationId, lop);
 	
 		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
+		
+		logger.warning("Send init lookup for topic " + this.node.getId() + " " + t.getTopic()+" "+distToTopic);
+
 		BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
 		
 		
@@ -306,8 +308,16 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		BigInteger[] neighbours = (BigInteger[]) m.body;
 
 		op.elaborateResponse(neighbours);
-		for(BigInteger neighbour: neighbours)
+		for(BigInteger neighbour: neighbours) {
+			if(registrationMap.get(op.operationId)!=null) {
+				RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(op.operationId));
+				int distToTopic = Util.logDistance((BigInteger) rop.getTopic().getTopicID(), this.node.getId());
+	
+				logger.warning("Found neigbour "+neighbour+" "+distToTopic+" "+Util.nodeIdtoNode(neighbour).getKademliaProtocol().getNode().is_evil);
+				
+			}
 			routingTable.addNeighbour(neighbour);
+		}
 		
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
 			logger.info("Found node " + op.destNode);
@@ -366,6 +376,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 				}*/
 				logger.info("Finished lookup node " + op.getUsedCount());
 				logger.info("Registration operation id "+registrationMap.get(op.operationId)+" "+op.operationId);
+				
 				
 				if(registrationMap.get(op.operationId)!=null) {
 					RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(op.operationId));
