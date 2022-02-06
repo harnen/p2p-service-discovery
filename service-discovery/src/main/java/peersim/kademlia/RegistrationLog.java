@@ -27,14 +27,18 @@ public class RegistrationLog {
 		return registrant;
 	}
 	
+    // node is regisrar at which this registrant is registering at
 	public void addRegistrar(BigInteger node, long currentTime, long waitingTime) {
 		registered.put(node,currentTime);
 		registeredWaiting.put(node,waitingTime);
 	}
 	
+    // node is the one discovered this registrant
 	public void addDiscovered(BigInteger node, long currentTime) {
 		//System.out.println("Add discovered "+currentTime+" "+registered.get(node));
-		if(registered.get(node)!=null)discovered.put(node,currentTime-registered.get(node));
+        //assert(registered.get(node) != null ) : "node is not registered, but discovered";
+		if(registered.get(node)!=null)
+            discovered.put(node,currentTime-registered.get(node));
 		
 	}
 	
@@ -58,22 +62,22 @@ public class RegistrationLog {
 			return 0;
 	}
 	
-	public long getAvgRegisterTime() {
+	public double getAvgRegisterTime() {
 		long regTime=0;
 		if(registeredWaiting.size()>0) {
 			for(Long time : registeredWaiting.values())
 				regTime+=time.longValue();
-			return regTime/registeredWaiting.size();
+			return (1.0*regTime)/registeredWaiting.size();
 		} else
 			return 0;
 	}
 	
-	public long getAvgDiscoveryTime() {
+	public double getAvgDiscoveryTime() {
 		long discTime=0;
 		if(discovered.size()>0) {
 			for(Long time : discovered.values())
 				discTime+=time.longValue();
-			return discTime/discovered.size();
+			return (1.0*discTime)/discovered.size();
 		} else
 			return 0;
 	}
