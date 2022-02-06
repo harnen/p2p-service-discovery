@@ -2,7 +2,7 @@
 
 ATTACK_TOPICS='1 3 5'
 EVIL_PERCENTS='0.2'
-UNIFORM=("uniform" "nonUniform")
+UNIFORM=("nonUniform")
 
 IN_CONFIG='config/discv5dhtticket_topicattack.cfg'
 

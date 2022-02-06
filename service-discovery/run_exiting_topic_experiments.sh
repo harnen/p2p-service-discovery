@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ATTACK_TOPICS='3 1'
+ATTACK_TOPICS='1 3 5'
 EVIL_PERCENTS='0.2'
 UNIFORM=("nonUniform")
 

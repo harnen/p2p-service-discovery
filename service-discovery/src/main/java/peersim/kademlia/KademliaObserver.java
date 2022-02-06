@@ -304,12 +304,13 @@ public class KademliaObserver implements Control {
     
     public static void reportOperation(Operation op) {
 
+        if(CommonState.getTime()<KademliaCommonConfig.AD_LIFE_TIME)return;
+
         try {
             //System.out.println("Report operation "+CommonState.getTime()+" "+op.getClass().getSimpleName()+" "+KademliaCommonConfig.AD_LIFE_TIME);
             String result = "";
             String type = "";
             
-            //if(CommonState.getTime()<KademliaCommonConfig.AD_LIFE_TIME)return;
 
 
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
