@@ -33,12 +33,16 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 	private HashMap<Long,Long> registrationMap;
 
 	private HashMap<String,Integer> scheduled;
+	
+	int malicious_queried;
+	int total_queried;
 	public Discv5DHTTicketProtocol(String prefix) {
 		super(prefix);
 		this.topicTable = new Discv5StatefulTopicTable();
 		this.registrationMap = new HashMap<>();
 		this.registrationFailed = new HashMap<Ticket, BackoffService>();
 		this.scheduled= new HashMap<>();
+		malicious_queried=total_queried=0;
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -77,6 +81,11 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		if (lop == null) {
 			return;
 		}
+		
+		if(m.src.is_evil)malicious_queried++;
+		total_queried++;
+		
+		logger.warning("Topic reply "+malicious_queried+" "+total_queried);
 		
 		BigInteger[] neighbours = ((Message.TopicLookupBody) m.body).neighbours;
 		TopicRegistration[] registrations = ((Message.TopicLookupBody) m.body).registrations;
@@ -170,6 +179,11 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
 		BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
 		
+		logger.warning("Dist to topic "+distToTopic+" "+neighbours.length);
+		
+		for(BigInteger id : neighbours) {
+			logger.warning("Asking malicious "+Util.nodeIdtoNode(id).getKademliaProtocol().getNode().is_evil);
+		}
 		
 		if(neighbours.length<KademliaCommonConfig.ALPHA)
 			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);

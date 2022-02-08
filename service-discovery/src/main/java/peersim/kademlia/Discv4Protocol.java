@@ -37,6 +37,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 
 	final String PAR_DISC4_STOP = "DISCV4_STOP";
 
+
 	
 	public Discv4Protocol(String prefix) {
 		
@@ -425,7 +426,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		if(!hasTopic)lop.removeDiscovered(m.src);
 		if(hasTopic)KademliaObserver.addDiscovered(lop.topic, m.src.getId(), m.src.getId());
 		
-    	logger.warning("HANDSHAKE_RESPONSE from "+m.src.getId()+" has topic "+lop.getTopic()+" "+hasTopic+" "+lop.nrHops);
+    	logger.info("HANDSHAKE_RESPONSE from "+m.src.getId()+" has topic "+lop.getTopic()+" "+hasTopic+" "+lop.nrHops);
 		lop.increaseReturned(m.src.getId());
 		if(!lop.finished)lop.increaseUsed(m.src.getId());
 
