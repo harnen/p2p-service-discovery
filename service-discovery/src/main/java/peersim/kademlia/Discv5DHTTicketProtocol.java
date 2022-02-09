@@ -373,7 +373,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 					logger.warning("Couldn't find node " + op.destNode);
 				}*/
 				logger.info("Finished lookup node " + op.getUsedCount());
-
+				KademliaObserver.reportOperation(op);
 
 				
 				if(registrationMap.get(op.operationId)!=null) {

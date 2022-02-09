@@ -379,7 +379,8 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 				logger.info("Finished lookup node " + op.getUsedCount());
 				logger.info("Registration operation id "+registrationMap.get(op.operationId)+" "+op.operationId);
 				
-				
+				KademliaObserver.reportOperation(op);
+
 				if(registrationMap.get(op.operationId)!=null) {
 					RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(op.operationId));
 					startRegistration(rop,myPid);
