@@ -1255,9 +1255,6 @@ def analyzeMessageReceivedByNodes(dirs):
     try:
         fig, ax = plt.subplots()
         i=0
-        labels=['NoSpam','Spam']
-
-
 
         for log_dir in dirs:
             me = extractAlphanumeric(log_dir)
@@ -1268,7 +1265,6 @@ def analyzeMessageReceivedByNodes(dirs):
             df = pd.read_csv(log_dir + '/storage_utilisation.csv')
             time = df['time'].max() / 1000
 
-            logdirname = extractAlphanumeric(log_dir)
             with open(log_dir + '/msg_received.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
@@ -1279,7 +1275,7 @@ def analyzeMessageReceivedByNodes(dirs):
                         x_vals.append(row['Node'])
 
                 sorted_y_vals = sorted(y_vals)
-                ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=labels[i])
+                ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=dirs[i])
                 i=i+1
                 #for topic in topics:
                 #    plt.axvline(x=topic, color='b', label=topics[topic])
@@ -1306,10 +1302,10 @@ def analyzeRegistrationOverhead(dirs):
         ncol = 0
         numOfTopics = 0
         topics = []
-        labels=['NoSpam','Spam']
         for log_dir in dirs:
-            logdirname = extractAlphanumeric(log_dir)
-    #        print(logdirname)
+            if not (os.path.exists(log_dir + '/register_overhead.csv')):
+                print("skipping folder without register_overhead.csv file")
+                continue
             with open(log_dir + '/register_overhead.csv', newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 ncols = len(next(reader)) # Read first line and count columns
@@ -1329,8 +1325,7 @@ def analyzeRegistrationOverhead(dirs):
     #        print('x_values: ', xs)
             #ax.legend()
             margin=width*i
-            print(np.arange(len(topics)))
-            ax.bar(np.arange(len(topics))+margin, y_values, width, label=labels[i])
+            ax.bar(np.arange(len(topics))+margin, y_values, width, label=dirs[i])
             i = i + 1
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
