@@ -559,10 +559,8 @@ def analyzeRegistrantDistribution(dirs):
                             global_max = stats[node][topic]
 
             for node in stats:
-                print("stats[node]:",stats[node])
-                print("topics:", topics)
                 for topic in stats[node]:
-                    topic_index = sorted(topics).index(topic)
+                    topic_index = sorted(set(stats[node].keys())).index(topic)
                     if(stats[node][topic] == 0):
                         x_nondiscovered.append(int(node))
                         y_nondiscovered.append(topic_index + dir_num*0.3)
@@ -881,6 +879,9 @@ def analyzeWaitingTimes(dirs):
 
     for log_dir in dirs:
         fig, ax1 = plt.subplots()
+        #noticket solutions don't have waiting times and don't generate the file
+        if not os.path.exists(log_dir + '/waiting_times.csv'):
+            continue
         df = pd.read_csv(log_dir + '/waiting_times.csv')
         topics = set()
         for column_name in df.columns:
@@ -1213,14 +1214,17 @@ def analyzeRegistrationTime(dirs):
     ax3.set_title('Average registration time per node')
     ax4.set_title('Time between registration to first time discovery')
 #    ax5.set_title('Registrants per topic')
-    ax1.set_xticks(np.arange(len(mean.keys())))
-    ax1.set_xticklabels(mean.keys())
-    ax2.set_xticks(np.arange(len(mean.keys())))
-    ax2.set_xticklabels(mean.keys())
-    ax3.set_xticks(np.arange(len(mean.keys())))
-    ax3.set_xticklabels(mean.keys())
-    ax4.set_xticks(np.arange(len(mean.keys())))
-    ax4.set_xticklabels(mean.keys())
+    #Michal: I don't know why we distinguish between 1 and more topics in this function
+    # just fixing so that it runs correctly
+    if len(df['topic'].unique()) > 1:
+        ax1.set_xticks(np.arange(len(mean.keys())))
+        ax1.set_xticklabels(mean.keys())
+        ax2.set_xticks(np.arange(len(mean.keys())))
+        ax2.set_xticklabels(mean.keys())
+        ax3.set_xticks(np.arange(len(mean.keys())))
+        ax3.set_xticklabels(mean.keys())
+        ax4.set_xticks(np.arange(len(mean.keys())))
+        ax4.set_xticklabels(mean.keys())
 #    ax5.set_xticks(np.arange(len(mean.keys())))
 #    ax5.set_xticklabels(mean.keys())
     ax1.set_ylim([0,None])
