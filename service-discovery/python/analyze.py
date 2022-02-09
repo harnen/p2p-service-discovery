@@ -299,12 +299,12 @@ def analyzeRegistrations(dirs):
         df = pd.read_csv(log_dir + '/registeredRegistrant.csv')
         df2 = pd.read_csv(log_dir + '/registeredRegistrar.csv')
 
-        if len(df['topic'].unique()) > 1:
+        data={}
+        data2={}
+        data3={}
+        data4={}
 
-            data={}
-            data2={}
-            data3={}
-            data4={}
+        if len(df['topic'].unique()) > 1:    
     #        print(df)
             for index, row in df.iterrows():
                 #print(index,row['topic'],row['nodeId'],row['count'])
@@ -516,7 +516,7 @@ def analyzeRegistrantDistribution(dirs):
         stats = {}
         #print(log_dir)
         dir_num = dirs.index(log_dir)
-        print("dir_num", len(dirs))
+        print(log_dir, "dir_num is", len(dirs))
         with open(log_dir + '/registeredRegistrant.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
@@ -559,6 +559,8 @@ def analyzeRegistrantDistribution(dirs):
                             global_max = stats[node][topic]
 
             for node in stats:
+                print("stats[node]:",stats[node])
+                print("topics:", topics)
                 for topic in stats[node]:
                     topic_index = sorted(topics).index(topic)
                     if(stats[node][topic] == 0):
@@ -1099,14 +1101,15 @@ def analyzeRegistrations2(dirs):
             ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),width=width,label=log_dir)
             ax4.bar(np.arange(len(meanevil.keys()))+margin, meanevil.values(),width=width,color='red')
 
-    ax3.legend()
-    ax3.set_xticks(np.arange(len(mean.keys())))
-    ax3.set_xticklabels(mean.keys())
-    ax3.set_xlabel("Nodes")
-    ax4.legend()
-    ax4.set_xticks(np.arange(len(mean.keys())))
-    ax4.set_xticklabels(mean.keys())
-    ax4.set_xlabel("Nodes")
+    if len(df['topic'].unique()) > 1:
+        ax3.legend()
+        ax3.set_xticks(np.arange(len(mean.keys())))
+        ax3.set_xticklabels(mean.keys())
+        ax3.set_xlabel("Nodes")
+        ax4.legend()
+        ax4.set_xticks(np.arange(len(mean.keys())))
+        ax4.set_xticklabels(mean.keys())
+        ax4.set_xlabel("Nodes")
 
     fig5, ax5 = plt.subplots()
     table = pd.read_csv(log_dir + '/registeredTopics.csv')
@@ -1119,9 +1122,10 @@ def analyzeRegistrations2(dirs):
 
     fig1.savefig(OUTDIR + '/registrations_registrant.png')
     fig2.savefig(OUTDIR + '/registrations_registrar.png')
-    fig3.savefig(OUTDIR + '/registrations_registrant_bar.png')
-    fig4.savefig(OUTDIR + '/registrations_registrar_bar.png')
-    fig5.savefig(OUTDIR + '/registrations_topic.png')
+    if len(df['topic'].unique()) > 1:
+        fig3.savefig(OUTDIR + '/registrations_registrant_bar.png')
+        fig4.savefig(OUTDIR + '/registrations_registrar_bar.png')
+        fig5.savefig(OUTDIR + '/registrations_topic.png')
 
 def analyzeRegistrationTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
