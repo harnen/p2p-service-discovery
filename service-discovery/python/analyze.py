@@ -879,45 +879,48 @@ def analyzeStorageUtilisation(dirs):
 def analyzeWaitingTimes(dirs):
 
     for log_dir in dirs:
-        fig, ax1 = plt.subplots()
-        df = pd.read_csv(log_dir + '/waiting_times.csv')
-        topics = set()
-        for column_name in df.columns:
-            if column_name == "time":
-                continue
-            if 'wait' in column_name:
-                parts = column_name.split('_')
-                topics.add(parts[0])
-        log_dir1 = extractAlphanumeric(log_dir)
-        ax1.set_title("Average waiting times over time for " + log_dir1)
-        topics = sorted(topics)
-        for topic in topics:
-            ax1.plot(df['time']/1000, df[topic+'_wait']/1000, label=topic)
+        try:
+            fig, ax1 = plt.subplots()
+            df = pd.read_csv(log_dir + '/waiting_times.csv')
+            topics = set()
+            for column_name in df.columns:
+                if column_name == "time":
+                    continue
+                if 'wait' in column_name:
+                    parts = column_name.split('_')
+                    topics.add(parts[0])
+            log_dir1 = extractAlphanumeric(log_dir)
+            ax1.set_title("Average waiting times over time for " + log_dir1)
+            topics = sorted(topics)
+            for topic in topics:
+                ax1.plot(df['time']/1000, df[topic+'_wait']/1000, label=topic)
 
-        ax1.legend()
-        ax1.set_ylabel('Waiting time in sec')
-        ax1.set_xlabel('time (sec)')
-        ax1.ticklabel_format(style='plain')
+            ax1.legend()
+            ax1.set_ylabel('Waiting time in sec')
+            ax1.set_xlabel('time (sec)')
+            ax1.ticklabel_format(style='plain')
 
-        plt.savefig(OUTDIR + '/waiting_times_' + log_dir1 + '.png')
+            plt.savefig(OUTDIR + '/waiting_times_' + log_dir1 + '.png')
 
-        fig, ax2 = plt.subplots()
-        ax2.set_title("Average cumulative waiting times over time for " + log_dir1)
-        for topic in topics:
-            ax2.plot(df['time']/1000, df[topic+'_cumWait']/1000, label=topic)
-        ax2.legend()
-        ax2.set_ylabel('Cumulative waiting time in sec')
-        ax2.set_xlabel('time (sec)')
-        plt.savefig(OUTDIR + '/cumulative_waiting_times_' + log_dir1 + '.png')
+            fig, ax2 = plt.subplots()
+            ax2.set_title("Average cumulative waiting times over time for " + log_dir1)
+            for topic in topics:
+                ax2.plot(df['time']/1000, df[topic+'_cumWait']/1000, label=topic)
+            ax2.legend()
+            ax2.set_ylabel('Cumulative waiting time in sec')
+            ax2.set_xlabel('time (sec)')
+            plt.savefig(OUTDIR + '/cumulative_waiting_times_' + log_dir1 + '.png')
 
-        fig, ax3 = plt.subplots()
-        ax3.set_title("Quantity of rejected ticket requests (already registered) over time for " + log_dir1)
-        for topic in topics:
-            ax3.plot(df['time']/1000, df[topic+'_reject']/1000, label=topic)
-        ax3.legend()
-        ax3.set_ylabel('Number of ticket requests')
-        ax3.set_xlabel('time (sec)')
-        plt.savefig(OUTDIR + '/rejected_tickets.png')
+            fig, ax3 = plt.subplots()
+            ax3.set_title("Quantity of rejected ticket requests (already registered) over time for " + log_dir1)
+            for topic in topics:
+                ax3.plot(df['time']/1000, df[topic+'_reject']/1000, label=topic)
+            ax3.legend()
+            ax3.set_ylabel('Number of ticket requests')
+            ax3.set_xlabel('time (sec)')
+            plt.savefig(OUTDIR + '/rejected_tickets.png')
+        except FileNotFoundError:
+            print("file not found")
 
 def analyzeWaitingTimesWithMaliciousNodes(dirs, attackTopics=['t1']):
 
@@ -1278,7 +1281,7 @@ def analyzeMessageReceivedByNodes(dirs):
                         x_vals.append(row['Node'])
 
                 sorted_y_vals = sorted(y_vals)
-                ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=labels[i])
+                ax.plot(range(1,len(y_vals)+1), sorted_y_vals, label=log_dir)
                 i=i+1
                 #for topic in topics:
                 #    plt.axvline(x=topic, color='b', label=topics[topic])
@@ -1305,7 +1308,7 @@ def analyzeRegistrationOverhead(dirs):
         ncol = 0
         numOfTopics = 0
         topics = []
-        labels=['NoSpam','Spam']
+#        labels=['NoSpam','Spam']
         for log_dir in dirs:
             logdirname = extractAlphanumeric(log_dir)
     #        print(logdirname)
@@ -1328,8 +1331,8 @@ def analyzeRegistrationOverhead(dirs):
     #        print('x_values: ', xs)
             #ax.legend()
             margin=width*i
-            print(np.arange(len(topics)))
-            ax.bar(np.arange(len(topics))+margin, y_values, width, label=labels[i])
+    #        print(np.arange(len(topics)))
+            ax.bar(np.arange(len(topics))+margin, y_values, width, label=log_dir)
             i = i + 1
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
