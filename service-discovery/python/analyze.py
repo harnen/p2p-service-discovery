@@ -560,21 +560,22 @@ def analyzeRegistrantDistribution(dirs):
 
             for node in stats:
                 for topic in stats[node]:
-                    topic_index = sorted(topics).index(topic)
-                    if(stats[node][topic] == 0):
-                        x_nondiscovered.append(int(node))
-                        y_nondiscovered.append(topic_index + dir_num*0.3)
-                        c_nondiscovered.append('red')
-                        s_nondiscovered.append(max_size*3)
-                    else:
-                        x.append(int(node))
-                        y.append(topic_index + dir_num*0.3)
+                    if len(topics) > 0 :
+                        topic_index = sorted(topics).index(topic)
+                        if(stats[node][topic] == 0):
+                            x_nondiscovered.append(int(node))
+                            y_nondiscovered.append(topic_index + dir_num*0.3)
+                            c_nondiscovered.append('red')
+                            s_nondiscovered.append(max_size*3)
+                        else:
+                            x.append(int(node))
+                            y.append(topic_index + dir_num*0.3)
 
-                        c.append(colors[topic_index])
-                        s.append(stats[node][topic])
-                        if topic not in discovered_per_topic:
-                            discovered_per_topic[topic] = set()
-                        discovered_per_topic[topic].add(node)
+                            c.append(colors[topic_index])
+                            s.append(stats[node][topic])
+                            if topic not in discovered_per_topic:
+                                discovered_per_topic[topic] = set()
+                            discovered_per_topic[topic].add(node)
 
     try:
         #mark topic hashes
@@ -1010,11 +1011,14 @@ def analyzeRegistrations2(dirs):
             ax1.plot(sorted(df['count'].values,reverse=True))
             ax2.plot(sorted(df2['count'].values,reverse=True))
 
+            print(sorted(df['count'].values))
+            print(sorted(df2['count'].values))
+
             ax1.set_title('Registrations by registrant')
             #ax1.plot([ax1.get_xlim()[0], ax1.get_xlim()[1]], [(ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
     #        ax1.axhline(y = 16, color = 'r', linestyle = '-')
         #    ax1.text(ax1.get_xlim()[1]*0.8, (ax1.get_ylim()[1] - ax1.get_ylim()[0]) / 2, "optimal", size=12)
-            ax1.set_ylim(bottom=0)
+            ax1.set_ylim([0,100])
             ax1.set_xlabel("Nodes")
             ax1.set_ylabel("#placed registrations")
             fig1.savefig(OUTDIR + '/registrations_registrant.png')
@@ -1024,7 +1028,7 @@ def analyzeRegistrations2(dirs):
 
         #    ax2.plot([ax2.get_xlim()[0], ax2.get_xlim()[1]], [(ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2], 'k-', lw=2, color='r')
         #    ax2.text(ax2.get_xlim()[1]*0.8, (ax2.get_ylim()[1] - ax2.get_ylim()[0]) / 2, "optimal", size=12)
-            ax2.set_ylim(bottom=0)
+            ax2.set_ylim([0,100])
             ax2.set_xlabel("Nodes")
             ax2.set_ylabel("#Accepted registrations")
             fig2.savefig(OUTDIR + '/registrations_registrar.png')
@@ -1099,29 +1103,30 @@ def analyzeRegistrations2(dirs):
             ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),width=width,label=log_dir)
             ax4.bar(np.arange(len(meanevil.keys()))+margin, meanevil.values(),width=width,color='red')
 
-    ax3.legend()
-    ax3.set_xticks(np.arange(len(mean.keys())))
-    ax3.set_xticklabels(mean.keys())
-    ax3.set_xlabel("Nodes")
-    ax4.legend()
-    ax4.set_xticks(np.arange(len(mean.keys())))
-    ax4.set_xticklabels(mean.keys())
-    ax4.set_xlabel("Nodes")
+            ax3.legend()
+            ax3.set_xticks(np.arange(len(mean.keys())))
+            ax3.set_xticklabels(mean.keys())
+            ax3.set_xlabel("Nodes")
+            ax4.legend()
+            ax4.set_xticks(np.arange(len(mean.keys())))
+            ax4.set_xticklabels(mean.keys())
+            ax4.set_xlabel("Nodes")
 
-    fig5, ax5 = plt.subplots()
-    table = pd.read_csv(log_dir + '/registeredTopics.csv')
-    sorted_table = table.sort_values(by='count',ascending=False)
-    ax5.bar(np.arange(len(sorted_table['count'].values)),sorted_table['count'].values, label=log_dir)
-    ax5.set_title('Registrations by topics (average)')
-    ticks = sorted_table['topic'].values
-    ax5.set_xticks(range(len(ticks)))
-    ax5.set_xticklabels(ticks)
+            fig5, ax5 = plt.subplots()
+            table = pd.read_csv(log_dir + '/registeredTopics.csv')
+            sorted_table = table.sort_values(by='count',ascending=False)
+            ax5.bar(np.arange(len(sorted_table['count'].values)),sorted_table['count'].values, label=log_dir)
+            ax5.set_title('Registrations by topics (average)')
+            ticks = sorted_table['topic'].values
+            ax5.set_xticks(range(len(ticks)))
+            ax5.set_xticklabels(ticks)
+            fig3.savefig(OUTDIR + '/registrations_registrant_bar.png')
+            fig4.savefig(OUTDIR + '/registrations_registrar_bar.png')
+            fig5.savefig(OUTDIR + '/registrations_topic.png')
 
     fig1.savefig(OUTDIR + '/registrations_registrant.png')
     fig2.savefig(OUTDIR + '/registrations_registrar.png')
-    fig3.savefig(OUTDIR + '/registrations_registrant_bar.png')
-    fig4.savefig(OUTDIR + '/registrations_registrar_bar.png')
-    fig5.savefig(OUTDIR + '/registrations_topic.png')
+
 
 def analyzeRegistrationTime(dirs):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -1204,19 +1209,21 @@ def analyzeRegistrationTime(dirs):
             ax4.legend()
 #            ax5.legend()
 
+            ax1.set_xticks(np.arange(len(mean.keys())))
+            ax1.set_xticklabels(mean.keys())
+            ax2.set_xticks(np.arange(len(mean.keys())))
+            ax2.set_xticklabels(mean.keys())
+            ax3.set_xticks(np.arange(len(mean.keys())))
+            ax3.set_xticklabels(mean.keys())
+            ax4.set_xticks(np.arange(len(mean.keys())))
+            ax4.set_xticklabels(mean.keys())
+
     ax1.set_title('Total # registrations by registrant')
     ax2.set_title('Time required for the first registration')
     ax3.set_title('Average registration time per node')
     ax4.set_title('Time between registration to first time discovery')
 #    ax5.set_title('Registrants per topic')
-    ax1.set_xticks(np.arange(len(mean.keys())))
-    ax1.set_xticklabels(mean.keys())
-    ax2.set_xticks(np.arange(len(mean.keys())))
-    ax2.set_xticklabels(mean.keys())
-    ax3.set_xticks(np.arange(len(mean.keys())))
-    ax3.set_xticklabels(mean.keys())
-    ax4.set_xticks(np.arange(len(mean.keys())))
-    ax4.set_xticklabels(mean.keys())
+
 #    ax5.set_xticks(np.arange(len(mean.keys())))
 #    ax5.set_xticklabels(mean.keys())
     ax1.set_ylim([0,None])
@@ -1349,7 +1356,7 @@ print('Plots will be saved in ', OUTDIR);
 
 
 analyzeMessages(sys.argv[1:])
-analyzeRegistrations(sys.argv[1:])
+#analyzeRegistrations(sys.argv[1:])
 analyzeRegistrations2(sys.argv[1:])
 analyzeOperations(sys.argv[1:])
 analyzeRegistrantDistribution(sys.argv[1:])
