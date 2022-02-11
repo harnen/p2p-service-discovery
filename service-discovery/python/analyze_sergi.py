@@ -612,8 +612,8 @@ def analyzeOperations(dirs,labels):
         meantimes={}
         errtimes={}
         for topic in df['topic'].dropna().unique():
-            meantimes[topic] = df[df.topic == topic]['perhop'].mean()
-            errtimes[topic] = df[df.topic == topic]['perhop'].std()
+            meantimes[topic] = df[df.topic == topic]['ratio'].mean()
+            errtimes[topic] = df[df.topic == topic]['ratio'].std()
 
         #print(meantimes)
         mean={}
@@ -632,7 +632,7 @@ def analyzeOperations(dirs,labels):
         i = i+1
         #print(df['returned_hops'].mean())
         #ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
-        ax2.set_title("Avg Lookup Hop Count")
+        ax2.set_title("Msgs sent per node discovered (including handshake)")
         #ax2.set_xticks(range(len(mean.keys())))
         ax2.set_xticks(np.arange(len(mean.keys()))+margin/2)
         ax2.set_xticklabels(mean.keys())
@@ -734,7 +734,7 @@ def analyzeEclipsedNodes2(dirs,labels):
     fig, ax1 = plt.subplots()
     colors = ['red', 'green', 'blue','orange']
     j=0
-    dirs = ['logs_discv5','logs_dhtticket','logs_dhtnoticket']
+    dirs = ['logs_discv5','logs_dhtticket','logs_dhtnoticket','logs_discv4']
     dirs2 = ['_attackTopic1_nonUniform_attackPercent0.2','_attackTopic3_nonUniform_attackPercent0.2','_attackTopic5_nonUniform_attackPercent0.2']
     for log_dir in dirs:
     #print(log_dir)
@@ -756,7 +756,7 @@ def analyzeEclipsedNodes2(dirs,labels):
 
         print(maxset)
         #ax1.plot(df['time'], df["topic-"+topic], label=topic)
-        width=0.3
+        width=0.2
         margin=width*j
         #
         #ax1.plot(df['time'], df['numberOfNodes'], label=log_dir)
@@ -766,7 +766,8 @@ def analyzeEclipsedNodes2(dirs,labels):
 
 
     ax1.set_title("Number of total eclipsed nodes")
-    ax1.set_xticks(np.arange(len(dirs))+margin/2)
+    #ax1.set_xticks(4+margin/2)
+    ax1.set_xticks(np.arange(3)+margin/2)
     ax1.set_xticklabels(['t1','t2','t3'])
     ax1.set_ylabel("# Eclipsed Nodes")
     #ax1.set_xlabel("% Malicious nodes")
@@ -1493,11 +1494,11 @@ topiclabel = str(1)
 #labels = ['1 IP','10 IP','50 IP']
 #labels = ['old variant','new variant']
 #analyzeRegistrations2(sys.argv[1:],labels)
-analyzeOperations(sys.argv[1:],labels)
+#analyzeOperations(sys.argv[1:],labels)
 #analyzeRegistrantDistribution(sys.argv[1:],labels)
 #analyzeActiveRegistrations(sys.argv[1:],labels)
 #analyzeRegistrationTime(sys.argv[1:],labels)
-analyzeNumberOfMessages(sys.argv[1:],labels)
-#analyzeEclipsedNodes2(sys.argv[1:],labels)
-analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
+#analyzeNumberOfMessages(sys.argv[1:],labels)
+analyzeEclipsedNodes2(sys.argv[1:],labels)
+#analyzeMessageReceivedByNodes(sys.argv[1:],labels) # message received by nodes
 #analyzeStorageUtilisation(sys.argv[1:],labels)
