@@ -21,17 +21,48 @@ matplotlib.rc('font', **font)
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-def f(ax, x, y, y_min, y_max, color, label):
-	ax.plot(x, y, '-', color=color)
-	ax.fill_between(x, y_min, y_max, alpha=0.2, color=color, label=label)
-	ax.spines['right'].set_visible(False)
-	ax.spines['top'].set_visible(False)
-	ax.legend()
+def plot_clustered_stacked(dfall, labels=None, title="",  H="/", **kwargs):
+    """Given a list of dataframes, with identical columns and index, create a clustered stacked bar plot.                                                                                     
+labels is a list of the names of the dataframe, used for the legend                            
+title is a string for the title of the plot 
+H is the hatch used for identification of the different dataframe"""                           
+    
+    n_df = len(dfall)                                                                          
+    n_col = len(dfall[0].columns) 
+    n_ind = len(dfall[0].index)                                                                
+    axe = plt.subplot(111)                                                                     
+        
+    for df in dfall : # for each data frame                                                    
+        axe = df.plot(kind="bar",
+                      linewidth=0,                                                             
+                      stacked=True,
+                      ax=axe,                                                                  
+                      legend=False,                                                            
+                      grid=False,                                                              
+                      **kwargs)  # make bar plots                                              
 
-def extractAlphanumeric(InputString):
-    from string import ascii_letters, digits
-    return "".join([ch for ch in InputString if ch in (ascii_letters + digits)])
+    h,l = axe.get_legend_handles_labels() # get the handles we want to modify                  
+    for i in range(0, n_df * n_col, n_col): # len(h) = n_col * n_df                            
+        for j, pa in enumerate(h[i:i+n_col]):                                                  
+            for rect in pa.patches: # for each index                                           
+                rect.set_x(rect.get_x() + 1 / float(n_df + 1) * i / float(n_col))              
+                rect.set_hatch(H * int(i / n_col)) #edited part                                
+                rect.set_width(1 / float(n_df + 1))                                            
+                   
+    axe.set_xticks((np.arange(0, 2 * n_ind, 2) + 1 / float(n_df + 1)) / 2.)                    
+    axe.set_xticklabels(df.index, rotation = 0)                                                
+    axe.set_title(title)
 
+    # Add invisible data to add another legend
+    n=[]        
+    for i in range(n_df):
+        n.append(axe.bar(0, 0, color="gray", hatch=H * i))
+
+    l1 = axe.legend(h[:n_col], l[:n_col], loc=[1.01, 0.5])
+    if labels is not None:
+        l2 = plt.legend(n, labels, loc=[1.01, 0.1])
+    axe.add_artist(l1)
+    return axe
 
 # plot per-topic, average waiting times and number
 def analyzeWaitingTimes(dirs, x_vals, x_label, plot_labels):
@@ -205,6 +236,7 @@ def analyzeDiscoveryTime(dirs, x_vals, x_label, plot_labels):
                         
     plt.savefig(OUTDIR + '/discovery_times.png')
 
+# there should be as many subdirs as x_vals
 def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
 
     dirs = sorted(dirs)
@@ -212,6 +244,7 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
 
     fig, ax = plt.subplots()
     label_indx = 0
+    dfs = [] 
     for log_dir in dirs:
         y_vals = []
         topics = {}
@@ -221,11 +254,13 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
         average_vals = []
         sub_dirs = next(os.walk(log_dir))[1]
         sub_dirs = sorted(sub_dirs)
+        vals = []
         for subdir in sub_dirs:
             path = log_dir + '/' + subdir + '/'
             path.replace('//','/')
             try: 
                 with open(path + 'msg_received.csv', newline='') as csvfile:
+                    print('Reading folder ', path)
                     reader = csv.DictReader(csvfile)
                     for row in reader:
                         y_vals.append(int(row['numMsg']))
@@ -233,13 +268,22 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
                     min_vals.append(min(y_vals))
                     average_vals.append((1.0*sum(y_vals))/len(y_vals))
                     max_vals.append(max(y_vals))
+                    vals.append([min_vals[-1], average_vals[-1] - min_vals[-1], max_vals[-1] - average_vals[-1]])
             except FileNotFoundError:
                 print("Error: ", path, "msg_received.csv not found")
                 continue
+        #stacked_bar_per_x = np.array([min_vals, average_vals, max_vals])
+        stacked_bar_per_x = np.array(vals)
+        print('stacked_bar_per_x = ', stacked_bar_per_x)
+        df = pd.DataFrame(stacked_bar_per_x, 
+                   index=x_vals,
+                   columns=["Min", "Average", "Max"])
 
-        f(ax, x_vals, average_vals, min_vals, max_vals, colors[label_indx], plot_labels[label_indx])
+        dfs.append(df)
         label_indx += 1
-    ax.set_xticks(x_vals)
+
+    plot_clustered_stacked(dfs,plot_labels)
+    #ax.set_xticks(x_vals)
     #ax.set_yticks(ax.get_yticks()[::100])
     ax.set_xlabel(x_label)
     ax.set_ylabel('Number of messages/sec')
@@ -265,7 +309,7 @@ print('Plots will be saved in ', OUTDIR);
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
 ##labels = ['No refresh','Refresh']
 
-dirs = ['dht', 'discv5']
+dirs = ['dht_ticket', 'dht_noticket', 'discv5']
 #plot_labels = ['dht', 'discv4', 'discv5']
 x_vals = ['500', '1000', '1500', '2000']
 x_label = 'network size'
