@@ -16,16 +16,27 @@ public class LookupOperation extends Operation {
 
     private int malQueried;
     
+    private HashSet<BigInteger> tried;
+    
     public LookupOperation(BigInteger srcNode, Long timestamp, Topic t) {
         super(srcNode, t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
         this.topic = t;
         discovered = new HashMap<KademliaNode,BigInteger>();
         malQueried=0;
+        tried = new HashSet();
 
     }
     
     public Topic getTopic() {
     	return topic;
+    }
+    
+    public void setTried(BigInteger id) {
+    	tried.add(id);
+    }
+    
+    public boolean tried(BigInteger id) {
+    	return tried.contains(id);
     }
     
     public void addDiscovered(KademliaNode n,BigInteger sourceId) {

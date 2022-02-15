@@ -455,7 +455,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		Ticket ticket = (Ticket) m.body;
 		Topic topic = ticket.getTopic();
 		if (!ticket.isRegistrationComplete()) {
-			logger.warning("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: "
+			logger.info("Unsuccessful Registration of topic: " + ticket.getTopic().getTopic() + " at node: "
 					+ m.src.getId() + " wait time: " + ticket.getWaitTime() + " " + ticket.getCumWaitTime());
 			Message register = new Message(Message.MSG_REGISTER, ticket);
 			register.operationId = m.operationId;
@@ -470,13 +470,13 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			} else {
 				backoff.registrationFailed();
 			}
-			logger.warning("Registration failed " + backoff.getTimesFailed() + " backing off " + +backoff.getTimeToWait()
+			logger.info("Registration failed " + backoff.getTimesFailed() + " backing off " + +backoff.getTimeToWait()
 					+ " " + backoff.shouldRetry() + " " + ticket.getWaitTime());
 
 			if ((backoff.shouldRetry() && ticket.getWaitTime() >= 0)&&(ticket.getCumWaitTime()<=KademliaCommonConfig.REG_TIMEOUT)) {
 				scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
 			} else {
-				logger.warning("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime()+" or too many tries "+backoff.getTimesFailed());
+				logger.info("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime()+" or too many tries "+backoff.getTimesFailed());
 				ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId());
 				// ticketTables.get(topic.getTopicID()).removeRegisteredList(m.src.getId());
 				RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
@@ -490,7 +490,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			}
 
 		} else {
-			logger.warning("Registration succesful for topic " + ticket.getTopic().topic + " at node " + m.src.getId()
+			logger.info("Registration succesful for topic " + ticket.getTopic().topic + " at node " + m.src.getId()
 					+ " at dist " + Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID()) + " "
 					+ ticket.getCumWaitTime());
 			KademliaObserver.addAcceptedRegistration(topic, this.node.getId(), m.src.getId(), ticket.getCumWaitTime());
@@ -564,8 +564,13 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 
 		if(m.src.is_evil)lop.increaseMaliciousQueries();
 		for (TopicRegistration r : registrations) {
+			
+			if(!lop.getDiscovered().containsKey(r.getNode()))
+				sendHandShake(r.getNode(),r.getTopic().getTopic(),m.operationId,myPid);
+			
 			lop.addDiscovered(r.getNode(),m.src.getId());
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
+
 
 		}
 
@@ -591,7 +596,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			if (lop.available_requests < KademliaCommonConfig.ALPHA) {
 				return;
 			} else if ((lop.finished && lop.available_requests == KademliaCommonConfig.ALPHA)
-					|| KademliaCommonConfig.MAX_SEARCH_HOPS == lop.nrHops) { // no new neighbour and no outstanding
+					|| KademliaCommonConfig.MAX_SEARCH_HOPS == lop.getUsedCount()) { // no new neighbour and no outstanding
 																				// requests
 				// search operation finished
 				operations.remove(lop.operationId);
@@ -629,6 +634,55 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 
 			}
 		}
+
+	}
+	
+	public void sendHandShake(KademliaNode dest, String t, long operationId, int myPid) {
+		
+		LookupTicketOperation lop = (LookupTicketOperation) this.operations.get(operationId);
+		lop.nrHops++;
+		
+		Message m = new Message(Message.MSG_HANDSHAKE, t);
+
+		m.timestamp = CommonState.getTime();
+		// set message operation id
+		m.operationId = operationId;
+		m.src = this.node;
+		m.dest = dest;
+
+		logger.info("Send handshake to " + dest.getId() + " for topic " + t);
+		sendMessage(m, dest.getId(), myPid);
+	
+
+	}
+
+	private void handleHandShake(Message m, int myPid) {
+		String topic = (String) m.body;
+		//TopicRegistration r = new TopicRegistration(m.src, t);
+        Message response; 
+
+		//if(this.topicTable.register(r)) {
+		//logger.warning(topic + " registered on " + this.node.getId() + " by " + m.src.getId());
+        response = new Message(Message.MSG_HANDSHAKE_RESPONSE, activeTopics.contains(topic));
+        response.ackId = m.id;
+        response.operationId = m.operationId;
+        response.dest = m.src;
+        response.src = this.node;
+	    assert m.src != null;
+    	logger.info(" responds with HANDSHAKE_RESPONSE");
+        sendMessage(response, m.src.getId(), myPid);
+		//}
+
+		//handleFind(m, myPid, Util.logDistance(t.getTopicID(), this.node.getId()));
+	}
+	
+	
+	private void handleHandShakeResponse(Message m, int myPid) {
+				
+
+
+    	logger.info("HANDSHAKE_RESPONSE from "+m.src.getId()+" has topic ");
+
 
 	}
 
@@ -856,6 +910,17 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		}
 
 		switch (((SimpleEvent) event).getType()) {
+		
+		
+		case Message.MSG_HANDSHAKE:
+			m = (Message) event;
+			handleHandShake(m,myPid);
+			break;
+			
+		case Message.MSG_HANDSHAKE_RESPONSE:
+			m = (Message) event;
+			handleHandShakeResponse(m,myPid);
+			break;
 
 		case Message.MSG_TOPIC_QUERY_REPLY:
 			m = (Message) event;
