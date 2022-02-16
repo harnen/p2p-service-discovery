@@ -476,7 +476,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			if ((backoff.shouldRetry() && ticket.getWaitTime() >= 0)&&(ticket.getCumWaitTime()<=KademliaCommonConfig.REG_TIMEOUT)) {
 				scheduleSendMessage(register, m.src.getId(), myPid, ticket.getWaitTime());
 			} else {
-				logger.info("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime()+" or too many tries "+backoff.getTimesFailed());
+				logger.warning("Ticket request cumwaitingtime too big "+ticket.getCumWaitTime()+" or too many tries "+backoff.getTimesFailed());
 				ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId());
 				// ticketTables.get(topic.getTopicID()).removeRegisteredList(m.src.getId());
 				RetryTimeout timeout = new RetryTimeout(ticket.getTopic(), m.src.getId());
@@ -498,13 +498,13 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 
 		
 			Timeout timeout = new Timeout(ticket.getTopic(), m.src.getId());
-			ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId());
+			//ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId());
 
 			EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, timeout, Util.nodeIdtoNode(this.node.getId()), myPid);
 			
 			
 			if(KademliaCommonConfig.TICKET_REMOVE_AFTER_REG==1) {
-				ticketTables.get(ticket.getTopic().getTopicID()).removeNeighbour(m.src.getId());
+				ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId());
 			}
 
 			ticketTables.get(ticket.getTopic().getTopicID()).acceptedReg(m.src.getId());
@@ -852,7 +852,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		m.operationId = top.operationId;
 		m.src = this.node;
 
-		logger.info("Send ticket request to " + dest + " for topic " + t.getTopic());
+		//logger.warning("Send ticket request to " + dest + " for topic " + t.getTopic());
 		sendMessage(m, top.getNeighbour(), myPid);
 		if (KademliaCommonConfig.PARALLELREGISTRATIONS == 0)
 			ticketTables.get(t.topicID).decreaseAvailableRequests();
