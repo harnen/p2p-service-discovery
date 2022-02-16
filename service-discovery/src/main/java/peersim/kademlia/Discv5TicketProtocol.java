@@ -504,7 +504,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			
 			
 			if(KademliaCommonConfig.TICKET_REMOVE_AFTER_REG==1) {
-				ticketTables.get(ticket.getTopic().getTopicID()).removeNeighbour(m.src.getId());
+				ticketTables.get(topic.getTopicID()).removeNeighbour(m.src.getId());
 			}
 
 			ticketTables.get(ticket.getTopic().getTopicID()).acceptedReg(m.src.getId());
@@ -852,7 +852,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		m.operationId = top.operationId;
 		m.src = this.node;
 
-		logger.warning("Send ticket request to " + dest + " for topic " + t.getTopic());
+		//logger.warning("Send ticket request to " + dest + " for topic " + t.getTopic());
 		sendMessage(m, top.getNeighbour(), myPid);
 		if (KademliaCommonConfig.PARALLELREGISTRATIONS == 0)
 			ticketTables.get(t.topicID).decreaseAvailableRequests();
@@ -973,7 +973,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			break;
 
 		case Timeout.REG_TIMEOUT:
-			logger.warning("Remove ticket table " + ((Timeout) event).nodeSrc);
+			logger.info("Remove ticket table " + ((Timeout) event).nodeSrc);
 			KademliaObserver.reportExpiredRegistration(((Timeout) event).topic, this.node.is_evil);
 			TicketTable tt = ticketTables.get(((Timeout) event).topic.getTopicID());
 			//tt.removeNeighbour(((Timeout) event).nodeSrc);
