@@ -316,13 +316,13 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	return new ArrayList<>(this.connections.keySet());
     }
     
-    public List<String> topicQuerying(){
+    /*public List<String> topicQuerying(){
     	List<String> topics = new ArrayList<String>();
     	for(String topic : connections.keySet())
     		if(connections.get(topic).isRequested())topics.add(topic);
     		//topics.add(topic);
     	return topics;
-    }
+    }*/
     
     private void tryNewConnections(String topic) {
     	//System.out.println(CommonState.getTime()+" "+id+" trying connections ");
