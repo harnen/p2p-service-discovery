@@ -635,7 +635,9 @@ def analyzeOperations(dirs):
     i=0
 #    labels=['ClosestDistance','RandomBucket','AllBuckets']
     for log_dir in dirs:
-        #print(log_dir)
+        #if file is empty
+        if(os.stat(log_dir + '/operations.csv').st_size == 0):
+            continue
         df = pd.read_csv(log_dir + '/operations.csv')
         #print(df)
 
@@ -1272,6 +1274,41 @@ def analyzeRegistrationTime(dirs):
 #    fig5.savefig(OUTDIR + '/registrants_topic.png')
 
 
+def plotMessageReceivedByNodes(dirs):
+    try:
+        fig, ax = plt.subplots()
+        #highest possible node ID
+        max_id = pow(2, 127)
+        i = 0
+        colors = ['red', 'green', 'blue', 'black']
+        for log_dir in dirs:
+            x_vals = []
+            y_vals = []
+            sizes = []
+
+            with open(log_dir + '/msg_received.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    node_id = int(row['Node'])
+                    sizes.append(int(row['numMsg']))
+
+                    ratio = (node_id / max_id) * 360
+                    alpha = math.radians(ratio)
+                    x_vals.append(math.cos(alpha) * (i+1))
+                    y_vals.append(math.sin(alpha) * (i+1))
+                
+                ax.scatter(x_vals, y_vals, label=log_dir, s = sizes, color=colors[i])
+            i += 1
+
+                    
+    except FileNotFoundError:
+        print("file not found")
+        return
+    ax.legend()
+    ax.axis('off')
+    fig.savefig(OUTDIR + '/circle_graph.png')
+
+
 def analyzeMessageReceivedByNodes(dirs):
 
     try:
@@ -1297,7 +1334,7 @@ def analyzeMessageReceivedByNodes(dirs):
                     if 't' in row['numMsg']:
                         topics[row['Node']] = row['numMsg']
                     else:
-                        y_vals.append(int(row['numMsg'])/(time-300))
+                        y_vals.append(int(row['numMsg']))#/(time-300))
                         x_vals.append(row['Node'])
 
                 sorted_y_vals = sorted(y_vals)
@@ -1449,7 +1486,13 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 
+<<<<<<< HEAD
+
+plotMessageReceivedByNodes(sys.argv[1:])
+
+=======
 analyzeLookup(sys.argv[1:])
+>>>>>>> 9b96b50a6c508c30dd6f77fe5a67e6baba7bc483
 analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
 analyzeRegistrations2(sys.argv[1:])
