@@ -201,29 +201,33 @@ def analyzeActiveRegistrations(dirs):
     topics = []
     i=0
     for log_dir in dirs:
-        normal_registration_count_per_topic = {}
-        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            ncol = len(next(reader)) # Read first line and count columns
-            numOfTopics = int((ncol-1)/2)
-            #print('Number of topics: ', numOfTopics)
-            topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
-            for topic in topics:
-                normal_registration_count_per_topic[topic] = 0
-        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            nrows = 0
-            for row in reader:
+        try:
+            normal_registration_count_per_topic = {}
+            with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                ncol = len(next(reader)) # Read first line and count columns
+                numOfTopics = int((ncol-1)/2)
+                #print('Number of topics: ', numOfTopics)
+                topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
                 for topic in topics:
-                    #print(topic+'-normal')
-                    normal = int(row[topic + '-normal'])
-                    normal_registration_count_per_topic[topic] += normal
-                nrows += 1
+                    normal_registration_count_per_topic[topic] = 0
+            with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                nrows = 0
+                for row in reader:
+                    for topic in topics:
+                        #print(topic+'-normal')
+                        normal = int(row[topic + '-normal'])
+                        normal_registration_count_per_topic[topic] += normal
+                    nrows += 1
+            normal_counts = [normal_registration_count_per_topic[topic]/nrows for topic in topics]
+            width=0.3
+            margin=width*i
+            i=i+1
 
-        normal_counts = [normal_registration_count_per_topic[topic]/nrows for topic in topics]
-        width=0.3
-        margin=width*i
-        i=i+1
+            
+        except FileNotFoundError:
+            print("file not found")
     #    print(np.arange(len(topics)))
     #    print(normal_counts)
         ax1.bar(np.arange(len(topics))+margin, normal_counts, width,label=log_dir)
@@ -246,48 +250,52 @@ def analyzeActiveRegistrationsMalicious(dirs):
     evil_registration_count_per_topic = {}
     normal_registration_count_per_topic = {}
     for log_dir in dirs:
-        evil_registration_count_per_topic = {}
-        normal_registration_count_per_topic = {}
-        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            ncol = len(next(reader)) # Read first line and count columns
-            numOfTopics = int((ncol-1)/2)
-            #print('Number of topics: ', numOfTopics)
-            topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
-            for topic in topics:
-                normal_registration_count_per_topic[topic] = 0
-                evil_registration_count_per_topic[topic] = 0
-        with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            nrows = 0
-            for row in reader:
+        try:
+            evil_registration_count_per_topic = {}
+            normal_registration_count_per_topic = {}
+            with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                ncol = len(next(reader)) # Read first line and count columns
+                numOfTopics = int((ncol-1)/2)
+                #print('Number of topics: ', numOfTopics)
+                topics = ['t'+str(x) for x in range(1, numOfTopics+1)]
                 for topic in topics:
-                    normal = int(row[topic + '-normal'])
-                    evil = int(row[topic + '-evil'])
-                    normal_registration_count_per_topic[topic] += normal
-                    evil_registration_count_per_topic[topic] += evil
-                nrows += 1
-        normal_counts = [normal_registration_count_per_topic[topic]/nrows for topic in topics]
-        evil_counts = [evil_registration_count_per_topic[topic]/nrows for topic in topics]
-        width = 0.35  # the width of the bars
+                    normal_registration_count_per_topic[topic] = 0
+                    evil_registration_count_per_topic[topic] = 0
+            with open(log_dir + '/registration_stats.csv', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                nrows = 0
+                for row in reader:
+                    for topic in topics:
+                        normal = int(row[topic + '-normal'])
+                        evil = int(row[topic + '-evil'])
+                        normal_registration_count_per_topic[topic] += normal
+                        evil_registration_count_per_topic[topic] += evil
+                    nrows += 1
+            normal_counts = [normal_registration_count_per_topic[topic]/nrows for topic in topics]
+            evil_counts = [evil_registration_count_per_topic[topic]/nrows for topic in topics]
+            width = 0.35  # the width of the bars
 
-        fig, ax = plt.subplots()
-        x_values = [x-width/2 for x in range(1, numOfTopics+1)]
-        rects1 = ax.bar(x_values, normal_counts, width,
-                label='Good registrations')
-        x_values = [x+width/2 for x in range(1, numOfTopics+1)]
-        rects2 = ax.bar(x_values, evil_counts, width,
-                label='Malicious registrations')
+            fig, ax = plt.subplots()
+            x_values = [x-width/2 for x in range(1, numOfTopics+1)]
+            rects1 = ax.bar(x_values, normal_counts, width,
+                    label='Good registrations')
+            x_values = [x+width/2 for x in range(1, numOfTopics+1)]
+            rects2 = ax.bar(x_values, evil_counts, width,
+                    label='Malicious registrations')
 
-        # Add some text for labels, title and custom x-axis tick labels, etc.
-        ax.set_ylabel('Number of registrations')
-        ax.set_xlabel('Topics')
-        ax.set_title('Active Registrations ' + log_dir)
-        ax.set_xticks(x_values)
-        ax.set_xticklabels(topics)
-        ax.legend()
+        except FileNotFoundError:
+            print("file not found")
 
-        plt.savefig(OUTDIR + '/registration_origin_withmalicious.png')
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('Number of registrations')
+    ax.set_xlabel('Topics')
+    ax.set_title('Active Registrations ' + log_dir)
+    ax.set_xticks(x_values)
+    ax.set_xticklabels(topics)
+    ax.legend()
+
+    plt.savefig(OUTDIR + '/registration_origin_withmalicious.png')
 
 def analyzeRegistrations(dirs):
 
@@ -618,14 +626,14 @@ def analyzeOperations(dirs):
     fig2, ax2 = plt.subplots()
     #fig3, ax3 = plt.subplots()
 
-    x = ['RegisterOperation','LookupOperation']
+    x = ['LookupTicketOperation','LookupOperation']
     x_val = 1
     x_vals = []
     total_malicious_list = []
     total_discovered_list = []
 
     i=0
-    labels=['ClosestDistance','RandomBucket','AllBuckets']
+#    labels=['ClosestDistance','RandomBucket','AllBuckets']
     for log_dir in dirs:
         #if file is empty
         if(os.stat(log_dir + '/operations.csv').st_size == 0):
@@ -635,12 +643,15 @@ def analyzeOperations(dirs):
 
         meantimes={}
         errtimes={}
-        for topic in df['topic'].unique():
-            meantimes[topic] = df[df.topic == topic]['returned_hops'].mean()
-            errtimes[topic] = df[df.topic == topic]['returned_hops'].std()
+        df2 = df.loc[df['type'].isin(x)]
+        for topic in df2['topic'].unique():
+            meantimes[topic] = df2[df2.topic == topic]['hops'].mean()
+            errtimes[topic] = df2[df2.topic == topic]['hops'].std()
 
         mean={}
         err={}
+        
+        print (meantimes)
         for key in sorted(meantimes.keys()) :
             mean[key] = meantimes[key]
         for key in sorted(errtimes.keys()) :
@@ -651,7 +662,7 @@ def analyzeOperations(dirs):
 
         #print(np.arange(len(mean.keys())))
         #print(mean.values())
-        ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
+        ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
         i = i+1
         #print(df['returned_hops'].mean())
         #ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
@@ -858,24 +869,27 @@ def analyzeEclipsedNodeDistribution(dirs):
 def analyzeStorageUtilisation(dirs):
 
     for log_dir in dirs:
-        fig, ax = plt.subplots()
-        df = pd.read_csv(log_dir + '/storage_utilisation.csv')
-        topics = []
-        for column_name in df.columns:
-            if column_name == "time":
-                continue
-            topics.append(column_name)
-        log_dir1 = extractAlphanumeric(log_dir)
-        ax.set_title("Storage utilisation over time in " + log_dir1)
-        for topic in topics:
-            ax.plot(df['time']/1000, df[topic], label=topic)
+        try:
+            fig, ax = plt.subplots()
+            df = pd.read_csv(log_dir + '/storage_utilisation.csv')
+            topics = []
+            for column_name in df.columns:
+                if column_name == "time":
+                    continue
+                topics.append(column_name)
+            log_dir1 = extractAlphanumeric(log_dir)
+            ax.set_title("Storage utilisation over time in " + log_dir1)
+            for topic in topics:
+                ax.plot(df['time']/1000, df[topic], label=topic)
 
-        ax.legend()
-        #ax.set_xlim([10000,None])
+            ax.legend()
+            #ax.set_xlim([10000,None])
+        except FileNotFoundError:
+            print("file not found")
 
-        ax.set_ylabel('Average utilisation of storage space')
-        ax.set_xlabel('time (sec)')
-        plt.savefig(OUTDIR + '/storage_utilisation.png')
+    ax.set_ylabel('Average utilisation of storage space')
+    ax.set_xlabel('time (sec)')
+    plt.savefig(OUTDIR + '/storage_utilisation.png')
 
 # plot per-topic, average waiting times and number of rejected
 def analyzeWaitingTimes(dirs):
@@ -928,48 +942,52 @@ def analyzeWaitingTimesWithMaliciousNodes(dirs, attackTopics=['t1']):
 
     for log_dir in dirs:
         fig, ax1 = plt.subplots()
-        df = pd.read_csv(log_dir + '/waiting_times.csv')
-        topics = set()
-        for column_name in df.columns:
-            if column_name == "time":
-                continue
-            if 'wait' in column_name:
-                parts = column_name.split('_')
-                topics.add(parts[0])
-        log_dir1 = extractAlphanumeric(log_dir)
-        ax1.set_title("Average waiting times over time for " + log_dir1)
-        topics = sorted(topics)
-        for topic in topics:
-            ax1.plot(df['time']/1000, df[topic+'_wait']/1000, label=topic)
-        for topic in attackTopics:
-            ax1.plot(df['time']/1000, df[topic+'_evil_wait']/1000, label=topic+'_by_evil_nodes')
 
-        ax1.legend()
-        ax1.set_ylabel('Waiting time in sec')
-        ax1.set_xlabel('time (sec)')
-        plt.savefig(OUTDIR + '/waiting_times_' + log_dir1 + '.png')
+        try:
+            df = pd.read_csv(log_dir + '/waiting_times.csv')
+            topics = set()
+            for column_name in df.columns:
+                if column_name == "time":
+                    continue
+                if 'wait' in column_name:
+                    parts = column_name.split('_')
+                    topics.add(parts[0])
+            log_dir1 = extractAlphanumeric(log_dir)
+            ax1.set_title("Average waiting times over time for " + log_dir1)
+            topics = sorted(topics)
+            for topic in topics:
+                ax1.plot(df['time']/1000, df[topic+'_wait']/1000, label=topic)
+            for topic in attackTopics:
+                ax1.plot(df['time']/1000, df[topic+'_evil_wait']/1000, label=topic+'_by_evil_nodes')
 
-        fig, ax2 = plt.subplots()
-        ax2.set_title("Average cumulative waiting times over time for " + log_dir1)
-        for topic in topics:
-            ax2.plot(df['time']/1000, df[topic+'_cumWait']/1000, label=topic)
-        for topic in attackTopics:
-            ax2.plot(df['time']/1000, df[topic+'_evil_cumWait']/1000, label=topic+'_by_evil_nodes')
-        ax2.legend()
-        ax2.set_ylabel('Cumulative waiting time in sec')
-        ax2.set_xlabel('time (sec)')
-        plt.savefig(OUTDIR + '/cumulative_waiting_times_' + log_dir1 + '.png')
+            ax1.legend()
+            ax1.set_ylabel('Waiting time in sec')
+            ax1.set_xlabel('time (sec)')
+            plt.savefig(OUTDIR + '/waiting_times_' + log_dir1 + '.png')
 
-        fig, ax3 = plt.subplots()
-        ax3.set_title("Quantity of rejected ticket requests (already registered) over time for " + log_dir1)
-        for topic in topics:
-            ax3.plot(df['time']/1000, df[topic+'_reject'], label=topic)
-        for topic in attackTopics:
-            ax3.plot(df['time']/1000, df[topic+'_evil_reject'], label=topic+'_by_evil_nodes')
-        ax3.legend()
-        ax3.set_ylabel('Number of ticket requests')
-        ax3.set_xlabel('time (sec)')
-        plt.savefig(OUTDIR + '/rejected_tickets.png')
+            fig, ax2 = plt.subplots()
+            ax2.set_title("Average cumulative waiting times over time for " + log_dir1)
+            for topic in topics:
+                ax2.plot(df['time']/1000, df[topic+'_cumWait']/1000, label=topic)
+            for topic in attackTopics:
+                ax2.plot(df['time']/1000, df[topic+'_evil_cumWait']/1000, label=topic+'_by_evil_nodes')
+            ax2.legend()
+            ax2.set_ylabel('Cumulative waiting time in sec')
+            ax2.set_xlabel('time (sec)')
+            plt.savefig(OUTDIR + '/cumulative_waiting_times_' + log_dir1 + '.png')
+
+            fig, ax3 = plt.subplots()
+            ax3.set_title("Quantity of rejected ticket requests (already registered) over time for " + log_dir1)
+            for topic in topics:
+                ax3.plot(df['time']/1000, df[topic+'_reject'], label=topic)
+            for topic in attackTopics:
+                ax3.plot(df['time']/1000, df[topic+'_evil_reject'], label=topic+'_by_evil_nodes')
+            ax3.legend()
+            ax3.set_ylabel('Number of ticket requests')
+            ax3.set_xlabel('time (sec)')
+            plt.savefig(OUTDIR + '/rejected_tickets.png')
+        except FileNotFoundError:
+            print("file not found")
 
 def analyzeNumberOfMessages(dirs):
 
@@ -999,7 +1017,7 @@ def analyzeRegistrations2(dirs):
         if len(df['topic'].unique()) == 1:
             fig1, ax1 = plt.subplots()
             fig2, ax2 = plt.subplots()
-        else:
+        elif len(df['topic'].unique()) > 1:
             fig1, ax1 = plt.subplots(len(df['topic'].unique()))
             fig2, ax2 = plt.subplots(len(df['topic'].unique()))
             fig3, ax3 = plt.subplots()
@@ -1038,7 +1056,7 @@ def analyzeRegistrations2(dirs):
             ax2.set_ylabel("#Accepted registrations")
             fig2.savefig(OUTDIR + '/registrations_registrar.png')
 
-        else:
+        elif len(df['topic'].unique()) > 1:
             plt.figure(figsize=(100,100))
             plt.figure(figsize=(100,100))
 
@@ -1143,7 +1161,7 @@ def analyzeRegistrationTime(dirs):
 
     i=0
     width=0.3
-    labels = ['NoSpam','Spam']
+ #   labels = ['NoSpam','Spam']
     for log_dir in dirs:
         #print(log_dir)
         df = pd.read_csv(log_dir + '/registeredTopicsTime.csv')
@@ -1187,22 +1205,24 @@ def analyzeRegistrationTime(dirs):
                 mean[key] = meantimes[key]
             for key in sorted(errtimes.keys()) :
                 err[key] = errtimes[key]
-            ax1.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
+           # print(mean)
+           # print(err)
+            ax1.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
             for key in sorted(meanminreg.keys()) :
                 mean[key] = meanminreg[key]
             for key in sorted(errminreg.keys()) :
                 err[key] = errminreg[key]
-            ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
+            ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
             for key in sorted(meanavgreg.keys()) :
                 mean[key] = meanavgreg[key]
             for key in sorted(erravgreg.keys()) :
                 err[key] = erravgreg[key]
-            ax3.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
+            ax3.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
             for key in sorted(meanmindisc.keys()) :
                 mean[key] = meanmindisc[key]
             for key in sorted(errmindisc.keys()) :
                 err[key] = errmindisc[key]
-            ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
+            ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
             for key in sorted(registrations.keys()) :
                 mean[key] = registrations[key]
 #            ax5.bar(np.arange(len(mean.keys()))+margin, mean.values(),width=width,label=labels[i])
@@ -1382,6 +1402,78 @@ def analyzeRegistrationOverhead(dirs):
     except FileNotFoundError:
         print("file not found")
         return
+    
+def analyzeLookup(dirs):
+    #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    fig2, ax2 = plt.subplots()
+    #fig3, ax3 = plt.subplots()
+
+    x = ['RegisterOperation','LookupOperation']
+    x_val = 1
+    x_vals = []
+    total_malicious_list = []
+    total_discovered_list = []
+
+    i=0
+    #labels=['ClosestDistance','RandomBucket','AllBuckets']
+    #labels = ['AdLifeTime 5 min','AdLifeTime 15 min','AdLifeTime 30 min','AdLifeTime 60 min']
+
+    for log_dir in dirs:
+        #print(log_dir)
+        df = pd.read_csv(log_dir + '/operations.csv')
+        #print(df)
+
+        meantimes={}
+        errtimes={}
+        for topic in df['topic'].dropna().unique():
+
+            meantimes[topic] = df[df.topic == topic]['ratio'].apply(pd.to_numeric, errors='coerce').dropna().mean()
+            errtimes[topic] = df[df.topic == topic]['ratio'].apply(pd.to_numeric, errors='coerce').dropna().std()
+
+        #print(meantimes)
+        mean={}
+        err={}
+        for key in sorted(meantimes.keys()) :
+            mean[key] = meantimes[key]
+        for key in sorted(errtimes.keys()) :
+            err[key] = errtimes[key]
+
+        width=0.22
+        margin=width*i
+
+        #print(np.arange(len(mean.keys())))
+        #print(mean.values())
+        ax2.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=log_dir)
+        i = i+1
+        #print(df['returned_hops'].mean())
+        #ax2.bar(log_dir, df['returned_hops'].mean(), yerr=df['returned_hops'].std(), capsize=10)
+        ax2.set_title("Msgs sent per node discovered (including handshake)")
+        #ax2.set_xticks(range(len(mean.keys())))
+        ax2.set_xticks(np.arange(len(mean.keys()))+margin/2)
+        ax2.set_xticklabels(mean.keys())
+        print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum())
+        print(df.query("type == 'LookupOperation' or type == 'LookupTicketOperation' or type == 'FindOperation'")['discovered'].sum())
+        total_malicious = df.query("type == 'LookupOperation' or type == 'LookupTicketOperation'")['malicious'].sum()
+        total_discovered = df.query("type == 'LookupOperation' or type == 'LookupTicketOperation' or type == 'FindOperation'")['discovered'].sum()
+        total_malicious_list.append(total_malicious)
+        total_discovered_list.append(total_discovered)
+        x_vals.append(x_val)
+        x_val += 3
+
+    #print('x_vals: ', x_vals)
+    width = 1.0  # the width of the bars
+    x_values = [x-width/2 for x in x_vals]
+    #ax3.bar(x_values, total_malicious_list, width, label='Malicious')
+    #x_values = [x+width/2 for x in x_vals]
+    #ax3.bar(x_values, total_discovered_list, width, label='All')
+    #ax3.set_title("Malicious nodes out of all lookup results")
+    #ax3.set_xticks(x_vals)
+    #ax3.set_xticklabels(dirs)
+
+    ax2.legend()
+    #ax3.legend()
+    fig2.savefig(OUTDIR + '/lookup_msgs.png')
+    #fig3.savefig('malicious_discovered.png')
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
@@ -1394,9 +1486,13 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', sys.argv[1:])
 print('Plots will be saved in ', OUTDIR);
 
+<<<<<<< HEAD
 
 plotMessageReceivedByNodes(sys.argv[1:])
 
+=======
+analyzeLookup(sys.argv[1:])
+>>>>>>> 9b96b50a6c508c30dd6f77fe5a67e6baba7bc483
 analyzeMessages(sys.argv[1:])
 #analyzeRegistrations(sys.argv[1:])
 analyzeRegistrations2(sys.argv[1:])
@@ -1411,7 +1507,7 @@ analyzeRegistrationTime(sys.argv[1:])
 analyzeStorageUtilisation(sys.argv[1:])
 
 analyzeWaitingTimes(sys.argv[1:])
-#analyzeWaitingTimesWithMaliciousNodes(sys.argv[1:], attackTopics=['t1'])
+analyzeWaitingTimesWithMaliciousNodes(sys.argv[1:], attackTopics=['t1'])
 
 analyzeNumberOfMessages(sys.argv[1:])
 
