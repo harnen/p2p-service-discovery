@@ -243,17 +243,29 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
 
     fig, ax = plt.subplots()
     dfs = [] 
+    dfsreg = [] 
+    dfslook = [] 
     for log_dir in dirs:
         y_vals = []
-        topics = {}
-
+        yreg_vals = []
+        ylook_vals = []
+        
         min_vals = []
+        minreg_vals = []
+        minlook_vals = []
         max_vals = []
+        maxreg_vals = []
+        maxlook_vals = []
         average_vals = []
+        averagereg_vals = []
+        averagelook_vals = []
+        #foos.walk(log_dir))
         sub_dirs = next(os.walk(log_dir))[1]
         sub_dirs.sort()  # sort alphabetically first
         sub_dirs.sort(key=len) # then sort by ascending length
         vals = []
+        valsreg = []
+        valslook = []
         for subdir in sub_dirs:
             path = log_dir + '/' + subdir + '/'
             path.replace('//','/')
@@ -261,26 +273,53 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
                 with open(path + 'msg_received.csv', newline='') as csvfile:
                     print('Reading folder ', path)
                     reader = csv.DictReader(csvfile)
+
                     for row in reader:
+                        #calculate a total for registration
+                        yreg_vals.append(int(row['MSG_REGISTER']) + int(row['MSG_TICKET_REQUEST']) + int(row['MSG_TICKET_REQUEST']) + int(row['MSG_REGISTER_RESPONSE']))
+                        ylook_vals.append(int(row['MSG_TOPIC_QUERY']) + int(row['MSG_TOPIC_QUERY_REPLY']))
                         y_vals.append(int(row['numMsg']))
 
                     min_vals.append(min(y_vals))
+                    minreg_vals.append(min(yreg_vals))
+                    minlook_vals.append(min(ylook_vals))
+
                     average_vals.append((1.0*sum(y_vals))/len(y_vals))
+                    averagereg_vals.append((1.0*sum(yreg_vals))/len(yreg_vals))
+                    averagelook_vals.append((1.0*sum(ylook_vals))/len(ylook_vals))
+
                     max_vals.append(max(y_vals))
+                    maxreg_vals.append(max(yreg_vals))
+                    maxreg_vals.append(max(yreg_vals))
+
                     vals.append([min_vals[-1], average_vals[-1] - min_vals[-1], max_vals[-1] - average_vals[-1]])
+                    valsreg.append([minreg_vals[-1], averagereg_vals[-1] - minreg_vals[-1], maxreg_vals[-1] - averagereg_vals[-1]])
+                    valslook.append([minlook_vals[-1], averagelook_vals[-1] - minlook_vals[-1], maxlook_vals[-1] - averagelook_vals[-1]])
             except FileNotFoundError:
                 print("Error: ", path, "msg_received.csv not found")
                 continue
         #stacked_bar_per_x = np.array([min_vals, average_vals, max_vals])
         stacked_bar_per_x = np.array(vals)
-        print('stacked_bar_per_x = ', stacked_bar_per_x)
         df = pd.DataFrame(stacked_bar_per_x, 
                    index=x_vals,
                    columns=["Min", "Average", "Max"])
-
         dfs.append(df)
 
+        stacked_bar_per_x = np.array(valsreg)
+        df = pd.DataFrame(stacked_bar_per_x, 
+                   index=x_vals,
+                   columns=["Min", "Average", "Max"])
+        dfsreg.append(df)
+
+        stacked_bar_per_x = np.array(valslook)
+        df = pd.DataFrame(stacked_bar_per_x, 
+                   index=x_vals,
+                   columns=["Min", "Average", "Max"])
+        dfslook.append(df)
+
     plot_clustered_stacked(dfs,plot_labels)
+    plot_clustered_stacked(dfsreg,plot_labels)
+    plot_clustered_stacked(dfslook,plot_labels)
     #ax.set_xticks(x_vals)
     #ax.set_yticks(ax.get_yticks()[::100])
     ax.set_xlabel(x_label)
@@ -309,14 +348,14 @@ print('Plots will be saved in ', OUTDIR)
 
 dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
 #plot_labels = ['dht', 'discv4', 'discv5']
-x_vals = ['1000', '2000', '3000', '4000', '5000']
+x_vals = ['100', '200', '300']
 x_label = 'network size'
 
-analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
-analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
+#analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
+#analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
 analyzeMessageReceivedByNodes(dirs, x_vals, x_label, dirs)
 
 dirs = ['dhtticket', 'discv5']
-analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
+#analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
 dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
 
