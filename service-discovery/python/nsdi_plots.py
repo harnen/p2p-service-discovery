@@ -13,14 +13,6 @@ import os
 
 csv.field_size_limit(sys.maxsize)
 
-font = {'family' : 'normal',
-        'weight' : 'bold',
-        'size'   : 16}
-
-matplotlib.rc('font', **font)
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['ps.fonttype'] = 42
-
 def plot_clustered_stacked(dfall, labels=None, title="",  H="/", **kwargs):
     """Given a list of dataframes, with identical columns and index, create a clustered stacked bar plot.                                                                                     
 labels is a list of the names of the dataframe, used for the legend                            
@@ -70,15 +62,14 @@ def analyzeWaitingTimes(dirs, x_vals, x_label, plot_labels):
     dirs = sorted(dirs)
     colors = ['r', 'g', 'b', 'w', 'e', 'a', 'o']
     
-    fig, ax = plt.subplots(figsize=(10, 4))
-    label_indx = 0
+    fig, ax = plt.subplots()
+    dfs = [] 
     for log_dir in dirs:
         sub_dirs = next(os.walk(log_dir))[1]
-        sub_dirs = sorted(sub_dirs)
-        min_vals = {}
-        max_vals = {}
-        average_vals = []
+        sub_dirs.sort()  # sort alphabetically first
+        sub_dirs.sort(key=len) # then sort by ascending length
         waiting_times = {}
+        vals = []
         for subdir in sub_dirs:
             path = log_dir + '/' + subdir + '/'
             path.replace('//','/')
@@ -102,33 +93,38 @@ def analyzeWaitingTimes(dirs, x_vals, x_label, plot_labels):
             df = pd.read_csv(path + 'waiting_times.csv')
 
             averages_per_topic = {}
-            for columnName in column_names:
-                waiting_times[columnName] = []
-                min_vals[columnName] = []
-                max_vals[columnName] = []
-                averages_per_topic[columnName] = []
 
             # TODO: std below and above mean can be used as min and max
             for columnName in column_names:
                 print('column name: ', columnName)
-                waiting_times[columnName] = df[columnName].to_list()
-                print(waiting_times[columnName])
-                averages_per_topic[columnName].append( (sum(waiting_times[columnName])*1.0)/len(waiting_times[columnName]) )
-                min_vals[columnName].append(min(waiting_times[columnName]))
-                max_vals[columnName].append(max(waiting_times[columnName]))
+                waiting_times[columnName] = df[columnName].mean()
             
-            last_average_per_topic = [averages_per_topic[columnName][-1] for columnName in column_names]
-            average_vals.append((1.0*sum(last_average_per_topic))/len(column_names))
+            min_val = float('inf')
+            max_val = 0
+            total = 0.0
+            for columnName in column_names:
+                if waiting_times[columnName] < min_val:
+                    min_val = waiting_times[columnName]
+                if waiting_times[columnName] > max_val:
+                    max_val = waiting_times[columnName]
 
-        min_topic = min(averages_per_topic, key=averages_per_topic.get)
-        max_topic = max(averages_per_topic, key=averages_per_topic.get)
-        print('Min topic: ', min_topic, ' max topic: ', max_topic)
-        f(ax, x_vals, average_vals, min_vals[min_topic], max_vals[max_topic], colors[label_indx], plot_labels[label_indx])
-        label_indx += 1
+                total += waiting_times[columnName]
+            
+            average = total / len(column_names)
+            vals.append([min_val, average-min_val, max_val-average])
+            
+        stacked_bar_per_x = np.array(vals)
+        print('stacked_bar_per_x = ', stacked_bar_per_x)
+        df = pd.DataFrame(stacked_bar_per_x, 
+                   index=x_vals,
+                   columns=["Min", "Average", "Max"])
+        dfs.append(df)
 
-    ax.set_xticks(x_vals)
+    plot_clustered_stacked(dfs,plot_labels)
     ax.set_xlabel(x_label)
+    ax.set_ylabel('Waiting time (sec)')
                     
+    plt.tight_layout()
     plt.savefig(OUTDIR + '/waiting_times.png')
 
 def analyzeRegistrationTime(dirs, x_vals, x_label, plot_labels): 
@@ -136,14 +132,13 @@ def analyzeRegistrationTime(dirs, x_vals, x_label, plot_labels):
     dirs = sorted(dirs)
     colors = ['r', 'g', 'b', 'w', 'e', 'a', 'o']
 
-    fig, ax = plt.subplots(figsize=(10, 4))
-    label_indx = 0
+    fig, ax = plt.subplots()
+    dfs = [] 
     for log_dir in dirs:
-        min_vals = {}
-        max_vals = {}
-        average_vals = []
         sub_dirs = next(os.walk(log_dir))[1]
-        sub_dirs = sorted(sub_dirs)
+        sub_dirs.sort()  # sort alphabetically first
+        sub_dirs.sort(key=len) # then sort by ascending length
+        vals = []
         for subdir in sub_dirs:
             #print(log_dir)
             path = log_dir + '/' + subdir + '/'
@@ -155,31 +150,34 @@ def analyzeRegistrationTime(dirs, x_vals, x_label, plot_labels):
             topics = []
             averages_per_topic = {}
             for topic in df['topic'].unique():
-                reg_times[topic] = df[df.topic == topic]['average_registration_time']
-                registrations[topic] = df[df.topic == topic]['registrant'].value_counts()
+                reg_times[topic] = df[df.topic == topic]['average_registration_time'].mean()
                 topics.append(topic)
-                min_vals[topic] = []
-                max_vals[topic] = []
-                averages_per_topic[topic] = []
 
+            min_val = float('inf')
+            max_val = 0
+            total = 0.0
             for topic in topics:
-                reg_times[topic] = [(1.0*x)/1000 for x in reg_times[topic]]
-                averages_per_topic[topic].append((1.0*sum(reg_times[topic]))/len(reg_times[topic]))
-                min_vals[topic].append(min(reg_times[topic]))
-                max_vals[topic].append(max(reg_times[topic]))
-            
-            last_average_per_topic = [averages_per_topic[topic][-1] for topic in topics]
-            average_vals.append((1.0*sum(last_average_per_topic))/len(topics))
+                if reg_times[topic] < min_val:
+                    min_val = reg_times[topic]
+                if reg_times[topic] > max_val:
+                    max_val = reg_times[topic]
+                total += reg_times[topic]
 
-        min_topic = min(averages_per_topic, key=averages_per_topic.get)
-        max_topic = max(averages_per_topic, key=averages_per_topic.get)
-
-        f(ax, x_vals, average_vals, min_vals[min_topic], max_vals[max_topic], colors[label_indx], plot_labels[label_indx])
-        label_indx += 1
+            average = total / len(topics)
+            vals.append([min_val, average-min_val, max_val-average])
         
-    ax.set_xticks(x_vals)
-    ax.set_xlabel(x_label)
+        stacked_bar_per_x = np.array(vals)
+        print('stacked_bar_per_x = ', stacked_bar_per_x)
+        df = pd.DataFrame(stacked_bar_per_x, 
+                   index=x_vals,
+                   columns=["Min", "Average", "Max"])
+        dfs.append(df)
                         
+    plot_clustered_stacked(dfs,plot_labels)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel('Registration time (sec)')
+                        
+    plt.tight_layout()
     plt.savefig(OUTDIR + '/reg_times.png')
 
 def analyzeDiscoveryTime(dirs, x_vals, x_label, plot_labels): 
@@ -187,14 +185,14 @@ def analyzeDiscoveryTime(dirs, x_vals, x_label, plot_labels):
     dirs = sorted(dirs)
     colors = ['r', 'g', 'b', 'w', 'e', 'a', 'o']
 
-    fig, ax = plt.subplots(figsize=(10, 4))
-    label_indx = 0
+    fig, ax = plt.subplots()
+    dfs = [] 
     for log_dir in dirs:
-        min_vals = {}
-        max_vals = {}
         average_vals = []
         sub_dirs = next(os.walk(log_dir))[1]
-        sub_dirs = sorted(sub_dirs)
+        sub_dirs.sort()  # sort alphabetically first
+        sub_dirs.sort(key=len) # then sort by ascending length
+        vals = []
         for subdir in sub_dirs:
             #print(log_dir)
             path = log_dir + '/' + subdir + '/'
@@ -202,38 +200,39 @@ def analyzeDiscoveryTime(dirs, x_vals, x_label, plot_labels):
             df = pd.read_csv(path + 'registeredTopicsTime.csv')
 
             discv_times = {}
-            registrations = {}
+            #registrations = {}
             topics = []
             averages_per_topic = {}
             for topic in df['topic'].unique():
-                discv_times[topic] = df[df.topic == topic]['average_discovery_time']
-                registrations[topic] = df[df.topic == topic]['registrant'].value_counts()
+                discv_times[topic] = df[df.topic == topic]['average_discovery_time'].mean()
+                #registrations[topic] = df[df.topic == topic]['registrant'].value_counts()
                 topics.append(topic)
-                averages_per_topic[topic] = []
 
+            min_val = float('inf')
+            max_val = 0
+            total = 0.0
             for topic in topics:
-                if topic not in min_vals.keys():
-                    min_vals[topic] = []
-                    max_vals[topic] = []
+                if discv_times[topic] < min_val:
+                    min_val = discv_times[topic]
+                if discv_times[topic] > max_val:
+                    max_val = discv_times[topic]
+                total += discv_times[topic]
 
-                discv_times[topic] = [(1.0*x)/1000 for x in discv_times[topic]]
-                averages_per_topic[topic].append((1.0*sum(discv_times[topic]))/len(discv_times[topic]))
-                min_vals[topic].append(min(discv_times[topic]))
-                max_vals[topic].append(max(discv_times[topic]))
-            
-            last_average_per_topic = [averages_per_topic[topic][-1] for topic in topics]
-            average_vals.append((1.0*sum(last_average_per_topic))/len(topics))
-                
+            average = total / len(topics)
+            vals.append([min_val, average-min_val, max_val-average])
 
-        min_topic = min(averages_per_topic, key=averages_per_topic.get)
-        max_topic = max(averages_per_topic, key=averages_per_topic.get)
+        stacked_bar_per_x = np.array(vals)
+        print('stacked_bar_per_x = ', stacked_bar_per_x)
+        df = pd.DataFrame(stacked_bar_per_x, 
+                   index=x_vals,
+                   columns=["Min", "Average", "Max"])
+        dfs.append(df)
 
-        f(ax, x_vals, average_vals, min_vals[min_topic], max_vals[max_topic], colors[label_indx], plot_labels[label_indx])
-        label_indx += 1
-        
-    ax.set_xticks(x_vals)
+    plot_clustered_stacked(dfs,plot_labels)
     ax.set_xlabel(x_label)
+    ax.set_ylabel('Discovery time (sec)')
                         
+    plt.tight_layout()
     plt.savefig(OUTDIR + '/discovery_times.png')
 
 # there should be as many subdirs as x_vals
@@ -243,7 +242,6 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
     colors = ['r', 'g', 'b', 'w', 'e', 'a', 'o']
 
     fig, ax = plt.subplots()
-    label_indx = 0
     dfs = [] 
     for log_dir in dirs:
         y_vals = []
@@ -253,7 +251,8 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
         max_vals = []
         average_vals = []
         sub_dirs = next(os.walk(log_dir))[1]
-        sub_dirs = sorted(sub_dirs)
+        sub_dirs.sort()  # sort alphabetically first
+        sub_dirs.sort(key=len) # then sort by ascending length
         vals = []
         for subdir in sub_dirs:
             path = log_dir + '/' + subdir + '/'
@@ -280,7 +279,6 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
                    columns=["Min", "Average", "Max"])
 
         dfs.append(df)
-        label_indx += 1
 
     plot_clustered_stacked(dfs,plot_labels)
     #ax.set_xticks(x_vals)
@@ -289,7 +287,7 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
     ax.set_ylabel('Number of messages/sec')
 
     #ax.set_title('Message received by node')
-
+    plt.tight_layout()
     plt.savefig(OUTDIR + '/messages_received')
 
 if (len(sys.argv) < 2):
@@ -309,12 +307,16 @@ print('Plots will be saved in ', OUTDIR);
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
 ##labels = ['No refresh','Refresh']
 
-dirs = ['dht_ticket', 'dht_noticket', 'discv5']
+dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
 #plot_labels = ['dht', 'discv4', 'discv5']
-x_vals = ['500', '1000', '1500', '2000']
+x_vals = ['1000', '2000', '3000', '4000', '5000']
 x_label = 'network size'
-#analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
-#analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
-#analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
+
+analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
+analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
 analyzeMessageReceivedByNodes(dirs, x_vals, x_label, dirs)
+
+dirs = ['dhtticket', 'discv5']
+analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
+dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
 
