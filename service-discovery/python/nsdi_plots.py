@@ -301,7 +301,7 @@ if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
 
 print('Will read logs from', sys.argv[1:])
-print('Plots will be saved in ', OUTDIR);
+print('Plots will be saved in ', OUTDIR)
 
 #labels = ['AdLifeTime 5 min','AdLifeTime 15 min','AdLifeTime 30 min','AdLifeTime 60 min']
 #labels = ['500 nodes','1000 nodes','5000 nodes','10000 nodes']
