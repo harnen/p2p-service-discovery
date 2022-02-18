@@ -66,6 +66,7 @@ public class KBucket implements Cloneable {
 		//Random random = new Random();
 
 		//String ipString = InetAddresses.fromInteger(random.nextInt()).getHostAddress();
+	
 		String ipString = Util.nodeIdtoNode(node).getKademliaProtocol().getNode().getAddr();
 		
 		for(BigInteger n : neighbours) {
@@ -76,6 +77,11 @@ public class KBucket implements Cloneable {
 				if(addresses.contains(ipString))
 						return false;
 			}
+		}
+		if(Util.nodeIdtoNode(node).getKademliaProtocol() instanceof Discv4Protocol) {
+			List<String> topics = ((Discv4Protocol)Util.nodeIdtoNode(node).getKademliaProtocol()).getRegisteringTopics();
+			for(String t : topics)
+				KademliaObserver.addAcceptedRegistration(new Topic(t), node, rTable.getNodeId(), 0);
 		}
 		if (neighbours.size() < k) { // k-bucket isn't full
 			//neighbours.put(node, time); // add neighbour to the tail of the list
