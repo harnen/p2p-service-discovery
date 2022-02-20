@@ -22,7 +22,8 @@ H is the hatch used for identification of the different dataframe"""
     n_df = len(dfall)                                                                          
     n_col = len(dfall[0].columns) 
     n_ind = len(dfall[0].index)                                                                
-    axe = plt.subplot(111)                                                                     
+    #axe = plt.subplots(111)  
+    fig, axe = plt.subplots()                                                                   
         
     for df in dfall : # for each data frame                                                    
         axe = df.plot(kind="bar",
@@ -54,7 +55,8 @@ H is the hatch used for identification of the different dataframe"""
     if labels is not None:
         l2 = plt.legend(n, labels, loc=[1.01, 0.1])
     axe.add_artist(l1)
-    return axe
+
+    return fig, axe
 
 # plot per-topic, average waiting times and number
 def analyzeWaitingTimes(dirs, x_vals, x_label, plot_labels):
@@ -241,7 +243,6 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
     dirs = sorted(dirs)
     colors = ['r', 'g', 'b', 'w', 'e', 'a', 'o']
 
-    fig, ax = plt.subplots()
     dfs = [] 
     dfsreg = [] 
     dfslook = [] 
@@ -277,7 +278,7 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
                     for row in reader:
                         #calculate a total for registration
                         yreg_vals.append(int(row['MSG_REGISTER']) + int(row['MSG_TICKET_REQUEST']) + int(row['MSG_TICKET_REQUEST']) + int(row['MSG_REGISTER_RESPONSE']))
-                        ylook_vals.append(int(row['MSG_TOPIC_QUERY']) + int(row['MSG_TOPIC_QUERY_REPLY']))
+                        ylook_vals.append(int(row['MSG_TOPIC_QUERY']) + int(row['MSG_TOPIC_QUERY_REPLY']) + int(row['MSG_FIND']) + int(row['MSG_RESPONSE']))
                         y_vals.append(int(row['numMsg']))
 
                     min_vals.append(min(y_vals))
@@ -318,19 +319,33 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
                    columns=["Min", "Average", "Max"])
         dfslook.append(df)
 
-    plot_clustered_stacked(dfs,plot_labels)
-    plt.show()
-    plot_clustered_stacked(dfsreg,plot_labels)
-    plt.show()
-    plot_clustered_stacked(dfslook,plot_labels)
-    plt.show()
-    #ax.set_xticks(x_vals)
-    #ax.set_yticks(ax.get_yticks()[::100])
+    
+    fig, ax = plot_clustered_stacked(dfs,plot_labels)
+    fig.tight_layout()
     ax.set_xlabel(x_label)
     ax.set_ylabel('Number of messages/sec')
+    ax.set_title('Total overhead')
+    fig.savefig(OUTDIR + '/messages_received')
+
+    fig, ax = plot_clustered_stacked(dfsreg,plot_labels)
+    fig.tight_layout()
+    ax.set_xlabel(x_label)
+    ax.set_title('Registration overhead')
+    ax.set_ylabel('Number of messages/sec')
+    fig.savefig(OUTDIR + '/reg_messages_received')
+
+    fig, ax = plot_clustered_stacked(dfslook,plot_labels)
+    fig.tight_layout()
+    ax.set_xlabel(x_label)
+    ax.set_title('Lookup overhead')
+    ax.set_ylabel('Number of messages/sec')
+    fig.savefig(OUTDIR + '/look_messages_received')
+    #ax.set_xticks(x_vals)
+    #ax.set_yticks(ax.get_yticks()[::100])
+    
 
     #ax.set_title('Message received by node')
-    plt.tight_layout()
+    #
     #plt.savefig(OUTDIR + '/messages_received')
     
 
@@ -356,8 +371,8 @@ dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
 x_vals = ['100', '200', '300']
 x_label = 'network size'
 
-#analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
-#analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
+analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
+analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
 analyzeMessageReceivedByNodes(dirs, x_vals, x_label, dirs)
 
 dirs = ['dhtticket', 'discv5']
