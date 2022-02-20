@@ -41,6 +41,7 @@ public class KademliaObserver implements Control {
     private static final String PAR_STEP = "step";
     private static final String PAR_REPORT_MSG = "reportMsg";
     private static final String PAR_REPORT_REG = "reportReg";
+    private static final int numMsgTypes = 15;
 
     private static String logFolderName; 
     private String parameterName;
@@ -139,7 +140,7 @@ public class KademliaObserver implements Control {
 
     
     
-    private static HashMap<BigInteger, Integer> msgReceivedByNodes = new HashMap<BigInteger, Integer>();
+    private static HashMap<BigInteger, ArrayList<Integer>> msgReceivedByNodes = new HashMap<BigInteger, ArrayList<Integer>>();
     private static HashMap<Integer, Integer> msgSentPerType = new HashMap<Integer, Integer>();
     private static HashMap<String, Integer> registerOverhead = new HashMap<String, Integer>();
     private static HashMap<String, Integer> numberOfRegistrations = new HashMap<String, Integer>();
@@ -474,11 +475,21 @@ public class KademliaObserver implements Control {
                 registerOverhead.put(topic.getTopic(), count+1);
         }
 
-        Integer count = msgReceivedByNodes.get(m.dest.getId());
-        if (count == null) 
-            msgReceivedByNodes.put(m.dest.getId(), 1);
-        else
-            msgReceivedByNodes.put(m.dest.getId(), count+1);
+        ArrayList<Integer> msgStats = msgReceivedByNodes.get(m.dest.getId());
+        if (msgStats == null) {
+        	//the last value is a total of all types
+        	msgStats = new ArrayList<Integer>();
+        	for(int i = 0; i <= numMsgTypes; i++)
+        		msgStats.add(0);
+        }
+        	
+        //increase the counter for the message type
+        msgStats.set(m.getType(), msgStats.get(m.getType()) + 1);
+        //increase the total messages count
+        msgStats.set(numMsgTypes, msgStats.get(numMsgTypes) + 1);
+        //put the stats back
+        msgReceivedByNodes.put(m.dest.getId(), msgStats);
+
     }
 
     private void write_waiting_times() {
@@ -572,7 +583,7 @@ public class KademliaObserver implements Control {
     }
 
     private void write_exchanged_msg_stats_over_time() {
-        int numMsgTypes = 15;
+        
         try {
             String filename = this.logFolderName + "/" + "msg_stats.csv";
             File myFile = new File(filename);
@@ -814,11 +825,22 @@ public class KademliaObserver implements Control {
             String filename = this.logFolderName + "/" + "msg_received.csv";
             FileWriter writer = new FileWriter(filename);
 
-            String title = "Node,numMsg\n";
+            String title = "Node,numMsg";
+            for (int msgType=0; msgType < numMsgTypes; msgType++) {
+                Message m = new Message(msgType);
+                title += "," + m.messageTypetoString();
+            }
+            title += "\n";
             writer.write(title);
+            
             for (BigInteger id : msgReceivedByNodes.keySet()) {
-                Integer numMsgs = msgReceivedByNodes.get(id);
-                writer.write(String.valueOf(id) + "," + numMsgs + "\n");
+                ArrayList<Integer> msgStats = msgReceivedByNodes.get(id);   
+                String toWrite = String.valueOf(id) + "," + msgStats.get(numMsgTypes); 
+                for (int msgType=0; msgType < numMsgTypes; msgType++) {
+                    toWrite += "," + msgStats.get(msgType);
+                }
+                toWrite += "\n";
+                writer.write(toWrite);
             }
             // Put the topic hashes in the bottom of the file
             for (Topic t: regByTopic.keySet()) {

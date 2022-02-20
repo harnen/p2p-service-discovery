@@ -109,6 +109,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		
 		KademliaObserver.addTopicRegistration(t, this.node.getId());
 		
+		
 	}
 	
 	// ______________________________________________________________________________________________
@@ -447,7 +448,6 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		if(!lop.finished)lop.increaseUsed(m.src.getId());*/
 
 	}
-	
 	
 	
 	/**

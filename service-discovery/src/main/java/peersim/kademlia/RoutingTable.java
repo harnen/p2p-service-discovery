@@ -189,6 +189,9 @@ public class RoutingTable implements Cloneable {
 		this.nodeId = id;
 	}
 	
+	public BigInteger getNodeId() {
+		return this.nodeId;
+	}
 	protected BigInteger generateRandomNode(int b) {
 		
 		BigInteger randNode;
