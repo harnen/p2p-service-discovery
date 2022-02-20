@@ -1264,6 +1264,7 @@ def analyzeRegistrationTime(dirs,labels):
     fig3, ax3 = plt.subplots()
     fig4, ax4 = plt.subplots()
     fig5, ax5 = plt.subplots()
+    fig6, ax6 = plt.subplots()
 
     i=0
     width=0.18
@@ -1289,6 +1290,8 @@ def analyzeRegistrationTime(dirs,labels):
             erravgreg = {}
             meanmindisc = {}
             errmindisc = {}
+            meantimesdisc = {}
+            errtimesdisc = {}
             registrations = {}
             #meanavgdisc = {}
             #erravgdisc = {}
@@ -1301,10 +1304,16 @@ def analyzeRegistrationTime(dirs,labels):
                 erravgreg[topic] = df[df.topic == topic]['average_registration_time'].std()/1000
                 meanmindisc[topic] = df[df.topic == topic]['min_discovery_time'].mean()/1000
                 errmindisc[topic] = df[df.topic == topic]['min_discovery_time'].std()/1000
+                df2 = df[df.topic == topic]['times_discovered'] > 0
+                df3 = df[df.topic == topic][df2]
+                #print(df3[df3.topic == topic]['times_discovered'])
+                meantimesdisc[topic] = df3[df3.topic == topic]['times_discovered'].count()
+                #meantimesdisc[topic] = df[df.topic == topic]['times_discovered'].mean()
+                #errtimesdisc[topic] = df[df.topic == topic]['times_discovered'].std()
                 registrations[topic] = df[df.topic == topic]['registrant'].value_counts()
                 #meanavgdisc[topic] = df[df.topic == topic]['average_discovery_time'].mean()
                 #erravgdisc[topic] = df[df.topic == topic]['average_discovery_time'].std()
-                #print(meantimes)
+                print(meantimesdisc[topic])
             mean={}
             err={}
             margin=width*i
@@ -1328,8 +1337,18 @@ def analyzeRegistrationTime(dirs,labels):
             for key in sorted(errmindisc.keys()) :
                 err[key] = errmindisc[key]
             ax4.bar(np.arange(len(mean.keys()))+margin, mean.values(),yerr=err.values(),width=width,label=labels[i])
-            for key in sorted(registrations.keys()) :
-                mean[key] = registrations[key]
+            #ax6.plot(sorted(df['times_discovered'].values))
+            #df2 = df[df.topic == topic]['times_discovered'] > 0
+            #df3 = df[df.topic == topic][df2]
+            #ax6.bar(np.arange(len(mean.keys()))+margin, df[df.topic == topic]['times_discovered' > 0],width=width,label=labels[i])
+            for key in sorted(meantimesdisc.keys()) :
+                mean[key] = meantimesdisc[key]
+            #for key in sorted(errtimesdisc.keys()) :
+            #    err[key] = errtimesdisc[key]
+            #print(meantimesdisc)
+            ax6.bar(np.arange(len(mean.keys()))+margin, mean.values(),width=width,label=labels[i])
+            #for key in sorted(registrations.keys()) :
+            #    mean[key] = registrations[key]
 #            ax5.bar(np.arange(len(mean.keys()))+margin, mean.values(),width=width,label=labels[i])
             i=i+1
             #ax5.bar(df['topic'].unique(), meanavgdisc.values(),yerr=erravgdisc.values())
@@ -1337,12 +1356,16 @@ def analyzeRegistrationTime(dirs,labels):
             ax2.legend()
             ax3.legend()
             ax4.legend()
+            ax6.legend()
+
 #            ax5.legend()
 
     ax1.set_title('Total # registrations by registrant')
     ax2.set_title('Time required for the first registration')
     ax3.set_title('Average registration time per topic')
     ax4.set_title('Time between registration to first time discovery')
+    ax4.set_title('Time discovered average')
+
 #    ax5.set_title('Registrants per topic')
     ax1.set_xticks(np.arange(len(mean.keys())))
     ax1.set_xticklabels(mean.keys())
@@ -1352,28 +1375,37 @@ def analyzeRegistrationTime(dirs,labels):
     ax3.set_xticklabels(mean.keys())
     ax4.set_xticks(np.arange(len(mean.keys()))+margin/2)
     ax4.set_xticklabels(mean.keys())
+    ax6.set_xticks(np.arange(len(mean.keys()))+margin/2)
+    ax6.set_xticklabels(mean.keys())
 #    ax5.set_xticks(np.arange(len(mean.keys())))
 #    ax5.set_xticklabels(mean.keys())
     ax1.set_ylim([0,None])
     ax2.set_ylim([0,None])
     ax3.set_ylim([0,None])
     ax4.set_ylim([0,None])
+    ax6.set_ylim([0,None])
+  
 #    ax5.set_ylim([0,None])
     ax1.set_xlabel("Topics")
     ax2.set_xlabel("Topics")
     ax3.set_xlabel("Topics")
     ax4.set_xlabel("Topics")
+    ax6.set_xlabel("Topics")
+
 #    ax5.set_xlabel("Topics")
     ax1.set_ylabel("Time (sec)")
     ax2.set_ylabel("Time (sec)")
     ax3.set_ylabel("Time (sec)")
     ax4.set_ylabel("Time (sec)")
+    ax6.set_ylabel("Times discovered")
+
 #    ax5.set_ylabel("Time (sec)")
     #ax5.legend()
 #    fig1.savefig(OUTDIR + '/total_reg_by_registrant.png')
 #    fig2.savefig(OUTDIR + '/min_time_register.png')
     fig3.savefig(OUTDIR + '/avg_time_register.png')
     fig4.savefig(OUTDIR + '/min_time_discovery.png')
+    fig6.savefig(OUTDIR + '/times_discovered.png')
 #    fig5.savefig(OUTDIR + '/registrants_topic.png')
 
 

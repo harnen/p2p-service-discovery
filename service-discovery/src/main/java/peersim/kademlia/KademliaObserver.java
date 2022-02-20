@@ -1029,7 +1029,7 @@ public class KademliaObserver implements Control {
 	        if (myFile.exists())myFile.delete();
 	        myFile.createNewFile();
 	        writer = new FileWriter(myFile, true);
-	        writer.write("topic,registrant,times_registered,min_registration_time,average_registration_time,min_discovery_time,average_discovery_time\n");
+	        writer.write("topic,registrant,times_registered,min_registration_time,average_registration_time,min_discovery_time,times_discovered\n");
 	        for(String t : registeredTopics.keySet()) {
             	for(RegistrationLog reg : registeredTopics.get(t).values()) {
             		writer.write(t);
@@ -1042,10 +1042,14 @@ public class KademliaObserver implements Control {
             		writer.write(",");
             		writer.write(String.valueOf(reg.getAvgRegisterTime()));
             		writer.write(",");
-            		writer.write(String.valueOf(reg.getMinDiscoveryTime()));
+//            		writer.write(String.valueOf(reg.getMinDiscoveryTime()));
+//            		writer.write(",");
+//            		writer.write(String.valueOf(reg.getAvgDiscoveryTime()));           		
+//    	        	writer.write("\n");
+            		writer.write(String.valueOf(reg.getAvgFirstDiscoveryTime()));
             		writer.write(",");
-            		writer.write(String.valueOf(reg.getAvgDiscoveryTime()));           		
-    	        	writer.write("\n");
+            		writer.write(String.valueOf(reg.getTimesDiscovered()));
+            		writer.write("\n");
             	}
             	
 	        }

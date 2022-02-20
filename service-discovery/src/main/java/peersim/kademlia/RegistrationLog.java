@@ -1,8 +1,10 @@
 package peersim.kademlia;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class RegistrationLog {
 
@@ -11,15 +13,17 @@ public class RegistrationLog {
 	private Map<BigInteger,Long> registeredWaiting;
 
 	private long registrationInitTime;
-	private Map<BigInteger,Long> discovered;
+	private Map<BigInteger,List<Long>> discovered;
+	private Map<BigInteger,Long> minTimes; 
 	
     public static final long   MAX_VALUE = 0x7fffffffffffffffL;
 
 	public RegistrationLog(BigInteger node, long currTime) {
 		this.registrant = node;
 		registered = new HashMap<BigInteger,Long>();
-		discovered = new HashMap<BigInteger,Long>();
+		discovered = new HashMap<BigInteger,List<Long>>();
 		registeredWaiting = new HashMap<BigInteger,Long>();
+		minTimes = new HashMap<BigInteger,Long>();
 		this.registrationInitTime = currTime;
 	}
 	
@@ -37,8 +41,23 @@ public class RegistrationLog {
 	public void addDiscovered(BigInteger node, long currentTime) {
 		//System.out.println("Add discovered "+currentTime+" "+registered.get(node));
         //assert(registered.get(node) != null ) : "node is not registered, but discovered";
-		if(registered.get(node)!=null)
-            discovered.put(node,currentTime-registered.get(node));
+		if(registered.get(node)!=null) {
+			if(discovered.get(node)!=null) {
+				List<Long> times = discovered.get(node);
+				times.add(currentTime-registered.get(node));
+	            discovered.put(node,times);
+			} else {
+				List<Long> times = new ArrayList<Long>();
+				times.add(currentTime-registered.get(node));
+				discovered.put(node,times);
+			}
+			if(minTimes.get(node)!=null) {
+				if(minTimes.get(node)>(currentTime-registered.get(node)))
+					minTimes.put(node,currentTime-registered.get(node));
+			} else {
+				minTimes.put(node,currentTime-registered.get(node));
+			}
+		}
 		
 	}
 	
@@ -52,7 +71,8 @@ public class RegistrationLog {
 		return 0;
 	}
 	
-	public long getMinDiscoveryTime() {
+
+	/*public long getMinDiscoveryTime() {
 		long discTime=MAX_VALUE;
 		if(discovered.size()>0) {
 			for(Long time : discovered.values())
@@ -60,6 +80,29 @@ public class RegistrationLog {
 			return discTime;
 		} else
 			return 0;
+	}*/
+	
+	public long getAvgFirstDiscoveryTime() {
+		
+		if(minTimes.size()==0)return 0;
+		long times=0;
+		int count=0;
+		for(Long list : minTimes.values()) {
+			times+=list;
+			count++;
+		}
+		return times/count;
+		
+	}
+	
+	
+	public int getTimesDiscovered() {
+		
+		int count=0;
+		for(List<Long> times : discovered.values()) {
+			count+=times.size();
+		}
+		return count;
 	}
 	
 	public double getAvgRegisterTime() {
@@ -72,7 +115,7 @@ public class RegistrationLog {
 			return 0;
 	}
 	
-	public double getAvgDiscoveryTime() {
+	/*public double getAvgDiscoveryTime() {
 		long discTime=0;
 		if(discovered.size()>0) {
 			for(Long time : discovered.values())
@@ -80,13 +123,13 @@ public class RegistrationLog {
 			return (1.0*discTime)/discovered.size();
 		} else
 			return 0;
-	}
+	}*/
 	
 	public Map<BigInteger,Long> getRegistered(){
 		return registered;
 	}
 	
-	public Map<BigInteger,Long> getDiscovered(){
+	public Map<BigInteger,List<Long>> getDiscovered(){
 		return discovered;
 	}
 }
