@@ -290,10 +290,11 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
 
                     max_vals.append(max(y_vals))
                     maxreg_vals.append(max(yreg_vals))
-                    maxreg_vals.append(max(yreg_vals))
+                    maxlook_vals.append(max(ylook_vals))
 
                     vals.append([min_vals[-1], average_vals[-1] - min_vals[-1], max_vals[-1] - average_vals[-1]])
                     valsreg.append([minreg_vals[-1], averagereg_vals[-1] - minreg_vals[-1], maxreg_vals[-1] - averagereg_vals[-1]])
+                    print("minlook_vals:", minlook_vals, "averagelook_vals", averagelook_vals, "maxlook_vals", maxlook_vals)
                     valslook.append([minlook_vals[-1], averagelook_vals[-1] - minlook_vals[-1], maxlook_vals[-1] - averagelook_vals[-1]])
             except FileNotFoundError:
                 print("Error: ", path, "msg_received.csv not found")
@@ -318,8 +319,11 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
         dfslook.append(df)
 
     plot_clustered_stacked(dfs,plot_labels)
+    plt.show()
     plot_clustered_stacked(dfsreg,plot_labels)
+    plt.show()
     plot_clustered_stacked(dfslook,plot_labels)
+    plt.show()
     #ax.set_xticks(x_vals)
     #ax.set_yticks(ax.get_yticks()[::100])
     ax.set_xlabel(x_label)
@@ -327,7 +331,8 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
 
     #ax.set_title('Message received by node')
     plt.tight_layout()
-    plt.savefig(OUTDIR + '/messages_received')
+    #plt.savefig(OUTDIR + '/messages_received')
+    
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
