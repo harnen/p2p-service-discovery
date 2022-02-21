@@ -277,7 +277,7 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
 
                     for row in reader:
                         #calculate a total for registration
-                        yreg_vals.append(int(row['MSG_REGISTER']) + int(row['MSG_TICKET_REQUEST']) + int(row['MSG_TICKET_REQUEST']) + int(row['MSG_REGISTER_RESPONSE']))
+                        yreg_vals.append(int(row['MSG_REGISTER']) + int(row['MSG_TICKET_REQUEST']) + int(row['MSG_TICKET_RESPONSE']) + int(row['MSG_REGISTER_RESPONSE']))
                         ylook_vals.append(int(row['MSG_TOPIC_QUERY']) + int(row['MSG_TOPIC_QUERY_REPLY']) + int(row['MSG_FIND']) + int(row['MSG_RESPONSE']))
                         y_vals.append(int(row['numMsg']))
 
@@ -295,8 +295,9 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
 
                     vals.append([min_vals[-1], average_vals[-1] - min_vals[-1], max_vals[-1] - average_vals[-1]])
                     valsreg.append([minreg_vals[-1], averagereg_vals[-1] - minreg_vals[-1], maxreg_vals[-1] - averagereg_vals[-1]])
-                    print("minlook_vals:", minlook_vals, "averagelook_vals", averagelook_vals, "maxlook_vals", maxlook_vals)
                     valslook.append([minlook_vals[-1], averagelook_vals[-1] - minlook_vals[-1], maxlook_vals[-1] - averagelook_vals[-1]])
+                    #print("minlook_vals:", minlook_vals, "averagelook_vals", averagelook_vals, "maxlook_vals", maxlook_vals)
+                    #print("minreg_vals:", minreg_vals, "averagereg_vals", averagereg_vals, "maxreg_vals", maxreg_vals)
             except FileNotFoundError:
                 print("Error: ", path, "msg_received.csv not found")
                 continue
@@ -319,7 +320,6 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
                    columns=["Min", "Average", "Max"])
         dfslook.append(df)
 
-    
     fig, ax = plot_clustered_stacked(dfs,plot_labels)
     fig.tight_layout()
     ax.set_xlabel(x_label)
@@ -366,13 +366,13 @@ print('Plots will be saved in ', OUTDIR)
 #labels = ['Bucket size 3','Bucket size 5','Bucket Size 10','Bucket size 16']
 ##labels = ['No refresh','Refresh']
 
-dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
+dirs = ['dhtnoticket', 'dhtticket', 'discv4', 'discv5']
 #plot_labels = ['dht', 'discv4', 'discv5']
 x_vals = ['100', '200', '300']
 x_label = 'network size'
 
-analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
-analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
+#analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
+#analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
 analyzeMessageReceivedByNodes(dirs, x_vals, x_label, dirs)
 
 dirs = ['dhtticket', 'discv5']
