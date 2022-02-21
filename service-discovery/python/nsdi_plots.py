@@ -379,12 +379,11 @@ def analyseOverhead(dirs):
                     reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE']
                     df['registration'] = df[reg_cols].sum(axis=1)
                     look_cols = ['MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY', 'MSG_FIND', 'MSG_RESPONSE']
-                    df['lookup'] = df[look_cols].sum(axis=1)
-                    
-                
+                    df['lookup'] = df[look_cols].sum(axis=1)      
             except FileNotFoundError:
                 print("Error: ", path, "msg_received.csv not found")
                 continue
+    #merge all the dfs
     df = pd.concat(df_list, axis=0, ignore_index=True)
     print(df)
     df.to_csv('pd.csv')
@@ -399,9 +398,6 @@ def analyseOverhead(dirs):
             bx.set_title(graph + " overhead")
         #for size, group in df.groupby('size'):
         fig.savefig(OUTDIR + '/' + graph + '_messages_received')
-
-            
-            
 
 
 if (len(sys.argv) < 2):
