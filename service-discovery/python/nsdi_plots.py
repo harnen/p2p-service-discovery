@@ -347,7 +347,62 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
     #ax.set_title('Message received by node')
     #
     #plt.savefig(OUTDIR + '/messages_received')
-    
+
+def getProtocolFromPath(path):
+    return  path.split('/')[0]
+
+def getNetworkSizeFromPath(path):
+    return  int(path.split('size_')[1].strip('/'))
+
+def analyseOverhead(dirs):
+    df_list = []
+    for log_dir in dirs:
+        sub_dirs = next(os.walk(log_dir))[1]
+        for subdir in sub_dirs:
+            path = log_dir + '/' + subdir + '/'
+            path.replace('//','/')
+            print('Reading folder ', path)
+            try: 
+                df = pd.read_csv(path + 'msg_received.csv')
+                protocol = getProtocolFromPath(path)
+                size = getNetworkSizeFromPath(path)
+                df['protocol'] = protocol
+                df['size'] = size
+                df_list.append(df)
+                if(protocol == 'discv4'):
+                    #should be all 0, but plotting for sanity check
+                    reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE', 'MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY']
+                    df['registration'] = df[reg_cols].sum(axis=1)
+                    look_cols = ['MSG_FIND', 'MSG_RESPONSE']
+                    df['lookup'] = df[look_cols].sum(axis=1)
+                else:
+                    reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE']
+                    df['registration'] = df[reg_cols].sum(axis=1)
+                    look_cols = ['MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY', 'MSG_FIND', 'MSG_RESPONSE']
+                    df['lookup'] = df[look_cols].sum(axis=1)
+                    
+                
+            except FileNotFoundError:
+                print("Error: ", path, "msg_received.csv not found")
+                continue
+    df = pd.concat(df_list, axis=0, ignore_index=True)
+    print(df)
+    df.to_csv('pd.csv')
+    for graph in ['registration', 'lookup']:
+        fig, ax = plt.subplots()
+        for protocol, group in df.groupby('protocol'):
+            avg = group.groupby('size')[graph].mean()
+            std = group.groupby('size')[graph].std()
+            bx = avg.plot(x='size', y=graph, yerr=std, ax=ax, legend=True, label=protocol)
+            bx.set_xlabel("Network Size")
+            bx.set_ylabel("Messages")
+            bx.set_title(graph + " overhead")
+        #for size, group in df.groupby('size'):
+        fig.savefig(OUTDIR + '/' + graph + '_messages_received')
+
+            
+            
+
 
 if (len(sys.argv) < 2):
     print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
@@ -373,7 +428,8 @@ x_label = 'network size'
 
 #analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
 #analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
-analyzeMessageReceivedByNodes(dirs, x_vals, x_label, dirs)
+#analyzeMessageReceivedByNodes(dirs, x_vals, x_label, dirs)
+analyseOverhead(dirs)
 
 dirs = ['dhtticket', 'discv5']
 #analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
