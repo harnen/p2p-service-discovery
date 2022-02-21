@@ -2,6 +2,7 @@
 
 SIZES='1000 2000 3000 4000 5000'
 TOPICS='1 5 20 50 100'
+#TOPICS='100'
 ZIPFS='0.1 0.7 1.1'
 BUCKET_SIZES='1 3 5 10'
 BUCKET_ORDERS='0 1 2'
@@ -12,7 +13,7 @@ DEFAULT_TOPIC_NUM='5'
 
 EXPERIMENT='topic_size'
 IN_CONFIGS='discv5dhtticket noattackdiscv4 discv5ticket discv5dhtnoticket'
-
+#IN_CONFIGS='discv5dhtnoticket'
 function run_sim(){
 
     STRATEGY='.'
