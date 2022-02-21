@@ -67,13 +67,15 @@ def analyzeWaitingTimes(dirs, x_vals, x_label, plot_labels):
     fig, ax = plt.subplots()
     dfs = [] 
     for log_dir in dirs:
-        sub_dirs = next(os.walk(log_dir))[1]
+        path = LOGDIR + '/' + log_dir
+        path.replace('//','/')
+        sub_dirs = next(os.walk(path))[1]
         sub_dirs.sort()  # sort alphabetically first
         sub_dirs.sort(key=len) # then sort by ascending length
         waiting_times = {}
         vals = []
         for subdir in sub_dirs:
-            path = log_dir + '/' + subdir + '/'
+            path = LOGDIR + '/' + log_dir + '/' + subdir + '/'
             path.replace('//','/')
             print ('Reading from directory: ', path)
             try:
@@ -137,13 +139,15 @@ def analyzeRegistrationTime(dirs, x_vals, x_label, plot_labels):
     fig, ax = plt.subplots()
     dfs = [] 
     for log_dir in dirs:
-        sub_dirs = next(os.walk(log_dir))[1]
+        path = LOGDIR + '/' + log_dir
+        path.replace('//','/')
+        sub_dirs = next(os.walk(path))[1]
         sub_dirs.sort()  # sort alphabetically first
         sub_dirs.sort(key=len) # then sort by ascending length
         vals = []
         for subdir in sub_dirs:
             #print(log_dir)
-            path = log_dir + '/' + subdir + '/'
+            path = LOGDIR + '/' + log_dir + '/' + subdir + '/'
             path.replace('//','/')
             df = pd.read_csv(path + 'registeredTopicsTime.csv')
 
@@ -191,13 +195,15 @@ def analyzeDiscoveryTime(dirs, x_vals, x_label, plot_labels):
     dfs = [] 
     for log_dir in dirs:
         average_vals = []
-        sub_dirs = next(os.walk(log_dir))[1]
+        path = LOGDIR + '/' + log_dir
+        path.replace('//','/')
+        sub_dirs = next(os.walk(path))[1]
         sub_dirs.sort()  # sort alphabetically first
         sub_dirs.sort(key=len) # then sort by ascending length
         vals = []
         for subdir in sub_dirs:
             #print(log_dir)
-            path = log_dir + '/' + subdir + '/'
+            path = LOGDIR + '/' + log_dir + '/' + subdir + '/'
             path.replace('//','/')
             df = pd.read_csv(path + 'registeredTopicsTime.csv')
 
@@ -261,14 +267,16 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
         averagereg_vals = []
         averagelook_vals = []
         #foos.walk(log_dir))
-        sub_dirs = next(os.walk(log_dir))[1]
+        path = LOGDIR + '/' + log_dir
+        path.replace('//','/')
+        sub_dirs = next(os.walk(path))[1]
         sub_dirs.sort()  # sort alphabetically first
         sub_dirs.sort(key=len) # then sort by ascending length
         vals = []
         valsreg = []
         valslook = []
         for subdir in sub_dirs:
-            path = log_dir + '/' + subdir + '/'
+            path = LOGDIR + '/' + log_dir + '/' + subdir + '/'
             path.replace('//','/')
             try: 
                 with open(path + 'msg_received.csv', newline='') as csvfile:
@@ -349,15 +357,20 @@ def analyzeMessageReceivedByNodes(dirs, x_vals, x_label, plot_labels):
     #plt.savefig(OUTDIR + '/messages_received')
     
 
-if (len(sys.argv) < 2):
-    print("Provide at least one directory with log files (messages.csv and 3500000_registrations.csv")
-    exit(1)
-
 OUTDIR = './'
+
+if len(sys.argv) < 2:
+    print('Usage: ', sys.argv[0], ' <Path_to_Log_files> <OPTIONAL: Path_to_output_dir>' )
+    sys.exit(1) 
+
+LOGDIR = sys.argv[1]
+if len(sys.argv) > 2:
+    OUTDIR = sys.argv[2]
+
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
 
-print('Will read logs from', sys.argv[1:])
+print('Will read logs from', LOGDIR)
 print('Plots will be saved in ', OUTDIR)
 
 #labels = ['AdLifeTime 5 min','AdLifeTime 15 min','AdLifeTime 30 min','AdLifeTime 60 min']
@@ -368,14 +381,14 @@ print('Plots will be saved in ', OUTDIR)
 
 dirs = ['dhtnoticket', 'dhtticket', 'discv4', 'discv5']
 #plot_labels = ['dht', 'discv4', 'discv5']
-x_vals = ['100', '200', '300']
+x_vals = ['1000', '2000', '3000', '4000', '5000']
 x_label = 'network size'
 
-#analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
-#analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
+analyzeRegistrationTime(dirs, x_vals, x_label, dirs)
+analyzeDiscoveryTime(dirs, x_vals, x_label, dirs)
 analyzeMessageReceivedByNodes(dirs, x_vals, x_label, dirs)
 
 dirs = ['dhtticket', 'discv5']
-#analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
+analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
 dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
 
