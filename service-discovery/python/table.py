@@ -45,40 +45,43 @@ class Table(metaclass=abc.ABCMeta):
         self.base_counter['wtime'] = 0
         self.base_counter['timestamp'] = 0
 
+    #Loads a file with arriving requests
+    #each line is a seperate arriving ticket/registration request
     def load(self, file):
         counter = 0
         self.input_file = file
         with open(file, newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',', quotechar='|')
             for row in reader:
+                #count malicious and benign registrations for statistics
                 if 'attack' in row.keys():
                     row['attack'] = int(row['attack'])
                     if(row['attack'] == 0):
                         self.honest_count += 1
                     else:
                         self.malicious_count += 1
-
+                #read the arrival time from the file or
+                #assign increasing ones automatically
                 if 'time' in row.keys():
                     row['arrived'] = float(row['time'])
                 else:
                     row['arrived'] = counter
                 row['returned'] = 0
-                print(row)
+
                 self.workload[counter] = row
+                #schedule arrival of the requests in the simulator
                 if 'time' in row.keys():
                     self.env.process(self.new_request(row, float(row['time'])))
                 else:
                     self.env.process(self.new_request(row, counter * self.interval))
                 counter += 1
-        #print("Honest", self.honest_count, "Malicious:", self.malicious_count)
 
-
-        
+    #run the simmulation       
     def run(self, runtime):
         self.report_occupancy()
         self.env.run(until=runtime)
         
-
+    #periodically report the state of the table
     def report_occupancy(self):
         #yield self.env.timeout(1)
         if(len(self.occupancies) > 0):
@@ -102,6 +105,7 @@ class Table(metaclass=abc.ABCMeta):
             self.honest_in[self.env.now] = len(honest_entries)/self.honest_count
         #self.env.process(self.report_occupancy())
 
+    #plotting helper
     def scatter(self, values, title, ax = None, color_map = None):
         if(ax == None):
             fig, ax = plt.subplots()
@@ -139,10 +143,12 @@ class Table(metaclass=abc.ABCMeta):
         #print("Frequency of", title, {x:values.count(x) for x in values})
         return color_map
 
+    #reporting helper
     def display(self, delay):
         print("display, env", self.env)
         self.env.process(self.display_body(delay))
 
+    #reporting helper
     def display_body(self, delay):
         yield self.env.timeout(delay)
         figure, axis = plt.subplots(2, 4)
@@ -197,9 +203,11 @@ class Table(metaclass=abc.ABCMeta):
         print("Occupancy_total", self.extract_total(self.occupancies))
         print("Malicious total", self.extract_total(self.occupancies_by_attackers))
 
+    #reporting helper
     def add_stats(self, delay, stats):
         self.env.process(self.add_stats_body(delay, stats))
 
+    #reporting helper
     def extract_total(self, dict):
         labels = []
         sizes = []
@@ -218,6 +226,7 @@ class Table(metaclass=abc.ABCMeta):
             total += labels[i] * (sizes[i] / sum(sizes))
         return total
     
+    #reporting helper
     def add_stats_body(self, delay, stats):
         yield self.env.timeout(delay)
         total = self.extract_total(self.occupancies)
@@ -236,7 +245,7 @@ class Table(metaclass=abc.ABCMeta):
         stats['topic_power'].append(self.topic_power)
         print("sum:", total)
 
-    
+    #reporting helper
     def log(self, *arg):
         print("[", self.env.now, "s]",  sep="", end='')
         print(*arg)
@@ -245,21 +254,22 @@ class Table(metaclass=abc.ABCMeta):
     def get_waiting_time(self, req):
         pass
 
+    #remove an add when it expires
     def remove_ad(self, ad_id, delay):
         yield self.env.timeout(delay)
         self.log("Removing", self.table[ad_id])
         req = self.table.pop(ad_id)
 
         score = self.tree.remove(req['ip'])
-        #self.ip_counter[req['ip']]['counter'] -= 1
         assert(score >= 0)
         self.id_counter[req['id']]['counter'] -= 1
         assert(self.id_counter[req['id']]['counter'] >= 0)
         self.topic_counter[req['topic']]['counter'] -= 1
-        assert(self.topic_counter[req['topic']]['counter'] >= 0)
+        assert(self.topic_counter[req['topic']]['counter'] >= 0)        
         
         self.report_occupancy()
 
+    #process an incoming request
     def new_request(self, req, delay):
         yield self.env.timeout(delay)
         
@@ -272,16 +282,16 @@ class Table(metaclass=abc.ABCMeta):
             assert(req['req_id'] not in self.pending_req)
             self.pending_req[req['req_id']] = req
 
-        waiting_time = self.get_waiting_time(req)
-        waiting_time = int(waiting_time)
+        waiting_time = int(self.get_waiting_time(req))
         self.admission_times.append((self.env.now, waiting_time, req['attack']))
-        #print("waiting time:", waiting_time, len(self.table), "/", self.capacity)
+
         if(waiting_time == 0):
             self.log("Admitting right away")
             del self.pending_req[req['req_id']]
             req['expire'] = self.env.now + self.ad_lifetime
             self.table[self.ad_ids] = req
             
+            #update lower bounds for each modifier
             if(req['id'] not in self.id_counter):
                 self.id_counter[req['id']] = {}
                 self.id_counter[req['id']]['counter'] = 0
@@ -292,10 +302,8 @@ class Table(metaclass=abc.ABCMeta):
             self.tree.add(req['ip'])
             if(req['ip'] not in self.ip_counter):
                 self.ip_counter[req['ip']] = {}
-                #self.ip_counter[req['ip']]['counter'] = 0
                 self.ip_counter[req['ip']]['wtime'] = 0
                 self.ip_counter[req['ip']]['timestamp'] = 0
-            #self.ip_counter[req['ip']]['counter'] += 1
 
             if(req['topic'] not in self.topic_counter):
                 self.topic_counter[req['topic']] = {}
@@ -321,19 +329,22 @@ class Table(metaclass=abc.ABCMeta):
             self.returns.append((self.env.now, req['returned'], req['attack']))
             self.report_occupancy()
             
-            #may the registrant re-register after expiration time
-            rand_time = randint(0, 99) # add a random time btw. 0 and 99 milliseconds
+            #make the registrant re-register when its add expire
+            # add a random time between 0 and 99 milliseconds
+            #just to make the simulation more realistic
+            rand_time = randint(0, 99)
             new_req = copy.deepcopy(req)
             del new_req['req_id']
             new_req['expire'] = 0
             new_req['arrived'] = self.env.now + self.ad_lifetime + rand_time
             new_req['returned'] = 0
-            #self.log("Will attempt to re-register at:", self.env.now + self.ad_lifetime)
             self.env.process(self.new_request(new_req, self.ad_lifetime + rand_time))
+
+        #the registrant still has to wait for time indicated in the ticket
         else:
             req['returned'] += 1
             self.log("Need to wait for", waiting_time)
-            #"impatient" clients
+            #"impatient" spamming clients
             if(req['attack'] == 3):
                 self.env.process(self.new_request(req, min(500, waiting_time)))
             else:
