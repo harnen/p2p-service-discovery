@@ -52,9 +52,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
                         topic = new Topic(topicString);
                         prot.setTargetTopic(topic);
                     }
-                } else {
-                    
-                    
+                } else {           
                     topicString = new String("t" + topicIndex);
                     topic = new Topic(topicString);
                 }
@@ -65,7 +63,8 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 				prot.getNode().setTopic(topicString, start);
 
 			    if(registerMessage != null) EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
-			    if(lookupMessage != null)EDSimulator.add(time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
+			    //start lookup messages later
+			    if(lookupMessage != null)EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME + time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
                 
                 if(randomLookups==1) {
 					for(int j = 0;j<3;j++) {
