@@ -293,6 +293,40 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
         return true;
     }
 
+    // Single ticket registration decision
+    protected void makeRegisterDecisionForSingleTicket(Ticket ticket, long curr_time) {
+
+        updateTopicTable(curr_time);
+        TopicRegistration reg = new TopicRegistration(ticket.getSrc(), ticket.getTopic(), curr_time);
+        reg.setTimestamp(curr_time);
+
+        long waiting_time = getWaitingTime(reg, curr_time,ticket);
+
+        int topicOccupancy = 0;
+        if(this.topicTable.get(reg.getTopic())!=null)
+            topicOccupancy = this.topicTable.get(reg.getTopic()).size();
+        
+        if (containsReg(reg)) { 
+            // rejected because a registration from ticket src for topic already exists
+            ticket.setRegistrationComplete(false);
+            ticket.setWaitTime(-1);
+            waiting_time=-1;
+        }
+        else if ((this.allAds.size() < tableCapacity) && waiting_time==0){ //accepted ticket
+            register(reg);
+            ticket.setRegistrationComplete(true);
+            ticket.setOccupancy(topicOccupancy);
+            KademliaObserver.reportCumulativeTime(ticket.getTopic(), ticket.getCumWaitTime(), ticket.getSrc().is_evil);
+        }
+        else { //waiting_time > 0, reject (for now) due to space
+            waiting_time = (waiting_time- ticket.getRTT() > 0) ? waiting_time - ticket.getRTT() : 0;
+            ticket.updateWaitingTime(waiting_time);
+            ticket.setRegistrationComplete(false);
+            ticket.setOccupancy(topicOccupancy);
+        }
+        if (waiting_time >= 0)
+            KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time, ticket.getSrc().is_evil);
+    }
   
     protected Ticket [] makeRegisterDecision(long curr_time) {   
         // Determine which topics are up for decision
@@ -332,6 +366,8 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
 
         for(Ticket ticket: ticketList) {
 
+            makeRegisterDecisionForSingleTicket(ticket, curr_time);
+            /*
             TopicRegistration reg = new TopicRegistration(ticket.getSrc(), ticket.getTopic(), curr_time);
             reg.setTimestamp(curr_time);
 
@@ -365,7 +401,7 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
                 ticket.setOccupancy(topicOccupancy);
             }
             if (waiting_time >= 0)
-                KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time, ticket.getSrc().is_evil);
+                KademliaObserver.reportWaitingTime(ticket.getTopic(), waiting_time, ticket.getSrc().is_evil);*/
         }
         for (Topic topic: topicSet) {
             nextDecisionTime.remove(topic);
@@ -428,6 +464,10 @@ public class Discv5GlobalTopicTable extends Discv5TicketTopicTable { // implemen
     }
     
     protected void updateTopicTable(long curr_time) {
+
+        if (this.lastUpdateTime >= curr_time)
+            return;
+        this.lastUpdateTime = curr_time;
 
 		Iterator<TopicRegistration> it = allAds.iterator();
 		while (it.hasNext()) {
