@@ -41,7 +41,7 @@ public class KademliaObserver implements Control {
     private static final String PAR_STEP = "step";
     private static final String PAR_REPORT_MSG = "reportMsg";
     private static final String PAR_REPORT_REG = "reportReg";
-    private static final int numMsgTypes = 15;
+    private static final int numMsgTypes = 13;
 
     private static String logFolderName; 
     private String parameterName;
@@ -995,19 +995,23 @@ public class KademliaObserver implements Control {
                     continue;
                 int is_evil = kadProtocol.getNode().is_evil ? 1 : 0;
                 writer.write(id + "," + nodeInfo.get(id) + "," + is_evil + ",");
-                writer.write(kadProtocol.getNode().getTotalIncomingConnections().size() + ",");
-                writer.write(kadProtocol.getNode().getTotalOutgoingConnections().size() + ",");
+                //FIXME
+                writer.write("0,");
+                writer.write("0,");
+                //writer.write(kadProtocol.getNode().getTotalIncomingConnections().size() + ",");
+                //writer.write(kadProtocol.getNode().getTotalOutgoingConnections().size() + ",");
                 int numEvil = 0;
-                for(KademliaNode n : kadProtocol.getNode().getTotalIncomingConnections()) {
+                /*for(KademliaNode n : kadProtocol.getNode().getTotalIncomingConnections()) {
                     if (n.is_evil) 
                         numEvil++;
-                }
+                }*/
                 writer.write(numEvil + ",");
                 numEvil = 0;
-                for(KademliaNode n : kadProtocol.getNode().getTotalOutgoingConnections()) {
+                //FIXME
+                /*for(KademliaNode n : kadProtocol.getNode().getTotalOutgoingConnections()) {
                     if (n.is_evil)
                         numEvil++;
-                }
+                }*/
                 writer.write(numEvil + "\n");
 
                 writtenNodeIDs.add(id);
@@ -1234,11 +1238,8 @@ public class KademliaObserver implements Control {
                 Node node = Network.get(i);
                 kadProtocol = node.getKademliaProtocol();
 
-                /*if (kadProtocol.getNode().is_evil) {
-                    evil_nodes.add(kadProtocol.getNode().getId());
-                }
-                else */
-                if (kadProtocol.getNode().isEclipsed()) {
+                //FIXME: temporarily reporting everything as uneclipsed until we fix that
+                /*if (kadProtocol.getNode().isEclipsed()) {
                         eclipsed_nodes.add(kadProtocol.getNode().getId());
                         for(String t : all_topics) {
                         	if(kadProtocol.getNode().isEclipsed(t)) {
@@ -1251,7 +1252,8 @@ public class KademliaObserver implements Control {
                 }
                 else {
                     uneclipsed_nodes.add(kadProtocol.getNode().getId());
-                }
+                }*/
+                uneclipsed_nodes.add(kadProtocol.getNode().getId());
                 
             }
             writer.write(CommonState.getTime() + ",");

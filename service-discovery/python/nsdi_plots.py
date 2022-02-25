@@ -362,10 +362,19 @@ def getProtocolFromPath(path):
 def getNetworkSizeFromPath(path):
     return  int(path.split('size_')[1].strip('/'))
 
-def analyseOverhead(dirs):
+def analyseOverhead(dir):
     df_list = []
+    object_list = os.listdir(dir)
+    dirs = []
+    for obj in object_list:
+        if(os.path.isdir(obj)):
+            dirs.append(obj)
+    
     for log_dir in dirs:
-        sub_dirs = next(os.walk(log_dir))[1]
+        print("log_dir:", log_dir)
+        tmp = next(os.walk(log_dir))
+        print("tmp:", tmp)
+        sub_dirs = tmp[1]
         for subdir in sub_dirs:
             path = log_dir + '/' + subdir + '/'
             path.replace('//','/')
@@ -435,9 +444,9 @@ dirs = ['dhtnoticket', 'dhtticket', 'discv4', 'discv5']
 x_vals = ['1000', '2000', '3000', '4000', '5000']
 x_label = 'network size'
 
-analyseOverhead(dirs)
+analyseOverhead(LOGDIR)
 
 dirs = ['dhtticket', 'discv5']
-analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
+#analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
 dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
 

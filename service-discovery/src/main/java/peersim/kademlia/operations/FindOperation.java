@@ -46,10 +46,12 @@ public class FindOperation extends Operation{
 	public int getDiscovered() {
 		
 		int discovered = 0;
-		for(BigInteger nodeId : this.getNeighboursList()) {
+		//FIXME
+		//we should keep discovered list in this class already 
+		/*for(BigInteger nodeId : this.getNeighboursList()) {
 			if (Util.nodeIdtoNode(nodeId).getKademliaProtocol().getNode().getTopicList().contains(topic))discovered++;
 			
-		}
+		}*/
 		return discovered;
 	}
 	

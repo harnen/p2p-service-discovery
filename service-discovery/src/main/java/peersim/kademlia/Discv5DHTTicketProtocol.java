@@ -98,8 +98,8 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			//KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
 
-			if(!lop.getDiscovered().containsKey(r.getNode()))
-				sendHandShake(r.getNode(),r.getTopic().getTopic(),m.operationId,myPid);
+			/*if(!lop.getDiscovered().containsKey(r.getNode()))
+				sendHandShake(r.getNode(),r.getTopic().getTopic(),m.operationId,myPid);*/
 			
 			lop.addDiscovered(r.getNode(),m.src.getId());
 
@@ -158,61 +158,15 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 				//System.out.println("Writing stats");
 				KademliaObserver.register_total.add(all);
 				KademliaObserver.register_ok.add(found);
-									
-				node.setLookupResult(lop.getDiscovered(),lop.topic.getTopic());
+				//FIXME					
+				//node.setLookupResult(lop.getDiscovered(),lop.topic.getTopic());
 				return;
 			} else { // no neighbour available but exists oustanding request to wait
 				return;
 			}
 		}
 	}
-	
-	public void sendHandShake(KademliaNode dest, String t, long operationId, int myPid) {
-		
-		Message m = new Message(Message.MSG_HANDSHAKE, t);
 
-		m.timestamp = CommonState.getTime();
-		// set message operation id
-		m.operationId = operationId;
-		m.src = this.node;
-		m.dest = dest;
-
-		logger.info("Send handshake to " + dest + " for topic " + t);
-		sendMessage(m, dest.getId(), myPid);
-	
-		LookupOperation lop = (LookupOperation) operations.get(operationId);
-		lop.nrHops++;
-
-	}
-
-	private void handleHandShake(Message m, int myPid) {
-		String topic = (String) m.body;
-		//TopicRegistration r = new TopicRegistration(m.src, t);
-        Message response; 
-
-		//if(this.topicTable.register(r)) {
-		//logger.warning(topic + " registered on " + this.node.getId() + " by " + m.src.getId());
-        response = new Message(Message.MSG_HANDSHAKE_RESPONSE, activeTopics.contains(topic));
-        response.ackId = m.id;
-        response.operationId = m.operationId;
-        response.dest = m.src;
-        response.src = this.node;
-	    assert m.src != null;
-    	logger.info(" responds with HANDSHAKE_RESPONSE");
-        sendMessage(response, m.src.getId(), myPid);
-		//}
-
-		//handleFind(m, myPid, Util.logDistance(t.getTopicID(), this.node.getId()));
-	}
-	
-	
-	private void handleHandShakeResponse(Message m, int myPid) {
-		
-
-    	logger.info("HANDSHAKE_RESPONSE from "+m.src.getId()+" has topic ");
-
-
-	}
 	
 	private void handleInitTopicLookup(Message m, int myPid) {
 		KademliaObserver.lookup_total.add(1);
@@ -824,16 +778,6 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		}
 
 		switch (((SimpleEvent) event).getType()) {
-		
-		case Message.MSG_HANDSHAKE:
-			m = (Message) event;
-			handleHandShake(m,myPid);
-			break;
-			
-		case Message.MSG_HANDSHAKE_RESPONSE:
-			m = (Message) event;
-			handleHandShakeResponse(m,myPid);
-			break;
 
 		case Message.MSG_TOPIC_QUERY_REPLY:
 			m = (Message) event;
