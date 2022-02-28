@@ -312,14 +312,21 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 	protected void handleRegister(Message m, int myPid) {
 		Ticket ticket = (Ticket) m.body;
 		long curr_time = CommonState.getTime();
-		boolean add_event = ((Discv5GlobalTopicTable)this.topicTable).register_ticket(ticket, m, curr_time);
+		//boolean add_event = ((Discv5GlobalTopicTable)this.topicTable).register_ticket(ticket, m, curr_time);
+
+        ((Discv5GlobalTopicTable) this.topicTable).makeRegisterDecisionForSingleTicket(ticket, curr_time);
+		Message response = new Message(Message.MSG_REGISTER_RESPONSE, ticket);
+		response.ackId = m.id;
+		response.operationId = m.operationId;
+		sendMessage(response, ticket.getSrc().getId(), myPid);
 
 		// Setup a timeout event for the registration decision
+        /*
 		if (add_event) {
 			Timeout timeout = new Timeout(ticket.getTopic());
 			EDSimulator.add(KademliaCommonConfig.ONE_UNIT_OF_TIME, timeout, Util.nodeIdtoNode(this.node.getId()),
 					myPid);
-		}
+		}*/
 		// logger.warning("Slot time "+ CommonState.getTime()+"
 		// "+(CommonState.getTime()-slotTime));
 		/*
@@ -563,6 +570,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		}
 
 		if(m.src.is_evil)lop.increaseMaliciousQueries();
+        // FIXME why send handshake to nodes that are returned from topic query?
 		for (TopicRegistration r : registrations) {
 			
 			//if(!lop.getDiscovered().containsKey(r.getNode()))
@@ -593,8 +601,10 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		while ((lop.available_requests > 0)) { // I can send a new find request
 			// get an available neighbour
 			//System.out.println("Found "+lop.finished+" "+lop.available_requests);
+
 			if (lop.available_requests < KademliaCommonConfig.ALPHA) {
 				return;
+
 			} else if ((lop.finished && lop.available_requests == KademliaCommonConfig.ALPHA)
 					|| KademliaCommonConfig.MAX_SEARCH_HOPS == lop.getUsedCount()) { // no new neighbour and no outstanding
 																				// requests
@@ -609,6 +619,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 				KademliaObserver.register_ok.add(found);
 				//FIXME
 				//node.setLookupResult(lop.getDiscovered(),lop.topic.getTopic());
+
 				if (printSearchTable)
 					searchTables.get(lop.topic.getTopicID()).print();
 
@@ -700,6 +711,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		Topic t = (Topic) m.body;
 
 		logger.warning("Send init lookup for topic " + this.node.getId() + " " + t.getTopic());
+        // FIXME why TTNBUCKETS not STNBUCKETS ?
 		SearchTable rou = new SearchTable(KademliaCommonConfig.TTNBUCKETS, KademliaCommonConfig.SEARCH_BUCKET_SIZE,
 				KademliaCommonConfig.SEARCH_TABLE_REPLACEMENTS, this, t, myPid,
 				KademliaCommonConfig.SEARCH_REFRESH == 1);
@@ -865,7 +877,6 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		}
 
 		switch (((SimpleEvent) event).getType()) {
-		
 		case Message.MSG_TOPIC_QUERY_REPLY:
 			m = (Message) event;
 			sentMsg.remove(m.ackId);
@@ -944,6 +955,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 						+ timeout.node);
 				// remove form sentMsg
 				sentMsg.remove(timeout.msgID);
+                // FIXME handleTimeout seems to be re-delivering messages that cause repeated delivery failures
 				handleTimeout((Timeout) event, myPid);
 			}
 			break;
