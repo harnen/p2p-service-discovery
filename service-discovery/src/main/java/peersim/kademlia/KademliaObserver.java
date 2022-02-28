@@ -857,34 +857,32 @@ public class KademliaObserver implements Control {
         if(!(kadProtocol instanceof Discv5Protocol))return;
 
         try {
-            String filename = this.logFolderName + "/" + "register_overhead.csv";
+            String filename = KademliaObserver.logFolderName + "/" + "register_overhead.csv";
             FileWriter writer = new FileWriter(filename);
-            if(all_topics == null) return;
-
-            String title = "";
-            for (String topic: all_topics) {
-                    title += topic + ",";
+            if(all_topics == null) {
+            	writer.close();
+            	return;
             }
-            title += "overall\n";
-            writer.write(title);
-            
+            //write the header
+            String header = "topic, registerMessages, registrations, ratio\n";
+            writer.write(header);
+
             int totalMsgs = 0;
             int totalnoReg = 0;
             for (String topic: all_topics) {
                 int noMsg = registerOverhead.get(topic)!=null?registerOverhead.get(topic):0;
                 int noReg = numberOfRegistrations.get(topic)!=null?numberOfRegistrations.get(topic):0;
+                double ratio = ((double) noMsg) / noReg;
+                writer.write(topic +", " + noMsg +", " + noReg +", " + ratio + "\n");
+                //track msgs/regs for all topics
                 totalMsgs += noMsg;
                 totalnoReg += noReg;
-                double overhead = ((double) noMsg) / noReg;
-                writer.write(overhead + ",");
             }
-            writer.write("" + ((double) totalMsgs)/totalnoReg);
-            writer.write("\n");
+            writer.write("all" +", " + totalMsgs +", " + totalnoReg +", " + ((double) totalMsgs)/totalnoReg + "\n");
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
     }
 
     
