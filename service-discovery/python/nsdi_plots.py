@@ -393,9 +393,9 @@ def analyseOverhead(dir):
                     look_cols = ['MSG_FIND', 'MSG_RESPONSE', 'MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY']
                     df['lookup'] = df[look_cols].sum(axis=1)
                 else:
-                    reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE']
+                    reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE', 'MSG_FIND', 'MSG_RESPONSE']
                     df['registration'] = df[reg_cols].sum(axis=1)
-                    look_cols = ['MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY', 'MSG_FIND', 'MSG_RESPONSE']
+                    look_cols = ['MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY']
                     df['lookup'] = df[look_cols].sum(axis=1)      
             except FileNotFoundError:
                 print("Error: ", path, "msg_received.csv not found")
