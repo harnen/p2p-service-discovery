@@ -3,6 +3,8 @@ import csv
 import random as rand
 
 def generate_regular(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0, output_filename = None):
+    rand.seed(seed)
+    random.seed(seed)
     if(output_filename == None):
         output_filename = './workloads/regular_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
     #get ips/ids from ethereum repo
@@ -34,6 +36,8 @@ def generate_regular(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0, 
     print("Generated regular workload in", str(output_filename))
 
 def generate_impatient(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0, output_filename = None):
+    rand.seed(seed)
+    random.seed(seed)
     if(output_filename == None):
         output_filename = './workloads/impatient_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
     #get ips/ids from ethereum repo
@@ -70,6 +74,8 @@ def generate_impatient(size = 100, zipf_distribution = 2, rate = 1.0, seed = 0.0
     print("Generated regular workload in", str(output_filename))
 
 def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = 't11', attacker_ip_num = 3, attacker_id_num=10, rate_normal = 1.0, rate_attack = 10.0, seed = 0.0, output_filename = None):
+    rand.seed(seed)
+    random.seed(seed)
     if(output_filename == None):
         output_filename = './workloads/attack_topic_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
     #get ips/ids from ethereum repo
@@ -89,7 +95,6 @@ def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = '
     print("attacker ips:", attacker_ips)
     print("attacker ids:", attacker_ids)
 
-    rand.seed(seed)
     t_next_normal_req = rand.expovariate(rate_normal)  # time of next normal request
     t_next_attack_req = rand.expovariate(rate_attack) # time of next attack request
     time = 0.0
@@ -136,6 +141,8 @@ def generate_attack_topic(size = 100, zipf_distribution = 2, topic_to_attack = '
 
 
 def generate_spam_topic(size = 100, zipf_distribution = 2, attacker_ip_num = 3, attacker_id_num=10, rate_normal = 1.0, rate_attack = 10.0, seed = 0.0, output_filename = None):
+    rand.seed(seed)
+    random.seed(seed)
     if(output_filename == None):
         output_filename = './workloads/spam_topic_size' + str(size) + '_dist' + str(zipf_distribution) + '.csv'
     #get ips/ids from ethereum repo
@@ -155,7 +162,6 @@ def generate_spam_topic(size = 100, zipf_distribution = 2, attacker_ip_num = 3, 
     print("attacker ips:", attacker_ips)
     print("attacker ids:", attacker_ids)
     
-    rand.seed(seed)
     t_next_normal_req = rand.expovariate(rate_normal)  # time of next normal request
     t_next_attack_req = rand.expovariate(rate_attack) # time of next attack request
     time = 0.0
