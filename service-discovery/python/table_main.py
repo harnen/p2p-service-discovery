@@ -129,7 +129,7 @@ def run(stats):
         table.run(runtime)
 
 def run_single():
-    filename = generate_input_file('spam')
+    filename = generate_input_file('spam', seed=1)
     table = DiversityTable(capacity, ad_lifetime, occupancy_power = occupancy_power, ip_id_power = ip_id_power, topic_power = topic_power, base_multiplier = base_multiplier)
     table.load(filename)
     table.display(runtime - 1)
@@ -137,19 +137,19 @@ def run_single():
     plt.show()
 
 counter = 0
-def generate_input_file(attack):
+def generate_input_file(attack, seed):
     global honest_size, counter
     filename = 'input' + str(counter) + '.csv'
     if(attack == 'none'):
-        generate_regular(size = honest_size, output_filename = filename)
+        generate_regular(size = honest_size, seed=seed, output_filename = filename)
     elif(attack == 'impatient'):
-        generate_impatient(size = honest_size, output_filename = filename)
+        generate_impatient(size = honest_size, seed=seed, output_filename = filename)
     elif(attack == 'spam'):
-        generate_spam_topic(size = honest_size + malicious_size, attacker_ip_num = attacker_ip_id_num, attacker_id_num = attacker_ip_id_num, rate_normal = 1.0, rate_attack = malicious_size/honest_size, output_filename = filename)
+        generate_spam_topic(size = honest_size + malicious_size, attacker_ip_num = attacker_ip_id_num, attacker_id_num = attacker_ip_id_num, rate_normal = 1.0, rate_attack = malicious_size/honest_size, seed=seed, output_filename = filename)
     elif(attack == 'topic_popular'):
-        generate_attack_topic(size = honest_size + malicious_size, topic_to_attack = 't1', attacker_ip_num = attacker_ip_id_num, attacker_id_num = attacker_ip_id_num, rate_normal = 1.0, rate_attack = malicious_size/honest_size, output_filename = filename)
+        generate_attack_topic(size = honest_size + malicious_size, topic_to_attack = 't1', attacker_ip_num = attacker_ip_id_num, attacker_id_num = attacker_ip_id_num, rate_normal = 1.0, rate_attack = malicious_size/honest_size, seed=seed, output_filename = filename)
     elif(attack == 'topic_unpopular'):
-        generate_attack_topic(size = honest_size + malicious_size, topic_to_attack = 't12', attacker_ip_num = attacker_ip_id_num, attacker_id_num = attacker_ip_id_num, rate_normal = 1.0, rate_attack = malicious_size/honest_size, output_filename = filename)
+        generate_attack_topic(size = honest_size + malicious_size, topic_to_attack = 't12', attacker_ip_num = attacker_ip_id_num, attacker_id_num = attacker_ip_id_num, rate_normal = 1.0, rate_attack = malicious_size/honest_size, seed=seed, output_filename = filename)
     else:
         print("Unknown attack", attack)
         quit(-1)

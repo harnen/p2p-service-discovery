@@ -7,13 +7,14 @@ import abc
 import numpy as np
 from scipy.stats import entropy
 import copy
-from random import randint
+import random as rand
 import simpy
 from copy import deepcopy
 from Tree import *
 
 class Table(metaclass=abc.ABCMeta):
-    def __init__(self, capacity, ad_lifetime, interval=1):
+    def __init__(self, capacity, ad_lifetime, interval=1, seed=1):
+        rand.seed(seed)
         self.capacity = capacity
         self.ad_lifetime = ad_lifetime
         self.interval = interval
@@ -332,7 +333,7 @@ class Table(metaclass=abc.ABCMeta):
             #make the registrant re-register when its add expire
             # add a random time between 0 and 99 milliseconds
             #just to make the simulation more realistic
-            rand_time = randint(0, 99)
+            rand_time = rand.randint(0, 99)
             new_req = copy.deepcopy(req)
             del new_req['req_id']
             new_req['expire'] = 0
@@ -360,7 +361,8 @@ class SimpleTable(Table):
     
     
 class DiversityTable(Table):
-    def __init__(self, capacity, ad_lifetime, amplify = 1, occupancy_power = 10, ip_id_power = 0.1, topic_power = 10, base_multiplier = 10):
+    def __init__(self, capacity, ad_lifetime, amplify = 1, occupancy_power = 10, ip_id_power = 0.1, topic_power = 10, base_multiplier = 10, seed=1):
+        rand.seed(seed)
         super().__init__(capacity, ad_lifetime)
         #self.tree = Tree()
         self.ip_modifiers = {}
@@ -392,14 +394,21 @@ class DiversityTable(Table):
     def get_ip_modifier(self, ip, table):
         #print("Get IP Modifier", self.ip_counter)
         if(ip in self.ip_counter):
-            modifier = self.tree.tryAdd(ip)
-            bound = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
+            modifier, bound = self.tree.tryAdd(ip, self.env.now)
+
+            # ground truth for bound
+            boundGT = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("ip:", ip, "wtime:", wtime, "bound:", bound)
             if(bound < wtime):
-                print("In if")
+                self.tree.updateBound(ip, wtime, self.env.now) 
+
+            if (boundGT < wtime):
                 self.ip_counter[ip]['wtime'] = wtime
                 self.ip_counter[ip]['timestamp'] = self.env.now
+
+            assert bound >= boundGT, 'Trie-based lower-bound must NOT be smaller than ground truth value'
+            #bound = boundGT 
             return max(wtime, bound)
         else:
             return 0
@@ -574,7 +583,7 @@ class DiversityTableRandom(DiversityTable):
                 modifier = math.pow((counter/(len(table)+1)), self.ip_id_power)
             bound = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
             wtime = modifier * self.get_basetime(table)
-            r = randint(0, int(wtime/2)) - wtime/4
+            r = rand.randint(0, int(wtime/2)) - wtime/4
             wtime = wtime + r
             print("ip:", ip, "wtime:", wtime, "bound:", bound)
             if(bound < wtime):
@@ -594,7 +603,7 @@ class DiversityTableRandom(DiversityTable):
                 modifier = math.pow((counter/(len(table)+1)), self.ip_id_power)
             bound = max(0, self.id_counter[iD]['wtime'] - (self.env.now - self.id_counter[iD]['timestamp']))
             wtime = modifier * self.get_basetime(table)
-            r = randint(0, int(wtime/2)) - wtime/4
+            r = rand.randint(0, int(wtime/2)) - wtime/4
             wtime = wtime + r
             print("id:", iD, "wtime:", wtime, "bound:", bound)
             if(bound < wtime):
@@ -613,7 +622,7 @@ class DiversityTableRandom(DiversityTable):
                 modifier = math.pow((counter/(len(table)+1)), self.topic_power)
             bound = max(0, self.topic_counter[topic]['wtime'] - (self.env.now - self.topic_counter[topic]['timestamp']))
             wtime = modifier * self.get_basetime(table)
-            r = randint(0, int(wtime/2)) - wtime/4
+            r = rand.randint(0, int(wtime/2)) - wtime/4
             wtime = wtime + r
             print("t:", topic, "wtime:", wtime, "bound:", bound)
             if(bound < wtime):
