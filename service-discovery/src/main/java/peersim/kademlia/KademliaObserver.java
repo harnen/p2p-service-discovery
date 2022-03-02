@@ -257,7 +257,6 @@ public class KademliaObserver implements Control {
              	set.put(registrant, reg);
                 registeredTopics.put(topic,set);
                 //System.out.println("addTopicRegistration "+topic+" "+registeredTopics.get(topic).size());
-
          }
     	
 

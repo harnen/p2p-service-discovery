@@ -11,7 +11,10 @@ package peersim.kademlia;
 
 import java.math.BigInteger;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.TreeMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 //logging
@@ -285,19 +288,22 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 	 *            Message
 	 * @param myPid
 	 *            the sender Pid
-	 */
+	 */        
+
 	protected void handleFind(Message m, int myPid, int dist) {
 		// get the ALPHA closest node to destNode
-		BigInteger[] neighbours = this.routingTable.getNeighbours(dist);
-		//System.out.println("find node received at "+this.node.getId()+" distance "+(int) m.body); 
+		//need linked list to support removal later on
+		List<BigInteger> neighboursList = new LinkedList(Arrays.asList(this.routingTable.getNeighbours(dist)));
 
-		/*System.out.print("Including neigbours: [");
-		for(BigInteger n : neighbours){
-			System.out.println(", " + n);
+		//remove the sender of the message from the results
+		neighboursList.remove(m.src.getId());
+
+		//convert the list into a simple array 
+		BigInteger[] neighbours = new BigInteger[neighboursList.size()];
+		for(int i = 0; i< neighboursList.size(); i++) {
+			neighbours[i] = neighboursList.get(i);
 		}
-		System.out.println("]");*/
-
-
+		
 		// create a response message containing the neighbours (with the same id of the request)
 		Message response = new Message(Message.MSG_RESPONSE, neighbours);
 		response.operationId = m.operationId;

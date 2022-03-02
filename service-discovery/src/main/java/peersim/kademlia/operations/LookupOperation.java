@@ -23,7 +23,7 @@ public class LookupOperation extends Operation {
         this.topic = t;
         discovered = new HashMap<KademliaNode,BigInteger>();
         malQueried=0;
-        tried = new HashSet();
+        tried = new HashSet<BigInteger>();
 
     }
     

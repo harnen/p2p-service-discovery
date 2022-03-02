@@ -27,11 +27,6 @@ public class Discv5TrafficGenerator implements Control {
 
 	private boolean first = true;
 
-	private int topicCounter = 0;
-	
-	private int counter = 0;
-	private int limit = 1;
-
 	/**
 	 * MSPastry Protocol ID to act
 	 */
@@ -55,9 +50,8 @@ public class Discv5TrafficGenerator implements Control {
 	 * 
 	 * @return Message
 	 */
-    private Message generateTopicLookupMessage() {
-		Topic t = new Topic("t" + Integer.toString(CommonState.r.nextInt(this.topicCounter)));
-		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, t);
+    private Message generateTopicLookupMessage(Topic topic) {
+		Message m = new Message(Message.MSG_INIT_TOPIC_LOOKUP, topic);
 		m.timestamp = CommonState.getTime();
 		
 		return m;
@@ -69,8 +63,7 @@ public class Discv5TrafficGenerator implements Control {
 	 * 
 	 * @return Message
 	 */
-	private Message generateRegisterMessage() {
-		Topic topic = new Topic("t" + Integer.toString(1));
+	private Message generateRegisterMessage(Topic topic) {
 		Message m = Message.makeRegister(topic);
 		m.timestamp = CommonState.getTime();
 		//System.out.println("Topic id "+topic.topicID);
@@ -85,20 +78,32 @@ public class Discv5TrafficGenerator implements Control {
 	 * @return boolean
 	 */
 	public boolean execute() {
-		if(counter >= limit){
+		if(!first){
 			return false;
 		}
-		counter++;
+		first = false;
 		//first = false;
 		System.out.println("Discv5 Traffic generator called");
-
-		Node start;
+		String topicString = "t" + Integer.toString(1);
+		Topic topic = new Topic(topicString);
+		Node registrant;
 		do {
-			start = Network.get(CommonState.r.nextInt(Network.size()));
-		} while ((start == null) || (!start.isUp()));
+			registrant = Network.get(CommonState.r.nextInt(Network.size()));
+		} while ((registrant == null) || (!registrant.isUp()));
+		
+		Node searcher;
+		do {
+			searcher = Network.get(CommonState.r.nextInt(Network.size()));
+		} while ((searcher == null) || (!searcher.isUp()));
 
 		// send register message
-		EDSimulator.add(0, generateRegisterMessage(), start, pid);
+		
+		KademliaProtocol registrantProtocol = (KademliaProtocol)registrant.getKademliaProtocol();
+		registrantProtocol.getNode().setTopic(topicString, registrant);
+		EDSimulator.add(0, generateRegisterMessage(topic), registrant, pid);
+		
+		//send lookup message after some time
+		EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME, generateTopicLookupMessage(topic), registrant, pid);
 		
 		// send topic lookup message
         /*do {

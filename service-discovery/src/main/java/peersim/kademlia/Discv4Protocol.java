@@ -130,106 +130,6 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		return m;
 	}
 	
-	
-	/**
-	 * Perform the required operation upon receiving a message in response to a ROUTE message.<br>
-	 * Update the find operation record with the closest set of neighbour received. Then, send as many ROUTE request I can
-	 * (according to the ALPHA parameter).<br>
-	 * If no closest neighbour available and no outstanding messages stop the find operation.
-	 * 
-	 * @param m
-	 *            Message
-	 * @param myPid
-	 *            the sender Pid
-	 */
-	/*protected void handleResponse(Message m, int myPid) {
-		
-		// add message source to my routing table
-
-		Operation op = (Operation)	 this.operations.get(m.operationId);
-		if (op == null) {
-			return;
-		}
-
-		
-		
-		BigInteger[] neighbours = (BigInteger[]) m.body;
-		op.elaborateResponse(neighbours);
-		for(BigInteger neighbour: neighbours)
-			routingTable.addNeighbour(neighbour);
-		
-		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
-			logger.warning("Found node " + op.destNode);
-			op.finished = true;
-			operations.remove(op.operationId);
-			
-			KademliaObserver.find_ok.add(1);
-			return;
-		}
-		
-		op.increaseReturned(m.src.getId());
-		if(!op.finished)op.increaseUsed(m.src.getId());
-		
-
-		if(registrationMap.get(op.operationId)!=null) {
-			
-			HashMap<KademliaNode,BigInteger> results = new HashMap();
-			for(BigInteger id : neighbours)
-				results.put(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
-			
-			RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(op.operationId));
-			node.setLookupResult(results,rop.getTopic().getTopic());
-		}
-		
-		logger.warning("Discv4 handle response "+op.available_requests);
-
-
-		while ((op.available_requests > 0)) { // I can send a new find request
-			BigInteger neighbour = op.getNeighbour();
-
-			if (neighbour != null ) {
-				if(!op.finished) {
-					// send a new request only if we didn't find the node already
-					Message request = null;
-					if(op.type == Message.MSG_FIND) {
-						request = new Message(Message.MSG_FIND);
-						//request.body = Util.prefixLen(op.destNode, neighbour);
-						//System.out.println("Request body distance "+Util.prefixLen(op.destNode, neighbour)+" "+Util.logDistance(op.destNode, neighbour));
-						request.body = Util.logDistance(op.destNode, neighbour);
-					}else if(op.type == Message.MSG_REGISTER) {
-						request = new Message(Message.MSG_REGISTER);
-						request.body = op.body;
-					}else if(op.type == Message.MSG_TICKET_REQUEST) {
-						request = new Message(Message.MSG_TICKET_REQUEST);
-						request.body = op.body;
-					}
-							
-					if(request != null) {
-						op.nrHops++;
-						request.operationId = m.operationId;
-						request.src = this.node;
-						request.dest = Util.nodeIdtoNode(neighbour).getKademliaProtocol().getNode();//new KademliaNode(neighbour);
-						sendMessage(request, neighbour, myPid);
-					}
-				}
-							
-			} else if (op.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
-				operations.remove(op.operationId);
-
-				logger.warning("Finished lookup node " + op.getUsedCount());
-
-				logger.warning("Registration operation id "+registrationMap.get(op.operationId)+" "+op.operationId);
-
-		
-			
-				return;
-
-			} else { // no neighbour available but exists outstanding request to wait for
-				return;
-			}
-		}
-	}*/
-	
 	/**
 	 * Perform the required operation upon receiving a message in response to a ROUTE message.<br>
 	 * Update the find operation record with the closest set of neighbour received. Then, send as many ROUTE request I can
@@ -242,15 +142,11 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 	 *            the sender Pid
 	 */
 	protected void handleResponse(Message m, int myPid) {
-		
-		// add message source to my routing table
-
-
 		Operation op = (Operation)	 this.operations.get(m.operationId);
 		if (op == null) {
 			return;
 		}
-		
+		// add message source to my routing table		
 		BigInteger[] neighbours = (BigInteger[]) m.body;
 		op.elaborateResponse(neighbours);
 		for(BigInteger neighbour: neighbours)
@@ -260,49 +156,61 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		if(registrationMap.get(op.operationId)!=null) {
 			LookupOperation lop = (LookupOperation) operations.get(registrationMap.get(op.operationId));
 			lop.increaseReturned(m.src.getId());
+			String topicString = lop.getTopic().getTopic();
+			
 			if(!lop.finished)lop.increaseUsed(m.src.getId());
-			for (BigInteger id : neighbours) {
-				/*if(Util.nodeIdtoNode(id).getKademliaProtocol().getNode().hasTopic(lop.getTopic().getTopic())){
-					lop.addDiscovered(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
-				}*/
-				KademliaNode node = Util.nodeIdtoNode(id).getKademliaProtocol().getNode();
-				if(!lop.tried(id)) {
-					//sendHandShake(id,lop.getTopic().getTopic(),registrationMap.get(op.operationId),myPid);
-					lop.setTried(id);
-				}
-				//FIXME why there's this if - removed for now
-				//if(node.hasTopic(lop.getTopic().getTopic())) {
-					lop.addDiscovered(node,m.src.getId());
-					KademliaObserver.addDiscovered(lop.topic, m.src.getId(), id);
-				//}
-
-			}
-			discovered = lop.discoveredCount();
-		}
-		
-
-		
-		if(!op.finished && (Arrays.asList(neighbours).contains(op.destNode)||(KademliaCommonConfig.DISCV4_STOP==1&&discovered>=KademliaCommonConfig.TOPIC_PEER_LIMIT))){
-			logger.warning("Found node " + op.destNode);
-			op.finished = true;
-
-			KademliaObserver.find_ok.add(1);
 			
-			if(registrationMap.get(op.operationId)!=null) {
+			for (BigInteger returnedPeerId : neighbours) {
+				//peers shouldn't return me in their response
+				assert(!returnedPeerId.equals(this.node.getId()));
 				
-				LookupOperation lop = (LookupOperation) operations.get(registrationMap.get(op.operationId));
+				KademliaNode returnedPeer = Util.nodeIdtoNode(returnedPeerId).getKademliaProtocol().getNode();
+				//don't do anything if we already checked the node
+				if(!lop.tried(returnedPeerId)) {					
+					//simulate sending a lookup 
+					Message request = new Message(Message.MSG_TOPIC_QUERY);
+					request.operationId = lop.operationId;
+					request.src = this.node;
+					request.body = lop.body;
+					request.dest =  returnedPeer;
+					KademliaObserver.reportMsg(request, false);
 
-				KademliaObserver.reportOperation(lop);
+					//simulate receiving a response
+					Message reply = new Message(Message.MSG_TOPIC_QUERY_REPLY);
+					reply.src = returnedPeer;
+					reply.body = lop.body;
+					reply.dest = this.node;
+					KademliaObserver.reportMsg(reply, false);
+					
+					if(returnedPeer.hasTopic(topicString)){
+						lop.addDiscovered(returnedPeer, returnedPeerId);
+						KademliaObserver.addDiscovered(lop.topic, m.src.getId(), returnedPeerId);
+					}
+					
+					//make sure we don't ask the same node again
+					lop.setTried(returnedPeerId);
+				}
+				discovered = lop.discoveredCount();	
 
-				//node.setLookupResult(lop.getDiscovered(),lop.getTopic().getTopic());
-				//logger.warning("Handle response topic "+lop.getTopic().getTopic());
+				if((!op.finished && (Arrays.asList(neighbours).contains(op.destNode)) ||
+						//end if we discovered enough peers
+						((KademliaCommonConfig.DISCV4_STOP==1 && discovered>=KademliaCommonConfig.TOPIC_PEER_LIMIT)))){
+					logger.warning("Found node " + op.destNode);
+					op.finished = true;
+
+					KademliaObserver.find_ok.add(1);
+					
+					if(registrationMap.get(op.operationId)!=null) {
+						KademliaObserver.reportOperation(lop);
+					}
+					return;
+				}
 			}
 			
-			return;
 		}
-		
+	
 		op.increaseReturned(m.src.getId());
-		if(!op.finished)op.increaseUsed(m.src.getId());
+		if(!op.finished) op.increaseUsed(m.src.getId());
 
 		while ((op.available_requests > 0)) { // I can send a new find request
 			BigInteger neighbour = op.getNeighbour();
@@ -381,9 +289,8 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		lop.nrHops+=3;
 		operations.put(lop.operationId, lop);
 		
-		// send message
+		// generate a FIND message towards a random ID
 		Message mFind = generateFindNodeMessage();
-		//mFind.type = Message.MSG_INIT_FIND;
 		long op = handleInitFind(mFind,myPid);
 		
 
@@ -395,25 +302,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 		
 	}
 	
-	
-	
-	private void handleHandShakeResponse(Message m, int myPid) {
-		
-		
-    	logger.info("HANDSHAKE_RESPONSE from "+m.src.getId()+" has topic ");
 
-		/*boolean hasTopic = (boolean)m.body;
-		LookupOperation lop = (LookupOperation) operations.get(m.operationId);
-		//lop.nrHops++;
-		if(!hasTopic)lop.removeDiscovered(m.src);
-		if(hasTopic)KademliaObserver.addDiscovered(lop.topic, m.src.getId(), m.src.getId());
-		
-		lop.increaseReturned(m.src.getId());
-		if(!lop.finished)lop.increaseUsed(m.src.getId());*/
-
-	}
-	
-	
 	/**
 	 * set the current NodeId
 	 * 

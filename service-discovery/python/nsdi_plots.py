@@ -388,9 +388,9 @@ def analyseOverhead(dir):
                 df_list.append(df)
                 if(protocol == 'discv4'):
                     #should be all 0, but plotting for sanity check
-                    reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE', 'MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY']
+                    reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE']
                     df['registration'] = df[reg_cols].sum(axis=1)
-                    look_cols = ['MSG_FIND', 'MSG_RESPONSE']
+                    look_cols = ['MSG_FIND', 'MSG_RESPONSE', 'MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY']
                     df['lookup'] = df[look_cols].sum(axis=1)
                 else:
                     reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE']
@@ -403,7 +403,7 @@ def analyseOverhead(dir):
     #merge all the dfs
     df = pd.concat(df_list, axis=0, ignore_index=True)
     print(df)
-    df.to_csv('pd.csv')
+    df.to_csv('pds.csv')
     for graph in ['registration', 'lookup']:
         fig, ax = plt.subplots()
         for protocol, group in df.groupby('protocol'):

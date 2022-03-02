@@ -3,6 +3,7 @@ package peersim.kademlia;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import peersim.core.CommonState;
@@ -25,6 +26,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
     boolean requested=false;
 
     public boolean is_evil=false;
+    //all the topics the node registers for
+    HashSet<String> myTopics = new HashSet<String>();
     
        
     
@@ -128,11 +131,12 @@ public class KademliaNode implements Comparable<KademliaNode>{
     public void setTopic(String t, Node n) {
     	//System.out.println("Set topic "+t+" "+id);
     	this.n = n;
-    	//this.topicList.
-    	//this.topicList.add(t);
-    	
-    	//System.out.println(this +" Has topic "+this.id+" "+t+" "+connections.keySet().contains(t)+" "+this.connections.size());
+    	this.myTopics.add(t);
     }
+    
+	public boolean hasTopic(String topic) {
+		return this.myTopics.contains(topic);
+	}
     
     /*public void setTopicDiscv4(String t, Node n) {
     	this.n = n;
@@ -153,6 +157,8 @@ public class KademliaNode implements Comparable<KademliaNode>{
     	for(String topic : t)
     		setTopic(topic,n);
     }
+
+
     
 
 
