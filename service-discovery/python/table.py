@@ -255,6 +255,18 @@ class Table(metaclass=abc.ABCMeta):
     def get_waiting_time(self, req):
         pass
 
+    def remove_lower_bound(self, delay, id=None, ip = None, topic = None):
+        yield self.env.timeout(delay)
+
+        #if 'counter' > 0 it means that in the meantime we added a new entry 
+        # with this ID to the table and have to cancel the lower bound removal
+        if((id != None) and (self.id_counter[id]['counter'] == 0)):
+            del self.id_counter[id]
+
+        #ditto
+        if((topic != None) and (self.id_counter[topic]['counter'] == 0)):
+            del self.topic_counter[topic]
+
     #remove an add when it expires
     def remove_ad(self, ad_id, delay):
         yield self.env.timeout(delay)
@@ -263,10 +275,24 @@ class Table(metaclass=abc.ABCMeta):
 
         score = self.tree.remove(req['ip'])
         assert(score >= 0)
-        self.id_counter[req['id']]['counter'] -= 1
+
+        id = req['id']
+        self.id_counter[id]['counter'] -= 1
+        #schedule lowe bound removal when we remove the last entry
+        if(self.id_counter['counter'] == 0):
+            #wait with the removal to make it safe
+            removal_time = max(0, self.id_counter[id]['wtime'] - (self.env.now - self.id_counter[id]['timestamp']))
+            self.env.process(self.remove_lower_bound(removal_time, id=id))
         assert(self.id_counter[req['id']]['counter'] >= 0)
-        self.topic_counter[req['topic']]['counter'] -= 1
-        assert(self.topic_counter[req['topic']]['counter'] >= 0)        
+
+        topic = req['topic']
+        self.topic_counter[topic]['counter'] -= 1
+        #schedule lowe bound removal when we remove the last entry
+        if(self.topic_counter['counter'] == 0):
+            #wait with the removal to make it safe
+            removal_time = max(0, self.topic_counter[topic]['wtime'] - (self.env.now - self.topic_counter[topic]['timestamp']))
+            self.env.process(self.remove_lower_bound(removal_time, topic=topic))
+        assert(self.topic_counter[topic]['counter'] >= 0)        
         
         self.report_occupancy()
 
@@ -499,8 +525,8 @@ class DiversityTable(Table):
             #print("self.occupancy_power:", self.occupancy_power, "self.base_multiplier:", self.base_multiplier, "self.ad_lifetime:", self.ad_lifetime)
         #needed_time = base_waiting_time
         return min(missing_time, self.ad_lifetime)
-    
-    
+
+   
 
     def report_modifiers(self, delay):
         yield self.env.timeout(delay)

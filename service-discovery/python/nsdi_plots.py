@@ -362,8 +362,54 @@ def getProtocolFromPath(path):
 def getNetworkSizeFromPath(path):
     return  int(path.split('size_')[1].strip('/'))
 
+def analyseRegistrations(dir):
+    df_list = []
+    object_list = os.listdir(dir)
+    dirs = []
+    for obj in object_list:
+        if(os.path.isdir(obj)):
+            dirs.append(obj)
+    
+    for log_dir in dirs:
+        print("log_dir:", log_dir)
+        tmp = next(os.walk(log_dir))
+        print("tmp:", tmp)
+        sub_dirs = tmp[1]
+        for subdir in sub_dirs:
+            path = log_dir + '/' + subdir + '/'
+            path.replace('//','/')
+            print('Reading folder ', path)
+            try: 
+                df = pd.read_csv(path + 'register_overhead.csv')
+                protocol = getProtocolFromPath(path)
+                size = getNetworkSizeFromPath(path)
+                    
+                df['protocol'] = protocol
+                df['size'] = size
+
+                #extract the total number of registrations
+                #the file doesn't exist for discv4
+                if(protocol == 'discv4'):
+                    total_regs = 0
+                else:
+                    df_regs = pd.read_csv(path + '')
+                    #this is dirty, but for some reason I couldn't make
+                    #df_regs['registration'].sum() work
+                    total_regs[protocol + str(size)] = df_regs.sum()[2]/2
+                    df['num_regs'] = total_regs
+
+            except FileNotFoundError:
+                print("Error: ", path, "msg_received.csv not found")
+                continue
+
+
+
 def analyseOverhead(dir):
     df_list = []
+    reg_count = {}
+    reg_count['protocol'] = []
+    reg_count['size'] = []
+    reg_count['registrations'] = []
     object_list = os.listdir(dir)
     dirs = []
     for obj in object_list:
@@ -383,38 +429,71 @@ def analyseOverhead(dir):
                 df = pd.read_csv(path + 'msg_received.csv')
                 protocol = getProtocolFromPath(path)
                 size = getNetworkSizeFromPath(path)
+                    
                 df['protocol'] = protocol
                 df['size'] = size
-                df_list.append(df)
+
                 if(protocol == 'discv4'):
                     #should be all 0, but plotting for sanity check
                     reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE']
                     df['registration'] = df[reg_cols].sum(axis=1)
                     look_cols = ['MSG_FIND', 'MSG_RESPONSE', 'MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY']
-                    df['lookup'] = df[look_cols].sum(axis=1)
+                    df['lookup'] = df[look_cols].sum(axis=1)             
+                    #discv4 doesn't place any registrations
+                    total_regs = 0
                 else:
                     reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE', 'MSG_FIND', 'MSG_RESPONSE']
                     df['registration'] = df[reg_cols].sum(axis=1)
                     look_cols = ['MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY']
-                    df['lookup'] = df[look_cols].sum(axis=1)      
+                    df['lookup'] = df[look_cols].sum(axis=1)  
+
+                    #read registrations from the file
+                    df_regs = pd.read_csv(path + 'register_overhead.csv')
+                    #this is dirty, but for some reason I couldn't make
+                    #df_regs['registration'].sum() work
+                    total_regs = df_regs.sum()[2]/2
+
+                reg_count['protocol'].append(protocol)
+                reg_count['size'].append(size)
+                reg_count['registrations'].append(total_regs)
+
+                df_list.append(df)
+                df.to_csv(path + 'df.csv')
             except FileNotFoundError:
                 print("Error: ", path, "msg_received.csv not found")
                 continue
     #merge all the dfs
-    df = pd.concat(df_list, axis=0, ignore_index=True)
-    print(df)
-    df.to_csv('pds.csv')
+    dfs = pd.concat(df_list, axis=0, ignore_index=True)
+    print(dfs)
+    dfs.to_csv('dfs.csv')
     for graph in ['registration', 'lookup']:
         fig, ax = plt.subplots()
-        for protocol, group in df.groupby('protocol'):
+        for protocol, group in dfs.groupby('protocol'):
             avg = group.groupby('size')[graph].mean()
             std = group.groupby('size')[graph].std()
             bx = avg.plot(x='size', y=graph, yerr=std, ax=ax, legend=True, label=protocol)
             bx.set_xlabel("Network Size")
             bx.set_ylabel("Messages")
             bx.set_title(graph + " overhead")
-        #for size, group in df.groupby('size'):
         fig.savefig(OUTDIR + '/' + graph + '_messages_received')
+    \
+    df_regs = pd.DataFrame.from_dict(reg_count)
+    print("df_regs")
+    print(df_regs)
+    fig, ax = plt.subplots()
+    colors = ['r', 'g', 'b', 'black', 'orange']
+    counter = 0
+    for protocol, group in df_regs.groupby('protocol'):
+        print("protocol", protocol)
+        print("group:")
+        print(group)
+        bx = group.plot(x='size', y='registrations', kind='scatter', ax=ax, legend=True, label=protocol, color=colors[counter])
+        bx.set_xlabel("Network Size")
+        bx.set_ylabel("#Registrations")
+        bx.set_title("Placed registrations")
+        counter += 1
+        
+    fig.savefig(OUTDIR + '/registrations')
 
 
 OUTDIR = './'
