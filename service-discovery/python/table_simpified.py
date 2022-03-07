@@ -105,8 +105,15 @@ class Table(metaclass=abc.ABCMeta):
         self.log("Removing", self.table[ad_id])
         req = self.table.pop(ad_id)
 
-        score = self.tree.remove(req['ip'])
-        assert(score >= 0)
+        ip_addr = req['ip']
+        
+        trie_node = self.tree.lookupAddress(ip_addr)
+        if trie_node.getCounter() > 1:
+            score = self.tree.remove(ip_addr)
+            assert(score >= 0)
+        else: # if counter is 1, we can remove the trie node when the current bound expires
+            removal_time = max(0,trie_node.getBound() - (self.env.now - trie_node.getTimestamp()))
+            self.env.process(self.remove_lower_bound(removal_time, ip=ip_addr))
 
         id = req['id']
         self.id_counter[id]['counter'] -= 1
@@ -225,19 +232,28 @@ class DiversityTable(Table):
 
     #the Tree implementation is in Tree.py
     def get_ip_modifier(self, ip, table):
+        #print("Get IP Modifier", self.ip_counter)
         if(ip in self.ip_counter):
-            modifier = self.tree.tryAdd(ip)
-            bound = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
+            modifier, bound = self.tree.tryAdd(ip, self.env.now)
+
+            # ground truth for bound
+            # TODO remove ip_counter state (it is now moved to Trie)
+            boundGT = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
             wtime = modifier * self.get_basetime(table)
             print("ip:", ip, "wtime:", wtime, "bound:", bound)
             if(bound < wtime):
-                print("In if")
+                self.tree.updateBound(ip, wtime, self.env.now) 
+
+            if (boundGT < wtime):
                 self.ip_counter[ip]['wtime'] = wtime
                 self.ip_counter[ip]['timestamp'] = self.env.now
+
+            assert bound >= boundGT, 'Trie-based lower-bound must NOT be smaller than ground truth value'
+            #bound = boundGT 
             return max(wtime, bound)
         else:
             return 0
-    
+
     def get_id_modifier(self, iD, table):
         if(iD in self.id_counter):
             counter = self.id_counter[iD]['counter']
