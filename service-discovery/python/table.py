@@ -264,7 +264,7 @@ class Table(metaclass=abc.ABCMeta):
             del self.id_counter[id]
 
         #ditto
-        if((topic != None) and (self.id_counter[topic]['counter'] == 0)):
+        if((topic != None) and (self.topic_counter[topic]['counter'] == 0)):
             del self.topic_counter[topic]
 
     #remove an add when it expires
@@ -279,7 +279,7 @@ class Table(metaclass=abc.ABCMeta):
         id = req['id']
         self.id_counter[id]['counter'] -= 1
         #schedule lowe bound removal when we remove the last entry
-        if(self.id_counter['counter'] == 0):
+        if(self.id_counter[id]['counter'] == 0):
             #wait with the removal to make it safe
             removal_time = max(0, self.id_counter[id]['wtime'] - (self.env.now - self.id_counter[id]['timestamp']))
             self.env.process(self.remove_lower_bound(removal_time, id=id))
@@ -288,7 +288,7 @@ class Table(metaclass=abc.ABCMeta):
         topic = req['topic']
         self.topic_counter[topic]['counter'] -= 1
         #schedule lowe bound removal when we remove the last entry
-        if(self.topic_counter['counter'] == 0):
+        if(self.topic_counter[topic]['counter'] == 0):
             #wait with the removal to make it safe
             removal_time = max(0, self.topic_counter[topic]['wtime'] - (self.env.now - self.topic_counter[topic]['timestamp']))
             self.env.process(self.remove_lower_bound(removal_time, topic=topic))
