@@ -56,7 +56,7 @@ class Tree:
         return (score/max_score, effBound)
     
     # find the node corresponding to the  most similar (i.e., longest-prefix match) 
-    # ip address in the Trie and add the lower-bound state to that node.
+    # ip address in the Trie and store the lower-bound state at that node.
     def updateBound(self, addr, bound, currTime):
         current = self.root
         prev = None
@@ -77,10 +77,10 @@ class Tree:
             else:
                 current = current.one
             
-            if current is None:
+            if current is None or current.getCounter() == 0:
                 break
 
-        if current is None:
+        if current is None or current.getCounter() == 0:
             # prev is the longest-prefix match
             prev.bound = bound
             prev.timestamp = currTime
@@ -161,7 +161,25 @@ class Tree:
             pass
         
         return (current, score, effectiveBound)
-	    
+
+    # find the most similar ip address (longest prefix match)
+    # return TrieNode storing the LPM address
+    def lookupAddress(self, addr):
+        current = self.root
+        for depth in range(0, 32):
+            parent = current
+            octet = int(addr.split('.')[int(depth/8)])
+            comparator = self.comparators[int(depth % 8)]
+            if (octet & comparator) == 0:
+                current = current.zero
+            else:
+                current = current.one
+
+            if current is None or current.getCounter() == 0:
+                return parent
+
+        return current
+
     def addRecursive(self, current, addr, depth, bound=0, timestamp=0):
         if (current == None):
             current = TreeNode()
@@ -206,6 +224,8 @@ class Tree:
         else:
             score = current.getCounter()
         current.decrement()
+        # FIXME remove current from tree if its counter is 0
+        # for now, treat nodes with 0 count as deleted
 	    
         if(depth < 32):
             octet = int(addr.split('.')[int(depth/8)])
