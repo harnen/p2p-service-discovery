@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.Collections;
@@ -140,7 +142,7 @@ public class KademliaObserver implements Control {
 
     
     
-    private static HashMap<BigInteger, ArrayList<Integer>> msgReceivedByNodes = new HashMap<BigInteger, ArrayList<Integer>>();
+    private static HashMap<BigInteger, HashMap<String, Integer>> msgReceivedByNodes = new HashMap<BigInteger, HashMap<String, Integer>>();
     private static HashMap<Integer, Integer> msgSentPerType = new HashMap<Integer, Integer>();
     private static HashMap<String, Integer> registerOverhead = new HashMap<String, Integer>();
     private static HashMap<String, Integer> numberOfRegistrations = new HashMap<String, Integer>();
@@ -474,18 +476,25 @@ public class KademliaObserver implements Control {
                 registerOverhead.put(topic.getTopic(), count+1);
         }
 
-        ArrayList<Integer> msgStats = msgReceivedByNodes.get(m.dest.getId());
+        HashMap<String, Integer> msgStats = msgReceivedByNodes.get(m.dest.getId());
         if (msgStats == null) {
         	//the last value is a total of all types
-        	msgStats = new ArrayList<Integer>();
-        	for(int i = 0; i <= numMsgTypes; i++)
-        		msgStats.add(0);
+        	msgStats = new HashMap<String, Integer>();
+        	
+        	for (int msgType=0; msgType < numMsgTypes; msgType++) {
+                String msgTypeString = new Message(msgType).messageTypetoString();
+                msgStats.put(msgTypeString, 0);
+            }
+        	//all message counter
+        	msgStats.put("numMsg", 0);
+        	msgStats.put("discovered", 0);
+        	//msgStats.put("registeredAt", 0);
         }
         	
         //increase the counter for the message type
-        msgStats.set(m.getType(), msgStats.get(m.getType()) + 1);
+        msgStats.put(m.messageTypetoString(), msgStats.get(m.messageTypetoString()) + 1);
         //increase the total messages count
-        msgStats.set(numMsgTypes, msgStats.get(numMsgTypes) + 1);
+        msgStats.put("numMsg", msgStats.get("numMsg") + 1);
         //put the stats back
         msgReceivedByNodes.put(m.dest.getId(), msgStats);
 
@@ -823,28 +832,28 @@ public class KademliaObserver implements Control {
         try {
             String filename = this.logFolderName + "/" + "msg_received.csv";
             FileWriter writer = new FileWriter(filename);
+            //get all the keys we store in the hashmap
+            Entry<BigInteger, HashMap<String, Integer>> entry = msgReceivedByNodes.entrySet().stream().findFirst().get();
+            Object[] keys = entry.getValue().keySet().toArray();
 
-            String title = "Node,numMsg";
-            for (int msgType=0; msgType < numMsgTypes; msgType++) {
-                Message m = new Message(msgType);
-                title += "," + m.messageTypetoString();
+            String title = "Node";
+            for(Object key: keys) {
+            	title += "," + key;
             }
             title += "\n";
             writer.write(title);
             
             for (BigInteger id : msgReceivedByNodes.keySet()) {
-                ArrayList<Integer> msgStats = msgReceivedByNodes.get(id);   
-                String toWrite = String.valueOf(id) + "," + msgStats.get(numMsgTypes); 
-                for (int msgType=0; msgType < numMsgTypes; msgType++) {
-                    toWrite += "," + msgStats.get(msgType);
+                HashMap<String, Integer> msgStats = msgReceivedByNodes.get(id);
+                
+                String toWrite = String.valueOf(id);
+                for(Object key: keys) {
+                	toWrite += "," + msgStats.get(key);
                 }
                 toWrite += "\n";
                 writer.write(toWrite);
             }
-            // Put the topic hashes in the bottom of the file
-            for (Topic t: regByTopic.keySet()) {
-                writer.write(t.getTopicID() + "," + t.getTopic() + "\n");
-            }
+
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();

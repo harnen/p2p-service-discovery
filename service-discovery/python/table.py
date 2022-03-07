@@ -260,11 +260,11 @@ class Table(metaclass=abc.ABCMeta):
 
         #if 'counter' > 0 it means that in the meantime we added a new entry 
         # with this ID to the table and have to cancel the lower bound removal
-        if((id != None) and (self.id_counter[id]['counter'] == 0)):
+        if((id != None) and (id in self.id_counter) and (self.id_counter[id]['counter'] == 0)):
             del self.id_counter[id]
 
         #ditto
-        if((topic != None) and (self.topic_counter[topic]['counter'] == 0)):
+        if((topic != None) and (topic in self.topic_counter) and  (self.topic_counter[topic]['counter'] == 0)):
             del self.topic_counter[topic]
 
     #remove an add when it expires
