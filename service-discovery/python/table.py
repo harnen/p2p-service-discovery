@@ -267,6 +267,12 @@ class Table(metaclass=abc.ABCMeta):
         if((topic != None) and (topic in self.topic_counter) and  (self.topic_counter[topic]['counter'] == 0)):
             del self.topic_counter[topic]
 
+        #if (ip is not None):
+        #    nextTime = self.tree.remove(ip, self.env.now)
+        #    if nextTime > 0:
+        #        self.env.process(self.remove_lower_bound(nextTime, ip=ip))
+        
+
     #remove an add when it expires
     def remove_ad(self, ad_id, delay):
         yield self.env.timeout(delay)
@@ -274,18 +280,14 @@ class Table(metaclass=abc.ABCMeta):
         req = self.table.pop(ad_id)
         
         ip_addr = req['ip']
+        #nextTime = self.tree.remove(ip_addr, self.env.now)
+        #if nextTime > 0:
+        #    self.env.process(self.remove_lower_bound(nextTime, ip=ip_addr))
+        self.tree.removeAndPropagateUp(ip_addr, self.env.now)
         
-        trie_node = self.tree.lookupAddress(ip_addr)
-        if trie_node.getCounter() > 1:
-            score = self.tree.remove(ip_addr)
-            assert(score >= 0)
-        else: # if counter is 1, we can remove the trie node when the current bound expires
-            removal_time = max(0,trie_node.getBound() - (self.env.now - trie_node.getTimestamp()))
-            self.env.process(self.remove_lower_bound(removal_time, ip=ip_addr))
-
         id = req['id']
         self.id_counter[id]['counter'] -= 1
-        #schedule lowe bound removal when we remove the last entry
+        #schedule lower bound removal of id when we remove the last entry
         if(self.id_counter[id]['counter'] == 0):
             #wait with the removal to make it safe
             removal_time = max(0, self.id_counter[id]['wtime'] - (self.env.now - self.id_counter[id]['timestamp']))
@@ -294,7 +296,7 @@ class Table(metaclass=abc.ABCMeta):
 
         topic = req['topic']
         self.topic_counter[topic]['counter'] -= 1
-        #schedule lowe bound removal when we remove the last entry
+        #schedule lower bound removal of topic when we remove the last entry
         if(self.topic_counter[topic]['counter'] == 0):
             #wait with the removal to make it safe
             removal_time = max(0, self.topic_counter[topic]['wtime'] - (self.env.now - self.topic_counter[topic]['timestamp']))
@@ -414,7 +416,7 @@ class DiversityTable(Table):
             modifier = 1/10000000
             bound = max(0, self.base_counter['wtime'] - (self.env.now - self.base_counter['timestamp']))
             wtime = modifier * self.get_basetime(table)
-            print("Base wtime:", wtime, "bound:", bound)
+            print("Time:", self.env.now, " Base wtime:", wtime, "bound:", bound)
             if(bound < wtime):
                 print("In if")
                 self.base_counter['wtime'] = wtime
@@ -426,26 +428,25 @@ class DiversityTable(Table):
 
     def get_ip_modifier(self, ip, table):
         #print("Get IP Modifier", self.ip_counter)
+        modifier, bound = self.tree.tryAdd(ip, self.env.now)
+
+        boundGT = 0 # ground truth for bound using per-ip state
         if(ip in self.ip_counter):
-            modifier, bound = self.tree.tryAdd(ip, self.env.now)
-
-            # ground truth for bound
-            # TODO remove ip_counter state (it is now moved to Trie)
             boundGT = max(0, self.ip_counter[ip]['wtime'] - (self.env.now - self.ip_counter[ip]['timestamp']))
-            wtime = modifier * self.get_basetime(table)
-            print("ip:", ip, "wtime:", wtime, "bound:", bound)
-            if(bound < wtime):
-                self.tree.updateBound(ip, wtime, self.env.now) 
+        wtime = modifier * self.get_basetime(table)
+        print("ip:", ip, "wtime:", wtime, "bound:", bound)
+        if(bound < wtime):
+            self.tree.updateBound(ip, wtime, self.env.now) 
 
-            if (boundGT < wtime):
-                self.ip_counter[ip]['wtime'] = wtime
-                self.ip_counter[ip]['timestamp'] = self.env.now
+        if (boundGT < wtime):
+            if ip not in self.ip_counter:
+                self.ip_counter[ip] = {}
+            self.ip_counter[ip]['wtime'] = wtime
+            self.ip_counter[ip]['timestamp'] = self.env.now
 
-            assert bound >= boundGT, 'Trie-based lower-bound must NOT be smaller than ground truth value'
-            #bound = boundGT 
-            return max(wtime, bound)
-        else:
-            return 0
+        assert bound >= boundGT, 'Trie-based lower-bound must NOT be smaller than ground truth value'
+        #bound = boundGT 
+        return max(wtime, bound)
 
     def get_ip_modifier_bck(self, ip, table):
         #print("Get IP Modifier", self.ip_counter)
