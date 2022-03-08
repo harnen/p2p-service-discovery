@@ -95,6 +95,7 @@ class Tree:
         current = self.root
         prev = None
         traversed = ''
+        self.currTime = currTime
         for depth in range(0, 32):
             prev = current
             octet = int(addr.split('.')[int(depth/8)])
@@ -206,14 +207,17 @@ class Tree:
                     current = current.zero
                 else:
                     current = current.one
+                
+            effBound = current.getBound() - (time - current.getTimestamp())
+            if effBound > maxEffBound:
+                maxEffBound = effBound
+
             # delete the subtree rooted at deleteNode
             if deleteNodeParent.one == deleteNode:
                 deleteNodeParent.one = None
             elif deleteNodeParent.zero == deleteNode:
                 deleteNodeParent.zero = None
-            else:
-                print ("This can not happen in removeAndPropagateLowerBoundStateUpwards()")
-                exit(1)
+            
             # propagate lower-bound state to deleted subtree's parent (if necessary)
             effBound = deleteNodeParent.getBound() - (time - deleteNodeParent.getTimestamp())
             if effBound < maxEffBound:
