@@ -466,17 +466,22 @@ def analyseOverhead(dir):
     dfs = pd.concat(df_list, axis=0, ignore_index=True)
     print(dfs)
     dfs.to_csv('dfs.csv')
-    for graph in ['registration', 'lookup']:
+    for graph in ['registration', 'lookup', 'discovered']:
         fig, ax = plt.subplots()
         for protocol, group in dfs.groupby('protocol'):
             avg = group.groupby('size')[graph].mean()
             std = group.groupby('size')[graph].std()
             bx = avg.plot(x='size', y=graph, yerr=std, ax=ax, legend=True, label=protocol)
             bx.set_xlabel("Network Size")
-            bx.set_ylabel("Messages")
-            bx.set_title(graph + " overhead")
+            if (graph == 'discovered'):
+                bx.set_ylabel("# Avg Peers discovered")
+                bx.set_title("Peers discovered")
+            else:
+                bx.set_ylabel("Messages")
+                bx.set_title(graph + " overhead")
+            
         fig.savefig(OUTDIR + '/' + graph + '_messages_received')
-    \
+
     df_regs = pd.DataFrame.from_dict(reg_count)
     print("df_regs")
     print(df_regs)

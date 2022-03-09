@@ -291,8 +291,15 @@ public class KademliaObserver implements Control {
         	if(set.containsKey(discovered)) {
         		set.get(discovered).addDiscovered(requesting, CommonState.getTime());
         		//set.get(discovered).addRegistrar(requesting, CommonState.getTime());
-        	}	
+        	}
+        	HashMap<String, Integer> msgStats = msgReceivedByNodes.get(requesting);
+       		if (msgStats == null) {
+       			msgStats = createMsgReceivedByNodesEntry();
+            }
+        	msgStats.put("discovered", msgStats.get("discovered") + 1);
+        	msgReceivedByNodes.put(requesting, msgStats);
         }
+        
 
    }
     
@@ -478,17 +485,7 @@ public class KademliaObserver implements Control {
 
         HashMap<String, Integer> msgStats = msgReceivedByNodes.get(m.dest.getId());
         if (msgStats == null) {
-        	//the last value is a total of all types
-        	msgStats = new HashMap<String, Integer>();
-        	
-        	for (int msgType=0; msgType < numMsgTypes; msgType++) {
-                String msgTypeString = new Message(msgType).messageTypetoString();
-                msgStats.put(msgTypeString, 0);
-            }
-        	//all message counter
-        	msgStats.put("numMsg", 0);
-        	msgStats.put("discovered", 0);
-        	//msgStats.put("registeredAt", 0);
+        	msgStats = createMsgReceivedByNodesEntry();
         }
         	
         //increase the counter for the message type
@@ -500,7 +497,23 @@ public class KademliaObserver implements Control {
 
     }
 
-    private void write_waiting_times() {
+    private static HashMap<String, Integer> createMsgReceivedByNodesEntry() {
+    	//the last value is a total of all types
+    	HashMap<String, Integer> msgStats = new HashMap<String, Integer>();
+    	
+    	for (int msgType=0; msgType < numMsgTypes; msgType++) {
+            String msgTypeString = new Message(msgType).messageTypetoString();
+            msgStats.put(msgTypeString, 0);
+        }
+    	//all message counter
+    	msgStats.put("numMsg", 0);
+    	msgStats.put("discovered", 0);
+    	//msgStats.put("registeredAt", 0);
+    	return msgStats;
+		
+	}
+
+	private void write_waiting_times() {
 
         if (waitingTimes.size() == 0)
         {

@@ -64,7 +64,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 
 			    if(registerMessage != null) EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
 			    //start lookup messages later
-			    if(lookupMessage != null)EDSimulator.add(KademliaCommonConfig.AD_LIFE_TIME + time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
+			    if(lookupMessage != null)EDSimulator.add(2*KademliaCommonConfig.AD_LIFE_TIME + time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
                 
                 if(randomLookups==1) {
 					for(int j = 0;j<3;j++) {
