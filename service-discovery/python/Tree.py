@@ -18,7 +18,11 @@ class TreeNode:
     def increment(self):
         self.counter += 1
         return self.counter
-
+    
+    def isLeaf(self):
+        if (self.zero is None) and (self.one is None):
+            return True
+        return False
 	    
     def decrement(self):
         self.counter -= 1
@@ -36,19 +40,49 @@ class Tree:
         self.exp = exp
         self.currTime = 0 # current simulation time (used for lower bound calculation)
     
-    #get score returned by add without modifying the tree
+    #get the score for an address without actually adding the addr
     def tryAdd(self, addr, time):
         self.currTime = time #update current time
-        result = self.tryAddRecursive(self.root, addr, 0)
-        score = result[1]
-        effBound = result[2]
-        if(self.exp is True):
-            balanced_score = (self.root.getCounter()) * 32
-            max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
-        else:
-            balanced_score = self.root.getCounter()
-            max_score = self.root.getCounter()*32
-            score -= self.root.getCounter()
+        current = self.root
+        score = 0
+        effBound = 0
+        max_score = 0
+        balanced_score = 0 
+        traversed = ''
+        if self.root is not None:
+            for depth in range(0, 32):
+                parent = current
+                if(self.exp == True):
+                    score += current.getCounter() * pow(2, depth)
+                else:
+                    score += current.getCounter()
+            
+                octet = int(addr.split('.')[int(depth/8)])
+                comparator = self.comparators[int(depth % 8)]
+                if((octet & comparator) == 0):
+                    current = current.zero
+                    traversed += '0'
+                else:
+                    current = current.one
+                    traversed += '1'
+            
+                if (current is None):
+                    current = parent
+                    break
+
+            bound = current.getBound()
+            print('Bound of current node: ', traversed, ' is ', bound) 
+            diff = self.currTime - current.getTimestamp()
+            effBound = max(0, bound - diff)
+            if(self.exp is True):
+                balanced_score = (self.root.getCounter()) * 32
+                max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
+            else:
+                balanced_score = self.root.getCounter()
+                max_score = self.root.getCounter()*32
+                # FIXME: why deduct the root counter ?
+                score -= self.root.getCounter()
+    
         print("TryAdd final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
         if max_score == 0:
             max_score = 1
@@ -56,53 +90,75 @@ class Tree:
         return (score/max_score, effBound)
     
     # find the node corresponding to the  most similar (i.e., longest-prefix match) 
-    # ip address in the Trie and store the lower-bound state at that node.
+    # ip address in the Trie and update/store the lower-bound state at that node.
     def updateBound(self, addr, bound, currTime):
         current = self.root
         prev = None
+        traversed = ''
+        self.currTime = currTime
         for depth in range(0, 32):
             prev = current
             octet = int(addr.split('.')[int(depth/8)])
             comparator = self.comparators[int(depth % 8)]
-            
-            diff = self.currTime - current.timestamp 
-            effBound = current.bound - diff
-            if effBound < bound:
-                # update lower-bound
-                current.bound = effBound 
-                current.timestamp = self.currTime
-
             if((octet & comparator) == 0):
                 current = current.zero
+                traversed += '0'
             else:
                 current = current.one
+                traversed += '1'
             
-            if current is None or current.getCounter() == 0:
+            if (current is None):
+                current = prev
                 break
-
-        if current is None or current.getCounter() == 0:
-            # prev is the longest-prefix match
-            prev.bound = bound
-            prev.timestamp = currTime
-        else:
+        
+        diff = self.currTime - current.getTimestamp()
+        effBound = current.bound - diff
+        if effBound < bound:
+        # update lower-bound
             current.bound = bound
-            current.timestamp = currTime
-        print('updating lower bound for ip: ', addr, ' with bound: ', bound, ' and time: ', currTime, ' current is ', current)
+            current.timestamp = self.currTime
+            print('updating lower bound for ip: ', addr, ' with bound: ', bound, ' and time: ', currTime, ' current eff bound is ', effBound, ' at current node: ', traversed)
 
     #add an IP to the tree
     def add(self, addr):
-        result = self.addRecursive(self.root, addr, 0)
-        self.root = result[0]
-        score = result[1]
-        highest_score = result[2]
+        current = self.root
+        max_bound = 0
+        score = 0
+        for depth in range(0, 32):
+            parent = current
+            if(self.exp == True):
+                score += current.getCounter() * pow(2, depth)
+            else:
+                score += current.getCounter()
+            
+            current.increment()
+            octet = int(addr.split('.')[int(depth/8)])
+            comparator = self.comparators[int(depth % 8)]
+            if((octet & comparator) == 0):
+                current = current.zero
+                if (current is None):
+                    current = TreeNode()
+                    # propage lower-bound state to new child
+                    current.bound = parent.bound
+                    current.timestamp = parent.timestamp
+                parent.zero = current
+            else:
+                current = current.one
+                if (current is None):
+                    current = TreeNode()
+                    # propage lower-bound state to new child
+                    current.bound = parent.bound
+                    current.timestamp = parent.timestamp
+                parent.one = current
 
-        # Onur: the returned score is never used by any caller (tryAdd() computes scores)
-        # FIXME remove the below
+        score += current.getCounter()
+        current.increment()
+        balanced_score = 0
+        max_score = 0
         if(self.exp == True):
             balanced_score = (self.root.getCounter()) * 32
             max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
         else:
-            print("Hello")
             balanced_score = self.root.getCounter()
             max_score = self.root.getCounter()*32
         print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)#, "New max score:", self.max_score)
@@ -112,135 +168,58 @@ class Tree:
 
         return score/max_score
 
-    def remove(self, addr):
-        result = self.removeRecursive(self.root, addr, 0)
-        self.root = result[0]
-        score = result[1]
-        if(self.exp == True):
-            balanced_score = (self.root.getCounter()) * 32
-            max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
-        else:
-            balanced_score = self.root.getCounter()
-            max_score = self.root.getCounter()*32
-        print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
-
-        if(max_score == 0):
-            return 0
-
-        return score/max_score
-            
-	
-    def tryAddRecursive(self, current, addr, depth):
-        if (current == None):
-            return (None, 0, None)
-
-        if(self.exp == True):
-            score = current.getCounter() * pow(2, depth)
-        else:
-            score = current.getCounter()
-        bound = current.getBound()
-        timestamp = self.currTime
-        timeDiff = self.currTime - timestamp
-        effectiveBound = max(0, bound - timeDiff)
-	    #IPv4 address has 32 bits
-        #would be 128 for IPv6
-        if(depth < 32):
-            octet = int(addr.split('.')[int(depth/8)])
-            comparator = self.comparators[int(depth % 8)]
-            result = None
-            if((octet & comparator) == 0):
-                result = self.tryAddRecursive(current.zero, addr, depth + 1)
-            else:
-                result = self.tryAddRecursive(current.one, addr, depth + 1)
-
-            score += result[1]
-            if result[2] is not None:
-                effectiveBound = result[2]
-        else:
-            #Reached depth max deapth - going back.
-            pass
-        
-        return (current, score, effectiveBound)
-
-    # find the most similar ip address (longest prefix match)
-    # return TrieNode storing the LPM address
-    def lookupAddress(self, addr):
+    # remove the nodes with zero count and propagate their lower bound
+    # state upwards and store at first node with count > 0
+    def removeAndPropagateUp(self, addr, time):
         current = self.root
+        parent = current
+        delete = None
+        depthToDelete = None
+        deleteNode = None
+        deleteNodeParent = None
         for depth in range(0, 32):
-            parent = current
+            current.decrement()
+            if (delete is False) and (current.getCounter() == 0): # remove descendants
+                delete = True
+                depthToDelete = depth
+                deleteNode = current
+                deleteNodeParent = parent
             octet = int(addr.split('.')[int(depth/8)])
             comparator = self.comparators[int(depth % 8)]
-            if (octet & comparator) == 0:
+            parent = current
+            if((octet & comparator) == 0):
                 current = current.zero
             else:
                 current = current.one
-
-            if current is None or current.getCounter() == 0:
-                return parent
-
-        return current
-
-    def addRecursive(self, current, addr, depth, bound=0, timestamp=0):
-        if (current == None):
-            current = TreeNode()
-            # copy parent's lower bound and timestamp
-            current.bound = bound
-            current.timestamp = timestamp
-        
-        if(self.exp == True):
-            score = current.getCounter() * pow(2, depth)
-        else:
-            score = current.getCounter()
-
-        current.increment()
-        highest_score = current.getCounter() * pow(2, depth)
-	    #IPv4 address has 32 bits
-        #would be 128 for IPv6
-        if(depth < 32):
-            octet = int(addr.split('.')[int(depth/8)])
-            comparator = self.comparators[int(depth % 8)]
-            result = None
-            if((octet & comparator) == 0):
-                result = self.addRecursive(current.zero, addr, depth + 1, current.bound, current.timestamp)
-                current.zero = result[0]
-            else:
-                result = self.addRecursive(current.one, addr, depth + 1, current.bound, current.timestamp)
-                current.one = result[0]; 
-
-            score += result[1]
-            highest_score += result[2]
-        else:
-            #Reached depth max deapth - going back.
-            pass
-        
-        return (current, score, highest_score)
-
-    def removeRecursive(self, current, addr, depth):
-        if (current == None):
-            current = TreeNode()
-        
-        if(self.exp == True):
-            score = current.getCounter() * pow(2, depth)
-        else:
-            score = current.getCounter()
         current.decrement()
-        # FIXME remove current from tree if its counter is 0
-        # for now, treat nodes with 0 count as deleted
-	    
-        if(depth < 32):
-            octet = int(addr.split('.')[int(depth/8)])
-            comparator = self.comparators[int(depth % 8)]
-            result = None
-            if((octet & comparator) == 0):
-                result = self.removeRecursive(current.zero, addr, depth + 1)
-                current.zero = result[0]
-            else:
-                result = self.removeRecursive(current.one, addr, depth + 1)
-                current.one = result[0]; 
 
-            score += result[1]
-        else:
-            #Reached depth max deapth - going back.
-            pass       
-        
-        return (current, score)
+        if delete is True and self.root.getCounter() != 0:
+            maxEffBound = 0
+            current = deleteNode
+            # obtain the highest lower-bound state in the deleted subtree
+            for depth in range(depthToDelete, 32):
+                effBound = current.getBound() - (time - current.getTimestamp())
+                if effBound > maxEffBound:
+                    maxEffBound = effBound
+                octet = int(addr.split('.')[int(depth/8)])
+                comparator = self.comparators[int(depth % 8)]
+                if((octet & comparator) == 0):
+                    current = current.zero
+                else:
+                    current = current.one
+                
+            effBound = current.getBound() - (time - current.getTimestamp())
+            if effBound > maxEffBound:
+                maxEffBound = effBound
+
+            # delete the subtree rooted at deleteNode
+            if deleteNodeParent.one == deleteNode:
+                deleteNodeParent.one = None
+            elif deleteNodeParent.zero == deleteNode:
+                deleteNodeParent.zero = None
+            
+            # propagate lower-bound state to deleted subtree's parent (if necessary)
+            effBound = deleteNodeParent.getBound() - (time - deleteNodeParent.getTimestamp())
+            if effBound < maxEffBound:
+                deleteNodeParent.bound = maxEffBound
+                deleteNodeParent.timestamp = time
