@@ -292,12 +292,6 @@ public class KademliaObserver implements Control {
         		set.get(discovered).addDiscovered(requesting, CommonState.getTime());
         		//set.get(discovered).addRegistrar(requesting, CommonState.getTime());
         	}
-        	HashMap<String, Integer> msgStats = msgReceivedByNodes.get(requesting);
-       		if (msgStats == null) {
-       			msgStats = createMsgReceivedByNodesEntry();
-            }
-        	msgStats.put("discovered", msgStats.get("discovered") + 1);
-        	msgReceivedByNodes.put(requesting, msgStats);
         }
         
 
@@ -325,9 +319,23 @@ public class KademliaObserver implements Control {
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
                 //result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
             	double ratio = (double)op.nrHops/((LookupOperation)op).discoveredCount();
-
-            	if(((LookupOperation)op).discoveredCount()>0)result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+","+ratio+"\n";
-            	else result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+"\n";
+            	
+            	if(((LookupOperation)op).discoveredCount() > 0) {
+            		result += CommonState.getTime()+","+op.operationId + 
+            				"," + op.getClass().getSimpleName() + ","  + op.srcNode +
+            				"," + op.destNode + "," + op.getUsedCount() + 
+            				"," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + 
+            				"," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+
+            				"," +((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ 
+            				"," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+","+ratio+"\n";
+            		//update per node stats - the correct entry should be already there (it's created when the first message is received)
+            		HashMap<String, Integer> msgStats = msgReceivedByNodes.get(op.srcNode);
+                	msgStats.put("discovered", msgStats.get("discovered") + ((LookupOperation)op).discoveredCount());
+                	msgReceivedByNodes.put(op.srcNode, msgStats);
+            	}
+            	else {
+            		result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+"\n";
+            	}
             } else if (op instanceof RegisterOperation) {
             	//System.out.println("register operation reported");
             	//System.exit(1);
@@ -454,8 +462,8 @@ public class KademliaObserver implements Control {
 
     private static void accountMsg(Message m) {
     	
-    	if (CommonState.getIntTime() <= 300000)
-    		return;
+    	/*if (CommonState.getIntTime() <= 300000)
+    		return;*/
     		 
         Integer numMsg = msgSentPerType.get(m.getType());
         if (numMsg == null)
