@@ -404,7 +404,7 @@ def analyseRegistrations(dir):
 
 
 
-def analyseOverhead(dir):
+def createPerNodeStats(dir):
     df_list = []
     reg_count = {}
     reg_count['protocol'] = []
@@ -425,27 +425,53 @@ def analyseOverhead(dir):
             path = log_dir + '/' + subdir + '/'
             path.replace('//','/')
             print('Reading folder ', path)
-            try: 
-                df = pd.read_csv(path + 'msg_received.csv')
+            try:
                 protocol = getProtocolFromPath(path)
                 size = getNetworkSizeFromPath(path)
-                    
+
+                df = pd.read_csv(path + 'msg_received.csv')
+                df.to_csv(path + 'df.csv')
+
+                df_regs_done = pd.read_csv(path + 'registeredRegistrant.csv')
+                #rename columns do make it consistent across dfs
+                df_regs_done.rename(columns = {'nodeId':'Node', 'count':'regsPlaced', 'evil':'evilRegsPlaced'}, inplace = True)
+                df_regs_done.to_csv(path + 'df_regs_done.csv')
+                df_merged = df.merge(df_regs_done, how='left', on='Node')
+                df_regs_done.to_csv(path + 'df_regs_done.csv')
+                df_merged.to_csv(path + 'df_merged1.csv')
+
+                df_regs_accepted = pd.read_csv(path + 'registeredRegistrar.csv')
+                #rename columns do make it consistent across dfs
+                df_regs_accepted.rename(columns = {'nodeId':'Node', 'count':'regsAccepted', 'evil':'evilRegsAccepted'}, inplace = True)
+                #merge per topic info
+                df_regs_accepted = df_regs_accepted.groupby(['Node'])['regsAccepted', 'evilRegsAccepted'].sum().reset_index()
+                df_regs_accepted.to_csv(path + 'df_refs_accepted.csv')
+                df_merged = df_merged.merge(df_regs_accepted, how='left', on='Node')
+                #NaN -> 0
+                df_merged.fillna(0)
+                df_merged.to_csv(path + 'df_merged2.csv')
+
+                #those should hold without turbulance
+                assert(len(df.index) == size)
+                assert(len(df_merged.index) == size)
+                
+                df = df_merged
                 df['protocol'] = protocol
                 df['size'] = size
 
                 if(protocol == 'discv4'):
                     #should be all 0, but plotting for sanity check
                     reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE']
-                    df['registration'] = df[reg_cols].sum(axis=1)
+                    df['registrationMsgs'] = df[reg_cols].sum(axis=1)
                     look_cols = ['MSG_FIND', 'MSG_RESPONSE', 'MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY']
-                    df['lookup'] = df[look_cols].sum(axis=1)             
+                    df['lookupMsgs'] = df[look_cols].sum(axis=1)             
                     #discv4 doesn't place any registrations
                     total_regs = 0
                 else:
                     reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE', 'MSG_FIND', 'MSG_RESPONSE']
-                    df['registration'] = df[reg_cols].sum(axis=1)
+                    df['registrationMsgs'] = df[reg_cols].sum(axis=1)
                     look_cols = ['MSG_TOPIC_QUERY', 'MSG_TOPIC_QUERY_REPLY']
-                    df['lookup'] = df[look_cols].sum(axis=1)  
+                    df['lookupMsgs'] = df[look_cols].sum(axis=1)  
 
                     #read registrations from the file
                     df_regs = pd.read_csv(path + 'register_overhead.csv')
@@ -461,14 +487,24 @@ def analyseOverhead(dir):
                 df.to_csv(path + 'df.csv')
             except FileNotFoundError:
                 print("Error: ", path, "msg_received.csv not found")
-                continue
+                quit()
     #merge all the dfs
     dfs = pd.concat(df_list, axis=0, ignore_index=True)
     print(dfs)
     dfs.to_csv('dfs.csv')
-    for graph in ['registration', 'lookup', 'discovered']:
+    return dfs
+
+
+def analyseOverhead(dfs):
+
+    pd.set_option('display.max_rows', None)
+    for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'regsPlaced', 'regsAccepted']:
         fig, ax = plt.subplots()
         for protocol, group in dfs.groupby('protocol'):
+            #NaN -> 0
+            group = group.fillna(0)
+            #print("!!!!!!!!!!!!!protocol", protocol, "graph:", graph)
+            #print(group['regsPlaced'])
             avg = group.groupby('size')[graph].mean()
             std = group.groupby('size')[graph].std()
             bx = avg.plot(x='size', y=graph, yerr=std, ax=ax, legend=True, label=protocol)
@@ -480,26 +516,7 @@ def analyseOverhead(dir):
                 bx.set_ylabel("Messages")
                 bx.set_title(graph + " overhead")
             
-        fig.savefig(OUTDIR + '/' + graph + '_messages_received')
-
-    df_regs = pd.DataFrame.from_dict(reg_count)
-    print("df_regs")
-    print(df_regs)
-    fig, ax = plt.subplots()
-    colors = ['r', 'g', 'b', 'black', 'orange']
-    counter = 0
-    for protocol, group in df_regs.groupby('protocol'):
-        print("protocol", protocol)
-        print("group:")
-        print(group)
-        bx = group.plot(x='size', y='registrations', kind='scatter', ax=ax, legend=True, label=protocol, color=colors[counter])
-        bx.set_xlabel("Network Size")
-        bx.set_ylabel("#Registrations")
-        bx.set_title("Placed registrations")
-        counter += 1
-        
-    fig.savefig(OUTDIR + '/registrations')
-
+        fig.savefig(OUTDIR + '/' + graph)
 
 OUTDIR = './'
 
@@ -528,9 +545,11 @@ dirs = ['dhtnoticket', 'dhtticket', 'discv4', 'discv5']
 x_vals = ['1000', '2000', '3000', '4000', '5000']
 x_label = 'network size'
 
-analyseOverhead(LOGDIR)
 
-dirs = ['dhtticket', 'discv5']
+dfs = createPerNodeStats(LOGDIR)
+analyseOverhead(dfs)
+
+#dirs = ['dhtticket', 'discv5']
 #analyzeWaitingTimes(dirs, x_vals, x_label, dirs)
-dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
+#dirs = ['dhtticket', 'dhtnoticket', 'discv5', 'discv4']
 

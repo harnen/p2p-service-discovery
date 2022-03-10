@@ -281,7 +281,14 @@ public class KademliaObserver implements Control {
             numberOfRegistrations.put(topic, 1);
         else
             numberOfRegistrations.put(topic, count+1);
-
+        
+        HashMap<String, Integer> msgStats = msgReceivedByNodes.get(registrant);
+    	msgStats.put("regsPlaced", msgStats.get("regsPlaced") + 1);
+    	msgReceivedByNodes.put(registrant, msgStats);
+    	
+    	msgStats = msgReceivedByNodes.get(registrar);
+    	msgStats.put("regsAccepted", msgStats.get("regsAccepted") + 1);
+    	msgReceivedByNodes.put(registrar, msgStats);
    }
     
     public static void addDiscovered(Topic t, BigInteger requesting,  BigInteger discovered) {
@@ -293,8 +300,6 @@ public class KademliaObserver implements Control {
         		//set.get(discovered).addRegistrar(requesting, CommonState.getTime());
         	}
         }
-        
-
    }
     
     
@@ -516,6 +521,8 @@ public class KademliaObserver implements Control {
     	//all message counter
     	msgStats.put("numMsg", 0);
     	msgStats.put("discovered", 0);
+    	msgStats.put("regsPlaced", 0);
+    	msgStats.put("regsAccepted", 0);
     	//msgStats.put("registeredAt", 0);
     	return msgStats;
 		
