@@ -56,6 +56,15 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
                     topicString = new String("t" + topicIndex);
                     topic = new Topic(topicString);
                 }
+                
+                if(randomLookups==1) {
+					for(int j = 0;j<3;j++) {
+						Node nod = Network.get(i);
+						Message lookup = generateFindNodeMessage();
+						EDSimulator.add(0, lookup, nod, nod.getKademliaProtocol().getProtocolID());
+					}
+                	
+                }
 				
 				int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
 			    Message registerMessage = generateRegisterMessage(topicString);
@@ -66,14 +75,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 			    //start lookup messages later
 			    if(lookupMessage != null)EDSimulator.add(2*KademliaCommonConfig.AD_LIFE_TIME + time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
                 
-                if(randomLookups==1) {
-					for(int j = 0;j<3;j++) {
-						Node nod = Network.get(i);
-						Message lookup = generateFindNodeMessage();
-						EDSimulator.add(time, lookup, nod, nod.getKademliaProtocol().getProtocolID());
-					}
-                	
-                }
+
             }
 			first=false;
 		}  

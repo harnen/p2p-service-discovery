@@ -279,11 +279,11 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		
 		logger.info("Registration1 operation id "+rop.operationId+" "+op);
 		
-        /*if(KademliaCommonConfig.REG_REFRESH==1) {
+        if(KademliaCommonConfig.REG_REFRESH==1) {
         	//Timeout timeout = new Timeout(t, m.src.getId());
         	int timeout = (int) ((int)KademliaCommonConfig.AD_LIFE_TIME*1.1);
         	EDSimulator.add(timeout, m, Util.nodeIdtoNode(this.node.getId()), myPid);
-        }*/
+        }
 		
 		
 	}
@@ -308,6 +308,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 				
 		Operation op = (Operation)	 this.operations.get(m.operationId);
 		if (op == null) {
+			logger.warning("Operation null "+m.operationId);
 			return;
 		}
 		
@@ -319,6 +320,10 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		for(BigInteger neighbour: neighbours)
 			routingTable.addNeighbour(neighbour);
 		
+		op.increaseReturned(m.src.getId());
+		if(!op.finished)op.increaseUsed(m.src.getId());
+
+		
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
 			logger.info("Found node " + op.destNode);
 			op.finished = true;
@@ -328,7 +333,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			if(registrationMap.get(op.operationId)!=null) {
 				RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(m.operationId));
 				logger.info("Registration operation id "+registrationMap.get(op.operationId)+" "+op.operationId+" "+rop.getTopic().getTopic());
-
+				rop.elaborateResponse(op.getNeighboursList().toArray(new BigInteger[0]));
 				startRegistration(rop,myPid);
 				registrationMap.remove(op.operationId);
 
@@ -337,8 +342,6 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			return;
 		}
 		
-		op.increaseReturned(m.src.getId());
-		if(!op.finished)op.increaseUsed(m.src.getId());
 
 		while ((op.available_requests > 0)) { // I can send a new find request
 			BigInteger neighbour = op.getNeighbour();
@@ -383,7 +386,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 				if(registrationMap.get(op.operationId)!=null) {
 					RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(m.operationId));
 					logger.info("Registration operation id "+registrationMap.get(op.operationId)+" "+op.operationId+" "+rop.getTopic().getTopic());
-
+					rop.elaborateResponse(op.getNeighboursList().toArray(new BigInteger[0]));
 					startRegistration(rop,myPid);
 					registrationMap.remove(op.operationId);
 
@@ -400,28 +403,22 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 	
 	private void startRegistration(RegisterOperation rop, int myPid) {
 		
-		
-		int distToTopic = Util.logDistance((BigInteger) rop.getTopic().getTopicID(), this.node.getId());
-		BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
-		
-		if(neighbours.length < KademliaCommonConfig.ALPHA)
-			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
-
-		rop.elaborateResponse(neighbours);
-		rop.available_requests = KademliaCommonConfig.ALPHA;
-	
-		/*Message message = rop.getMessage(); 
+		logger.info("Start registration "+rop.getMessage().type+" "+rop.operationId+" "+rop.getNeighboursList().size());
+		Message message = rop.getMessage(); 
 		message.operationId = rop.operationId;
 		message.type = Message.MSG_REGISTER;
-		message.src = this.node;*/
+		message.src = this.node;
 		
 	
+		rop.available_requests = KademliaCommonConfig.ALPHA;
 		// send ALPHA messages
 		for (int i = 0; i < KademliaCommonConfig.N; i++) {
 			BigInteger nextNode = rop.getNeighbour();
 			//System.out.println("Nextnode "+nextNode);
 			if (nextNode != null) {
-				sendTicketRequest(nextNode,rop.topic,myPid);
+				message.dest = new KademliaNode(nextNode);
+				sendMessage(message.copy(), nextNode, myPid);
+				rop.nrHops++;
 			}//nextNode may be null, if the node has less than ALPHA neighbours
 		}
 	}
@@ -713,7 +710,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 					if(registrationMap.get(op.operationId)!=null) {
 						RegisterOperation rop = (RegisterOperation) operations.get(registrationMap.get(t.opID));
 						logger.info("Registration operation id "+registrationMap.get(op.operationId)+" "+op.operationId+" "+rop.getTopic().getTopic());
-
+						rop.elaborateResponse(op.getNeighboursList().toArray(new BigInteger[0]));
 						startRegistration(rop,myPid);
 						registrationMap.remove(op.operationId);
 
