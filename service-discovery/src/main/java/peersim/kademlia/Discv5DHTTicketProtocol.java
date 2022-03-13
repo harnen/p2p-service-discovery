@@ -404,21 +404,15 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 	private void startRegistration(RegisterOperation rop, int myPid) {
 		
 		logger.info("Start registration "+rop.getMessage().type+" "+rop.operationId+" "+rop.getNeighboursList().size());
-		Message message = rop.getMessage(); 
-		message.operationId = rop.operationId;
-		message.type = Message.MSG_REGISTER;
-		message.src = this.node;
-		
-	
+
 		rop.available_requests = KademliaCommonConfig.ALPHA;
+		// send ALPHA messages
 		// send ALPHA messages
 		for (int i = 0; i < KademliaCommonConfig.N; i++) {
 			BigInteger nextNode = rop.getNeighbour();
 			//System.out.println("Nextnode "+nextNode);
 			if (nextNode != null) {
-				message.dest = new KademliaNode(nextNode);
-				sendMessage(message.copy(), nextNode, myPid);
-				rop.nrHops++;
+				sendTicketRequest(nextNode,rop.topic,myPid);
 			}//nextNode may be null, if the node has less than ALPHA neighbours
 		}
 	}
