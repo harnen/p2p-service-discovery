@@ -430,32 +430,6 @@ def createPerNodeStats(dir):
                 size = getNetworkSizeFromPath(path)
 
                 df = pd.read_csv(path + 'msg_received.csv')
-                df.to_csv(path + 'df.csv')
-
-                df_regs_done = pd.read_csv(path + 'registeredRegistrant.csv')
-                #rename columns do make it consistent across dfs
-                df_regs_done.rename(columns = {'nodeId':'Node', 'count':'regsPlaced', 'evil':'evilRegsPlaced'}, inplace = True)
-                df_regs_done.to_csv(path + 'df_regs_done.csv')
-                df_merged = df.merge(df_regs_done, how='left', on='Node')
-                df_regs_done.to_csv(path + 'df_regs_done.csv')
-                df_merged.to_csv(path + 'df_merged1.csv')
-
-                df_regs_accepted = pd.read_csv(path + 'registeredRegistrar.csv')
-                #rename columns do make it consistent across dfs
-                df_regs_accepted.rename(columns = {'nodeId':'Node', 'count':'regsAccepted', 'evil':'evilRegsAccepted'}, inplace = True)
-                #merge per topic info
-                df_regs_accepted = df_regs_accepted.groupby(['Node'])['regsAccepted', 'evilRegsAccepted'].sum().reset_index()
-                df_regs_accepted.to_csv(path + 'df_refs_accepted.csv')
-                df_merged = df_merged.merge(df_regs_accepted, how='left', on='Node')
-                #NaN -> 0
-                df_merged.fillna(0)
-                df_merged.to_csv(path + 'df_merged2.csv')
-
-                #those should hold without turbulance
-                assert(len(df.index) == size)
-                assert(len(df_merged.index) == size)
-                
-                df = df_merged
                 df['protocol'] = protocol
                 df['size'] = size
 
@@ -498,7 +472,7 @@ def createPerNodeStats(dir):
 def analyseOverhead(dfs):
 
     pd.set_option('display.max_rows', None)
-    for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'regsPlaced', 'regsAccepted']:
+    for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 'regsAccepted']:
         fig, ax = plt.subplots()
         for protocol, group in dfs.groupby('protocol'):
             #NaN -> 0
@@ -509,12 +483,8 @@ def analyseOverhead(dfs):
             std = group.groupby('size')[graph].std()
             bx = avg.plot(x='size', y=graph, yerr=std, ax=ax, legend=True, label=protocol)
             bx.set_xlabel("Network Size")
-            if (graph == 'discovered'):
-                bx.set_ylabel("# Avg Peers discovered")
-                bx.set_title("Peers discovered")
-            else:
-                bx.set_ylabel("Messages")
-                bx.set_title(graph + " overhead")
+            bx.set_ylabel("Average " + graph)
+            bx.set_title(graph)
             
         fig.savefig(OUTDIR + '/' + graph)
 

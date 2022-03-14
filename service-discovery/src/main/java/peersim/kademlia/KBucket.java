@@ -78,11 +78,7 @@ public class KBucket implements Cloneable {
 						return false;
 			}
 		}
-		if(Util.nodeIdtoNode(node).getKademliaProtocol() instanceof Discv4Protocol) {
-			List<String> topics = ((Discv4Protocol)Util.nodeIdtoNode(node).getKademliaProtocol()).getRegisteringTopics();
-			for(String t : topics)
-				KademliaObserver.addAcceptedRegistration(new Topic(t), node, rTable.getNodeId(), 0);
-		}
+
 		if (neighbours.size() < k) { // k-bucket isn't full
 			//neighbours.put(node, time); // add neighbour to the tail of the list
 			neighbours.add(node);
