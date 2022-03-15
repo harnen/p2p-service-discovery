@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 //import java.util.Random;
+import peersim.core.Node;
 
 import peersim.core.CommonState;
 import java.util.logging.Logger;
@@ -86,6 +87,11 @@ public class SearchTable extends RoutingTable {
 		} else {
 			removedPerDist.put(dist, removedPerDist.get(dist) + 1);
 		}
+
+		int i = Util.logDistance(nodeId, node) - bucketMinDistance - 1;
+		//BigInteger randomNode = generateRandomNode(i);
+		//protocol.refreshBucket(this, randomNode,i);
+		protocol.refreshBucket(this,i);
 	}
 
 	/**
@@ -97,6 +103,14 @@ public class SearchTable extends RoutingTable {
 		int i = CommonState.r.nextInt(nBuckets);
 		KBucket b = k_buckets[i];
 
+		List<BigInteger> toRemove = new ArrayList<BigInteger>();
+		for(BigInteger n : b.neighbours) {
+			Node node = Util.nodeIdtoNode(n);
+			if(!node.isUp()){
+				toRemove.add(n);
+			}
+		}
+
 		while (b.neighbours.size() < b.k && b.replacements.size() > 0) {
 
 			BigInteger n = b.replacements.get(CommonState.r.nextInt(b.replacements.size()));
@@ -104,9 +118,18 @@ public class SearchTable extends RoutingTable {
 			b.replacements.remove(n);
 		}
 
+
+		if(b.replacements.size()==0||b.neighbours.size()<b.k) {
+			//randomNode = generateRandomNode(i);
+			//protocol.refreshBucket(this, randomNode,i);
+			protocol.refreshBucket(this, i);
+		}
+		
+
 		if (b.neighbours.size() == 0 && refresh) {
-			BigInteger randomNode = generateRandomNode(i);
-			protocol.sendLookup(randomNode, myPid);
+			//BigInteger randomNode = generateRandomNode(i);
+			//protocol.sendLookup(randomNode, myPid);
+			protocol.sendLookup(nodeId, myPid);
 		}
 
 	}

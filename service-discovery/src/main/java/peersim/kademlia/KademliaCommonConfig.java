@@ -25,8 +25,8 @@ public class KademliaCommonConfig {
     public static int TOPIC_PEER_LIMIT = (int)KademliaCommonConfig.MAXCONNECTIONS/3; //how many high quality nodes do we want to find for each topic; after this number we stop
     public static int MAX_SEARCH_HOPS = 50; //how many high quality nodes do we want to find for each topic; after this number we stop
     public static int MAX_TICKETS = 100;
-    public static int MAX_REG_BUCKETS = 0;
-    public static int PARALLELREGISTRATIONS = 0;
+    //public static int MAX_REG_BUCKETS = 0;
+    //public static int PARALLELREGISTRATIONS = 0;
     public static int TTNBUCKETS = 10; 
     public static int STNBUCKETS = 16; 
     
