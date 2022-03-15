@@ -265,14 +265,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		registrationMap.put(op,rop.operationId);
 		
 		logger.info("Registration1 operation id "+rop.operationId+" "+op);
-		
-		
-        if(KademliaCommonConfig.REG_REFRESH==1) {
-        	//Timeout timeout = new Timeout(t, m.src.getId());
-        	int timeout = (int) ((int)KademliaCommonConfig.AD_LIFE_TIME*1.1);
-        	EDSimulator.add(timeout, m, Util.nodeIdtoNode(this.node.getId()), myPid);
-        }
-		
+
 		
 	}
 	
@@ -738,7 +731,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 				scheduled.put(top,sch);
 				logger.info("scheduled Topic "+top+" "+sch);
 				if(sch==0) {
-					logger.info("Registering again");
+					logger.warning("Registering again");
 					EDSimulator.add(0,generateRegisterMessage(top), Util.nodeIdtoNode(this.node.getId()),this.getProtocolID());
 				}
 	        }

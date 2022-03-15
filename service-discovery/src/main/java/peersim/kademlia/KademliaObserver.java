@@ -112,7 +112,7 @@ public class KademliaObserver implements Control {
     private static FileWriter msgWriter;
     private static FileWriter opWriter; 
     
-    private static HashMap<Topic,Integer> regByTopic;
+    //private static HashMap<Topic,Integer> regByTopic;
     private static HashMap<String, HashMap<BigInteger,Integer>> regByRegistrant;
     private static HashMap<String, HashMap<BigInteger,Integer>> regByRegistrantEvil;
     private static HashMap<String, HashMap<BigInteger,Integer>> regByRegistrar;
@@ -192,7 +192,7 @@ public class KademliaObserver implements Control {
 			}
 			opWriter = new FileWriter(this.logFolderName + "/" + "operations.csv");
             opWriter.write("time,id,type,src,dst,used_hops,returned_hops,malicious,discovered,discovered_list,discovered_malicious,queried_malicious,topic,topicID,evil,hops,ratio\n");
-            regByTopic = new HashMap<Topic,Integer>();
+            //regByTopic = new HashMap<Topic,Integer>();
             regByRegistrant = new HashMap<String, HashMap<BigInteger,Integer>>();
             regByRegistrar = new HashMap<String, HashMap<BigInteger,Integer>>();
             regByRegistrarEvil = new HashMap<String, HashMap<BigInteger,Integer>>();
@@ -1091,7 +1091,7 @@ public class KademliaObserver implements Control {
     	}
     }
     
-    private void write_registered_topics_average() {
+   /* private void write_registered_topics_average() {
     	try {
 	        String filename = this.logFolderName + "/" + "registeredTopics.csv";
 	        File myFile = new File(filename);
@@ -1113,7 +1113,7 @@ public class KademliaObserver implements Control {
     	}
 
 
-    }
+    }*/
     
     private void write_registered_registrar_average() {
     	try {
@@ -1468,12 +1468,12 @@ public class KademliaObserver implements Control {
             	avgCounter.put(kadProtocol.getNode().getId(), c);
                 HashMap<Topic,Integer> topics = new HashMap<Topic,Integer>();
                 
-                for(Topic t: topics.keySet()) {
+                /*for(Topic t: topics.keySet()) {
             		int count = 0;
             		if(regByTopic.get(t)!=null)count=regByTopic.get(t);
             		count+=topics.get(t);
             		regByTopic.put(t, count);
-                }
+                }*/
                 
                 if(kadProtocol instanceof Discv5Protocol) {
                 	
@@ -1655,7 +1655,7 @@ public class KademliaObserver implements Control {
         }
 
         write_registered_registrant_average();
-        write_registered_topics_average();
+        //write_registered_topics_average();
         write_registered_registrar_average();
         write_better_waiting_time();
         write_overthreshold_time();
