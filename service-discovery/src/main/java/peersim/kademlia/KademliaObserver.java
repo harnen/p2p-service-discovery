@@ -281,7 +281,14 @@ public class KademliaObserver implements Control {
             numberOfRegistrations.put(topic, 1);
         else
             numberOfRegistrations.put(topic, count+1);
-
+        
+        HashMap<String, Integer> msgStats = msgReceivedByNodes.get(registrant);
+    	msgStats.put("regsPlaced", msgStats.get("regsPlaced") + 1);
+    	msgReceivedByNodes.put(registrant, msgStats);
+    	
+    	msgStats = msgReceivedByNodes.get(registrar);
+    	msgStats.put("regsAccepted", msgStats.get("regsAccepted") + 1);
+    	msgReceivedByNodes.put(registrar, msgStats);
    }
     
     public static void addDiscovered(Topic t, BigInteger requesting,  BigInteger discovered) {
@@ -293,8 +300,6 @@ public class KademliaObserver implements Control {
         		//set.get(discovered).addRegistrar(requesting, CommonState.getTime());
         	}
         }
-        
-
    }
     
     
@@ -329,9 +334,16 @@ public class KademliaObserver implements Control {
             				"," +((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ 
             				"," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+","+ratio+"\n";
             		//update per node stats - the correct entry should be already there (it's created when the first message is received)
+            		//add the nodes discovered cound by the owner of the operation
             		HashMap<String, Integer> msgStats = msgReceivedByNodes.get(op.srcNode);
                 	msgStats.put("discovered", msgStats.get("discovered") + ((LookupOperation)op).discoveredCount());
                 	msgReceivedByNodes.put(op.srcNode, msgStats);
+                	//add info about being discovered by others
+                	for(BigInteger discoveredNode: ((LookupOperation)op).getDiscovered().values()) {
+                		msgStats = msgReceivedByNodes.get(discoveredNode);
+                    	msgStats.put("wasDiscovered", msgStats.get("wasDiscovered") + 1);
+                    	msgReceivedByNodes.put(discoveredNode, msgStats);
+                	}
             	}
             	else {
             		result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+"\n";
@@ -516,9 +528,11 @@ public class KademliaObserver implements Control {
     	//all message counter
     	msgStats.put("numMsg", 0);
     	msgStats.put("discovered", 0);
-    	//msgStats.put("registeredAt", 0);
+    	msgStats.put("wasDiscovered", 0);
+    	msgStats.put("regsPlaced", 0);
+    	msgStats.put("regsAccepted", 0);
+
     	return msgStats;
-		
 	}
 
 	private void write_waiting_times() {
@@ -1423,7 +1437,8 @@ public class KademliaObserver implements Control {
      */
     public boolean execute() {
     	//System.out.println(CommonState.getTime()+" execute");
-
+    	System.gc();
+    	
         if (CommonState.getIntTime() == 0)
         {
             return false;
@@ -1503,8 +1518,6 @@ public class KademliaObserver implements Control {
                             writer = new FileWriter(myFile, true);
                         }
 
-                        //FileWriter writer = new FileWriter(this.logFolderName + "/" + CommonState.getTime() +  "_registrations.csv");
-                        //writer.write("host,topic,registrant,timestamp\n");
 	                    String registrations = ((Discv5Protocol) kadProtocol).topicTable.dumpRegistrations();
 	                    writer.write(registrations);
 	                    writer.close();
@@ -1539,11 +1552,6 @@ public class KademliaObserver implements Control {
                     for(String topic : registrarsEvil.keySet())
                     {
                     	count=0;
-                    	//System.out.println(CommonState.getTime()+" Registrar topic "+topic+" "+registrars.get(topic)+" regs.");
-                    	/*if(regByRegistrar.get(topic)!=null) {
-                    		if(regByRegistrar.get(topic).get(kadProtocol.getNode().getId())!=null) 
-                    			count = regByRegistrar.get(topic).get(kadProtocol.getNode().getId());
-                    	}*/
                     	count+= registrarsEvil.get(topic);
                     	if(regByRegistrarEvil.get(topic)==null) {
                     		HashMap<BigInteger,Integer> tmp = new HashMap<BigInteger,Integer>();
@@ -1560,12 +1568,6 @@ public class KademliaObserver implements Control {
                         competing = ((Discv5GlobalTopicTable)((Discv5Protocol) kadProtocol).topicTable).getCompetingTickets();
                     	
                     	  for(String topic : competing.keySet()) {
-                          	/*count=0;
-                          	if(competingTickets.get(topic)!=null) 
-                          		if(competingTickets.get(topic).get(kadProtocol.getNode().getId())!=null)
-                          			count = competingTickets.get(topic).get(kadProtocol.getNode().getId());
-                          	
-                          	count=competing.get(topic);*/
                           	if(competingTickets.get(topic)==null) {
                           		HashMap<BigInteger,Integer> tmp = new HashMap<BigInteger,Integer>();
                           		tmp.put(kadProtocol.getNode().getId(), competing.get(topic));
@@ -1636,13 +1638,7 @@ public class KademliaObserver implements Control {
 	                    	}
                     	}
                     }
-                    
-                    /*for(String t : regByRegistrant.keySet()) {
-                    	for(BigInteger id : regByRegistrant.get(t).keySet()) {
-                        	System.out.println(CommonState.getTime()+" Registrations "+t+" "+id+" "+regByRegistrant.get(t).get(id));
-                    	}
-                    	
-                    }*/
+
                 }
 
 

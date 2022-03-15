@@ -587,7 +587,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 
 		int all = KademliaObserver.topicRegistrationCount(lop.topic.getTopic());
 		//int required = Math.min(all, KademliaCommonConfig.TOPIC_PEER_LIMIT);
-		 int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
+		int required = KademliaCommonConfig.TOPIC_PEER_LIMIT;
 
 		//if (!lop.finished && found >= required) {
 		
