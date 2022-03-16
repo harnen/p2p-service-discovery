@@ -202,7 +202,7 @@ public class Discv5TicketTopicTable implements TopicTable{ // implements TopicTa
         if (topicQ != null) {
             topicQ.add(reg);
             //System.out.println(this +" Add topictable "+reg.getTopic().getTopic()+" "+topicQ.size());
-        }else {
+        } else {
             ArrayDeque<TopicRegistration> q = new ArrayDeque<TopicRegistration>();
             q.add(reg);
             this.topicTable.put(reg.getTopic(), q);

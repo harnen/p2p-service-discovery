@@ -978,7 +978,7 @@ public class KademliaObserver implements Control {
                 if(all_topics == null) return;
                 
                 for (String topic : all_topics) {
-                	System.out.println("Kademliaobserver stats Topic "+topic);
+                	//System.out.println("Kademliaobserver stats Topic "+topic);
                     title += "," + topic + "-normal";
                     title += "," + topic + "-evil";
                 }
@@ -1225,8 +1225,8 @@ public class KademliaObserver implements Control {
 			        	writer.write(",");
 			        	writer.write(String.valueOf(n));
 			        	writer.write(",");
-			        	//writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()/avgCounter.get(n)));
-			        	writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()));
+			        	writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()/avgCounter.get(n)));
+			        	//writer.write(String.valueOf(regByRegistrant.get(t).get(n).intValue()));
 			        	writer.write(",");
 			        	writer.write(String.valueOf(regByRegistrantEvil.get(t).get(n).intValue()));
 			        	writer.write("\n");
@@ -1447,10 +1447,10 @@ public class KademliaObserver implements Control {
 
             simpCounter++;
         	topicsList.clear();
-        	regByRegistrant = new HashMap<>();
-        	regByRegistrantEvil = new HashMap<>();
-        	regByRegistrar = new HashMap<>();
-        	regByRegistrarEvil = new HashMap<>();
+        	//regByRegistrant = new HashMap<>();
+        	//regByRegistrantEvil = new HashMap<>();
+        	//regByRegistrar = new HashMap<>();
+        	//regByRegistrarEvil = new HashMap<>();
         	
             for(int i = 0; i < Network.size(); i++) {
             	

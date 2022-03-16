@@ -498,7 +498,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			}
 
 		} else {
-			logger.info("Registration succesful for topic " + ticket.getTopic().topic + " at node " + m.src.getId()
+			logger.warning("Registration succesful for topic " + ticket.getTopic().topic + " at node " + m.src.getId()
 					+ " at dist " + Util.logDistance(m.src.getId(), ticket.getTopic().getTopicID()) + " "
 					+ ticket.getCumWaitTime());
 			KademliaObserver.addAcceptedRegistration(topic, this.node.getId(), m.src.getId(), ticket.getCumWaitTime());
@@ -802,7 +802,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 	}
 
 	public void sendTicketRequest(BigInteger dest, Topic t, int myPid) {
-		logger.info("Sending ticket request to " + dest + " for topic " + t.topic);
+		logger.warning("Sending ticket request to " + dest + " for topic " + t.topic);
 		TicketOperation top = new TicketOperation(this.node.getId(), CommonState.getTime(), t);
 		top.body = t;
 		operations.put(top.operationId, top);
@@ -929,7 +929,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			break;
 
 		case Timeout.REG_TIMEOUT:
-			logger.info("Remove ticket table " + ((Timeout) event).nodeSrc);
+			logger.warning("Remove ticket table " + ((Timeout) event).nodeSrc);
 			KademliaObserver.reportExpiredRegistration(((Timeout) event).topic, this.node.is_evil);
 			TicketTable tt = ticketTables.get(((Timeout) event).topic.getTopicID());
 			//tt.removeNeighbour(((Timeout) event).nodeSrc);
@@ -998,13 +998,16 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		
 		for (int i = 0; i <= KademliaCommonConfig.BITS; i++) {
 			BigInteger[] neighbours = routingTable.getNeighbours(i);
-			for(BigInteger node : neighbours)
+			//logger.warning("RefreshBucket "+neighbours.length+" "+i+" "+distance);
+			for(BigInteger node : neighbours) {
 				if(Util.logDistance(rou.getNodeId(),node)==distance){
+					//logger.warning("RefreshBucket add neighbour "+node);
 					if(rou instanceof TicketTable)
-						((TicketTable)rou).addNeighbour(neighbours);
+						((TicketTable)rou).addNeighbour(node);
 					if(rou instanceof SearchTable)
-						((SearchTable)rou).addNeighbour(neighbours);						
+						((SearchTable)rou).addNeighbour(node);						
 				}
+			}
 		}
 		
 		//BigInteger[] neighbours = routingTable.getNeighbours(Util.logDistance(node, this.getNode().getId()));

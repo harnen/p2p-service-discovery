@@ -319,7 +319,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 
 		
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
-			logger.info("Found node " + op.destNode);
+			logger.warning("Found node " + op.destNode);
 			op.finished = true;
 
 			KademliaObserver.find_ok.add(1);
@@ -373,7 +373,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 				if(!op.finished && op.type == Message.MSG_FIND){
 					logger.warning("Couldn't find node " + op.destNode);
 				}*/
-				logger.info("Finished lookup node " + op.getUsedCount());
+				logger.warning("Finished lookup node " + op.getUsedCount());
 				KademliaObserver.reportOperation(op);
 
 				

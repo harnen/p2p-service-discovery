@@ -157,10 +157,10 @@ public class TicketTable extends RoutingTable {
 		pendingTickets.remove(node);
 		getBucket(node).removeNeighbour(node);
 		
-		int i = Util.logDistance(nodeId, node) - bucketMinDistance - 1;
+		//int i = Util.logDistance(nodeId, node) - bucketMinDistance - 1;
 		//BigInteger randomNode = generateRandomNode(i);
 		//protocol.refreshBucket(this, randomNode,i);
-		protocol.refreshBucket(this,i);
+		protocol.refreshBucket(this,Util.logDistance(nodeId, node));
 	}		
 	
 	/**
