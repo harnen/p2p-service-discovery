@@ -192,7 +192,7 @@ public class RoutingTable implements Cloneable {
 	public BigInteger getNodeId() {
 		return this.nodeId;
 	}
-	protected BigInteger generateRandomNode(int b) {
+	/*protected BigInteger generateRandomNode(int b) {
 		
 		BigInteger randNode;
 
@@ -226,7 +226,7 @@ public class RoutingTable implements Cloneable {
 		}
 				
 		return randNode;
-	}
+	}*/
 	
 	public int getbucketMinDistance() {
 		return bucketMinDistance;

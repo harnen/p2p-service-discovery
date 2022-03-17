@@ -78,8 +78,8 @@ public class TicketTable extends RoutingTable {
 
 	
 	public boolean addNeighbour(BigInteger node) {
-		logger.info("Adding neighbour "+bucketWithRegs()+" "+KademliaCommonConfig.MAX_REG_BUCKETS+" "+Util.logDistance(nodeId, node)+" "+(Util.logDistance(nodeId, node) - bucketMinDistance - 1)+" "+(nBuckets-KademliaCommonConfig.MAX_REG_BUCKETS));
-		if(bucketWithRegs()>=KademliaCommonConfig.MAX_REG_BUCKETS&&KademliaCommonConfig.MAX_REG_BUCKETS>0) {
+		//logger.info("Adding neighbour "+bucketWithRegs()+" "+KademliaCommonConfig.MAX_REG_BUCKETS+" "+Util.logDistance(nodeId, node)+" "+(Util.logDistance(nodeId, node) - bucketMinDistance - 1)+" "+(nBuckets-KademliaCommonConfig.MAX_REG_BUCKETS));
+		/*if(bucketWithRegs()>=KademliaCommonConfig.MAX_REG_BUCKETS&&KademliaCommonConfig.MAX_REG_BUCKETS>0) {
 			int dist = Util.logDistance(nodeId, node);
 			int bucket;
 			if(dist<=bucketMinDistance)bucket = 0;
@@ -88,11 +88,12 @@ public class TicketTable extends RoutingTable {
 				logger.info("Return false");
 				return false;
 			}
-		}
+		}*/
 		if(!pendingTickets.contains(node)&&!registeredNodes.contains(node)) {
 			if(super.addNeighbour(node)) {
 				pendingTickets.add(node);
-				if(KademliaCommonConfig.PARALLELREGISTRATIONS==1)protocol.sendTicketRequest(node,t,myPid);
+				//if(KademliaCommonConfig.PARALLELREGISTRATIONS==1)
+				protocol.sendTicketRequest(node,t,myPid);
 				addRegisteredList(node);
 
 				return true;
@@ -156,9 +157,10 @@ public class TicketTable extends RoutingTable {
 		pendingTickets.remove(node);
 		getBucket(node).removeNeighbour(node);
 		
-		int i = Util.logDistance(nodeId, node) - bucketMinDistance - 1;
-		BigInteger randomNode = generateRandomNode(i);
-		protocol.refreshBucket(this, randomNode,i);
+		//int i = Util.logDistance(nodeId, node) - bucketMinDistance - 1;
+		//BigInteger randomNode = generateRandomNode(i);
+		//protocol.refreshBucket(this, randomNode,i);
+		protocol.refreshBucket(this,Util.logDistance(nodeId, node));
 	}		
 	
 	/**
@@ -192,15 +194,16 @@ public class TicketTable extends RoutingTable {
 			b.replacements.remove(n);
 		}
 		
-		BigInteger randomNode = null;
+		//BigInteger randomNode = null;
 
 		if(b.replacements.size()==0||b.neighbours.size()<b.k) {
-			randomNode = generateRandomNode(i);
-			protocol.refreshBucket(this, randomNode,i);
+			//randomNode = generateRandomNode(i);
+			//protocol.refreshBucket(this, randomNode,i);
+			protocol.refreshBucket(this, i);
 		}
 		
 		if(b.neighbours.size()==0&&refresh) {
-			protocol.sendLookup(randomNode, myPid);
+			protocol.sendLookup(nodeId, myPid);
 		}
 		
 	}

@@ -198,7 +198,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 			routingTable.addNeighbour(neighbour);
 		
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
-			logger.warning("Found node " + op.destNode);
+			logger.info("Found node " + op.destNode);
 			op.finished = true;
 			/*if(discv4) {
 				for(String t: this.node.topicQuerying()) {
@@ -270,7 +270,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				}*/
 				KademliaObserver.reportOperation(op);
 				if(!op.finished && op.type == Message.MSG_FIND){
-					logger.warning("Couldn't find node " + op.destNode);
+					logger.info("Couldn't find node " + op.destNode);
 				}
 				return;
 
