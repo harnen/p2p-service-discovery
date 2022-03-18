@@ -29,7 +29,7 @@ public class KademliaCommonConfig {
     public static int TTNBUCKETS = 10; 
     public static int STNBUCKETS = 16; 
     
-    public static int MAX_TOPIC_REPLY = 10;
+    public static int MAX_TOPIC_REPLY = 10; //the number of nodes we get per registrar
 	public static int SLOT = 1000;
 	public static int REG_TIMEOUT = AD_LIFE_TIME;
     public static int REG_WINDOW = 10000;

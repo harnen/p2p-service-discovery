@@ -143,6 +143,8 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
                 if (prot.getNode().is_evil) { //add a registration to evilTopicTable
                     TopicRegistration reg = new TopicRegistration(prot.getNode());
                     Topic targetTopic = prot.getTargetTopic();
+                    m.body = targetTopic; //super call reads topic from m
+                    assert targetTopic.getTopic().length()>0;
                     ArrayList<TopicRegistration> regList = this.evilTopicTable.get(targetTopic);
                     if (regList != null)
                         regList.add(reg);

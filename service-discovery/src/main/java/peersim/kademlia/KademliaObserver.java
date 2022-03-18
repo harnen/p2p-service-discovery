@@ -163,6 +163,11 @@ public class KademliaObserver implements Control {
     private static HashSet<String> topicsSet;
     private static List<String> all_topics;
 
+    // Eclipsing Stats:
+    private static HashMap<String, Integer> numEclipsedLookupOperations = new HashMap<>();
+    private static HashMap<String, Double> percentEclipsedDiscoveredInLookupOperations = new HashMap<>();
+    private static HashMap<String, Integer> numLookupOperationsPerTopic = new HashMap<>();
+
 	public KademliaObserver(String prefix) {
 		this.prefix = prefix;
         this.observerStep = Configuration.getInt(prefix + "." + PAR_STEP);
@@ -309,9 +314,47 @@ public class KademliaObserver implements Control {
         }
         return 0;
     }
+
+    public static void reportEclipsingStats(Operation op) {
+
+        LookupOperation lop = (LookupOperation) op;
+        String topic = lop.topic.getTopic();
+        Integer count = numLookupOperationsPerTopic.get(topic);
+        if (count == null) 
+            numLookupOperationsPerTopic.put(topic, 1);
+        else
+            numLookupOperationsPerTopic.put(topic, count+1);
+
+        HashMap<KademliaNode, BigInteger> discovered = lop.getDiscovered();
+        int numDiscovered = 0;
+        int numEvils = 0;
+        for (KademliaNode node: discovered.keySet())
+        {
+            // check the first TOPIC_PEER_LIMIT nodes only (assume those are out connections)
+            if (numDiscovered >= KademliaCommonConfig.TOPIC_PEER_LIMIT)
+                break;
+            if (node.is_evil)
+                numEvils++;
+            numDiscovered++;
+        }
+
+        if (numEvils == numDiscovered) { //eclipsed
+            count = numEclipsedLookupOperations.get(topic);
+            if (count == null) 
+                numEclipsedLookupOperations.put(topic, 1);
+            else 
+                numEclipsedLookupOperations.put(topic, count+1);
+        }
+        // percent of discovered nodes that are evil out of all discovered in an operation
+        Double percentEvilDiscovered = (1.0*numEvils)/numDiscovered;
+        Double percent = percentEclipsedDiscoveredInLookupOperations.get(topic);
+        if (percent == null) 
+            percentEclipsedDiscoveredInLookupOperations.put(topic, percentEvilDiscovered);
+        else
+            percentEclipsedDiscoveredInLookupOperations.put(topic, percent + percentEvilDiscovered);
+    }
     
     public static void reportOperation(Operation op) {
-
         //if(CommonState.getTime()<KademliaCommonConfig.AD_LIFE_TIME)return;
 
         try {
@@ -324,6 +367,7 @@ public class KademliaObserver implements Control {
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
                 //result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
             	double ratio = (double)op.nrHops/((LookupOperation)op).discoveredCount();
+                reportEclipsingStats(op);
             	
             	if(((LookupOperation)op).discoveredCount() > 0) {
             		result += CommonState.getTime()+","+op.operationId + 
@@ -1245,10 +1289,6 @@ public class KademliaObserver implements Control {
 
     private void write_eclipsing_results() {
 
-        HashMap<String,Integer> num_eclipsed_nodes = new HashMap<>();
-        HashSet<BigInteger> eclipsed_nodes = new HashSet<BigInteger>();
-        HashSet<BigInteger> uneclipsed_nodes = new HashSet<BigInteger>();
-       // HashSet<BigInteger> evil_nodes = new HashSet<BigInteger>();
         try {
             String filename = this.logFolderName + "/" + "eclipse_counts.csv";
             File myFile = new File(filename);
@@ -1259,55 +1299,63 @@ public class KademliaObserver implements Control {
                 myFile.createNewFile();
                 writer = new FileWriter(myFile, true);
                 writer.write("time,");
-                for(String t : all_topics)
-                	writer.write("topic-"+t+",");
+                for(String t : all_topics) {
+                	writer.write("PercentEvilDiscovered-"+t+",");
+                }
+                for(String t : all_topics) {
+                	writer.write("PercentEclipsed-"+t+",");
+                }
                 //writer.write("EclipsedNodes,UnEclipsedNodes,EvilNodes\n");
-                writer.write("EclipsedNodes,UnEclipsedNodes\n");
+                writer.write("PercentEclipsedOperations\n");
             }
             else {
                 writer = new FileWriter(myFile, true);
             }
 
-            for(String t : all_topics) {
-            	num_eclipsed_nodes.put(t, 0);
-            }
-            
-            for(int i = 0; i < Network.size(); i++) {
-				if( !(Network.get(i).isUp()) ) {
-                    continue;   
-                }
-                Node node = Network.get(i);
-                kadProtocol = node.getKademliaProtocol();
-
-                //FIXME: temporarily reporting everything as uneclipsed until we fix that
-                /*if (kadProtocol.getNode().isEclipsed()) {
-                        eclipsed_nodes.add(kadProtocol.getNode().getId());
-                        for(String t : all_topics) {
-                        	if(kadProtocol.getNode().isEclipsed(t)) {
-	                        	int n = num_eclipsed_nodes.get(t).intValue();
-	                        	n++;
-	                        	num_eclipsed_nodes.put(t, n);
-                        	}
-                        }
-                        	
-                }
-                else {
-                    uneclipsed_nodes.add(kadProtocol.getNode().getId());
-                }*/
-                uneclipsed_nodes.add(kadProtocol.getNode().getId());
-                
-            }
             writer.write(CommonState.getTime() + ",");
-            for(String t : all_topics)
-            	 writer.write(String.valueOf(num_eclipsed_nodes.get(t).intValue())+",");
-            writer.write(Util.bigIntegetSetToString(eclipsed_nodes));
-            writer.write("," + Util.bigIntegetSetToString(uneclipsed_nodes)+"\n");
-            //writer.write("," + Util.bigIntegetSetToString(evil_nodes) + "\n");
+            // Percentage of discovered nodes that are evil
+            for(String t : all_topics) {
+                Double percent = percentEclipsedDiscoveredInLookupOperations.get(t);
+                if (percent != null) { 
+                    Integer numOps = numLookupOperationsPerTopic.get(t);
+                    percent = percent / numOps;
+                    writer.write(String.valueOf(percent)+",");
+                }
+                else 
+                    writer.write("0,");
+            }
+            Integer totalEclipsed = 0;
+            Integer totalOperations = 0;
+            // Percentage of eclipsed nodes
+            for(String t : all_topics) {
+                Integer numEclipsed = numEclipsedLookupOperations.get(t);
+                if (numEclipsed != null) {
+                    totalEclipsed += numEclipsed;
+                    Integer numOps = numLookupOperationsPerTopic.get(t);
+                    Double percent = (1.0*numEclipsed)/numOps;
+                    writer.write(String.valueOf(percent)+",");
+                }
+                else {    
+                    writer.write("0,");
+                }
+                Integer numOps = numLookupOperationsPerTopic.get(t);
+                if (numOps != null)
+                    totalOperations += numOps;
+            }
+            if (totalOperations == 0) {
+                totalOperations = 1;
+                totalEclipsed = 0;
+            }
+            Double percentEclipsed = (1.0*totalEclipsed)/totalOperations;
+            writer.write(String.valueOf(percentEclipsed)+"\n");
             writer.close();
         } catch (IOException e) {
 
             e.printStackTrace();
         }
+        numEclipsedLookupOperations.clear();
+        numLookupOperationsPerTopic.clear();
+        percentEclipsedDiscoveredInLookupOperations.clear();
     }
 
     /*private boolean is_eclipsed(KademliaNode node) {
@@ -1662,8 +1710,8 @@ public class KademliaObserver implements Control {
             write_waiting_times();
             write_average_storage_utilisation_per_topic();
         }
-    	if(CommonState.getTime() > 3000000)
-            write_node_info();
+    	//if(CommonState.getTime() > 3000000)
+        //    write_node_info();
         write_registered_topics_timing();
         write_exchanged_msg_stats_over_time();
         if ( CommonState.getEndTime() <= (this.observerStep + CommonState.getTime()) ) {
