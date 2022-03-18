@@ -8,7 +8,7 @@ import numpy as np
 import array
 import sys
 import csv
-import math
+import scipy.stats as sp # for calculating standard error
 import os
 
 csv.field_size_limit(sys.maxsize)
@@ -416,10 +416,11 @@ def createPerNodeStats(dir):
     return dfs
 
 
-def analyseOverhead():
+def analyseOverhead(bar=True):
     pd.set_option('display.max_rows', None)
     dfs = pd.read_csv('dfs.csv')
     features = ['size', 'topics']
+    #features = ['size']
     #default values for all the features
     defaults = {}
     #FIXME: assumed that the default value is the most popular
@@ -438,17 +439,32 @@ def analyseOverhead():
         #y-axis
         for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 'regsAccepted']:
             fig, ax = plt.subplots()
-            for protocol, group in df.groupby('protocol'):
+            groups = df.groupby('protocol')
+
+            #set bar in the middle of x-tics
+            i = (len(groups)-1) * -0.5
+            i = -1.5
+            for protocol, group in groups:
                 #NaN -> 0
                 group = group.fillna(0)
                 avg = group.groupby(feature)[graph].mean()
                 std = group.groupby(feature)[graph].std()
-                bx = avg.plot(x=feature, y=graph, yerr=std, ax=ax, legend=True, label=protocol)
-                bx.set_xlabel(feature)
-                bx.set_ylabel("Average " + graph)
-                bx.set_title(graph)
-                
-            fig.savefig(OUTDIR + '/' + feature + "_" + graph)
+                if(bar == False):
+                    avg.plot(x=feature, y=graph, yerr=std, ax=ax, legend=True, label=protocol)
+                else:
+                    #calculate bar width based on the max x-value and the number of protocols
+                    width = avg.index[-1]/(len(groups)*(len(groups)+2))
+                    x = [int(val) + (i * width) for val in avg.index]
+                    plt.bar(x, avg, width, label=protocol, yerr = std)
+                    ax.set_xlabel(feature)
+                    ax.set_ylabel("Average " + graph)
+                    ax.set_title(graph)
+                    ax.legend()
+                    i += 1
+            if(bar == False):
+                fig.savefig(OUTDIR + '/'+ feature + "_" + graph)
+            else:
+                fig.savefig(OUTDIR + '/' + 'bar_'  + feature + "_" + graph)
 
 OUTDIR = './'
 
