@@ -23,6 +23,10 @@ def getNetworkSizeFromPath(path):
 def getTopicNumFromPath(path):
     return  int(path.split('_topic-')[1].split('_')[0].replace('/', ''))
 
+def getDiscv5RegsFromPath(path):
+    return  int(path.split('_discv5regs-')[1].split('_')[0].replace('/', ''))
+
+
 def createPerNodeStats(dir):
     df_list = []
     object_list = os.listdir(dir)
@@ -45,10 +49,12 @@ def createPerNodeStats(dir):
                 protocol = getProtocolFromPath(path)
                 size = getNetworkSizeFromPath(path)
                 topics = getTopicNumFromPath(path)
+                discv5regs = getDiscv5RegsFromPath(path)
                 print("From path:", path, "Extracted protocol:", protocol, "size:", size, "topics:", topics)
                 df['protocol'] = protocol
                 df['size'] = size
                 df['topics'] = topics
+                df['discv5regs'] = discv5regs
 
                 if(protocol == 'discv4'):
                     #should be all 0 in discv4, but including anyway for sanity check
@@ -77,7 +83,7 @@ def createPerNodeStats(dir):
 def plotPerNodeStats(bar=True):
     pd.set_option('display.max_rows', None)
     dfs = pd.read_csv('dfs.csv')
-    features = ['size', 'topics']
+    features = ['size', 'topics', 'discv5regs']
     #features = ['size']
     #default values for all the features
     defaults = {}
