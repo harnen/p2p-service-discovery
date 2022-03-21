@@ -130,7 +130,7 @@ public class Discv5EvilDHTTicketProtocol extends Discv5TicketProtocol {
             //logger.warning("Log"+initTicketRequestTime.get(t).ge);
             previousTicketRequestTime.put(t, new HashMap<BigInteger,Long>());
             
-            super.handleInitRegisterTopic(m, myPid);
+            //super.handleInitRegisterTopic(m, myPid);
         }
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
             first = false;

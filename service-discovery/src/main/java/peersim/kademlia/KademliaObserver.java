@@ -347,6 +347,8 @@ public class KademliaObserver implements Control {
         }
         // percent of discovered nodes that are evil out of all discovered in an operation
         Double percentEvilDiscovered = (1.0*numEvils)/numDiscovered;
+        if (numDiscovered == 0)
+            percentEvilDiscovered = 0.0;
         Double percent = percentEclipsedDiscoveredInLookupOperations.get(topic);
         if (percent == null) 
             percentEclipsedDiscoveredInLookupOperations.put(topic, percentEvilDiscovered);
@@ -1318,7 +1320,10 @@ public class KademliaObserver implements Control {
                 Double percent = percentEclipsedDiscoveredInLookupOperations.get(t);
                 if (percent != null) { 
                     Integer numOps = numLookupOperationsPerTopic.get(t);
-                    percent = percent / numOps;
+                    if (numOps == 0)
+                        percent = 0.0;
+                    else
+                        percent = percent / numOps;
                     writer.write(String.valueOf(percent)+",");
                 }
                 else 
@@ -1333,6 +1338,8 @@ public class KademliaObserver implements Control {
                     totalEclipsed += numEclipsed;
                     Integer numOps = numLookupOperationsPerTopic.get(t);
                     Double percent = (1.0*numEclipsed)/numOps;
+                    if(numOps == 0)
+                        percent = 0.0;
                     writer.write(String.valueOf(percent)+",");
                 }
                 else {    
@@ -1347,10 +1354,11 @@ public class KademliaObserver implements Control {
                 totalEclipsed = 0;
             }
             Double percentEclipsed = (1.0*totalEclipsed)/totalOperations;
+            if (totalOperations == 0)
+                percentEclipsed = 0.0;
             writer.write(String.valueOf(percentEclipsed)+"\n");
             writer.close();
         } catch (IOException e) {
-
             e.printStackTrace();
         }
         numEclipsedLookupOperations.clear();

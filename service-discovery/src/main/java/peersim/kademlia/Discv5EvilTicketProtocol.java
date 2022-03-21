@@ -130,7 +130,7 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
             //logger.warning("Log"+initTicketRequestTime.get(t).ge);
             previousTicketRequestTime.put(t, new HashMap<BigInteger,Long>());
             
-            super.handleInitRegisterTopic(m, myPid);
+            //super.handleInitRegisterTopic(m, myPid);
         }
         if ( first && ( this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID) || this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_MALICIOUS_REGISTRAR) ) ) {
             first = false;
@@ -143,8 +143,6 @@ public class Discv5EvilTicketProtocol extends Discv5TicketProtocol {
                 if (prot.getNode().is_evil) { //add a registration to evilTopicTable
                     TopicRegistration reg = new TopicRegistration(prot.getNode());
                     Topic targetTopic = prot.getTargetTopic();
-                    m.body = targetTopic; //super call reads topic from m
-                    assert targetTopic.getTopic().length()>0;
                     ArrayList<TopicRegistration> regList = this.evilTopicTable.get(targetTopic);
                     if (regList != null)
                         regList.add(reg);
