@@ -31,7 +31,8 @@ def set_params(config_file, out_dir, params):
 
 
 features = {'size': {'default': 3000, 'keyword': 'SIZE', 'vals':[1000, 2000, 3000,  4000, 5000]},
-            'topic': {'default': 20, 'keyword': 'control.0traffic.maxtopicnum', 'vals':[1, 20, 40,  60, 80]}}
+            'topic': {'default': 20, 'keyword': 'control.0traffic.maxtopicnum', 'vals':[1, 20, 40,  60, 80]},
+            'discv5regs': {'default': 5, 'keyword': 'protocol.3kademlia.TICKET_TABLE_BUCKET_SIZE', 'vals':[2, 3, 4, 5, 6]}}
 #protocols to test
 config_files = {'discv5': './config/discv5ticket.cfg', 
                 'dhtticket': './config/discv5dhtticket.cfg', 

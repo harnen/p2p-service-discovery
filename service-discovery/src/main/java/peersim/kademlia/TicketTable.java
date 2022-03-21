@@ -263,7 +263,7 @@ public class TicketTable extends RoutingTable {
 		return regs;
 		
 	}	
-	
+	/* Not used anymore
 	public boolean shallContinueRegistration() {
 		int windowSize = Math.min(seenOccupancy.size(), KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE);
 		System.out.println("STOP_REGISTER_WINDOW_SISZE: " + KademliaCommonConfig.STOP_REGISTER_WINDOW_SIZE + " STOP_REGISTER_MIN_REGS: " + KademliaCommonConfig.STOP_REGISTER_MIN_REGS + " windowsSize:" + windowSize);
@@ -285,7 +285,7 @@ public class TicketTable extends RoutingTable {
 			return false;
 		}
 		return true;
-	}
+	}*/
 
 	public void reportResponse(Ticket ticket) {
 		seenOccupancy.add(ticket.getOccupancy());
