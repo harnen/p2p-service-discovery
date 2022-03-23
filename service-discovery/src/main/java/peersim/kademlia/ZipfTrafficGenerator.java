@@ -67,8 +67,8 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
                 }
 				
 				int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
-			    Message registerMessage = generateRegisterMessage(topicString);
-			    Message lookupMessage = generateTopicLookupMessage(topicString);
+			    Message registerMessage = generateRegisterMessage(topic.getTopic());
+			    Message lookupMessage = generateTopicLookupMessage(topic.getTopic());
 				prot.getNode().setTopic(topicString, start);
 
 			    if(registerMessage != null) EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
