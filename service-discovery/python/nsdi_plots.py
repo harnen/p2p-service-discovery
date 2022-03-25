@@ -13,30 +13,11 @@ import os
 
 csv.field_size_limit(sys.maxsize)
 
-# used for eclipsing results
-def getPercentEvilFromPath(path):
-    return path.split('percentEvil-')[1].split('_')[0].replace('/', '')
-def getSybilSizeFromPath(path):
-    return path.split('sybil_size-')[1].split('_')[0].replace('/', '')
-def getAttackTopicFromPath(path):
-    return path.split('attackTopic-')[1].split('_')[0].replace('/', '')
 def getProtocolFromPath(path):
     return  path.split('/')[0]
-def getIdDistributionFromPath(path):
-    return path.split('id_distribution-')[1].split('_')[0].replace('/', '')
-
-def getProtocolFromPath(path):
-    return  path.split('/')[0]
-#current dir format: _size-3000_topic-40
-def getNetworkSizeFromPath(path):
-    return  int(path.split('_size-')[1].split('_')[0].replace('/', ''))
-#current dir format: _size-3000_topic-40
-def getTopicNumFromPath(path):
-    return  int(path.split('_topic-')[1].split('_')[0].replace('/', ''))
-
-def getDiscv5RegsFromPath(path):
-    return  int(path.split('_discv5regs-')[1].split('_')[0].replace('/', ''))
-
+#current dir format: _size-3000_topic-40_...
+def getFeatureFromPath(feature, path):
+    return  path.split('_' + feature + '-')[1].split('_')[0].replace('/', '')
 
 def createPerNodeStats(dir):
     df_list = []
@@ -58,9 +39,9 @@ def createPerNodeStats(dir):
             try:
                 df = pd.read_csv(path + 'msg_received.csv')
                 protocol = getProtocolFromPath(path)
-                size = getNetworkSizeFromPath(path)
-                topics = getTopicNumFromPath(path)
-                discv5regs = getDiscv5RegsFromPath(path)
+                size = int(getFeatureFromPath('size', path))
+                topics = int(getFeatureFromPath('topic', path))
+                discv5regs = int(getFeatureFromPath('discv5regs', path))
                 print("From path:", path, "Extracted protocol:", protocol, "size:", size, "topics:", topics)
                 df['protocol'] = protocol
                 df['size'] = size
@@ -111,10 +92,10 @@ def createPerLookupOperationStats(dir):
             try:
                 df = pd.read_csv(path + 'eclipse_counts.csv')
                 protocol = getProtocolFromPath(path)
-                sybilSize = getSybilSizeFromPath(path)
-                attackTopic = getAttackTopicFromPath(path)
-                distribution = getIdDistributionFromPath(path)
-                percentEvil = getPercentEvilFromPath(path)
+                sybilSize = int(getFeatureFromPath('sybil_size', path))
+                attackTopic = getFeatureFromPath('attackTopic', path)
+                distribution = getFeatureFromPath('id_distribution', path)
+                percentEvil = getFeatureFromPath('percentEvil', path)
                 print("From path:", path, "Extracted protocol:", protocol, "sybil size:", sybilSize, "attack topic:", attackTopic, "ID distribution: ",distribution )
 
                 percentDiscoveredField = 'PercentEvilDiscovered-t' + attackTopic
@@ -240,8 +221,8 @@ if not os.path.exists(OUTDIR):
 print('Will read logs from', LOGDIR)
 print('Plots will be saved in ', OUTDIR)
 
-createPerLookupOperationStats(LOGDIR)
-plotPerLookupOperation()
+#createPerLookupOperationStats(LOGDIR)
+#plotPerLookupOperation()
 
-#createPerNodeStats(LOGDIR)
-#plotPerNodeStats()
+createPerNodeStats(LOGDIR)
+plotPerNodeStats()
