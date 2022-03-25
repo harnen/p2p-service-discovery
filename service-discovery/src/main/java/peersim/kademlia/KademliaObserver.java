@@ -287,13 +287,9 @@ public class KademliaObserver implements Control {
         else
             numberOfRegistrations.put(topic, count+1);
         
-        HashMap<String, Integer> msgStats = msgReceivedByNodes.get(registrant);
-    	msgStats.put("regsPlaced", msgStats.get("regsPlaced") + 1);
-    	msgReceivedByNodes.put(registrant, msgStats);
+        increaseMsgStatsBy(registrant, "regsPlaced", 1);
+        increaseMsgStatsBy(registrar, "regsAccepted", 1);
     	
-    	msgStats = msgReceivedByNodes.get(registrar);
-    	msgStats.put("regsAccepted", msgStats.get("regsAccepted") + 1);
-    	msgReceivedByNodes.put(registrar, msgStats);
    }
     
     public static void addDiscovered(Topic t, BigInteger requesting,  BigInteger discovered) {
@@ -356,6 +352,13 @@ public class KademliaObserver implements Control {
             percentEclipsedDiscoveredInLookupOperations.put(topic, percent + percentEvilDiscovered);
     }
     
+    public static void increaseMsgStatsBy(BigInteger nodeID, String feature, int increase) {
+    	HashMap<String, Integer> msgStats = msgReceivedByNodes.get(nodeID);
+    	msgStats.put("discovered", msgStats.get(feature) + increase);
+    	msgReceivedByNodes.put(nodeID, msgStats);
+    	
+    }
+    
     public static void reportOperation(Operation op) {
         //if(CommonState.getTime()<KademliaCommonConfig.AD_LIFE_TIME)return;
 
@@ -381,14 +384,11 @@ public class KademliaObserver implements Control {
             				"," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+","+ratio+"\n";
             		//update per node stats - the correct entry should be already there (it's created when the first message is received)
             		//add the nodes discovered cound by the owner of the operation
-            		HashMap<String, Integer> msgStats = msgReceivedByNodes.get(op.srcNode);
-                	msgStats.put("discovered", msgStats.get("discovered") + ((LookupOperation)op).discoveredCount());
-                	msgReceivedByNodes.put(op.srcNode, msgStats);
-                	//add info about being discovered by others
+            		increaseMsgStatsBy(op.srcNode, "discovered", ((LookupOperation)op).discoveredCount());
+
+            		//add info about being discovered by others
                 	for(BigInteger discoveredNode: ((LookupOperation)op).getDiscovered().values()) {
-                		msgStats = msgReceivedByNodes.get(discoveredNode);
-                    	msgStats.put("wasDiscovered", msgStats.get("wasDiscovered") + 1);
-                    	msgReceivedByNodes.put(discoveredNode, msgStats);
+                		increaseMsgStatsBy(discoveredNode, "wasDiscovered", 1);
                 	}
             	}
             	else {
@@ -553,14 +553,8 @@ public class KademliaObserver implements Control {
         if (msgStats == null) {
         	msgStats = createMsgReceivedByNodesEntry();
         }
-        	
-        //increase the counter for the message type
-        msgStats.put(m.messageTypetoString(), msgStats.get(m.messageTypetoString()) + 1);
-        //increase the total messages count
-        msgStats.put("numMsg", msgStats.get("numMsg") + 1);
-        //put the stats back
-        msgReceivedByNodes.put(m.dest.getId(), msgStats);
-
+        
+        increaseMsgStatsBy(m.dest.getId(), m.messageTypetoString(), 1);
     }
 
     private static HashMap<String, Integer> createMsgReceivedByNodesEntry() {
