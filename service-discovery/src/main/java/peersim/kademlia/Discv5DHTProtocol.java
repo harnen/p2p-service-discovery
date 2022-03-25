@@ -95,7 +95,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 			/*if(!lop.getDiscovered().containsKey(r.getNode()))
 				sendHandShake(r.getNode(),r.getTopic().getTopic(),m.operationId,myPid);*/
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
-			lop.addDiscovered(r.getNode(),m.src.getId());
+			lop.addDiscovered(r.getNode());
 
 
 		}

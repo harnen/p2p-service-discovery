@@ -101,7 +101,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			/*if(!lop.getDiscovered().containsKey(r.getNode()))
 				sendHandShake(r.getNode(),r.getTopic().getTopic(),m.operationId,myPid);*/
 			
-			lop.addDiscovered(r.getNode(),m.src.getId());
+			lop.addDiscovered(r.getNode());
 
 			//lop.addDiscovered(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
 

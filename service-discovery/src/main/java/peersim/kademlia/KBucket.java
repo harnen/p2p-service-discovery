@@ -138,7 +138,7 @@ public class KBucket implements Cloneable {
 	}
 	
 	public void replace() {
-		if(replacements.size()>0&&neighbours.size() < k) {
+		if((replacements.size() > 0) && (neighbours.size() < k)) {
 			//Random rand = new Random();
 			//BigInteger n = replacements.get(rand.nextInt(replacements.size()));
             BigInteger n = replacements.get(CommonState.r.nextInt(replacements.size()));

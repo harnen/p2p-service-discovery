@@ -183,7 +183,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 					KademliaObserver.reportMsg(reply, false);
 					
 					if(returnedPeer.hasTopic(topicString)){
-						lop.addDiscovered(returnedPeer, returnedPeerId);
+						lop.addDiscovered(returnedPeer);
 						KademliaObserver.addDiscovered(lop.topic, m.src.getId(), returnedPeerId);
 					}
 					

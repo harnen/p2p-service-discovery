@@ -321,20 +321,10 @@ public class KademliaObserver implements Control {
         else
             numLookupOperationsPerTopic.put(topic, count+1);
 
-        HashMap<KademliaNode, BigInteger> discovered = lop.getDiscovered();
-        int numDiscovered = 0;
-        int numEvils = 0;
-        for (KademliaNode node: discovered.keySet())
-        {
-            // check the first TOPIC_PEER_LIMIT nodes only (assume those are out connections)
-            if (numDiscovered >= KademliaCommonConfig.TOPIC_PEER_LIMIT)
-                break;
-            if (node.is_evil)
-                numEvils++;
-            numDiscovered++;
-        }
+        int numDiscovered = lop.discoveredCount();
+        int numEvils = lop.maliciousDiscoveredCount();
 
-        if (numEvils == numDiscovered) { //eclipsed
+        if (lop.isEclipsed()) { //eclipsed
             count = numEclipsedLookupOperations.get(topic);
             if (count == null) 
                 numEclipsedLookupOperations.put(topic, 1);
@@ -395,8 +385,8 @@ public class KademliaObserver implements Control {
             		}
 
             		//add info about being discovered by others
-                	for(BigInteger discoveredNode: ((LookupOperation)op).getDiscovered().values()) {
-                		increaseNodeStatsBy(discoveredNode, "wasDiscovered", 1);
+                	for(KademliaNode discoveredNode: ((LookupOperation)op).getDiscovered()) {
+                		increaseNodeStatsBy(discoveredNode.getId(), "wasDiscovered", 1);
                 	}
             	}
             	else {

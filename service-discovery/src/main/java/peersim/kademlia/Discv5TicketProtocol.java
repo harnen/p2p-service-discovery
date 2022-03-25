@@ -577,7 +577,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			//if(!lop.getDiscovered().containsKey(r.getNode()))
 			//	sendHandShake(r.getNode(),r.getTopic().getTopic(),m.operationId,myPid);
 			
-			lop.addDiscovered(r.getNode(),m.src.getId());
+			lop.addDiscovered(r.getNode());
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
 
 
