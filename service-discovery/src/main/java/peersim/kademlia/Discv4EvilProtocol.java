@@ -59,7 +59,6 @@ public class Discv4EvilProtocol extends Discv4Protocol  {
 		if (_ALREADY_INSTALLED)
 			return;
 
-
 		
 		super._init();
 	}
@@ -79,8 +78,8 @@ public class Discv4EvilProtocol extends Discv4Protocol  {
      */
     protected void handleInitRegister(Message m, int myPid) {
 
-		logger.warning("Discv4 evil handleInitRegister");
-
+		//logger.warning("Discv4 evil handleInitRegister");
+        
         // Fill the evilRoutingTable only with other malicious nodes
         this.evilRoutingTable.setNodeId(this.node.getId());
         for (int i = 0; i < Network.size(); i++) {
@@ -92,8 +91,8 @@ public class Discv4EvilProtocol extends Discv4Protocol  {
                 this.evilRoutingTable.addNeighbour(prot.getNode().getId());   
             }
         }
-
         super.handleInitRegister(m, myPid);
+
     }
     
 	/**
@@ -107,18 +106,11 @@ public class Discv4EvilProtocol extends Discv4Protocol  {
 	 */
 	protected void handleFind(Message m, int myPid, int dist) {
 		// get the ALPHA closest node to destNode
-		
-		logger.warning("Discv4 evil handleFind");
-
 		BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(dist);
-		//System.out.println("find node received at "+this.node.getId()+" distance "+(int) m.body); 
-
-		/*System.out.print("Including neigbours: [");
-		for(BigInteger n : neighbours){
-			System.out.println(", " + n);
-		}
-		System.out.println("]");*/
-
+        // remove the source of message m from the results
+        List<BigInteger> tempList = new ArrayList<BigInteger>(Arrays.asList(neighbours));
+        tempList.remove(m.src.getId());
+        neighbours = tempList.toArray(new BigInteger[0]);
 
 		// create a response message containing the neighbours (with the same id of the request)
 		Message response = new Message(Message.MSG_RESPONSE, neighbours);

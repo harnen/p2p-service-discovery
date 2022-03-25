@@ -338,7 +338,7 @@ public class KademliaObserver implements Control {
             numDiscovered++;
         }
 
-        if (numEvils == numDiscovered) { //eclipsed
+        if ( (numEvils == numDiscovered) && (numDiscovered > 0) ) { //eclipsed
             count = numEclipsedLookupOperations.get(topic);
             if (count == null) 
                 numEclipsedLookupOperations.put(topic, 1);
