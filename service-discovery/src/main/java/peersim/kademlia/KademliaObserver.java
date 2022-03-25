@@ -142,7 +142,7 @@ public class KademliaObserver implements Control {
 
     
     
-    private static HashMap<BigInteger, HashMap<String, Integer>> msgReceivedByNodes = new HashMap<BigInteger, HashMap<String, Integer>>();
+    private static HashMap<BigInteger, HashMap<String, Integer>> perNodeStats = new HashMap<BigInteger, HashMap<String, Integer>>();
     private static HashMap<Integer, Integer> msgSentPerType = new HashMap<Integer, Integer>();
     private static HashMap<String, Integer> registerOverhead = new HashMap<String, Integer>();
     private static HashMap<String, Integer> numberOfRegistrations = new HashMap<String, Integer>();
@@ -287,8 +287,8 @@ public class KademliaObserver implements Control {
         else
             numberOfRegistrations.put(topic, count+1);
         
-        increaseMsgStatsBy(registrant, "regsPlaced", 1);
-        increaseMsgStatsBy(registrar, "regsAccepted", 1);
+        increaseNodeStatsBy(registrant, "regsPlaced", 1);
+        increaseNodeStatsBy(registrar, "regsAccepted", 1);
     	
    }
     
@@ -352,10 +352,10 @@ public class KademliaObserver implements Control {
             percentEclipsedDiscoveredInLookupOperations.put(topic, percent + percentEvilDiscovered);
     }
     
-    public static void increaseMsgStatsBy(BigInteger nodeID, String feature, int increase) {
-    	HashMap<String, Integer> msgStats = msgReceivedByNodes.get(nodeID);
-    	msgStats.put("discovered", msgStats.get(feature) + increase);
-    	msgReceivedByNodes.put(nodeID, msgStats);
+    public static void increaseNodeStatsBy(BigInteger nodeID, String feature, int increase) {
+    	HashMap<String, Integer> nodeStats = perNodeStats.get(nodeID);
+    	nodeStats.put("discovered", nodeStats.get(feature) + increase);
+    	perNodeStats.put(nodeID, nodeStats);
     	
     }
     
@@ -384,11 +384,19 @@ public class KademliaObserver implements Control {
             				"," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+","+ratio+"\n";
             		//update per node stats - the correct entry should be already there (it's created when the first message is received)
             		//add the nodes discovered cound by the owner of the operation
-            		increaseMsgStatsBy(op.srcNode, "discovered", ((LookupOperation)op).discoveredCount());
+            		int discovered = ((LookupOperation)op).discoveredCount();
+            		int maliciousDiscovered = ((LookupOperation) op).maliciousDiscoveredCount();
+            		assert(discovered >= maliciousDiscovered);
+            		increaseNodeStatsBy(op.srcNode, "discovered", discovered);
+            		increaseNodeStatsBy(op.srcNode, "maliciousDiscovered", maliciousDiscovered);
+            		increaseNodeStatsBy(op.srcNode, "lookupOperations", 1);
+            		if(discovered == maliciousDiscovered) {
+            			increaseNodeStatsBy(op.srcNode, "eclipsedLookupOperations", 1);	
+            		}
 
             		//add info about being discovered by others
                 	for(BigInteger discoveredNode: ((LookupOperation)op).getDiscovered().values()) {
-                		increaseMsgStatsBy(discoveredNode, "wasDiscovered", 1);
+                		increaseNodeStatsBy(discoveredNode, "wasDiscovered", 1);
                 	}
             	}
             	else {
@@ -549,12 +557,12 @@ public class KademliaObserver implements Control {
                 registerOverhead.put(topic.getTopic(), count+1);
         }
 
-        HashMap<String, Integer> msgStats = msgReceivedByNodes.get(m.dest.getId());
+        HashMap<String, Integer> msgStats = perNodeStats.get(m.dest.getId());
         if (msgStats == null) {
         	msgStats = createMsgReceivedByNodesEntry();
         }
         
-        increaseMsgStatsBy(m.dest.getId(), m.messageTypetoString(), 1);
+        increaseNodeStatsBy(m.dest.getId(), m.messageTypetoString(), 1);
     }
 
     private static HashMap<String, Integer> createMsgReceivedByNodesEntry() {
@@ -571,6 +579,8 @@ public class KademliaObserver implements Control {
     	msgStats.put("wasDiscovered", 0);
     	msgStats.put("regsPlaced", 0);
     	msgStats.put("regsAccepted", 0);
+    	msgStats.put("maliciousDiscovered", 0);
+    	msgStats.put("lookupOperations", 0);
 
     	return msgStats;
 	}
@@ -908,7 +918,7 @@ public class KademliaObserver implements Control {
             String filename = this.logFolderName + "/" + "msg_received.csv";
             FileWriter writer = new FileWriter(filename);
             //get all the keys we store in the hashmap
-            Entry<BigInteger, HashMap<String, Integer>> entry = msgReceivedByNodes.entrySet().stream().findFirst().get();
+            Entry<BigInteger, HashMap<String, Integer>> entry = perNodeStats.entrySet().stream().findFirst().get();
             Object[] keys = entry.getValue().keySet().toArray();
 
             String title = "Node";
@@ -918,8 +928,8 @@ public class KademliaObserver implements Control {
             title += "\n";
             writer.write(title);
             
-            for (BigInteger id : msgReceivedByNodes.keySet()) {
-                HashMap<String, Integer> msgStats = msgReceivedByNodes.get(id);
+            for (BigInteger id : perNodeStats.keySet()) {
+                HashMap<String, Integer> msgStats = perNodeStats.get(id);
                 
                 String toWrite = String.valueOf(id);
                 for(Object key: keys) {
