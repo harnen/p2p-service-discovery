@@ -342,9 +342,35 @@ public class KademliaObserver implements Control {
             percentEclipsedDiscoveredInLookupOperations.put(topic, percent + percentEvilDiscovered);
     }
     
+    private static HashMap<String, Integer> createMsgReceivedByNodesEntry() {
+    	//the last value is a total of all types
+    	HashMap<String, Integer> msgStats = new HashMap<String, Integer>();
+    	//init counters for all the message types
+    	for (int msgType=0; msgType < numMsgTypes; msgType++) {
+            String msgTypeString = new Message(msgType).messageTypetoString();
+            msgStats.put(msgTypeString, 0);
+        }
+    	//init counters for all other features
+    	msgStats.put("numMsg", 0);
+    	msgStats.put("discovered", 0);
+    	msgStats.put("wasDiscovered", 0);
+    	msgStats.put("regsPlaced", 0);
+    	msgStats.put("regsAccepted", 0);
+    	msgStats.put("maliciousDiscovered", 0);
+    	msgStats.put("lookupOperations", 0);
+    	msgStats.put("eclipsedLookupOperations", 0);
+
+    	return msgStats;
+	}
+    
     public static void increaseNodeStatsBy(BigInteger nodeID, String feature, int increase) {
     	HashMap<String, Integer> nodeStats = perNodeStats.get(nodeID);
-    	nodeStats.put("discovered", nodeStats.get(feature) + increase);
+    	if (nodeStats == null) {
+        	nodeStats = createMsgReceivedByNodesEntry();
+        }
+    	//make sure we initialized the counter for that feature
+    	assert(nodeStats.keySet().contains(feature));
+    	nodeStats.put(feature, nodeStats.get(feature) + increase);
     	perNodeStats.put(nodeID, nodeStats);
     	
     }
@@ -355,43 +381,40 @@ public class KademliaObserver implements Control {
         try {
             //System.out.println("Report operation "+CommonState.getTime()+" "+op.getClass().getSimpleName()+" "+KademliaCommonConfig.AD_LIFE_TIME);
             String result = "";
-            String type = "";
-            
-
 
             if (op instanceof LookupOperation || op instanceof LookupTicketOperation) { 
                 //result += op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +","+ ((LookupOperation)op).discoveredToString() + "," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+((LookupOperation)op).discoveredCount()/op.getUsedCount()+"\n";
-            	double ratio = (double)op.nrHops/((LookupOperation)op).discoveredCount();
+            	LookupOperation lop = (LookupOperation) op;
                 reportEclipsingStats(op);
+                
+                int discovered = lop.discoveredCount();
+        		int maliciousDiscovered = lop.maliciousDiscoveredCount();
+        		assert(discovered >= maliciousDiscovered);
+        		increaseNodeStatsBy(lop.srcNode, "discovered", discovered);
+        		increaseNodeStatsBy(lop.srcNode, "maliciousDiscovered", maliciousDiscovered);
+        		increaseNodeStatsBy(lop.srcNode, "lookupOperations", 1);
+        		if(lop.isEclipsed()) {
+        			increaseNodeStatsBy(op.srcNode, "eclipsedLookupOperations", 1);	
+        		}
+        		//add info about being discovered by others
+            	for(KademliaNode discoveredNode: ((LookupOperation)op).getDiscovered()) {
+            		increaseNodeStatsBy(discoveredNode.getId(), "wasDiscovered", 1);
+            	}
             	
-            	if(((LookupOperation)op).discoveredCount() > 0) {
-            		result += CommonState.getTime()+","+op.operationId + 
-            				"," + op.getClass().getSimpleName() + ","  + op.srcNode +
-            				"," + op.destNode + "," + op.getUsedCount() + 
-            				"," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + 
-            				"," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+
-            				"," +((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ 
-            				"," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+","+ratio+"\n";
-            		//update per node stats - the correct entry should be already there (it's created when the first message is received)
-            		//add the nodes discovered cound by the owner of the operation
-            		int discovered = ((LookupOperation)op).discoveredCount();
-            		int maliciousDiscovered = ((LookupOperation) op).maliciousDiscoveredCount();
-            		assert(discovered >= maliciousDiscovered);
-            		increaseNodeStatsBy(op.srcNode, "discovered", discovered);
-            		increaseNodeStatsBy(op.srcNode, "maliciousDiscovered", maliciousDiscovered);
-            		increaseNodeStatsBy(op.srcNode, "lookupOperations", 1);
-            		if(discovered == maliciousDiscovered) {
-            			increaseNodeStatsBy(op.srcNode, "eclipsedLookupOperations", 1);	
-            		}
-
-            		//add info about being discovered by others
-                	for(KademliaNode discoveredNode: ((LookupOperation)op).getDiscovered()) {
-                		increaseNodeStatsBy(discoveredNode.getId(), "wasDiscovered", 1);
-                	}
+            	String ratioStr = "";
+            	
+            	if(discovered > 0) {
+            		Double ratio = (double) op.nrHops/lop.discoveredCount();
+            		ratioStr = ratio.toString();
             	}
-            	else {
-            		result += CommonState.getTime()+","+op.operationId + "," + op.getClass().getSimpleName() + ","  + op.srcNode +"," + op.destNode + "," + op.getUsedCount() + "," +op.getReturnedCount()+ ","+((LookupOperation) op).maliciousDiscoveredCount()   + "," + ((LookupOperation)op).discoveredCount() +", ," + ((LookupOperation)op).discoveredMaliciousToString()+","+((LookupOperation) op).maliciousNodesQueries()+","+((LookupOperation)op).topic.topic+ "," + ((LookupOperation)op).topic.topicID +",,"+op.nrHops+"\n";
-            	}
+            	result += CommonState.getTime()+","+op.operationId + 
+        				"," + lop.getClass().getSimpleName() + ","  + lop.srcNode +
+        				"," + lop.destNode + "," + lop.getUsedCount() + 
+        				"," + lop.getReturnedCount()+ ","+ lop.maliciousDiscoveredCount() + 
+        				"," + lop.discoveredCount() +", ," + lop.discoveredMaliciousToString() +
+        				"," + lop.maliciousNodesQueries()+","+ lop.topic.topic + 
+        				"," + lop.topic.topicID +",,"+op.nrHops+","+ ratioStr +"\n";
+            	
             } else if (op instanceof RegisterOperation) {
             	//System.out.println("register operation reported");
             	//System.exit(1);
@@ -546,34 +569,12 @@ public class KademliaObserver implements Control {
             else
                 registerOverhead.put(topic.getTopic(), count+1);
         }
-
-        HashMap<String, Integer> msgStats = perNodeStats.get(m.dest.getId());
-        if (msgStats == null) {
-        	msgStats = createMsgReceivedByNodesEntry();
-        }
-        
+       
         increaseNodeStatsBy(m.dest.getId(), m.messageTypetoString(), 1);
+        increaseNodeStatsBy(m.dest.getId(), "numMsg", 1);
     }
 
-    private static HashMap<String, Integer> createMsgReceivedByNodesEntry() {
-    	//the last value is a total of all types
-    	HashMap<String, Integer> msgStats = new HashMap<String, Integer>();
-    	
-    	for (int msgType=0; msgType < numMsgTypes; msgType++) {
-            String msgTypeString = new Message(msgType).messageTypetoString();
-            msgStats.put(msgTypeString, 0);
-        }
-    	//all message counter
-    	msgStats.put("numMsg", 0);
-    	msgStats.put("discovered", 0);
-    	msgStats.put("wasDiscovered", 0);
-    	msgStats.put("regsPlaced", 0);
-    	msgStats.put("regsAccepted", 0);
-    	msgStats.put("maliciousDiscovered", 0);
-    	msgStats.put("lookupOperations", 0);
-
-    	return msgStats;
-	}
+    
 
 	private void write_waiting_times() {
 
