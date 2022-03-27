@@ -48,6 +48,9 @@ def createPerNodeStats(dir):
                 df['topics'] = topics
                 df['discv5regs'] = discv5regs
 
+                df['percentageMaliciousDiscovered'] = np.where(df['discovered'] == 0, 0, df['maliciousDiscovered']/df['discovered'])
+                df['percentageEclipsedLookups'] = np.where(df['lookupOperations'] == 0, 0, df['eclipsedLookupOperations']/df['lookupOperations'])
+
                 if(protocol == 'discv4'):
                     #should be all 0 in discv4, but including anyway for sanity check
                     reg_cols = ['MSG_REGISTER', 'MSG_TICKET_REQUEST', 'MSG_TICKET_RESPONSE', 'MSG_REGISTER_RESPONSE']
@@ -144,7 +147,7 @@ def plotPerNodeStats(bar=True):
             if(secondary_feature != feature):
                 df = df[df[secondary_feature] == defaults[secondary_feature]]
         #y-axis
-        for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 'regsAccepted']:
+        for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 'regsAccepted', 'percentageMaliciousDiscovered', 'percentageEclipsedLookups']:
             fig, ax = plt.subplots()
             groups = df.groupby('protocol')
 
@@ -160,7 +163,7 @@ def plotPerNodeStats(bar=True):
                     avg.plot(x=feature, y=graph, yerr=std, ax=ax, legend=True, label=protocol)
                 else:
                     #calculate bar width based on the max x-value and the number of protocols
-                    width = avg.index[-1]/(len(groups)*(len(groups)+2))
+                    width = avg.index[-1]/(len(groups)*(len(groups)+3))
                     x = [int(val) + (i * width) for val in avg.index]
                     plt.bar(x, avg, width, label=protocol, yerr = std)
                     ax.set_xlabel(feature)
