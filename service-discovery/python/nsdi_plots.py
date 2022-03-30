@@ -147,7 +147,7 @@ def plotPerNodeStats(bar=True):
             if(secondary_feature != feature):
                 df = df[df[secondary_feature] == defaults[secondary_feature]]
         #y-axis
-        for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 'regsAccepted', 'percentageMaliciousDiscovered', 'percentageEclipsedLookups']:
+        for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 'regsAccepted', 'lookupAskedNodes', 'percentageMaliciousDiscovered', 'percentageEclipsedLookups']:
             fig, ax = plt.subplots()
             groups = df.groupby('protocol')
 

@@ -18,14 +18,14 @@ public class LookupOperation extends Operation {
 
     private int malQueried;
     
-    private HashSet<BigInteger> tried;
+    private HashSet<BigInteger> nodesAsked;
     
     public LookupOperation(BigInteger srcNode, Long timestamp, Topic t) {
         super(srcNode, t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
         this.topic = t;
         discovered = new ArrayList<KademliaNode>();
         malQueried=0;
-        tried = new HashSet<BigInteger>();
+        nodesAsked = new HashSet<BigInteger>();
 
     }
     
@@ -33,17 +33,21 @@ public class LookupOperation extends Operation {
     	return topic;
     }
     
-    public void setTried(BigInteger id) {
-    	tried.add(id);
+    public void addAskedNode(BigInteger id) {
+    	nodesAsked.add(id);
     }
     
-    public boolean tried(BigInteger id) {
-    	return tried.contains(id);
+    public boolean nodeAlreadyAsked(BigInteger id) {
+    	return nodesAsked.contains(id);
+    }
+    
+    public int askedNodeCount() {
+    	return nodesAsked.size();
     }
     
     public void addDiscovered(KademliaNode n) {
-    	//make sure we don't add the same node twice
-    	if(!discovered.contains(n)) {
+    	//make sure we don't add more than the limit or the same node twice
+    	if((discovered.size() < KademliaCommonConfig.TOPIC_PEER_LIMIT) && !discovered.contains(n)) {
     		discovered.add(n);
     	}  
     }
@@ -53,9 +57,7 @@ public class LookupOperation extends Operation {
     	if(discovered.size() == 0) {
     		return false;
     	}
-    	//considered only first TOPIC_PEER_LIMIT discovered peers
-    	int hi = Math.min(discovered.size(), KademliaCommonConfig.TOPIC_PEER_LIMIT);
-    	for(KademliaNode n: discovered.subList(0, hi)) {
+    	for(KademliaNode n: discovered) {
     		if(!n.is_evil) {
     			return false;
     		}
@@ -110,31 +112,28 @@ public class LookupOperation extends Operation {
     	malQueried++;
     }
     
-    
-    /*public List<KademliaNode> getDiscoveredArray()
-    {
-        return new ArrayList<KademliaNode>(discovered.keySet());
-    }
-    */
     public int discoveredCount() {
+    	assert(discovered.size() <= KademliaCommonConfig.TOPIC_PEER_LIMIT);
         return discovered.size();
     }
     
     public int goodDiscoveredCount() {
         int numGood = 0;
-        for (KademliaNode n: this.discovered) {
+        for (KademliaNode n: discovered) {
             if (!n.is_evil)
                 numGood++;
         }
+        assert(numGood <= KademliaCommonConfig.TOPIC_PEER_LIMIT);
         return numGood;
     }
 
     public int maliciousDiscoveredCount() {
         int numMalicious = 0;
-        for (KademliaNode n: this.discovered) {
+        for (KademliaNode n: discovered) {
             if (n.is_evil)
                 numMalicious++;
         }
+        assert(numMalicious <= KademliaCommonConfig.TOPIC_PEER_LIMIT);
         return numMalicious;
     }
     

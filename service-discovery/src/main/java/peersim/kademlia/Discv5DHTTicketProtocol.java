@@ -82,8 +82,9 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			return;
 		}
 		
-		if(m.src.is_evil)malicious_queried++;
+		if(m.src.is_evil) malicious_queried++;
 		total_queried++;
+		lop.addAskedNode(m.src.getId());
 		
 		//logger.warning("Topic reply "+malicious_queried+" "+total_queried);
 		

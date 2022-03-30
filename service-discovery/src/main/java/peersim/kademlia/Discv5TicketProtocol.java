@@ -542,7 +542,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		if (lop == null) {
 			return;
 		}
-
+		
 		Message.TopicLookupBody lookupBody = (Message.TopicLookupBody) m.body;
 		BigInteger[] neighbours = lookupBody.neighbours;
 		TopicRegistration[] registrations = lookupBody.registrations;
@@ -556,6 +556,7 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 
 		lop.elaborateResponse(neighbours);
 		lop.increaseReturned(m.src.getId());
+		lop.addAskedNode(m.src.getId());
 		if (!lop.finished)
 			lop.increaseUsed(m.src.getId());
 

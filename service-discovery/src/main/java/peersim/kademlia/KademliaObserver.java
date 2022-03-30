@@ -358,6 +358,7 @@ public class KademliaObserver implements Control {
     	msgStats.put("regsAccepted", 0);
     	msgStats.put("maliciousDiscovered", 0);
     	msgStats.put("lookupOperations", 0);
+    	msgStats.put("lookupAskedNodes", 0);
     	msgStats.put("eclipsedLookupOperations", 0);
 
     	return msgStats;
@@ -393,6 +394,7 @@ public class KademliaObserver implements Control {
         		increaseNodeStatsBy(lop.srcNode, "discovered", discovered);
         		increaseNodeStatsBy(lop.srcNode, "maliciousDiscovered", maliciousDiscovered);
         		increaseNodeStatsBy(lop.srcNode, "lookupOperations", 1);
+        		increaseNodeStatsBy(lop.srcNode, "lookupAskedNodes", lop.askedNodeCount());
         		if(lop.isEclipsed()) {
         			increaseNodeStatsBy(op.srcNode, "eclipsedLookupOperations", 1);	
         		}

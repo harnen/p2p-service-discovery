@@ -101,6 +101,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		}
 		
 		lop.increaseReturned(m.src.getId());
+		lop.addAskedNode(m.src.getId());
 		if(!lop.finished)lop.increaseUsed(m.src.getId());
 
 		//System.out.println("Topic query reply received for "+lop.topic.getTopic()+" "+this.getNode().getId()+" "+lop.discoveredCount()+" "+lop.getUsedCount()+" "+lop.getReturnedCount());

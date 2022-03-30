@@ -166,7 +166,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 				
 				KademliaNode returnedPeer = Util.nodeIdtoNode(returnedPeerId).getKademliaProtocol().getNode();
 				//don't do anything if we already checked the node
-				if(!lop.tried(returnedPeerId)) {					
+				if(!lop.nodeAlreadyAsked(returnedPeerId)) {					
 					//simulate sending a lookup 
 					Message request = new Message(Message.MSG_TOPIC_QUERY);
 					request.operationId = lop.operationId;
@@ -188,7 +188,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 					}
 					
 					//make sure we don't ask the same node again
-					lop.setTried(returnedPeerId);
+					lop.addAskedNode(returnedPeerId);
 				}
 				discovered = lop.discoveredCount();	
 
