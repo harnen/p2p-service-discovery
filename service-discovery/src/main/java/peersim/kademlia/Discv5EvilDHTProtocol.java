@@ -26,6 +26,7 @@ import peersim.kademlia.KademliaNode;
 import peersim.kademlia.Message;
 import peersim.kademlia.operations.TicketOperation;
 import peersim.kademlia.TicketTable;
+import peersim.kademlia.operations.RegisterOperation;
 
 public class Discv5EvilDHTProtocol extends Discv5DHTProtocol {
 
@@ -42,6 +43,8 @@ public class Discv5EvilDHTProtocol extends Discv5DHTProtocol {
 	private RoutingTable evilRoutingTable; // routing table only containing evil neighbors
 	private HashMap <Topic, HashMap<BigInteger,Long> >initTicketRequestTime;
 	private HashMap <Topic, HashMap<BigInteger,Long> >previousTicketRequestTime;
+
+	private HashMap<String, List<BigInteger> > allSeen;
 
     /**
      * Replicate this object by returning an identical copy.<br>
@@ -62,6 +65,8 @@ public class Discv5EvilDHTProtocol extends Discv5DHTProtocol {
      */
     public Discv5EvilDHTProtocol(String prefix) {
         super(prefix);
+        
+        this.allSeen = new HashMap<>();
         this.attackType = Configuration.getString(prefix + "." + PAR_ATTACK_TYPE);
 
         this.evilTopicTable = new HashMap<Topic, ArrayList<TopicRegistration>>();
@@ -117,6 +122,8 @@ public class Discv5EvilDHTProtocol extends Discv5DHTProtocol {
         logger.warning("In handleInitRegister of EVIL "+t.getTopic()+" "+t.getTopicID());
         
 
+        allSeen.put(t.getTopic(),new ArrayList<BigInteger>());
+        
         if(this.attackType.endsWith(KademliaCommonConfig.ATTACK_TYPE_DOS)) {
         // if only a spammer than follow the normal protocol
             //super.handleInitRegisterTopic(m, myPid);
@@ -249,7 +256,61 @@ public class Discv5EvilDHTProtocol extends Discv5DHTProtocol {
         }
     }
     
+    
+	protected void handleResponse(Message m, int myPid) {
+		
+		logger.warning("handleresponse");
+		BigInteger[] neighbours = (BigInteger[]) m.body;
+		for(String t : allSeen.keySet())
+			if(allSeen.get(t)!=null)
+				allSeen.get(t).addAll(Arrays.asList(neighbours));
+		
+		super.handleResponse(m,myPid);
+	}
   
+	
+	protected void startRegistration(RegisterOperation rop,int myPid) {
+
+		
+
+		//int distToTopic = Util.logDistance((BigInteger) rop.getTopic().getTopicID(), this.node.getId());
+		//BigInteger[]  neighbours = this.routingTable.getNeighbours(distToTopic);
+		
+		/*for (BigInteger id : rop.getNeighboursList()) {
+			logger.warning("start reg neighbour "+id+" "+Util.logDistance(rop.getTopic().getTopicID(), id));
+		}*/
+		/*if(neighbours.length < KademliaCommonConfig.ALPHA)
+			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);*/
+
+		//rop.elaborateResponse(neighbours);
+		//rop.available_requests = KademliaCommonConfig.ALPHA;
+	
+		logger.warning("Start registration2 "+rop.getMessage().type+" "+rop.operationId+" "+rop.getNeighboursList().size());
+		Message message = rop.getMessage(); 
+		message.operationId = rop.operationId;
+		message.type = Message.MSG_REGISTER;
+		message.src = this.node;
+		
+		List<BigInteger> registrars = allSeen.get(rop.getTopic().getTopic());
+		
+		logger.warning("Registrars "+registrars.size());
+		
+		allSeen.remove(rop.getTopic().getTopic());
+	
+		rop.available_requests = KademliaCommonConfig.ALPHA;
+		// send ALPHA messages
+		for (int i = 0; i < KademliaCommonConfig.N; i++) {
+			BigInteger nextNode = rop.getNeighbour();
+			//System.out.println("Nextnode "+nextNode);
+			if (nextNode != null) {
+				message.dest = new KademliaNode(nextNode);
+				sendMessage(message.copy(), nextNode, myPid);
+				rop.nrHops++;
+			}//nextNode may be null, if the node has less than ALPHA neighbours
+		}
+	
+	}
+	
     /**
      *  Process register requests
      *  The malicious node simply approves all tickets
