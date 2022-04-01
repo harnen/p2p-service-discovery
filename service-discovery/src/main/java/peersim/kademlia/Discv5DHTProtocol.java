@@ -301,6 +301,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		// add message source to my routing table
 
 
+		logger.warning("handle response");
 		Operation op = (Operation)	 this.operations.get(m.operationId);
 		if (op == null) {
 			//logger.warning("Operation null "+m.operationId);

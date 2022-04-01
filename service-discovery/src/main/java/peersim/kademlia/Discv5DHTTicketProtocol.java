@@ -396,7 +396,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		}
 	}
 	
-	private void startRegistration(RegisterOperation rop, int myPid) {
+	protected void startRegistration(RegisterOperation rop, int myPid) {
 		
 		logger.warning("Start registration "+rop.getMessage().type+" "+rop.operationId+" "+rop.getNeighboursList().size());
 
