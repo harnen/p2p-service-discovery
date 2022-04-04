@@ -16,6 +16,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 
 	private final int maxtopicNum;
 	private final int randomLookups;
+    private int [] count;
 
 	// ______________________________________________________________________________________________
 	public ZipfTrafficGenerator(String prefix) {
@@ -24,6 +25,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
         randomLookups = Configuration.getInt(prefix + "." + PAR_LOOKUPS, 0);
 
 		zipf = new ZipfDistribution(maxtopicNum,exp);
+        count = new int[maxtopicNum+1];
 	}
 
 	// ______________________________________________________________________________________________
@@ -42,6 +44,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
                 Topic topic = null;
                 String topicString="";
                 int topicIndex = zipf.sample();
+                count[topicIndex] += 1;
                 // if the node is malicious, it targets only one topic read from config
                 if (prot.getNode().is_evil) {
                     if (attackTopicIndex == -1) {
@@ -78,6 +81,19 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 
             }
 			first=false;
+            System.out.println("Zipf distribution for topic popularity:");
+            for (int topicIndex = 1; topicIndex < maxtopicNum+1; topicIndex++)
+            {
+                System.out.println("count[topic " + topicIndex + "] = " + count[topicIndex]); 
+            }
+            for (int topicIndex = 1; topicIndex < maxtopicNum; topicIndex++)
+            {
+                if( (count[topicIndex] < count[topicIndex+1]) && (exp > 0.1) ) {
+                    // For low zipf exponents (~0.1), this condition may be violated
+                    System.out.println("Invalid zipf distribution");
+                    System.exit(1);
+                }
+            }
 		}  
 		return false;
 		
