@@ -301,6 +301,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		// add message source to my routing table
 
 
+		logger.warning("handle response");
 		Operation op = (Operation)	 this.operations.get(m.operationId);
 		if (op == null) {
 			//logger.warning("Operation null "+m.operationId);
@@ -325,7 +326,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		if(!op.finished)op.increaseUsed(m.src.getId());
 		
 		if(!op.finished && Arrays.asList(neighbours).contains(op.destNode)){
-			logger.info("Found node " + op.destNode);
+			logger.warning("Found node " + op.destNode);
 			op.finished = true;
 
 			
@@ -380,7 +381,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 					logger.warning("Couldn't find node " + op.destNode);
 				}*/
 				logger.info("Finished lookup node " + op.getUsedCount());
-				logger.info("Registration operation id "+registrationMap.get(op.operationId)+" "+op.operationId);
+				logger.warning("Registration operation id "+registrationMap.get(op.operationId)+" "+op.operationId);
 				
 				KademliaObserver.reportOperation(op);
 
@@ -422,7 +423,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 
 	}
 	
-	private void startRegistration(RegisterOperation rop,int myPid) {
+	protected void startRegistration(RegisterOperation rop,int myPid) {
 
 	
 
@@ -438,7 +439,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 			//rop.elaborateResponse(neighbours);
 			//rop.available_requests = KademliaCommonConfig.ALPHA;
 		
-			logger.info("Start registration "+rop.getMessage().type+" "+rop.operationId+" "+rop.getNeighboursList().size());
+			logger.warning("Start registration "+rop.getMessage().type+" "+rop.operationId+" "+rop.getNeighboursList().size());
 			Message message = rop.getMessage(); 
 			message.operationId = rop.operationId;
 			message.type = Message.MSG_REGISTER;

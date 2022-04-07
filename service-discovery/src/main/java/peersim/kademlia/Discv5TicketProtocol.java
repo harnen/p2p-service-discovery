@@ -353,9 +353,9 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 
 		Message.TopicLookupBody body; 
-
-		if(registrations.length>2)body = new Message.TopicLookupBody(registrations, neighbours);
-		else body = new Message.TopicLookupBody(new TopicRegistration[0], neighbours);
+		body = new Message.TopicLookupBody(registrations, neighbours);
+		//if(registrations.length>2)body = new Message.TopicLookupBody(registrations, neighbours);
+		//else body = new Message.TopicLookupBody(new TopicRegistration[0], neighbours);
 		Message response = new Message(Message.MSG_TOPIC_QUERY_REPLY, body);
 		response.operationId = m.operationId;
 		response.src = this.node;
