@@ -234,7 +234,10 @@ public class Discv5EvilDHTTicketProtocol extends Discv5DHTTicketProtocol {
 	
 		rop.available_requests = KademliaCommonConfig.ALPHA;
 		// send ALPHA messages
-		for (int i = 0; i < n_regs; i++) {
+		
+		int regs = registrars.size() > n_regs ? n_regs : registrars.size();
+		
+		for (int i = 0; i < regs; i++) {
 			//BigInteger nextNode = rop.getNeighbour();
 			//logger.warning("Nextnode "+nextNode);
 			BigInteger nextNode = registrars.get(i);
