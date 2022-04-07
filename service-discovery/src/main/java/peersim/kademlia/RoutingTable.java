@@ -29,7 +29,6 @@ public class RoutingTable implements Cloneable {
 
 	protected int nBuckets,k,maxReplacements;
 	
-	//protected int maxAddresses = KademliaCommonConfig.MAX_ADDRESSES_TABLE;
 	// ______________________________________________________________________________________________
 	/**
 	 * instanciates a new empty routing table with the specified size
@@ -58,10 +57,13 @@ public class RoutingTable implements Cloneable {
 	
 	public boolean compareAddresses(String addr) {
 
+		int count=0;
 		for(int i = 0; i < nBuckets; i++){
-			HashSet<String> addresses = k_buckets[i].getAddresses();
-			if(addresses.contains(addr))return true;
+			//HashSet<String> addresses = k_buckets[i].getAddresses();
+			count+=k_buckets[i].getAddresses(addr);
 		}
+		System.out.println("Routing table same domain "+count);
+		if(count>=KademliaCommonConfig.MAX_ADDRESSES_TABLE)return true;
 		return false;
 	}
 
@@ -87,14 +89,14 @@ public class RoutingTable implements Cloneable {
 	public BigInteger[] getNeighbours (final int dist) {
 		BigInteger[] result = new BigInteger[0];
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
-		resultList.addAll(bucketAtDistance(dist).neighbours);
+		resultList.addAll(bucketAtDistance(dist).getNeighbours());
 
 		if(resultList.size()<k && (dist+1)<=256) {
-			resultList.addAll(bucketAtDistance(dist+1).neighbours);
+			resultList.addAll(bucketAtDistance(dist+1).getNeighbours());
 			while(resultList.size()>k)resultList.remove(resultList.size()-1);
 		}
 		if(resultList.size()<k& (dist-1)>=0) {
-			resultList.addAll(bucketAtDistance(dist-1).neighbours);
+			resultList.addAll(bucketAtDistance(dist-1).getNeighbours());
 			while(resultList.size()>k)resultList.remove(resultList.size()-1);
 		}
 		return resultList.toArray(result);
@@ -104,7 +106,7 @@ public class RoutingTable implements Cloneable {
 		BigInteger[] result = new BigInteger[k];
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
 		while(resultList.size()<k && dist<=KademliaCommonConfig.BITS) {
-			resultList.addAll(bucketAtDistance(dist).neighbours);
+			resultList.addAll(bucketAtDistance(dist).getNeighbours());
 			dist++;
 		}
 		

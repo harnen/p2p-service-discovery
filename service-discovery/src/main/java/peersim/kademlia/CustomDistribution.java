@@ -197,6 +197,7 @@ public class CustomDistribution implements peersim.core.Control {
             else { // Honest node configuration
                 id = urg.generate();
                 node = new KademliaNode(id, randomIpAddress(r), 0);
+                //node = new KademliaNode(id, "0.0.0.0", 0);
                 if (evilProtocolID != -1) {
                     generalNode.setProtocol(evilProtocolID, null);
                 }

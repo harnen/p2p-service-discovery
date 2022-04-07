@@ -9,6 +9,8 @@ import java.util.Random;
 //import java.util.Random;
 import java.util.TreeMap;
 
+import java.net.InetAddress;
+import java.util.regex.Pattern;
 import com.google.common.net.InetAddresses;
 
 import peersim.core.CommonState;
@@ -28,8 +30,8 @@ public class KBucket implements Cloneable {
 	protected List<BigInteger> neighbours;
 
 	
-	protected HashSet<String> addresses;
-	protected HashMap<BigInteger,String> addrMap;
+	//protected HashSet<String> addresses;
+	//protected HashMap<BigInteger,String> addrMap;
 	//replacementList
 	//protected TreeMap<BigInteger, Long> replacements = null;
 	protected List<BigInteger> replacements;
@@ -37,6 +39,8 @@ public class KBucket implements Cloneable {
 	protected RoutingTable rTable;
 	
 	protected int k,maxReplacements;
+	int sameIps;
+	
 	//protected KademliaProtocol prot;
 	// empty costructor
 	public KBucket(RoutingTable rTable,int k, int maxReplacements) {
@@ -48,8 +52,9 @@ public class KBucket implements Cloneable {
 		this.rTable = rTable;
 		neighbours = new ArrayList<BigInteger>();
 		replacements = new ArrayList<BigInteger>();
-		addresses = new HashSet<String>();
-		addrMap = new HashMap<>();
+		sameIps = 0;
+		//addresses = new HashSet<String>();
+		//addrMap = new HashMap<>();
 	}
 
 	public int occupancy()
@@ -61,6 +66,8 @@ public class KBucket implements Cloneable {
 	public boolean addNeighbour(BigInteger node) {
 		//long time = CommonState.getTime();
 		//KademliaNode kad= Util.nodeIdtoNode(node).getKademliaProtocol().getNode();
+		
+		//InetAddress ip = new InetAddress(kad.getAddr());
 		//System.out.println(kad+" "+kad.getAddr());
 		
 		//Random random = new Random();
@@ -69,21 +76,30 @@ public class KBucket implements Cloneable {
 	
 		String ipString = Util.nodeIdtoNode(node).getKademliaProtocol().getNode().getAddr();
 		
+		int ipValue = parseIp(ipString);
+		
+		//System.out.println("IP string "+ipString+" "+ipValue+" "+sameIps+" "+KademliaCommonConfig.MAX_ADDRESSES_BUCKET);
 		for(BigInteger n : neighbours) {
 			if(n.compareTo(node)==0) {
 				return false;
 			} else {
-				
-				if(addresses.contains(ipString))
+				String otherNodeIpString = Util.nodeIdtoNode(n).getKademliaProtocol().getNode().getAddr();
+				int otherIpValue = parseIp(otherNodeIpString);
+				if(ipValue == otherIpValue) {
+					//System.out.println("Same domain "+ipString+" "+ipValue+" "+otherNodeIpString+" "+otherIpValue);
+					if(sameIps == KademliaCommonConfig.MAX_ADDRESSES_BUCKET)
 						return false;
+					else 
+						sameIps++;
+				}
 			}
 		}
 
 		if (neighbours.size() < k) { // k-bucket isn't full
 			//neighbours.put(node, time); // add neighbour to the tail of the list
 			neighbours.add(node);
-			addresses.add(ipString);
-			addrMap.put(node, ipString);
+			//addresses.add(ipString);
+			//addrMap.put(node, ipString);
 			removeReplacement(node);
 			return true;
 		} else {
@@ -109,8 +125,21 @@ public class KBucket implements Cloneable {
 	// remove a neighbour from this k-bucket
 	public void removeNeighbour(BigInteger node) {
 		neighbours.remove(node);
-		addresses.remove(addrMap.get(node));
-		addrMap.remove(node);
+		
+		String ipString = Util.nodeIdtoNode(node).getKademliaProtocol().getNode().getAddr();
+		int ipValue = parseIp(ipString);
+
+		for(BigInteger n : neighbours) {
+			String otherNodeIpString = Util.nodeIdtoNode(n).getKademliaProtocol().getNode().getAddr();
+			int otherIpValue = parseIp(ipString);
+			if(ipValue==otherIpValue) {
+				if(sameIps>0)sameIps--;
+				break;
+			}
+
+		}
+	//	addresses.remove(addrMap.get(node));
+	//	addrMap.remove(node);
 	}
 	
 	// remove a replacement node in the list
@@ -179,8 +208,27 @@ public class KBucket implements Cloneable {
 		
 	}
 	
-	public HashSet<String> getAddresses() {
-		return addresses;
+	public List<BigInteger> getNeighbours (){
+		return neighbours;
+		
+	}
+	
+	public int getAddresses(String ip) {
+		return 0;
+	}
+	
+	private static int parseIp(String address) {
+	    int result = 0;
+
+	    // iterate over each octet
+	    String[] parts = address.split(Pattern.quote("."));
+	    for(int i=0;i<3;i++) {
+	        // shift the previously parsed bits over by 1 byte
+	        result = result << 8;
+	        // set the low order bits to the current octet
+	        result |= Integer.parseInt(parts[i]);
+	    }
+	    return result;
 	}
 	
 
