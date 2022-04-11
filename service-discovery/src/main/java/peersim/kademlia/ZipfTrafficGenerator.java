@@ -88,10 +88,9 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
             }
             for (int topicIndex = 1; topicIndex < maxtopicNum; topicIndex++)
             {
-                if( (count[topicIndex] < count[topicIndex+1]) && (exp > 0.1) ) {
-                    // For low zipf exponents (~0.1), this condition may be violated
-                    System.out.println("Invalid zipf distribution");
-                    System.exit(1);
+                if( (exp > 0.1) && (topicIndex < 10) ) {
+
+                    assert count[topicIndex] >= count[topicIndex+1] : "Invalid Zipf distribution"; 
                 }
             }
 		}  
