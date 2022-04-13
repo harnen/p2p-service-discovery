@@ -107,7 +107,7 @@ public class StateBuilder implements peersim.core.Control {
 		}
 		
 		while(!Util.isNetworkConnected()) {
-			System.err.println("Your network is not connected - adding 10 random connection to each node");
+			System.err.println("Your network is not connected - adding 100 random connection to each node");
 			addRandomConnections(10);
 		}
 		System.err.println("Your network is connected");
