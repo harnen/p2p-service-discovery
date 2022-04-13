@@ -232,7 +232,7 @@ public class Util {
     public static boolean isNetworkConnected() {
         ArrayList<Set<BigInteger>> groups = new ArrayList<Set<BigInteger>>(); 
     
-        // form groups of "node neighbors sets" that are disjoint
+        // form groups of "node neighbor sets" that are disjoint
         for(int i = 0; i < Network.size(); i++) {
             Node node = Network.get(i); 
             KademliaProtocol prot = (KademliaProtocol) (node.getKademliaProtocol());
@@ -254,10 +254,12 @@ public class Util {
             }
         }
 
-        //try merging groups if more than one
-        int max_iterations = groups.size() * groups.size();
+        // Try merging the groups, if more than one.
+        // If groups are mergeable, then we should be done in n^2 iterations
+        // where n is the number of groups.
+        int max_iterations = groups.size();
         System.out.println("Merging groups");
-        while((groups.size() > 1)) {
+        while((groups.size() > 1) && (max_iterations >= 0)) {
             boolean merged = false;
             for (int i = 1; i < groups.size(); i++) {
                 HashSet<BigInteger> intersection = new HashSet<BigInteger>(groups.get(0));
@@ -269,8 +271,7 @@ public class Util {
                     break;
                 }           
             }
-            if(--max_iterations <= 0)
-                break;
+            max_iterations--;
         }
         if(groups.size() == 1) {
             return true;
