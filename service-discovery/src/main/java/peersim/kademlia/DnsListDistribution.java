@@ -3,6 +3,7 @@ package peersim.kademlia;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,7 +54,10 @@ public class DnsListDistribution implements peersim.core.Control {
 		for (int i = 0; i < tmp.length; ++i)
 			inits[i] = (NodeInitializer) tmp[i];
 		try {
-			json = readJsonFromUrl("https://raw.githubusercontent.com/ethereum/discv4-dns-lists/master/all.mainnet.ethdisco.net/nodes.json");
+			//json = readJsonFromUrl("https://raw.githubusercontent.com/ethereum/discv4-dns-lists/master/all.mainnet.ethdisco.net/nodes.json");
+			json = readJsonFromUrl("https://raw.githubusercontent.com/ethereum/discv4-dns-lists/master/all.json");
+			//json = readJsonFromFile("all.json");
+			//json = readJsonFromFile("nodes.json");
 				
 		}catch(Exception e) {
 			System.err.println("Exception "+e);
@@ -77,12 +81,16 @@ public class DnsListDistribution implements peersim.core.Control {
 				//System.out.println("Record: "+ json2.getString("record").substring(4)+" "+json.keySet().size());
 				
 				//EthereumNodeRecord enr = EthereumNodeRecord.fromRLP(Bytes.fromHexString(json2.getString("record")));
+                System.out.println("Setting up node: " + i);
+				System.out.println("Record key: " + keyStr);
 				EthereumNodeRecord enr = EthereumNodeRecord.fromRLP((Base64URLSafe.decode(json2.getString("record").substring(4))));
-			    System.out.println("Record: "+ ((Bytes)enr.getData().get("id")).toString());
-				System.out.println("Record: "+ enr.ip());
+			    //System.out.println("Record id: "+ ((Bytes)enr.getData().get("id")).toString());
+			    System.out.println("Record id: "+ enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger());
+				System.out.println("Record ip: "+ enr.ip().toString().substring(1));
 	
-				//enr.va
-				KademliaNode node = new KademliaNode(enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger(), enr.ip().toString(), enr.tcp());
+				KademliaNode node = new KademliaNode(enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger(), enr.ip().toString().substring(1), 0);
+				//KademliaNode node = new KademliaNode(enr.publicKey().bytes().slice(KademliaCommonConfig.BITS/8).toUnsignedBigInteger(), enr.ip().toString(), enr.tcp());
+
 				//node.setProtocolId(protocolID);
 				/*if(i>=Network.size()) {
 					Node newNode = (Node) Network.prototype.clone();
@@ -122,6 +130,26 @@ public class DnsListDistribution implements peersim.core.Control {
 			sb.append((char) cp);
 		}
 		return sb.toString();
+    }
+
+    public static JSONObject readJsonFromFile(String filename) throws IOException, JSONException {
+        BufferedReader rd = null;
+
+        try {
+
+            rd = new BufferedReader(new FileReader(filename));
+    		String jsonText = readAll(rd);
+    		//System.out.println("JSON string "+jsonText);
+    		JSONObject json = new JSONObject(jsonText);
+    		return json;
+    	} 
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        catch(org.json.JSONException e){
+           e.printStackTrace();
+        } 
+        return null;
     }
 
     public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {

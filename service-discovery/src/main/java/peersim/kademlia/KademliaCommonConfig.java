@@ -68,7 +68,9 @@ public class KademliaCommonConfig {
     public static final int COMPLETE_WALK = 3;
 
     
-    //public static final int MAX_ADDRESSES_TABLE = 10;
+    public static final int MAX_ADDRESSES_TABLE = 10;
+    public static final int MAX_ADDRESSES_BUCKET = 2;
+
     public static int LOOKUP_BUCKET_ORDER = 0;
     
     public static int STOP_REGISTER_WINDOW_SIZE = 0;

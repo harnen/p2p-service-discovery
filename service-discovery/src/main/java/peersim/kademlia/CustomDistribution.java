@@ -153,7 +153,7 @@ public class CustomDistribution implements peersim.core.Control {
                 if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_RANDOM_SPAM)) {
                     topicNo = r.nextInt(Network.size()*Network.size()) + this.topicNum;
                 }
-                else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)) {
+                else if (this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_TOPIC_SPAM)||this.attackType.equals(KademliaCommonConfig.ATTACK_TYPE_HYBRID)) {
                     if (this.attackTopicNo != -1)
                         topicNo = this.attackTopicNo;
                     else 
@@ -197,6 +197,7 @@ public class CustomDistribution implements peersim.core.Control {
             else { // Honest node configuration
                 id = urg.generate();
                 node = new KademliaNode(id, randomIpAddress(r), 0);
+                //node = new KademliaNode(id, "0.0.0.0", 0);
                 if (evilProtocolID != -1) {
                     generalNode.setProtocol(evilProtocolID, null);
                 }
