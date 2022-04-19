@@ -30,11 +30,12 @@ def set_params(config_file, out_dir, params):
         change_key(config_file, key, value)
 
 
-features = {'id_distribution': {'default': 'uniform', 'keyword': 'init.1uniqueNodeID.idDistribution', 'vals':['uniform', 'nonUniform']},
+features = {'id_distribution': {'default': 'uniform', 'keyword': 'init.1uniqueNodeID.idDistribution', 'vals':['nonUniform','uniform']},
             'sybil_size': {'default': 5, 'keyword': 'init.1uniqueNodeID.iPSize', 'vals':[1, 5,10, 20]},
-            'attackTopic': {'default': 1, 'keyword': 'init.1uniqueNodeID.attackTopic', 'vals':[1, 5]},
+            'attackTopic': {'default': 5, 'keyword': 'init.1uniqueNodeID.attackTopic', 'vals':[1, 5]},
             'percentEvil': {'default': 0.2, 'keyword':'init.1uniqueNodeID.percentEvil', 'vals':[0.1,0.2,0.3]}
 }
+
 
 #protocols to test
 config_files = {'discv4' : './config/attack_configs/discv4_topicattack.cfg', 
