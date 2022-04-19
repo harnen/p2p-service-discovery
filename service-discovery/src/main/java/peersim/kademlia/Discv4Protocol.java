@@ -157,6 +157,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 			LookupOperation lop = (LookupOperation) operations.get(registrationMap.get(op.operationId));
 			lop.increaseReturned(m.src.getId());
 			String topicString = lop.getTopic().getTopic();
+			lop.addAskedNode(m.src.getId());
 			
 			if(!lop.finished)lop.increaseUsed(m.src.getId());
 			
@@ -194,7 +195,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 
 				if((!op.finished && (Arrays.asList(neighbours).contains(op.destNode)) ||
 						//end if we discovered enough peers
-						((KademliaCommonConfig.DISCV4_STOP==1 && discovered>=KademliaCommonConfig.TOPIC_PEER_LIMIT)))){
+						((KademliaCommonConfig.DISCV4_STOP == 1 && discovered>=KademliaCommonConfig.TOPIC_PEER_LIMIT)))){
 					logger.warning("Found node " + op.destNode);
 					op.finished = true;
 
