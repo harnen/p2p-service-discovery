@@ -356,7 +356,7 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 				//m.body = Util.prefixLen(nextNode, fop.destNode);
 				m.body = Util.logDistance(nextNode, fop.destNode);
 				m.dest = Util.nodeIdtoNode(nextNode).getKademliaProtocol().getNode();//new KademliaNode(nextNode);
-				logger.warning("Send find message "+Util.logDistance(nextNode, fop.destNode));
+				logger.info("Send find message "+Util.logDistance(nextNode, fop.destNode));
 				sendMessage(m.copy(), nextNode, myPid);
 				fop.nrHops++;
 			}

@@ -13,13 +13,25 @@ import os
 
 csv.field_size_limit(sys.maxsize)
 
+features = set()
+
 def getProtocolFromPath(path):
     return  path.split('/')[0]
+
 #current dir format: _size-3000_topic-40_...
+def getFeatureListFromPath(path):
+    result = set()
+    for item in path.split('.')[-1].split('_')[1:]:
+        feature = item.split('-')[0]
+        assert(feature not in result)
+        result.add(feature)
+    return result
+
 def getFeatureFromPath(feature, path):
     return  path.split('_' + feature + '-')[1].split('_')[0].replace('/', '')
 
 def createPerNodeStats(dir):
+    global features
     df_list = []
     object_list = os.listdir(dir)
     dirs = []
@@ -39,14 +51,18 @@ def createPerNodeStats(dir):
             try:
                 df = pd.read_csv(path + 'msg_received.csv')
                 protocol = getProtocolFromPath(path)
-                size = int(getFeatureFromPath('size', path))
-                topics = int(getFeatureFromPath('topic', path))
-                discv5regs = int(getFeatureFromPath('discv5regs', path))
-                print("From path:", path, "Extracted protocol:", protocol, "size:", size, "topics:", topics)
                 df['protocol'] = protocol
-                df['size'] = size
-                df['topics'] = topics
-                df['discv5regs'] = discv5regs
+                
+                #include features read from the path
+                dir_features = getFeatureListFromPath(path)
+                if(len(features) == 0):
+                    features = dir_features
+                else:
+                    #make sure we have the same set of features in every dir
+                    assert(dir_features == features)
+
+                for feature in features:
+                    df[feature] = int(getFeatureFromPath(feature, path))
 
                 df['percentageMaliciousDiscovered'] = np.where(df['discovered'] == 0, 0, df['maliciousDiscovered']/df['discovered'])
                 df['percentageEclipsedLookups'] = np.where(df['lookupOperations'] == 0, 0, df['eclipsedLookupOperations']/df['lookupOperations'])
@@ -129,7 +145,7 @@ def createPerLookupOperationStats(dir):
 def plotPerNodeStats(bar=True):
     pd.set_option('display.max_rows', None)
     dfs = pd.read_csv('dfs.csv')
-    features = ['size', 'topics', 'discv5regs']
+    
     #features = ['size']
     #default values for all the features
     defaults = {}
@@ -148,7 +164,7 @@ def plotPerNodeStats(bar=True):
                 df = df[df[secondary_feature] == defaults[secondary_feature]]
         #y-axis
         for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 
-                    'regsAccepted', 'lookupAskedNodes', 'percentageMaliciousDiscovered', 'percentageEclipsedLookups', 'lookupAskedNodes']:
+                    'regsAccepted', 'lookupAskedNodes', 'percentageMaliciousDiscovered', 'percentageEclipsedLookups']:
             fig, ax = plt.subplots()
             groups = df.groupby('protocol')
 

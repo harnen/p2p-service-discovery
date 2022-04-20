@@ -62,7 +62,7 @@ public class RoutingTable implements Cloneable {
 			//HashSet<String> addresses = k_buckets[i].getAddresses();
 			count+=k_buckets[i].getAddresses(addr);
 		}
-		System.out.println("Routing table same domain "+count);
+		//System.out.println("Routing table same domain "+count);
 		if(count>=KademliaCommonConfig.MAX_ADDRESSES_TABLE)return true;
 		return false;
 	}
