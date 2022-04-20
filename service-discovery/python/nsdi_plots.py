@@ -15,6 +15,23 @@ csv.field_size_limit(sys.maxsize)
 
 features = set()
 
+titlePrettyText = {'registrationMsgs' : 'Number of Registration Messages', 
+              'lookupMsgs': 'Number of Lookup Messages', 
+              'discovered' : 'Number of Discovered Peers', 
+              'wasDiscovered': 'Number of Times Discovered by Others',
+              'lookupAskedNodes' : 'Number of Contacted Nodes during Lookups', 
+              'percentageEclipsedLookups': 'Percentage of Eclipsed Lookups', 
+              'percentageMaliciousDiscovered' : 'Percentage of Malicious Nodes Returned from Lookups', 
+              'regsPlaced': 'Number of Registrations Placed',
+              'regsAccepted':'Number of Registrations Accepted'
+              }
+
+protocolPrettyText = {'dhtnoticket':'DHT_w/o_Ticket',
+                      'dhtticket': 'DHT_Ticket',
+                      'discv5' : 'TBSD',
+                      'discv4' : 'Discv4'
+                      }
+
 def getProtocolFromPath(path):
     return  path.split('/')[0]
 
@@ -146,9 +163,9 @@ def plotPerNodeStats(bar=True):
     pd.set_option('display.max_rows', None)
     dfs = pd.read_csv('dfs.csv')
     
-    #features = ['size']
+    #features = ['topic']
     #default values for all the features
-    defaults = {}
+    #defaults = {'size':21970}
     #FIXME: assumed that the default value is the most popular
     #it might not always be the case for the network size, should think of something better
     for feature in features:
@@ -175,19 +192,27 @@ def plotPerNodeStats(bar=True):
                 #NaN -> 0
                 group = group.fillna(0)
                 avg = group.groupby(feature)[graph].mean()
+                x_vals = range(0, avg.index[-1],  int(avg.index[-1]/len(avg.index)))
+                x_vals = list(x_vals)
+                #print('x_vals: ', x_vals)
                 std = group.groupby(feature)[graph].std()
                 if(bar == False):
                     avg.plot(x=feature, y=graph, yerr=std, ax=ax, legend=True, label=protocol)
                 else:
                     #calculate bar width based on the max x-value and the number of protocols
                     width = avg.index[-1]/(len(groups)*(len(groups)+3))
-                    x = [int(val) + (i * width) for val in avg.index]
-                    plt.bar(x, avg, width, label=protocol, yerr = std)
+                    #x = [int(val) + (i * width) for val in avg.index]
+                    x = [int(val) + (i * width) for val in x_vals]
+                    plt.bar(x, avg, width, label=protocolPrettyText[protocol], yerr = std)
                     ax.set_xlabel(feature)
-                    ax.set_ylabel("Average " + graph)
-                    ax.set_title(graph)
+                    ax.set_ylabel("Average " + titlePrettyText[graph])
+                    ax.set_title(titlePrettyText[graph])
                     ax.legend()
                     i += 1
+
+                    #evenly space the x ticks
+                    ax.set_xticks(x_vals)
+                    ax.set_xticklabels(list(avg.index))
             if(bar == False):
                 fig.savefig(OUTDIR + '/'+ feature + "_" + graph)
             else:
