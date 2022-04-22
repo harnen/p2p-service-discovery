@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.HashMap;
 
@@ -106,6 +107,8 @@ public class Discv4EvilProtocol extends Discv4Protocol  {
 	 */
 	protected void handleFind(Message m, int myPid, int dist) {
 		// get the ALPHA closest node to destNode
+
+		
 		BigInteger[] neighbours = this.evilRoutingTable.getNeighbours(dist);
         // remove the source of message m from the results
         List<BigInteger> tempList = new ArrayList<BigInteger>(Arrays.asList(neighbours));
