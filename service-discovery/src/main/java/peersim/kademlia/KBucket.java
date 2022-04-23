@@ -40,7 +40,7 @@ public class KBucket implements Cloneable {
 	
 	protected int k,maxReplacements;
 	protected HashMap<Integer,Integer> ipValues;
-	int sameIps;
+//	int sameIps;
 	
 	//protected KademliaProtocol prot;
 	// empty costructor
@@ -53,7 +53,7 @@ public class KBucket implements Cloneable {
 		this.rTable = rTable;
 		neighbours = new ArrayList<BigInteger>();
 		replacements = new ArrayList<BigInteger>();
-		sameIps = 0;
+//		sameIps = 0;
 		ipValues = new HashMap<Integer,Integer>();
 		//addresses = new HashSet<String>();
 		//addrMap = new HashMap<>();
@@ -86,6 +86,8 @@ public class KBucket implements Cloneable {
 			return false;
 		else
 			ipValues.put(ipValue, ipValues.get(ipValue) + 1);
+
+		if(neighbours.contains(node))return false;
 		//System.out.println("IP string "+ipString+" "+ipValue+" "+sameIps+" "+KademliaCommonConfig.MAX_ADDRESSES_BUCKET);
 		/*for(BigInteger n : neighbours) {
 			if(n.compareTo(node)==0) {
@@ -120,9 +122,10 @@ public class KBucket implements Cloneable {
 	public void addReplacement(BigInteger node) {
 		//long time = CommonState.getTime();
 		
-		for(BigInteger r : replacements) {
+		/*for(BigInteger r : replacements) {
 			if(r.compareTo(node)==0)return;
-		}
+		}*/
+		if(replacements.contains(node))return;
 		replacements.add(0,node);
 
 		if (replacements.size() > maxReplacements) { // k-bucket isn't full
