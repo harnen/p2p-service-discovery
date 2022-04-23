@@ -52,7 +52,7 @@ public boolean contains(Node n) {
 	final int len = Network.size();
 	for (int i=0; i < len; i++)
 	{
-		if (Network.node[i] == n)
+		if (Network.get(i) == n)
 		return true;
 	}
 	return false;
@@ -74,7 +74,7 @@ public boolean addNeighbor(Node n) {
 */
 public Node getNeighbor(int i) {
 	
-	return Network.node[i];
+	return Network.get(i);
 }
 
 // --------------------------------------------------------------------

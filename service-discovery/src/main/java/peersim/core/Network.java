@@ -19,8 +19,12 @@
 package peersim.core;
 
 import peersim.config.Configuration;
+import peersim.kademlia.KademliaNode;
+import peersim.kademlia.KademliaProtocol;
+
 import java.util.Comparator;
 import java.util.Arrays;
+import java.math.BigInteger;
 
 /**
 * This class forms the basic framework of all simulations.
@@ -84,7 +88,7 @@ private static final String PAR_SIZE = "network.size";
 * it is necessary to know that the actual node set is only the first
 * {@link #size()} items of the array.
 */
-static Node[] node = null;
+private static Node[] node = null;
 
 /**
 * Actual size of the network.
@@ -108,7 +112,6 @@ public static Node prototype = null;
 * populates the network by cloning the prototype.
 */
 public static void reset() {
-
 	if( prototype != null )
 	{
 		// not first experiment
@@ -146,6 +149,7 @@ public static void reset() {
 		{
 			node[i] = (Node)prototype.clone();
 			node[i].setIndex(i);
+			KademliaProtocol id = node[i].getKademliaProtocol();
 		}
 	}
 }
@@ -157,7 +161,9 @@ private Network() {}
 // ==================================================================
 
 /** Number of nodes currently in the network */
-public static int size() { return len; }
+public static int size() {
+	return node.length; 
+}
 
 // ------------------------------------------------------------------
 

@@ -10,10 +10,18 @@ import sys
 import csv
 import scipy.stats as sp # for calculating standard error
 import os
+import seaborn as sns
+
+from enum import Enum, unique
+@unique
+class GraphType(Enum):
+    line = 1
+    bar = 2
+    violin = 3
+
 
 csv.field_size_limit(sys.maxsize)
 
-features = set()
 
 titlePrettyText = {'registrationMsgs' : 'Number of Registration Messages', 
               'lookupMsgs': 'Number of Lookup Messages', 
@@ -26,8 +34,8 @@ titlePrettyText = {'registrationMsgs' : 'Number of Registration Messages',
               'regsAccepted':'Number of Registrations Accepted'
               }
 
-protocolPrettyText = {'dhtnoticket':'DHT_w/o_Ticket',
-                      'dhtticket': 'DHT_Ticket',
+protocolPrettyText = {'dht':'DHT',
+                      'dhtTicket': 'DHT_Ticket',
                       'discv5' : 'TBSD',
                       'discv4' : 'Discv4'
                       }
@@ -35,20 +43,29 @@ protocolPrettyText = {'dhtnoticket':'DHT_w/o_Ticket',
 def getProtocolFromPath(path):
     return  path.split('/')[0]
 
+
+#security_features = ['idDistribution', 'sybilSize', 'attackTopic', 'percentEvil', 'discv5regs']
+security_features = []
 #current dir format: _size-3000_topic-40_...
 def getFeatureListFromPath(path):
+    print("Getting features from path:", path)
     result = set()
-    for item in path.split('.')[-1].split('_')[1:]:
+    for item in path.strip('/').split('/')[-1].split('_')[1:]:
         feature = item.split('-')[0]
+        print("extrated feature:", feature)
         assert(feature not in result)
+        if(feature in security_features):
+            continue
         result.add(feature)
     return result
 
 def getFeatureFromPath(feature, path):
+    print("feature:", feature)
+    print("path: ", path)
     return  path.split('_' + feature + '-')[1].split('_')[0].replace('/', '')
 
 def createPerNodeStats(dir):
-    global features
+    features = set()
     df_list = []
     object_list = os.listdir(dir)
     dirs = []
@@ -58,13 +75,17 @@ def createPerNodeStats(dir):
     
     for log_dir in dirs:
         print("log_dir:", log_dir)
+        if(log_dir not in ['discv5', 'dht', 'dhtnoticket', 'discv4']):
+            continue
         tmp = next(os.walk(log_dir))
         print("tmp:", tmp)
         sub_dirs = tmp[1]
         for subdir in sub_dirs:
             path = log_dir + '/' + subdir + '/'
-            path.replace('//','/')
-            print('Reading folder ', path)
+            path.replace('//','/').rstrip()
+            print("cwd:", os.getcwd())
+            print('Reading folder: ', path+"|")
+
             try:
                 df = pd.read_csv(path + 'msg_received.csv')
                 protocol = getProtocolFromPath(path)
@@ -79,7 +100,19 @@ def createPerNodeStats(dir):
                     assert(dir_features == features)
 
                 for feature in features:
-                    df[feature] = int(getFeatureFromPath(feature, path))
+                    #we use ints, floats and strings
+                    to_convert = getFeatureFromPath(feature, path)
+                    try:
+                        #try converting to int
+                        value = int(to_convert)
+                    except ValueError:
+                        try:
+                            #try converting to float
+                            value = float(to_convert) 
+                        except ValueError:
+                            #if th above don't work, keep as string
+                            value = to_convert
+                    df[feature] = value
 
                 df['percentageMaliciousDiscovered'] = np.where(df['discovered'] == 0, 0, df['maliciousDiscovered']/df['discovered'])
                 df['percentageEclipsedLookups'] = np.where(df['lookupOperations'] == 0, 0, df['eclipsedLookupOperations']/df['lookupOperations'])
@@ -99,7 +132,7 @@ def createPerNodeStats(dir):
                 df_list.append(df)
                 df.to_csv(path + 'df.csv')
             except FileNotFoundError:
-                print("Error: ", path, "msg_received.csv not found")
+                print("Error: ", path + "msg_received.csv not found")
                 quit()
     #merge all the dfs
     dfs = pd.concat(df_list, axis=0, ignore_index=True)
@@ -159,18 +192,19 @@ def createPerLookupOperationStats(dir):
     dfs.to_csv('dfs.csv')
     return dfs
 
-def plotPerNodeStats(bar=True):
+def plotPerNodeStats(OUTDIR, graphType = GraphType.violin):
     pd.set_option('display.max_rows', None)
     dfs = pd.read_csv('dfs.csv')
     
-    #features = ['topic']
+    #features = ['size']
     #default values for all the features
-    #defaults = {'size':21970}
+    defaults = {}
     #FIXME: assumed that the default value is the most popular
     #it might not always be the case for the network size, should think of something better
     for feature in features:
         defaults[feature] = dfs[feature].value_counts().idxmax()
 
+    print("############# Features:", features)
     #x-axis
     for feature in features:
         #make sure we don't modify the initial df
@@ -183,40 +217,58 @@ def plotPerNodeStats(bar=True):
         for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 
                     'regsAccepted', 'lookupAskedNodes', 'percentageMaliciousDiscovered', 'percentageEclipsedLookups']:
             fig, ax = plt.subplots()
-            groups = df.groupby('protocol')
+            print("Plotting y-axis:", graph, "x-axis", feature)
 
-            #set bar in the middle of x-tics
-            i = (len(groups)-1) * -0.5
-            i = -1.5
-            for protocol, group in groups:
-                #NaN -> 0
-                group = group.fillna(0)
-                avg = group.groupby(feature)[graph].mean()
-                x_vals = range(0, avg.index[-1],  int(avg.index[-1]/len(avg.index)))
-                x_vals = list(x_vals)
-                #print('x_vals: ', x_vals)
-                std = group.groupby(feature)[graph].std()
-                if(bar == False):
-                    avg.plot(x=feature, y=graph, yerr=std, ax=ax, legend=True, label=protocol)
-                else:
-                    #calculate bar width based on the max x-value and the number of protocols
-                    width = avg.index[-1]/(len(groups)*(len(groups)+3))
-                    #x = [int(val) + (i * width) for val in avg.index]
-                    x = [int(val) + (i * width) for val in x_vals]
-                    plt.bar(x, avg, width, label=protocolPrettyText[protocol], yerr = std)
-                    ax.set_xlabel(feature)
-                    ax.set_ylabel("Average " + titlePrettyText[graph])
-                    ax.set_title(titlePrettyText[graph])
-                    ax.legend()
-                    i += 1
-
-                    #evenly space the x ticks
-                    ax.set_xticks(x_vals)
-                    ax.set_xticklabels(list(avg.index))
-            if(bar == False):
-                fig.savefig(OUTDIR + '/'+ feature + "_" + graph)
+            if(graphType == GraphType.violin):
+                sns.violinplot(ax = ax,
+                                data = df,
+                                x = feature,
+                                y = graph,
+                                hue = 'protocol',
+                                split = False)
             else:
-                fig.savefig(OUTDIR + '/' + 'bar_'  + feature + "_" + graph)
+                groups = df.groupby('protocol')
+
+                #set bar in the middle of x-tics
+                i = (len(groups)-1) * -0.5
+                i = -1.5
+                for protocol, group in groups:
+                    #NaN -> 0
+                    group.to_csv("dupa.csv")
+                    print("protocol:", protocol)
+                    print("group:", group)
+                    group = group.fillna(0)
+                    avg = group.groupby(feature)[graph].mean()
+                    print("avg_index:", avg.index)
+                    x_vals = range(0, avg.index[-1],  int(avg.index[-1]/len(avg.index)))
+                    x_vals = list(x_vals)
+                    
+                    print('x_vals: ', x_vals)
+                    std = group.groupby(feature)[graph].std()
+                    if(graphType == GraphType.line):
+                        avg.plot(x=feature, y=graph, yerr=std, ax=ax, legend=True, label=protocol)
+                    elif(graphType == GraphType.bar):
+                        #calculate bar width based on the max x-value and the number of protocols
+                        width = avg.index[-1]/(len(groups)*(len(groups)+3))
+                        #x = [int(val) + (i * width) for val in avg.index]
+                        x = [int(val) + (i * width) for val in x_vals]
+                        print("x:", x)
+                        print("avg:", avg)
+                        plt.bar(x, avg, width, label=protocolPrettyText[protocol], yerr = std)
+                        ax.set_xlabel(feature)
+                        ax.set_ylabel("Average " + titlePrettyText[graph])
+                        ax.set_title(titlePrettyText[graph])
+                        ax.legend()
+                        i += 1
+                    else:
+                        print("Unknown graph type:", graphType)
+                        exit(-1)
+
+                        #evenly space the x ticks
+                        ax.set_xticks(x_vals)
+                        ax.set_xticklabels(list(avg.index))
+            
+            fig.savefig(OUTDIR + '/' + graphType.name + "_" + feature + "_" + graph)
 
 def plotPerLookupOperation():
     pd.set_option('display.max_rows', None)
@@ -250,24 +302,4 @@ def plotPerLookupOperation():
                 
             fig.savefig(OUTDIR + '/' + feature + "_" + graph)
 
-OUTDIR = './'
 
-if len(sys.argv) < 2:
-    print('Usage: ', sys.argv[0], ' <Path_to_Log_files> <OPTIONAL: Path_to_output_dir>' )
-    sys.exit(1) 
-
-LOGDIR = sys.argv[1]
-if len(sys.argv) > 2:
-    OUTDIR = sys.argv[2]
-
-if not os.path.exists(OUTDIR):
-    os.makedirs(OUTDIR)
-
-print('Will read logs from', LOGDIR)
-print('Plots will be saved in ', OUTDIR)
-
-#createPerLookupOperationStats(LOGDIR)
-#plotPerLookupOperation()
-
-createPerNodeStats(LOGDIR)
-plotPerNodeStats()

@@ -1,5 +1,7 @@
 package peersim.kademlia;
 
+import java.util.Arrays;
+
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
 import peersim.config.Configuration;
@@ -16,7 +18,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 
 	private final int maxtopicNum;
 	private final int randomLookups;
-    private int [] count;
+
 
 	// ______________________________________________________________________________________________
 	public ZipfTrafficGenerator(String prefix) {
@@ -24,8 +26,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 		maxtopicNum = Configuration.getInt(prefix + "." + PAR_MAXTOPIC);
         randomLookups = Configuration.getInt(prefix + "." + PAR_LOOKUPS, 0);
 
-		zipf = new ZipfDistribution(maxtopicNum,exp);
-        count = new int[maxtopicNum+1];
+		zipf = new ZipfDistribution(maxtopicNum, exp);
 	}
 
 	// ______________________________________________________________________________________________
@@ -34,28 +35,46 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 	 
 	 * @return boolean
 	 */
+	boolean isDistributionCorrect(Integer[] a) {
+		System.out.println("Zipf distribution for topic popularity:");
+		System.out.println("count[topic " + (0) + "] = " + a[0]);
+        for (int i = 1; i < maxtopicNum; i++){
+        	System.out.println("count[topic " + (i) + "] = " + a[i]);        	
+            if(a[i-1] < a[i]) return false;
+        }
+        return true;
+	}
+	
 	public boolean execute() {
 		//execute it only once
 		if(first) {
+			//need Integer to sort in reverse order later on
+		    Integer [] topicsCounts = new Integer[maxtopicNum];
+		    System.out.println("maxTopicNum: " + maxtopicNum);
+		    Arrays.fill(topicsCounts,  Integer.valueOf(0));
+
 			for(int i = 0; i<Network.size(); i++) 
 			{
 				Node start = Network.get(i);
 				KademliaProtocol prot = (KademliaProtocol)start.getKademliaProtocol();
                 Topic topic = null;
                 String topicString="";
-                int topicIndex = zipf.sample();
-                count[topicIndex] += 1;
+                
+                
                 // if the node is malicious, it targets only one topic read from config
                 if (prot.getNode().is_evil) {
                     if (attackTopicIndex == -1) {
                         topic = prot.getTargetTopic();
-                    }
-                    else {
+                    } else {
                         topicString = new String("t" + attackTopicIndex);
                         topic = new Topic(topicString);
                         prot.setTargetTopic(topic);
                     }
-                } else {           
+                } else {
+                	//not extremely efficient, but we want random distribution of topics
+                	int topicIndex = zipf.sample() - 1;
+                	topicsCounts[topicIndex]++;
+                	System.out.println("Node " + i + " randomed t" + topicIndex);
                     topicString = new String("t" + topicIndex);
                     topic = new Topic(topicString);
                 }
@@ -80,19 +99,9 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
                 
 
             }
+			//assert isDistributionCorrect(topicsCounts) : "Zipf distribution incorrect";
 			first=false;
-            System.out.println("Zipf distribution for topic popularity:");
-            for (int topicIndex = 1; topicIndex < maxtopicNum+1; topicIndex++)
-            {
-                System.out.println("count[topic " + topicIndex + "] = " + count[topicIndex]); 
-            }
-            for (int topicIndex = 1; topicIndex < maxtopicNum; topicIndex++)
-            {
-                if( (exp > 0.1) && (topicIndex < 10) ) {
 
-                    assert count[topicIndex] >= count[topicIndex+1] : "Invalid Zipf distribution"; 
-                }
-            }
 		}  
 		return false;
 		

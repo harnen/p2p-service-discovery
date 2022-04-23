@@ -368,6 +368,7 @@ public class KademliaObserver implements Control {
     	HashMap<String, Integer> nodeStats = perNodeStats.get(nodeID);
     	if (nodeStats == null) {
         	nodeStats = createMsgReceivedByNodesEntry();
+        	nodeStats.put("isMalicious", Util.nodeIdtoNode(nodeID).getKademliaProtocol().getNode().is_evil ? 1 : 0);
         }
     	//make sure we initialized the counter for that feature
     	assert(nodeStats.keySet().contains(feature));

@@ -91,10 +91,10 @@ public OverlayGraph( int protocolID, boolean wireDirected ) {
 public boolean isEdge(int i, int j) {
 	
 	return
-		((Linkable)Network.node[i].getProtocol(protocolID)
-		).contains(Network.node[j]) &&
-		Network.node[j].isUp() &&
-		Network.node[i].isUp();
+		((Linkable)Network.get(i).getProtocol(protocolID)
+		).contains(Network.get(j)) &&
+		Network.get(j).isUp() &&
+		Network.get(i).isUp();
 }
 
 // ---------------------------------------------------------------
@@ -105,9 +105,9 @@ public boolean isEdge(int i, int j) {
 */
 public Collection<Integer> getNeighbours(int i) {
 	
-	Linkable lble=(Linkable)Network.node[i].getProtocol(protocolID);
+	Linkable lble=(Linkable)Network.get(i).getProtocol(protocolID);
 	ArrayList<Integer> al = new ArrayList<Integer>(lble.degree());
-	if( Network.node[i].isUp() )
+	if( Network.get(i).isUp() )
 	{	
 		for(int j=0; j<lble.degree(); ++j)
 		{
@@ -122,7 +122,7 @@ public Collection<Integer> getNeighbours(int i) {
 // ---------------------------------------------------------------
 
 /** Returns <code>Network.node[i]</code> */
-public Object getNode(int i) { return Network.node[i]; }
+public Object getNode(int i) { return Network.get(i); }
 	
 // ---------------------------------------------------------------
 
@@ -163,13 +163,13 @@ public boolean setEdge( int i, int j ) {
 // XXX slightly unintuitive behavior but makes sense when understood
 	
 	if( !wireDirected ) 
-		((Linkable)Network.node[j].getProtocol(protocolID)
-		).addNeighbor(Network.node[i]);
+		((Linkable)Network.get(j).getProtocol(protocolID)
+		).addNeighbor(Network.get(i));
 
 
 	return
-		((Linkable)Network.node[i].getProtocol(protocolID)
-		).addNeighbor(Network.node[j]);
+		((Linkable)Network.get(i).getProtocol(protocolID)
+		).addNeighbor(Network.get(j));
 }
 
 // ---------------------------------------------------------------
@@ -187,8 +187,8 @@ public boolean clearEdge( int i, int j ) {
 */
 public int degree(int i) {
 
-	if( !Network.node[i].isUp() ) return 0;
-	Linkable lble=(Linkable)Network.node[i].getProtocol(protocolID);
+	if( !Network.get(i).isUp() ) return 0;
+	Linkable lble=(Linkable)Network.get(i).getProtocol(protocolID);
 	int numNeighbours = 0;
 	for(int j=0; j<lble.degree(); ++j)
 	{
@@ -210,8 +210,8 @@ public int degree(int i) {
 */
 public int fullDegree(int i) {
 
-	if( !Network.node[i].isUp() ) return 0;
-	Linkable lble=(Linkable)Network.node[i].getProtocol(protocolID);
+	if( !Network.get(i).isUp() ) return 0;
+	Linkable lble=(Linkable)Network.get(i).getProtocol(protocolID);
 	return lble.degree();
 }
 
