@@ -11,6 +11,7 @@ import csv
 import scipy.stats as sp # for calculating standard error
 import os
 import seaborn as sns
+from .header import *
 
 from enum import Enum, unique
 @unique
@@ -20,25 +21,7 @@ class GraphType(Enum):
     violin = 3
 
 
-csv.field_size_limit(sys.maxsize)
-
-
-titlePrettyText = {'registrationMsgs' : 'Number of Registration Messages', 
-              'lookupMsgs': 'Number of Lookup Messages', 
-              'discovered' : 'Number of Discovered Peers', 
-              'wasDiscovered': 'Number of Times Discovered by Others',
-              'lookupAskedNodes' : 'Number of Contacted Nodes during Lookups', 
-              'percentageEclipsedLookups': 'Percentage of Eclipsed Lookups', 
-              'percentageMaliciousDiscovered' : 'Percentage of Malicious Nodes Returned from Lookups', 
-              'regsPlaced': 'Number of Registrations Placed',
-              'regsAccepted':'Number of Registrations Accepted'
-              }
-
-protocolPrettyText = {'dht':'DHT',
-                      'dhtTicket': 'DHT_Ticket',
-                      'discv5' : 'TBSD',
-                      'discv4' : 'Discv4'
-                      }
+#csv.field_size_limit(sys.maxsize)
 
 def getProtocolFromPath(path):
     return  path.split('/')[0]
@@ -136,7 +119,7 @@ def createPerNodeStats(dir):
                 quit()
     #merge all the dfs
     dfs = pd.concat(df_list, axis=0, ignore_index=True)
-    print(dfs)
+    #print(dfs)
     dfs.to_csv('dfs.csv')
     return dfs
 
@@ -188,12 +171,13 @@ def createPerLookupOperationStats(dir):
                 quit()
     #merge all the dfs
     dfs = pd.concat(df_list, axis=0, ignore_index=True)
-    print(dfs)
+    #print(dfs)
     dfs.to_csv('dfs.csv')
     return dfs
 
-def plotPerNodeStats(OUTDIR, graphType = GraphType.violin):
+def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
     pd.set_option('display.max_rows', None)
+    print("Reading:", os.getcwd(), "/dfs.csv")
     dfs = pd.read_csv('dfs.csv')
     
     #features = ['size']
@@ -202,20 +186,32 @@ def plotPerNodeStats(OUTDIR, graphType = GraphType.violin):
     #FIXME: assumed that the default value is the most popular
     #it might not always be the case for the network size, should think of something better
     for feature in features:
-        defaults[feature] = dfs[feature].value_counts().idxmax()
+        if( (simulation_type == 'attack') and (features[feature]['type'] == 'attack')):
+            defaults[feature] = features[feature]['defaultAttack']    
+        else:
+            defaults[feature] = features[feature]['default']
 
     print("############# Features:", features)
     #x-axis
     for feature in features:
+        if(features[feature]['type'] != simulation_type):
+            continue
         #make sure we don't modify the initial df
         df = dfs.copy(deep=True)
         #filter the df so that we only have default values for non-primary features
         for secondary_feature in features:
+            if(features[secondary_feature]['type'] != simulation_type):
+                continue
             if(secondary_feature != feature):
                 df = df[df[secondary_feature] == defaults[secondary_feature]]
         #y-axis
-        for graph in ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 
-                    'regsAccepted', 'lookupAskedNodes', 'percentageMaliciousDiscovered', 'percentageEclipsedLookups']:
+
+        if simulation_type == 'benign':
+            y_vals = benign_y_vals
+        else:
+            y_vals = attack_y_vals
+
+        for graph in y_vals:
             fig, ax = plt.subplots()
             print("Plotting y-axis:", graph, "x-axis", feature)
 
