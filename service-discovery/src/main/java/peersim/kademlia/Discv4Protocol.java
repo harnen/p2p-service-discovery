@@ -164,7 +164,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 			for (BigInteger returnedPeerId : neighbours) {
 				//peers shouldn't return me in their response
 				assert(!returnedPeerId.equals(this.node.getId()));
-				
+				//if(returnedPeerId.equals(this.node.getId()))continue;
 				KademliaNode returnedPeer = Util.nodeIdtoNode(returnedPeerId).getKademliaProtocol().getNode();
 				//don't do anything if we already checked the node
 				if(!lop.nodeAlreadyAsked(returnedPeerId)) {					

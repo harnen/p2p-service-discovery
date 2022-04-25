@@ -6,14 +6,14 @@ import os
 def change_key(file, key, val):
     #make sure we don't overwrite an original config file
     assert(file not in config_files.values())
-    regex = "\"s@^" + key + " .*@" + key + " " + str(val) + "@g\"" 
+    regex = "\"s@^" + key + " .*@" + key + " " + str(val) + "@g\""
     result = os.system("sed -i " + regex + " " + file)
     #make sure the command succeeded
     assert(result == 0)
 
 def run_sim(config_file):
     os.system("java -Xmx200000m -cp ./lib/djep-1.0.0.jar:lib/jep-2.3.0.jar:target/service-discovery-1.0-SNAPSHOT.jar:lib/gs-core-2.0.jar:lib/pherd-1.0.jar:lib/mbox2-1.0.jar:lib/gs-ui-swing-2.0.jar -ea peersim.Simulator " + config_file + "> /dev/null 2> /dev/null")
-
+#     print("run "+config_file)
 #turn a running config into a folder name
 def params_to_dir(params):
     result = ""
@@ -22,7 +22,7 @@ def params_to_dir(params):
     return result
 #set all the parameters in the config file
 def set_params(config_file, out_dir, params):
-    os.system("dos2unix " + config_file)
+#    os.system("dos2unix " + config_file)
     change_key(config_file, "control.3.rangeExperiment", out_dir)
     for param in params:
         key = features[param]['keyword']
@@ -30,20 +30,21 @@ def set_params(config_file, out_dir, params):
         change_key(config_file, key, value)
 
 
-features = {'id_distribution': {'default': 'uniform', 'keyword': 'init.1uniqueNodeID.idDistribution', 'vals':['nonUniform','uniform']},
+features = {'id_distribution': {'default': 'uniform', 'keyword': 'init.1uniqueNodeID.idDistribution', 'vals':['uniform', 'nonUniform']},
             'sybil_size': {'default': 5, 'keyword': 'init.1uniqueNodeID.iPSize', 'vals':[1, 5,10, 20]},
-            'attackTopic': {'default': 5, 'keyword': 'init.1uniqueNodeID.attackTopic', 'vals':[1, 5]},
+            'attackTopic': {'default': 1, 'keyword': 'init.1uniqueNodeID.attackTopic', 'vals':[1, 5]},
             'percentEvil': {'default': 0.2, 'keyword':'init.1uniqueNodeID.percentEvil', 'vals':[0.1,0.2,0.3]}
 }
 
-
 #protocols to test
-config_files = {'discv4' : './config/attack_configs/discv4_topicattack.cfg', 
+config_files = {'discv4' : './config/attack_configs/discv4_topicattack.cfg',
                 'dhtnoticket' : './config/attack_configs/discv5dhtnoticket_topicattack.cfg',
                 'dhtticket' : './config/attack_configs/discv5dhtticket_topicattack.cfg',
                 'discv5' :  './config/attack_configs/discv5ticketattack.cfg' }
 
 result_dir = './python_logs'
+
+runs = 1
 
 def main() -> int:
     os.system('rm -rf ' + result_dir)
@@ -66,12 +67,15 @@ def main() -> int:
                 #pformat turn a dictionary into a string that can be added to the set
                 if(pformat(params) not in already_run):
                     already_run.add(pformat(params))
-                    out_dir = result_dir + "/" + protocol + "/" + params_to_dir(params) + "/"
-                    os.system('mkdir -p ' + out_dir)
-                    out_config = out_dir + 'config.txt'
-                    os.system('cp ' + in_config + " " + out_config)
-                    set_params(out_config, out_dir, params)
-                    run_sim(out_config)
+                    for x in range(runs):
+                        out_dir = result_dir + "/" + protocol + "/" + params_to_dir(params) + "_" + str(x) +"/"
+                        print(out_dir)
+                        os.system('mkdir -p ' + out_dir)
+                        out_config = out_dir + 'config.txt'
+                        os.system('cp ' + in_config + " " + out_config)
+                        set_params(out_config, out_dir, params)
+                        run_sim(out_config)
 
 if __name__ == '__main__':
     sys.exit(main())  # next section explains the use of sys.exit
+

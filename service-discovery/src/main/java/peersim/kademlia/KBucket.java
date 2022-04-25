@@ -39,7 +39,8 @@ public class KBucket implements Cloneable {
 	protected RoutingTable rTable;
 	
 	protected int k,maxReplacements;
-	int sameIps;
+	protected HashMap<Integer,Integer> ipValues;
+//	int sameIps;
 	
 	//protected KademliaProtocol prot;
 	// empty costructor
@@ -52,7 +53,8 @@ public class KBucket implements Cloneable {
 		this.rTable = rTable;
 		neighbours = new ArrayList<BigInteger>();
 		replacements = new ArrayList<BigInteger>();
-		sameIps = 0;
+//		sameIps = 0;
+		ipValues = new HashMap<Integer,Integer>();
 		//addresses = new HashSet<String>();
 		//addrMap = new HashMap<>();
 	}
@@ -78,8 +80,16 @@ public class KBucket implements Cloneable {
 		
 		int ipValue = parseIp(ipString);
 		
+		if(ipValues.get(ipValue)==null)
+			ipValues.put(ipValue,1);
+		else if(ipValues.get(ipValue)==KademliaCommonConfig.MAX_ADDRESSES_BUCKET) 
+			return false;
+		else
+			ipValues.put(ipValue, ipValues.get(ipValue) + 1);
+
+		if(neighbours.contains(node))return false;
 		//System.out.println("IP string "+ipString+" "+ipValue+" "+sameIps+" "+KademliaCommonConfig.MAX_ADDRESSES_BUCKET);
-		for(BigInteger n : neighbours) {
+		/*for(BigInteger n : neighbours) {
 			if(n.compareTo(node)==0) {
 				return false;
 			} else {
@@ -93,7 +103,7 @@ public class KBucket implements Cloneable {
 						sameIps++;
 				}
 			}
-		}
+		}*/
 
 		if (neighbours.size() < k) { // k-bucket isn't full
 			//neighbours.put(node, time); // add neighbour to the tail of the list
@@ -112,9 +122,10 @@ public class KBucket implements Cloneable {
 	public void addReplacement(BigInteger node) {
 		//long time = CommonState.getTime();
 		
-		for(BigInteger r : replacements) {
+		/*for(BigInteger r : replacements) {
 			if(r.compareTo(node)==0)return;
-		}
+		}*/
+		if(replacements.contains(node))return;
 		replacements.add(0,node);
 
 		if (replacements.size() > maxReplacements) { // k-bucket isn't full
@@ -129,7 +140,7 @@ public class KBucket implements Cloneable {
 		String ipString = Util.nodeIdtoNode(node).getKademliaProtocol().getNode().getAddr();
 		int ipValue = parseIp(ipString);
 
-		for(BigInteger n : neighbours) {
+		/*for(BigInteger n : neighbours) {
 			String otherNodeIpString = Util.nodeIdtoNode(n).getKademliaProtocol().getNode().getAddr();
 			int otherIpValue = parseIp(ipString);
 			if(ipValue==otherIpValue) {
@@ -137,6 +148,10 @@ public class KBucket implements Cloneable {
 				break;
 			}
 
+		}*/
+		if(ipValues.get(ipValue)!=null) {
+			if(ipValues.get(ipValue)==1)ipValues.remove(ipValue);
+			else ipValues.put(ipValue, ipValues.get(ipValue) - 1);
 		}
 	//	addresses.remove(addrMap.get(node));
 	//	addrMap.remove(node);
@@ -214,7 +229,12 @@ public class KBucket implements Cloneable {
 	}
 	
 	public int getAddresses(String ip) {
-		return 0;
+		int ipValue = parseIp(ip);
+
+		if(ipValues.get(ipValue)!=null)
+			return ipValues.get(ipValue).intValue();
+		else 
+			return 0;
 	}
 	
 	private static int parseIp(String address) {
