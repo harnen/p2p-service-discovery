@@ -201,9 +201,9 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 
 					KademliaObserver.find_ok.add(1);
 					
-					if(registrationMap.get(op.operationId)!=null) {
+					/*if(registrationMap.get(op.operationId)!=null) {
 						KademliaObserver.reportOperation(lop);
-					}
+					}*/
 					return;
 				}
 			}
@@ -261,7 +261,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 					//logger.warning("Handle response topic "+lop.getTopic().getTopic());
 				}
 
-				KademliaObserver.reportOperation(op);
+				//KademliaObserver.reportOperation(op);
 				if(!op.finished && op.type == Message.MSG_FIND){
 					logger.warning("Couldn't find node " + op.destNode);
 				}
