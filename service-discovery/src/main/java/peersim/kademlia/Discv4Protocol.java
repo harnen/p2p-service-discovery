@@ -164,7 +164,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 			for (BigInteger returnedPeerId : neighbours) {
 				//peers shouldn't return me in their response
 				assert(!returnedPeerId.equals(this.node.getId()));
-				
+				//if(returnedPeerId.equals(this.node.getId()))continue;
 				KademliaNode returnedPeer = Util.nodeIdtoNode(returnedPeerId).getKademliaProtocol().getNode();
 				//don't do anything if we already checked the node
 				if(!lop.nodeAlreadyAsked(returnedPeerId)) {					
@@ -201,9 +201,9 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 
 					KademliaObserver.find_ok.add(1);
 					
-					if(registrationMap.get(op.operationId)!=null) {
+					/*if(registrationMap.get(op.operationId)!=null) {
 						KademliaObserver.reportOperation(lop);
-					}
+					}*/
 					return;
 				}
 			}
@@ -261,7 +261,7 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 					//logger.warning("Handle response topic "+lop.getTopic().getTopic());
 				}
 
-				KademliaObserver.reportOperation(op);
+				//KademliaObserver.reportOperation(op);
 				if(!op.finished && op.type == Message.MSG_FIND){
 					logger.warning("Couldn't find node " + op.destNode);
 				}
