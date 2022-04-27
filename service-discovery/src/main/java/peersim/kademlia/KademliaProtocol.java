@@ -187,6 +187,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 		// add message source to my routing table
 
 
+		if (m.src != null) {
+			routingTable.addNeighbour(m.src.getId());
+		}
+		
 		Operation op = (Operation)	 this.operations.get(m.operationId);
 		if (op == null) {
 			return;
