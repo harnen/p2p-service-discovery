@@ -92,9 +92,34 @@ public class Discv4EvilProtocol extends Discv4Protocol  {
                 this.evilRoutingTable.addNeighbour(prot.getNode().getId());   
             }
         }
+        //spamNodes(generateFindNodeMessage(),myPid);
         super.handleInitRegister(m, myPid);
 
     }
+    
+    
+    protected void spamNodes(Message m, int pid) {
+    	
+		// set message operation id
+		m.operationId = 1;
+		m.type = Message.MSG_FIND;
+		m.src = this.node;
+		for(int i = 0 ; i<KademliaCommonConfig.BITS ; i++) {
+			BigInteger[] neighbours = this.routingTable.getNeighbours(i);
+			for(BigInteger id : neighbours) {
+				m.body = i;
+				m.dest = Util.nodeIdtoNode(id).getKademliaProtocol().getNode();
+				sendMessage(m.copy(), id, pid);
+				
+			}
+
+		}
+		
+    }
+    
+	/*protected void handleResponse(Message m, int myPid) {
+		//Do nothing
+	}*/
     
 	/**
 	 * Response to a route request.<br>
@@ -188,6 +213,24 @@ public class Discv4EvilProtocol extends Discv4Protocol  {
 
 
 		}
+	}
+	
+	// ______________________________________________________________________________________________
+	/**
+	 * generates a random find node message, by selecting randomly the destination.
+	 * 
+	 * @return Message
+	 */
+	protected Message generateFindNodeMessage() {
+		// existing active destination node
+
+		UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, CommonState.r);
+		BigInteger rand = urg.generate();
+		
+		Message m = Message.makeInitFindNode(rand);
+		m.timestamp = CommonState.getTime();
+
+		return m;
 	}
 	
 }
