@@ -58,7 +58,7 @@ def createPerNodeStats(dir):
     
     for log_dir in dirs:
         print("log_dir:", log_dir)
-        if(log_dir not in ['discv5', 'dht', 'dhtnoticket', 'discv4']):
+        if(log_dir not in config_files.keys()): #['discv5', 'dht', 'dhtnoticket', 'discv4']):
             continue
         tmp = next(os.walk(log_dir))
         print("tmp:", tmp)
@@ -221,7 +221,9 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                                 x = feature,
                                 y = graph,
                                 hue = 'protocol',
-                                split = False)
+                                inner="point",  # Representation of the datapoints in the violin interior.
+                                split = False, 
+                                cut = 0) # cut = 0 limits the violin range within the range of the observed data 
             else:
                 groups = df.groupby('protocol')
 
