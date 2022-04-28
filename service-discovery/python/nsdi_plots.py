@@ -238,25 +238,30 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                     group = group.fillna(0)
                     avg = group.groupby(feature)[graph].mean()
                     print("avg_index:", avg.index)
-                    x_vals = range(0, avg.index[-1],  int(avg.index[-1]/len(avg.index)))
-                    x_vals = list(x_vals)
+                    #x_vals = range(0, int(avg.index[-1]),  int(avg.index[-1]/len(avg.index)))
+                    #x_vals = list(x_vals)
                     
-                    print('x_vals: ', x_vals)
+                    #print('x_vals: ', x_vals)
                     std = group.groupby(feature)[graph].std()
                     if(graphType == GraphType.line):
                         avg.plot(x=feature, y=graph, yerr=std, ax=ax, legend=True, label=protocol)
                     elif(graphType == GraphType.bar):
                         #calculate bar width based on the max x-value and the number of protocols
-                        width = avg.index[-1]/(len(groups)*(len(groups)+3))
+                        #width = avg.index[-1]/(len(groups)*(len(groups)+3))
+                        width = 0.1
                         #x = [int(val) + (i * width) for val in avg.index]
-                        x = [int(val) + (i * width) for val in x_vals]
+                        #x = [int(val) + (i * width) for val in x_vals]
+                        x = np.arange(len(avg.index))+(width*i)
                         print("x:", x)
                         print("avg:", avg)
-                        plt.bar(x, avg, width, label=protocolPrettyText[protocol], yerr = std)
+                        plt.bar(x, avg, width, label=protocolPrettyText[protocol])
                         ax.set_xlabel(feature)
                         ax.set_ylabel("Average " + titlePrettyText[graph])
                         ax.set_title(titlePrettyText[graph])
                         ax.legend()
+                        ticks = avg.index
+                        ax.set_xticks(range(len(ticks)))
+                        ax.set_xticklabels(ticks)
                         i += 1
                     else:
                         print("Unknown graph type:", graphType)
