@@ -19,6 +19,7 @@ OUTDIR_BASE = os.path.abspath(OUTDIR_BASE)
 #createPerLookupOperationStats(LOGDIR)
 #plotPerLookupOperation()
 for simulation_type in ['benign', 'attack']:
+#for simulation_type in ['attack']:
     INDIR = INDIR_BASE + "/" + simulation_type + "/"
     OUTDIR = OUTDIR_BASE + "/" + simulation_type + "/"
     
@@ -32,4 +33,9 @@ for simulation_type in ['benign', 'attack']:
     os.chdir(INDIR)
     
     createPerNodeStats(".")
-    plotPerNodeStats(OUTDIR, simulation_type)
+    if simulation_type == 'benign':
+        plotPerNodeStats(OUTDIR, simulation_type)
+    else :
+        plotPerNodeStats(OUTDIR, simulation_type,graphType = GraphType.bar)
+
+
