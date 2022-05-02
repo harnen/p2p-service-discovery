@@ -572,7 +572,8 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 		}
 
 		if(m.src.is_evil)lop.increaseMaliciousQueries();
-        // FIXME why send handshake to nodes that are returned from topic query?
+        
+        int numEvilRegs = 0;
 		for (TopicRegistration r : registrations) {
 			
 			//if(!lop.getDiscovered().containsKey(r.getNode()))
@@ -581,8 +582,12 @@ public class Discv5TicketProtocol extends Discv5Protocol {
 			lop.addDiscovered(r.getNode());
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
 
-
+            if (!m.src.is_evil && r.getNode().is_evil)
+                numEvilRegs++;
 		}
+        // Report occurence of honest registrar returning only evil ads
+        if(numEvilRegs > 0 && (registrations.length == numEvilRegs) )
+            lop.increaseMalRespFromHonest();
 
 		int found = lop.discoveredCount();
 

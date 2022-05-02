@@ -94,7 +94,10 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		for(BigInteger neighbour: neighbours)
 			routingTable.addNeighbour(neighbour);
 		
+		if(m.src.is_evil)
+            lop.increaseMaliciousQueries();
 
+        int numEvilRegs = 0;
 		for(TopicRegistration r: registrations) {
 			//KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
@@ -104,9 +107,14 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			
 			lop.addDiscovered(r.getNode());
 
+            if (!m.src.is_evil && r.getNode().is_evil)
+                numEvilRegs++;
 			//lop.addDiscovered(Util.nodeIdtoNode(id).getKademliaProtocol().getNode(),m.src.getId());
 
 		}
+        // Report occurence of honest registrar returning only evil ads
+        if(numEvilRegs > 0 && (registrations.length == numEvilRegs) )
+            lop.increaseMalRespFromHonest();
 		
 		lop.increaseReturned(m.src.getId());
 		if(!lop.finished)lop.increaseUsed(m.src.getId());
@@ -192,7 +200,7 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		
 		if(neighbours.length<KademliaCommonConfig.ALPHA)
 			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
-		
+	    // FIXME: why do we call elaborateResponse here ?
 		lop.elaborateResponse(neighbours);
 		lop.available_requests = KademliaCommonConfig.ALPHA;
 	

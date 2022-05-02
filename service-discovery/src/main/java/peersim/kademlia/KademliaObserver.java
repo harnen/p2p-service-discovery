@@ -360,6 +360,8 @@ public class KademliaObserver implements Control {
     	msgStats.put("lookupOperations", 0);
     	msgStats.put("lookupAskedNodes", 0);
     	msgStats.put("eclipsedLookupOperations", 0);
+        msgStats.put("maliciousResultsByHonest", 0);
+        msgStats.put("lookupAskedMaliciousNodes", 0);
 
     	return msgStats;
 	}
@@ -396,6 +398,8 @@ public class KademliaObserver implements Control {
         		increaseNodeStatsBy(lop.srcNode, "maliciousDiscovered", maliciousDiscovered);
         		increaseNodeStatsBy(lop.srcNode, "lookupOperations", 1);
         		increaseNodeStatsBy(lop.srcNode, "lookupAskedNodes", lop.askedNodeCount());
+                increaseNodeStatsBy(lop.srcNode, "maliciousResultsByHonest", lop.maliciousResponseByHonest());
+                increaseNodeStatsBy(lop.srcNode, "lookupAskedMaliciousNodes", lop.maliciousNodesQueries());
         		if(lop.isEclipsed()) {
         			increaseNodeStatsBy(op.srcNode, "eclipsedLookupOperations", 1);	
         		}
