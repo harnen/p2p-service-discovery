@@ -176,15 +176,13 @@ def createPerLookupOperationStats(dir):
     return dfs
 
 def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
-    pd.set_option('display.max_rows', None)
+    #pd.set_option('display.max_rows', None)
     print("Reading:", os.getcwd(), "/dfs.csv")
     dfs = pd.read_csv('dfs.csv')
     
     #features = ['size']
     #default values for all the features
     defaults = {}
-    #FIXME: assumed that the default value is the most popular
-    #it might not always be the case for the network size, should think of something better
     for feature in features:
         if( (simulation_type == 'attack') and (features[feature]['type'] == 'attack')):
             defaults[feature] = features[feature]['defaultAttack']    
@@ -204,12 +202,18 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                 continue
             if(secondary_feature != feature):
                 df = df[df[secondary_feature] == defaults[secondary_feature]]
+                #for attack scenarios take into account uniquely results from nodes involved in the same topic
+                if(secondary_feature == "attackTopic"):
+                    df = df[df['nodeTopic'] == defaults['attackTopic']]
+        
+        
         #y-axis
-
         if simulation_type == 'benign':
             y_vals = benign_y_vals
         else:
             y_vals = attack_y_vals
+
+
 
         for graph in y_vals:
             fig, ax = plt.subplots()
@@ -234,10 +238,10 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                     #NaN -> 0
                     group.to_csv("dupa.csv")
                     print("protocol:", protocol)
-                    print("group:", group)
+                    #print("group:", group)
                     group = group.fillna(0)
                     avg = group.groupby(feature)[graph].mean()
-                    print("avg_index:", avg.index)
+                    #print("avg_index:", avg.index)
                     #x_vals = range(0, int(avg.index[-1]),  int(avg.index[-1]/len(avg.index)))
                     #x_vals = list(x_vals)
                     
@@ -252,8 +256,8 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                         #x = [int(val) + (i * width) for val in avg.index]
                         #x = [int(val) + (i * width) for val in x_vals]
                         x = np.arange(len(avg.index))+(width*i)
-                        print("x:", x)
-                        print("avg:", avg)
+                        #print("x:", x)
+                        #print("avg:", avg)
                         plt.bar(x, avg, width, label=protocolPrettyText[protocol])
                         ax.set_xlabel(feature)
                         ax.set_ylabel("Average " + titlePrettyText[graph])

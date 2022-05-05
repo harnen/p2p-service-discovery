@@ -1,10 +1,10 @@
 import sys
 from python.nsdi_plots import *
+from python.header import *
 
-INDIR_BASE = './python_logs/'
 OUTDIR_BASE = './plots/'
 
-INDIR_BASE = os.path.abspath(INDIR_BASE)
+INDIR_BASE = os.path.abspath(result_dir)
 OUTDIR_BASE = os.path.abspath(OUTDIR_BASE)
 #if len(sys.argv) < 2:
 #    print('Usage: ', sys.argv[0], ' <Path_to_Log_files> <OPTIONAL: Path_to_output_dir>' )
@@ -35,7 +35,7 @@ for simulation_type in ['benign', 'attack']:
     createPerNodeStats(".")
     if simulation_type == 'benign':
         plotPerNodeStats(OUTDIR, simulation_type)
-    else :
-        plotPerNodeStats(OUTDIR, simulation_type,graphType = GraphType.bar)
+    else:
+        plotPerNodeStats(OUTDIR, simulation_type)
 
 

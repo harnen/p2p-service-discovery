@@ -1,15 +1,15 @@
-features = {'size': {'type': 'benign', 'default': 1000, 'keyword': 'SIZE', 'vals':[1000, 2000]},
-            'topic': {'type': 'benign', 'default': 20, 'keyword': 'control.0traffic.maxtopicnum', 'vals':[1, 40]},
+features = {'size': {'type': 'benign', 'default': 3000, 'keyword': 'SIZE', 'vals':[1000, 2000, 3000]},
+            'topic': {'type': 'benign', 'default': 20, 'keyword': 'control.0traffic.maxtopicnum', 'vals':[1, 20, 40]},
             'discv5regs': {'type': 'benign', 'default': 5, 'keyword': 'protocol.3kademlia.TICKET_TABLE_BUCKET_SIZE', 'vals':[1, 3]},
             'idDistribution': {'type': 'attack', 'default': 'uniform', 'defaultAttack': 'uniform', 'keyword': 'init.1uniqueNodeID.idDistribution', 'vals':['nonUniform','uniform']},
-            'sybilSize': {'type': 'attack', 'default': 0, 'defaultAttack': 5, 'keyword': 'init.1uniqueNodeID.iPSize', 'vals':[1, 10]},
+            'sybilSize': {'type': 'attack', 'default': 0, 'defaultAttack': 5, 'keyword': 'init.1uniqueNodeID.iPSize', 'vals':[1, 5, 10]},
             'attackTopic': {'type': 'attack', 'default': 0, 'defaultAttack': 5, 'keyword': 'init.1uniqueNodeID.attackTopic', 'vals':[1, 5]},
-            'percentEvil': {'type': 'attack', 'default': 0, 'defaultAttack': 0.2, 'keyword':'init.1uniqueNodeID.percentEvil', 'vals':[0.1, 0.3]}
-        }
+            'percentEvil': {'type': 'attack', 'default': 0, 'defaultAttack': 0.2, 'keyword':'init.1uniqueNodeID.percentEvil', 'vals':[0.1, 0.2, 0.3]}}
 
 benign_y_vals = ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 'regsAccepted', 'lookupAskedNodes']
 
-attack_y_vals = ['percentageMaliciousDiscovered', 'percentageEclipsedLookups']
+attack_y_vals = ['percentageMaliciousDiscovered', 'percentageEclipsedLookups', 'lookupAskedMaliciousNodes','maliciousResultsByHonest']
+
 
 #protocols to test
 config_files = {'discv5': './config/discv5ticket.cfg', 
@@ -35,7 +35,9 @@ titlePrettyText = {'registrationMsgs' : 'Number of Registration Messages',
               'percentageEclipsedLookups': 'Percentage of Eclipsed Lookups', 
               'percentageMaliciousDiscovered' : 'Percentage of Malicious Nodes Returned from Lookups', 
               'regsPlaced': 'Number of Registrations Placed',
-              'regsAccepted':'Number of Registrations Accepted'
+              'regsAccepted':'Number of Registrations Accepted',
+              'lookupAskedMaliciousNodes': 'Number of lookups to malicious nodes',
+              'maliciousResultsByHonest': 'Number of malicious results by honest nodes'
               }
 
 protocolPrettyText = {'dht':'DHT',

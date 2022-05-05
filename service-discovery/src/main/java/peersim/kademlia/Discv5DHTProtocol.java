@@ -88,7 +88,10 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		for(BigInteger neighbour: neighbours)
 			routingTable.addNeighbour(neighbour);
 		
+		if(m.src.is_evil)
+            lop.increaseMaliciousQueries();
 
+        int numEvilRegs = 0;
 		for(TopicRegistration r: registrations) {
 			//KademliaObserver.addDiscovered(lop.topic, this.node.getId(), r.getNode().getId());
 			
@@ -97,8 +100,13 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 			KademliaObserver.addDiscovered(lop.topic, m.src.getId(), r.getNode().getId());
 			lop.addDiscovered(r.getNode());
 
+            if (!m.src.is_evil && r.getNode().is_evil)
+                numEvilRegs++;
 
 		}
+        // Report occurence of honest registrar returning only evil ads
+        if(numEvilRegs > 0 && (registrations.length == numEvilRegs) )
+            lop.increaseMalRespFromHonest();
 		
 		lop.increaseReturned(m.src.getId());
 		lop.addAskedNode(m.src.getId());

@@ -19,6 +19,9 @@ public class LookupOperation extends Operation {
     private int malQueried;
     
     private HashSet<BigInteger> nodesAsked;
+
+    // number of times a lookup results from an honest registrar contains only malicious ads
+    private int malRespFromHonest;
     
     public LookupOperation(BigInteger srcNode, Long timestamp, Topic t) {
         super(srcNode, t.getTopicID(), Message.MSG_TOPIC_QUERY, timestamp);
@@ -26,7 +29,7 @@ public class LookupOperation extends Operation {
         discovered = new ArrayList<KademliaNode>();
         malQueried=0;
         nodesAsked = new HashSet<BigInteger>();
-
+        malRespFromHonest = 0;
     }
     
     public Topic getTopic() {
@@ -36,6 +39,10 @@ public class LookupOperation extends Operation {
     public void addAskedNode(BigInteger id) {
     	nodesAsked.add(id);
     }
+
+    public void increaseMalRespFromHonest() {
+        malRespFromHonest++;
+    }
     
     public boolean nodeAlreadyAsked(BigInteger id) {
     	return nodesAsked.contains(id);
@@ -43,6 +50,10 @@ public class LookupOperation extends Operation {
     
     public int askedNodeCount() {
     	return nodesAsked.size();
+    }
+
+    public int maliciousResponseByHonest() {
+        return malRespFromHonest;
     }
     
     public void addDiscovered(KademliaNode n) {

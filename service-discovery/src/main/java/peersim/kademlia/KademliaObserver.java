@@ -47,8 +47,6 @@ public class KademliaObserver implements Control {
 
     private static String logFolderName; 
     private String parameterName;
-    private double parameterValue; 
-
     /**
      * keep statistics of the number of hops of every message delivered.
      */
@@ -102,10 +100,6 @@ public class KademliaObserver implements Control {
 
     public static TreeMap<String, Integer> activeRegistrationsByMalicious = new TreeMap<String, Integer>();
     
-    private static HashMap<BigInteger, Integer> nodeMsgReceived = new HashMap<BigInteger, Integer>();
-    
-    private static HashMap<BigInteger, Integer> nodeTopicStored = new HashMap<BigInteger, Integer>();
-    
     private static HashMap<BigInteger, BigInteger> nodeInfo = new HashMap<BigInteger, BigInteger>();
     private static HashSet<BigInteger> writtenNodeIDs = new HashSet<BigInteger>();
 
@@ -151,7 +145,6 @@ public class KademliaObserver implements Control {
     
     private HashMap<String, Integer> topicsList;
     
-    private static int simpCounter;
     private static int observerStep;
     private static int reportMsg;
     private static int reportReg;
@@ -205,8 +198,6 @@ public class KademliaObserver implements Control {
             competingTickets = new HashMap<String, HashMap<BigInteger,Integer>>();
 
             avgCounter = new HashMap<BigInteger, Integer>();
-            simpCounter=0;
-            
             String filename = this.logFolderName + "/" + "waiting_times.csv";
             File myFile = new File(filename);
             if(myFile.exists())myFile.delete();
@@ -360,6 +351,9 @@ public class KademliaObserver implements Control {
     	msgStats.put("lookupOperations", 0);
     	msgStats.put("lookupAskedNodes", 0);
     	msgStats.put("eclipsedLookupOperations", 0);
+        msgStats.put("maliciousResultsByHonest", 0);
+        msgStats.put("lookupAskedMaliciousNodes", 0);
+        msgStats.put("nodeTopic", -1);
 
     	return msgStats;
 	}
@@ -369,6 +363,7 @@ public class KademliaObserver implements Control {
     	if (nodeStats == null) {
         	nodeStats = createMsgReceivedByNodesEntry();
         	nodeStats.put("isMalicious", Util.nodeIdtoNode(nodeID).getKademliaProtocol().getNode().is_evil ? 1 : 0);
+        	nodeStats.put("nodeTopic", Util.nodeIdtoNode(nodeID).getKademliaProtocol().getNode().getTopicNum());
         }
     	//make sure we initialized the counter for that feature
     	assert(nodeStats.keySet().contains(feature));
@@ -396,6 +391,8 @@ public class KademliaObserver implements Control {
         		increaseNodeStatsBy(lop.srcNode, "maliciousDiscovered", maliciousDiscovered);
         		increaseNodeStatsBy(lop.srcNode, "lookupOperations", 1);
         		increaseNodeStatsBy(lop.srcNode, "lookupAskedNodes", lop.askedNodeCount());
+                increaseNodeStatsBy(lop.srcNode, "maliciousResultsByHonest", lop.maliciousResponseByHonest());
+                increaseNodeStatsBy(lop.srcNode, "lookupAskedMaliciousNodes", lop.maliciousNodesQueries());
         		if(lop.isEclipsed()) {
         			increaseNodeStatsBy(op.srcNode, "eclipsedLookupOperations", 1);	
         		}
@@ -1499,8 +1496,7 @@ public class KademliaObserver implements Control {
         }
         try {
 
-            simpCounter++;
-        	topicsList.clear();
+            topicsList.clear();
         	//regByRegistrant = new HashMap<>();
         	//regByRegistrantEvil = new HashMap<>();
         	//regByRegistrar = new HashMap<>();

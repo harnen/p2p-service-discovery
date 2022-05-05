@@ -27,7 +27,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
 
     public boolean is_evil=false;
     //all the topics the node registers for
-    HashSet<String> myTopics = new HashSet<String>();
+    String myTopic = "";
     
        
     
@@ -129,30 +129,27 @@ public class KademliaNode implements Comparable<KademliaNode>{
 
     
     public void setTopic(String t, Node n) {
-    	//System.out.println("Set topic "+t+" "+id);
     	this.n = n;
-    	this.myTopics.add(t);
+    	//we know allow only one topic per node
+    	//make sure it's the case
+    	assert(this.myTopic == "");
+    	myTopic = t;
+    }
+    
+    public String getTopic() {
+    	return this.myTopic;
+    }
+    
+    public int getTopicNum() {
+    	//topics are in a form t<topic_num>, e.g., t1, t5
+    	return Integer.valueOf(this.myTopic.substring(1));
     }
     
 	public boolean hasTopic(String topic) {
-		return this.myTopics.contains(topic);
+		return this.myTopic == topic;
 	}
     
-    /*public void setTopicDiscv4(String t, Node n) {
-    	this.n = n;
-    	//this.topicList.add(t);
-
-    	if(connections.get(t)==null) {
-    		//System.out.println("Add topic "+t);
-    		NodeConnections con = new NodeConnectionsv4(t,this);
-    		con.setRequested(true);
-    		connections.put(t, con);
-    	} else {
-    		connections.get(t).setRequested(true);
-    	}
-    	
-    }*/
-    
+   
     public void setTopicList(List<String> t, Node n) {
     	for(String topic : t)
     		setTopic(topic,n);
