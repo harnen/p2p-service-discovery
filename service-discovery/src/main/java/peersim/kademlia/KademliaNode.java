@@ -146,7 +146,7 @@ public class KademliaNode implements Comparable<KademliaNode>{
     }
     
 	public boolean hasTopic(String topic) {
-		return this.myTopic == topic;
+		return this.myTopic.equals(topic);
 	}
     
    

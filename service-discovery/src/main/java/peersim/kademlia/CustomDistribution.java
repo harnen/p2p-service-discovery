@@ -96,8 +96,8 @@ public class CustomDistribution implements peersim.core.Control {
 
     private BigInteger generate_non_uniform_id(int topicNo, Topic t) {
 
-        int amountToSubstract = subtract[topicNo-1];
-        subtract[topicNo-1] += 1;
+        int amountToSubstract = subtract[topicNo];
+        subtract[topicNo] += 1;
         String str = String.valueOf(amountToSubstract); 
         BigInteger b = new BigInteger(str);
         
