@@ -1,4 +1,4 @@
-MAX_RUNS = 10
+PARALLEL_RUNS = 10
 
 import sys
 from pprint import pformat
@@ -82,7 +82,7 @@ def main() -> int:
                     os.system('cp ' + in_config + " " + out_config)
                     set_params(out_config, out_dir, params)
 
-                    if run < MAX_RUNS:
+                    if run < PARALLEL_RUNS:
                         run_sim_par(out_config)
                         run = run + 1
                     else:
