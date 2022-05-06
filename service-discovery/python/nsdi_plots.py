@@ -238,9 +238,10 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                                 inner=None,#"point",  # Representation of the datapoints in the violin interior.
                                 split = False, 
                                 scale = 'width', #make the width of each violin equal (by default it's the area)
-                                cut = 0,
+                                cut = 0, #cut = 0 limits the violin range within the range of the observed data 
                                 palette='colorblind'
-                                ) # cut = 0 limits the violin range within the range of the observed data 
+                                ) 
+                #the below set the y_lim from header.py to make graphs more readible
                 if(graphType.name + "_" + feature + "_" + graph in y_lims):
                     ax.set_ylim(0, y_lims[graphType.name + "_" + feature + "_" + graph])
 
