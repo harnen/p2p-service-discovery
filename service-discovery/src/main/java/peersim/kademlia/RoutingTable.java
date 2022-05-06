@@ -104,12 +104,16 @@ public class RoutingTable implements Cloneable {
 	
 	public BigInteger[] getKClosestNeighbours (final int k, int dist) {
 		BigInteger[] result = new BigInteger[k];
+        assert(dist > 0 && dist <= KademliaCommonConfig.BITS):"invalid distance";
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
 		while(resultList.size()<k && dist<=KademliaCommonConfig.BITS) {
 			resultList.addAll(bucketAtDistance(dist).getNeighbours());
 			dist++;
+            if( (dist > KademliaCommonConfig.BITS) && resultList.size() == 0)
+                dist = 0;
 		}
 		
+        assert(resultList.size() > 0) : "no neighbors found in getKClosestNeighbours";
 		return resultList.toArray(result);
 
 	}
