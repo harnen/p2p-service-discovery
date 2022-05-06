@@ -196,14 +196,16 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 				if((!op.finished && (Arrays.asList(neighbours).contains(op.destNode)) ||
 						//end if we discovered enough peers
 						((KademliaCommonConfig.DISCV4_STOP == 1 && discovered>=KademliaCommonConfig.TOPIC_PEER_LIMIT)))){
+					logger.warning("Discv4 lookup node " + op.destNode);
 					logger.warning("Found node " + op.destNode);
 					op.finished = true;
 
 					KademliaObserver.find_ok.add(1);
 					
-					/*if(registrationMap.get(op.operationId)!=null) {
+					if(registrationMap.get(op.operationId)!=null) {
 						KademliaObserver.reportOperation(lop);
-					}*/
+						registrationMap.remove(op.operationId);
+					}
 					return;
 				}
 			}
@@ -248,14 +250,16 @@ public class Discv4Protocol extends KademliaProtocol implements Cleanable  {
 			} else if (op.available_requests == KademliaCommonConfig.ALPHA) { // no new neighbour and no outstanding requests
 				operations.remove(op.operationId);
 
-				logger.info("Finished lookup node " + op.getUsedCount());
+				logger.warning("Finished lookup node " + op.getUsedCount());
 				
-				if(registrationMap.get(op.operationId)!=null) {
+				if(registrationMap.get(op.operationId)!=null && op.finished != true) {
 					
 					LookupOperation lop = (LookupOperation) operations.get(registrationMap.get(op.operationId));
 
 
 					KademliaObserver.reportOperation(lop);
+					
+					registrationMap.remove(op.operationId);
 					//FIXME removed
 					//node.setLookupResult(lop.getDiscovered(),lop.getTopic().getTopic());
 					//logger.warning("Handle response topic "+lop.getTopic().getTopic());
