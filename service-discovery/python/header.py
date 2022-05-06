@@ -45,3 +45,13 @@ protocolPrettyText = {'dht':'DHT',
                       'discv5' : 'TBSD',
                       'discv4' : 'Discv4'
                       }
+
+y_lims = {#'violin_size_discovered': 100,
+          'violin_size_lookupMsgs': 500,
+          'violin_size_registrationMsgs': 10000,
+          'violin_size_regsAccepted': 4000,
+          'violin_topic_lookupMsgs': 500,
+          'violin_topic_registrationMsgs': 10000,
+          'violin_topic_regsAccepted': 4000,
+          'violin_topic_wasDiscovered': 100
+        }

@@ -226,6 +226,8 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
         for graph in y_vals:
             fig, ax = plt.subplots(figsize=(10, 4))
             print("Plotting y-axis:", graph, "x-axis", feature)
+            ax.spines['right'].set_visible(False)
+            ax.spines['top'].set_visible(False)
 
             if(graphType == GraphType.violin):
                 sns.violinplot(ax = ax,
@@ -239,6 +241,9 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                                 cut = 0,
                                 palette='colorblind'
                                 ) # cut = 0 limits the violin range within the range of the observed data 
+                if(graphType.name + "_" + feature + "_" + graph in y_lims):
+                    ax.set_ylim(0, y_lims[graphType.name + "_" + feature + "_" + graph])
+
             else:
                 groups = df.groupby('protocol')
 
