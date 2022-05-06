@@ -228,7 +228,6 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
             print("Plotting y-axis:", graph, "x-axis", feature)
             ax.spines['right'].set_visible(False)
             ax.spines['top'].set_visible(False)
-
             if(graphType == GraphType.violin):
                 sns.violinplot(ax = ax,
                                 data = df,
@@ -242,6 +241,7 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                                 palette='colorblind'
                                 ) 
                 #the below set the y_lim from header.py to make graphs more readible
+                
                 if(graphType.name + "_" + feature + "_" + graph in y_lims):
                     ax.set_ylim(0, y_lims[graphType.name + "_" + feature + "_" + graph])
 
@@ -276,9 +276,6 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                         #print("x:", x)
                         #print("avg:", avg)
                         plt.bar(x, avg, width, label=protocolPrettyText[protocol])
-                        ax.set_xlabel(feature)
-                        ax.set_ylabel("Average " + titlePrettyText[graph])
-                        ax.set_title(titlePrettyText[graph])
                         ax.legend()
                         ticks = avg.index
                         ax.set_xticks(range(len(ticks)))
@@ -291,7 +288,9 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                         #evenly space the x ticks
                         ax.set_xticks(x_vals)
                         ax.set_xticklabels(list(avg.index))
-            
+            ax.set_xlabel(feature)
+            ax.set_ylabel(titlePrettyText[graph])
+            #ax.set_title(titlePrettyText[graph])
             fig.savefig(OUTDIR + '/' + graphType.name + "_" + feature + "_" + graph)
 
 def plotPerLookupOperation():
