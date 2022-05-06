@@ -13,6 +13,14 @@ import os
 import seaborn as sns
 from .header import *
 
+font = {'family' : 'normal',
+        'weight' : 'bold',
+        'size'   : 16}
+
+matplotlib.rc('font', **font)
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 from enum import Enum, unique
 @unique
 class GraphType(Enum):
@@ -216,7 +224,7 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
 
 
         for graph in y_vals:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=(10, 4))
             print("Plotting y-axis:", graph, "x-axis", feature)
 
             if(graphType == GraphType.violin):
@@ -225,9 +233,12 @@ def plotPerNodeStats(OUTDIR, simulation_type, graphType = GraphType.violin):
                                 x = feature,
                                 y = graph,
                                 hue = 'protocol',
-                                inner="point",  # Representation of the datapoints in the violin interior.
+                                inner=None,#"point",  # Representation of the datapoints in the violin interior.
                                 split = False, 
-                                cut = 0) # cut = 0 limits the violin range within the range of the observed data 
+                                scale = 'width', #make the width of each violin equal (by default it's the area)
+                                cut = 0,
+                                palette='colorblind'
+                                ) # cut = 0 limits the violin range within the range of the observed data 
             else:
                 groups = df.groupby('protocol')
 
