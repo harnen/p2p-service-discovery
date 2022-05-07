@@ -27,17 +27,17 @@ features_attack = {}
 result_dir = './python_logs'
 
 
-titlePrettyText = {'registrationMsgs' : 'Number of Registration Messages', 
-              'lookupMsgs': 'Number of Lookup Messages', 
-              'discovered' : 'Number of Discovered Peers', 
-              'wasDiscovered': 'Number of Times Discovered by Others',
-              'lookupAskedNodes' : 'Number of Contacted Nodes during Lookups', 
-              'percentageEclipsedLookups': 'Percentage of Eclipsed Lookups', 
+titlePrettyText = {'registrationMsgs' : '#Registration Messages', 
+              'lookupMsgs': '#Lookup Messages', 
+              'discovered' : '#Discovered Peers', 
+              'wasDiscovered': '#Times Discovered by Others',
+              'lookupAskedNodes' : '#Contacted Nodes during Lookups', 
+              'percentageEclipsedLookups': 'Eclipsed Lookups', 
               'percentageMaliciousDiscovered' : 'Percentage of Malicious Nodes Returned from Lookups', 
-              'regsPlaced': 'Number of Registrations Placed',
-              'regsAccepted':'Number of Registrations Accepted',
-              'lookupAskedMaliciousNodes': 'Number of lookups to malicious nodes',
-              'maliciousResultsByHonest': 'Number of malicious results by honest nodes'
+              'regsPlaced': '#Registrations Placed',
+              'regsAccepted':'#Registrations Accepted',
+              'lookupAskedMaliciousNodes': '#lookups to malicious nodes',
+              'maliciousResultsByHonest': '#malicious results by honest nodes'
               }
 
 protocolPrettyText = {'dht':'DHT',
@@ -45,3 +45,13 @@ protocolPrettyText = {'dht':'DHT',
                       'discv5' : 'TBSD',
                       'discv4' : 'Discv4'
                       }
+
+y_lims = {#'violin_size_discovered': 100,
+          'violin_size_lookupMsgs': 500,
+          'violin_size_registrationMsgs': 10000,
+          'violin_size_regsAccepted': 4000,
+          'violin_topic_lookupMsgs': 500,
+          'violin_topic_registrationMsgs': 10000,
+          'violin_topic_regsAccepted': 4000,
+          'violin_topic_wasDiscovered': 100
+        }
