@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.Collections;
 import java.math.BigInteger;
 import java.util.Random;
+import java.util.Arrays; 
 
 import peersim.kademlia.Topic;
 import peersim.kademlia.TopicRegistration;
@@ -353,7 +354,7 @@ public class Discv5TicketTopicTable implements TopicTable{ // implements TopicTa
         }
     }
 
-    public TopicRegistration[] getRegistration(Topic t){
+    public TopicRegistration[] getRegistration(Topic t, KademliaNode src){
         // TODO check: we might be returning expired registrations, we shoud update the table
         Topic topic = new Topic(t.topic);
         ArrayDeque<TopicRegistration> topicQ = topicTable.get(topic);
@@ -377,11 +378,26 @@ public class Discv5TicketTopicTable implements TopicTable{ // implements TopicTa
 
         // Random selection of K results
         TopicRegistration[] results = (TopicRegistration []) topicQ.toArray(new TopicRegistration[topicQ.size()]);
-        int result_len = KademliaCommonConfig.MAX_TOPIC_REPLY > results.length ? results.length : KademliaCommonConfig.MAX_TOPIC_REPLY;
+        List<TopicRegistration> resultsList = new ArrayList(Arrays.asList(results)); // need to wrap the Arrays.asList in a new List, otherwise iter.remove crashes
+        // Remove src from the results
+        for (Iterator<TopicRegistration> iter = resultsList.listIterator(); iter.hasNext();) {
+            TopicRegistration reg = iter.next();
+
+            if (reg.getNode().equals(src)) {
+                iter.remove();
+            }
+        }
+        if (resultsList.size() == 0)
+            return new TopicRegistration[0];
+
+        int result_len = KademliaCommonConfig.MAX_TOPIC_REPLY > resultsList.size() ? resultsList.size() : KademliaCommonConfig.MAX_TOPIC_REPLY;
         TopicRegistration[] final_results = new TopicRegistration[result_len];
 
-        for (int i = 0; i < result_len; i++) 
-            final_results[i] = results[CommonState.r.nextInt(results.length)];
+        for (int i = 0; i < result_len; i++)  {
+            int indexToPick = CommonState.r.nextInt(resultsList.size());
+            final_results[i] = resultsList.get(indexToPick);
+            resultsList.remove(indexToPick);
+        }
         
         //return (TopicRegistration []) result.toArray(new TopicRegistration[result.size()]);
         return final_results;

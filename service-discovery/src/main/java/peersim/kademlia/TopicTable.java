@@ -9,7 +9,7 @@ import peersim.kademlia.TopicRegistration;
 interface TopicTable {
 
     public boolean register(TopicRegistration r);
-    public TopicRegistration[] getRegistration(Topic t);
+    public TopicRegistration[] getRegistration(Topic t, KademliaNode src);
     public String dumpRegistrations();
     public HashMap<Topic,Integer> getRegbyTopic();
     public HashMap<String, Integer> getRegbyRegistrar();
