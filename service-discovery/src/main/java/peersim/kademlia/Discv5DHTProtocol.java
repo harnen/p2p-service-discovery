@@ -583,7 +583,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 	protected void handleTopicQuery(Message m, int myPid) {
 		
 		Topic t = (Topic) m.body;
-		TopicRegistration[] registrations = this.topicTable.getRegistration(t);
+		TopicRegistration[] registrations = this.topicTable.getRegistration(t, m.src);
 		BigInteger[] neighbours = this.routingTable.getNeighbours(Util.logDistance(t.getTopicID(), this.node.getId()));
 	
 		logger.info("Topic query received at node "+this.node.getId()+" "+registrations.length+" "+neighbours.length);
