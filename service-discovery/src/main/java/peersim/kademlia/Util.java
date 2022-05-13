@@ -51,6 +51,7 @@ public class Util {
      * @return BigInteger
      */
     public static final BigInteger distance(BigInteger a, BigInteger b) {
+    	assert false : "Shouldn't be used anymore";
         return a.xor(b);
     }
 

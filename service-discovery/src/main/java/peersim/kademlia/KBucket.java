@@ -3,18 +3,10 @@ package peersim.kademlia;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
-//import java.util.Random;
-import java.util.TreeMap;
-
-import java.net.InetAddress;
 import java.util.regex.Pattern;
-import com.google.common.net.InetAddresses;
 
 import peersim.core.CommonState;
-import peersim.core.Network;
 import peersim.core.Node;
 
 /**
