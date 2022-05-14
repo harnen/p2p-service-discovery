@@ -71,8 +71,8 @@ public class Topic implements Comparable<Topic> {
         	return 0;
         
         else 
-        	return -1; */
-        return Util.distance(this.hostID, this.topicID).compareTo(Util.distance(t.hostID, t.topicID));
+        	return -1;*/ 
+        return this.hostID.xor(this.topicID).compareTo(t.hostID.xor(t.topicID));
 
     }
 

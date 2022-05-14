@@ -92,7 +92,7 @@ public class Util {
      * 
      * @return double result
      */
-    public static int logDistance(BigInteger a,BigInteger b)
+    /*public static int logDistance(BigInteger a,BigInteger b)
     {
         int lz = 0;
         
@@ -126,6 +126,23 @@ public class Util {
             }
         }
         return abyte.length*8 - lz;
+    }*/
+
+    /**
+     * Measures the logdistance between two BigInteger values using the length of the differing suffix in bits
+     *
+     * @param BigInteger a
+     *
+     * @param BigInteger b
+     *
+     * @return int result
+     */
+    public static int logDistance(BigInteger a, BigInteger b)
+    {
+
+    	BigInteger x = a.xor(b);
+
+    	return x.bitLength();
     }
     
     
