@@ -26,8 +26,10 @@ public class Discv5TopicTableTest{
         CommonState.setTime(Long.parseLong("0"));
     }
 
-    @Test
+    //this table is not used anymore
+    /*@Test
     public void ticketWaitingTimes() {
+    	return;
         Discv5TicketTopicTable table = new Discv5TicketTopicTable();
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
         table.setCapacity(10);
@@ -97,6 +99,6 @@ public class Discv5TopicTableTest{
             table.register_ticket(ticket, null, curr_time);
             curr_time += 1;
         }
-    }
+    }*/
 }
 

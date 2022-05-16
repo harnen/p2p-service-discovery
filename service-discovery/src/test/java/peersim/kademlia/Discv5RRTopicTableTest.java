@@ -27,8 +27,8 @@ public class Discv5RRTopicTableTest{
         CommonState.setEndTime(Long.parseLong("100"));
         CommonState.setTime(Long.parseLong("0"));
     }
-
-    @Test
+    //this table is not used anymore
+    /*@Test
     public void ticketWaitingTimes() {
         Discv5TicketTopicTable table = new Discv5RRTopicTable();
         UniformRandomGenerator urg = new UniformRandomGenerator(KademliaCommonConfig.BITS, 1);
@@ -134,7 +134,7 @@ public class Discv5RRTopicTableTest{
                     System.out.println("At: " + curr_time + " registering a ticket for topic: " + ticket.getTopic().getTopic());
                 }
             }
-        }
+        }*/
         /*
         Ticket [] tickets = null;
         for(int i = 0; i < 30; i++) {
@@ -186,7 +186,7 @@ public class Discv5RRTopicTableTest{
             //assert(ticket.getWaitTime() == 0);
             table.register_ticket(ticket, null, curr_time);
             curr_time += 1;
-        } */
-    }
+        } 
+    }*/
 }
 

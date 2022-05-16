@@ -106,14 +106,14 @@ public class Discv5GlobalTopicTableSameIpTest{
         
         int t=1;
         for(int i:occupancy) {
-        	System.out.println("Occupancy topic"+t+" "+i);
+        	//System.out.println("Occupancy topic"+t+" "+i);
         	t++;
         }
         
         int min = Arrays.stream(occupancy).min().getAsInt();
         int max = Arrays.stream(occupancy).max().getAsInt();
 
-        System.out.println("Min:"+min+" Max:"+max);//+" "+(double)max/min);
+        //System.out.println("Min:"+min+" Max:"+max);//+" "+(double)max/min);
         
         //assert(min==0||max==0||!((double)max/min<1.5));
 
