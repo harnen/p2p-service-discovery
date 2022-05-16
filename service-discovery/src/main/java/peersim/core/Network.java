@@ -162,7 +162,8 @@ private Network() {}
 
 /** Number of nodes currently in the network */
 public static int size() {
-	return node.length; 
+//	return node.length;
+	return len; 
 }
 
 // ------------------------------------------------------------------
