@@ -2,6 +2,12 @@ package peersim.kademlia;
 
 import java.util.*;  
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
@@ -22,6 +28,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 
 	private Integer [] topicsCounts;
 	private Integer [] topicsCounts2;
+
 
 	// ______________________________________________________________________________________________
 	public ZipfTrafficGenerator(String prefix) {
@@ -57,6 +64,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
         }
         return true;
 	}
+
 	
    private void calculateTopics() {
     	    	
@@ -161,7 +169,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 		    System.out.println("maxTopicNum: " + maxtopicNum);
 		    Arrays.fill(topicsCounts,  Integer.valueOf(0));
 
-			for(int i = 0; i<Network.size(); i++) 
+			for(int i = 0; i < Network.size(); i++) 
 			{
 				Node start = Network.get(i);
 				KademliaProtocol prot = (KademliaProtocol)start.getKademliaProtocol();
@@ -178,6 +186,7 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
                         topic = new Topic(topicString);
                         prot.setTargetTopic(topic);
                     }
+                    
                 } else {
                 	//not extremely efficient, but we want random distribution of topics
                 	int topicIndex = zipf.sample() - 1;
@@ -204,8 +213,9 @@ public class ZipfTrafficGenerator extends Discv5ZipfTrafficGenerator {
 			    if(registerMessage != null) EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
 			    //start lookup messages later
 			    if(lookupMessage != null)EDSimulator.add(2*KademliaCommonConfig.AD_LIFE_TIME + time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
-                
-
+			    
+			    
+			    
             }
 			assert isDistributionCorrect(topicsCounts) : "Zipf distribution incorrect";
 			first=false;

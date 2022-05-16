@@ -16,22 +16,22 @@ public class IPTest {
 		for(String octet: octets) {
 			//System.out.print("Octet: " + octet);
 			int octetInt = Integer.parseInt(octet);
-			System.out.print(Integer.toBinaryString(octetInt) + ".");
+			//System.out.print(Integer.toBinaryString(octetInt) + ".");
 		}
-		System.out.println();
+		//System.out.println();
 		for(String octet: octets) {
 			int octetInt = Integer.parseInt(octet);
 			for(int comparator: comparators) {
 				//System.out.println("octetInt: " + octetInt + " comparator: " + comparator);
 				if((octetInt & comparator) == 0){
-					System.out.print("0");
+					;//System.out.print("0");
 				}else {
-					System.out.print("1");
+					;//System.out.print("1");
 				}
 			}
-			System.out.print(".");
+			//System.out.print(".");
 		}
-		System.out.println();
+		//System.out.println();
 	}
 	@Test
 	public void testIPs() {
@@ -91,7 +91,7 @@ public class IPTest {
 		Object[] result = addRecursive(root, addr, 0);
 	    root = (TreeNode) result[0];
 		int score = (int) result[1];
-		System.out.println("Final score: " + score + " Max score: " + " My score: " + (root.getCounter()-1) * 528);
+		//System.out.println("Final score: " + score + " Max score: " + " My score: " + (root.getCounter()-1) * 528);
 		return score;
 	}
 	
@@ -100,25 +100,25 @@ public class IPTest {
 	    	current = new TreeNode();
 	    }
 	    int score = current.getCounter() * depth;
-	    System.out.println("Increment counter to " + current.increment());
+	    //System.out.println("Increment counter to " + current.increment());
 	    
 	    if(depth < 32) {
-	    	System.out.println("Octet: " + addr.split("\\.")[depth/8]);
+	    	//System.out.println("Octet: " + addr.split("\\.")[depth/8]);
 		    int octet = Integer.parseInt(addr.split("\\.")[depth/8]);
 		    int comparator = comparators[depth % 8];
 		    Object[] result = null;
 		    if((octet & comparator) == 0) {
-		    	System.out.println("Going towards 0");
+		    	//System.out.println("Going towards 0");
 		    	result = addRecursive(current.zero, addr, depth + 1);
 		        current.zero = (TreeNode) result[0];
 		    } else {
-		    	System.out.println("Going towards 1");
+		    	//System.out.println("Going towards 1");
 		    	result = addRecursive(current.one, addr, depth + 1);
 		    	current.one = (TreeNode) result[0]; 
 		    }
 		    score += (int) result[1];
 	    }else {
-	    	System.out.println("Reached depth " + depth + " going back.");
+	    	;//System.out.println("Reached depth " + depth + " going back.");
 	    }
 
 	    return new Object[]{current, score};
