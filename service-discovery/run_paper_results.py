@@ -72,8 +72,6 @@ def main() -> int:
                     os.system('mkdir -p ' + out_dir)
                     out_config = out_dir + 'config.txt'
                     os.system('cp ' + in_config + " " + out_config)
-                    if not os.path.exists('./config/' + 'zipf_exp_1.0' + 'topics_' + params['topic'] + 'size_' + params['size'] + ".csv"):
-                        set_params(out_config, '', './config')
                     set_params(out_config, out_dir, params)
                     #run_sim(out_config)
 
