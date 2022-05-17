@@ -186,7 +186,7 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		lop.type = Message.MSG_TOPIC_QUERY;
 		operations.put(lop.operationId, lop);
 	
-		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
+		/*int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
 		
 		logger.warning("Send init lookup for topic " + this.node.getId() + " " + t.getTopic()+" "+distToTopic);
 
@@ -194,8 +194,10 @@ public class Discv5DHTProtocol extends Discv5Protocol  {
 		
 		
 		if(neighbours.length<KademliaCommonConfig.ALPHA)
-			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
+			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);*/
 		
+		BigInteger[] neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K,t.getTopicID());
+
 		lop.elaborateResponse(neighbours);
 		lop.available_requests = KademliaCommonConfig.ALPHA;
 	

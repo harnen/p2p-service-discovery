@@ -189,8 +189,8 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 		lop.type = Message.MSG_TOPIC_QUERY;
 		operations.put(lop.operationId, lop);
 	
-		int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
-		BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
+		//int distToTopic = Util.logDistance((BigInteger) t.getTopicID(), this.node.getId());
+		//BigInteger[] neighbours = this.routingTable.getNeighbours(distToTopic);
 		
 		/*logger.warning("Dist to topic "+distToTopic+" "+neighbours.length);
 		
@@ -198,8 +198,11 @@ public class Discv5DHTTicketProtocol extends Discv5Protocol {
 			logger.warning("Asking malicious "+Util.nodeIdtoNode(id).getKademliaProtocol().getNode().is_evil);
 		}*/
 		
-		if(neighbours.length<KademliaCommonConfig.ALPHA)
-			neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
+		//if(neighbours.length<KademliaCommonConfig.ALPHA)
+		//	neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.ALPHA, distToTopic);
+		
+		BigInteger[] neighbours = this.routingTable.getKClosestNeighbours(KademliaCommonConfig.K,t.getTopicID());
+
 	    // FIXME: why do we call elaborateResponse here ?
 		lop.elaborateResponse(neighbours);
 		lop.available_requests = KademliaCommonConfig.ALPHA;

@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeMap;
+import java.util.List;
 
 import peersim.core.CommonState;
 
@@ -102,17 +103,50 @@ public class RoutingTable implements Cloneable {
 		return resultList.toArray(result);
 	}
 	
-	public BigInteger[] getKClosestNeighbours (final int k, int dist) {
+	public BigInteger[] getKClosestNeighbours (final int k, BigInteger destNode) {
 		BigInteger[] result = new BigInteger[k];
         //assert(dist > 0 && dist <= KademliaCommonConfig.BITS):"invalid distance";
-			assert(dist <= KademliaCommonConfig.BITS):"invalid distance";
+		//assert(dist <= KademliaCommonConfig.BITS):"invalid distance";
 
 		ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
-		while(resultList.size()<k && dist<=KademliaCommonConfig.BITS) {
+		/*while(resultList.size()<k && dist<=KademliaCommonConfig.BITS) {
 			resultList.addAll(bucketAtDistance(dist).getNeighbours());
 			dist++;
             if( (dist > KademliaCommonConfig.BITS) && resultList.size() == 0)
                 dist = 0;
+		}*/
+		
+		for(KBucket b : k_buckets) {
+			List<BigInteger> nodes = b.getNeighbours();
+			for(BigInteger n : nodes) {
+				if(resultList.size()<k) {
+					resultList.add(n);
+					
+				}
+				else {
+					BigInteger newdist = Util.distance(n,destNode);
+
+					// find the node with max distance
+					BigInteger maxdist = newdist;
+					BigInteger nodemaxdist = n;
+					
+					for(BigInteger id : resultList) {
+						BigInteger dist = Util.distance(id, destNode);
+
+						if (dist.compareTo(maxdist) > 0) {
+							maxdist = dist;
+							nodemaxdist = id;
+						}
+					}
+					
+
+					if (nodemaxdist.compareTo(n) != 0) {
+						resultList.remove(nodemaxdist);
+						resultList.add(n);
+					}
+				}
+			
+			}
 		}
 		
         assert(resultList.size() > 0) : "no neighbors found in getKClosestNeighbours";

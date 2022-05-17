@@ -122,7 +122,7 @@ public class Operation {
 		
 	
 		// add to closestSet
-		for (BigInteger n : neighbours) {
+/*		for (BigInteger n : neighbours) {
 			if (n != null) {
 				if (!closestSet.containsKey(n)) {
 					if (closestSet.size() < max) { // add directly
@@ -137,6 +137,37 @@ public class Operation {
 							int dist = Util.logDistance(i, destNode);
 
 							if (dist > maxdist) {
+								maxdist = dist;
+								nodemaxdist = i;
+							}
+						}
+
+						if (nodemaxdist.compareTo(n) != 0) {
+							closestSet.remove(nodemaxdist);
+							closestSet.put(n, false);
+						}
+					}
+				}
+			}
+		}
+ */
+		// add to closestSet
+		for (BigInteger n : neighbours) {
+
+			if (n != null) {
+				if (!closestSet.containsKey(n)) {
+					if (closestSet.size() < KademliaCommonConfig.K) { // add directly
+						closestSet.put(n, false);
+					} else { // find in the closest set if there are nodes whit less distance
+						BigInteger newdist = Util.distance(n, destNode);
+
+						// find the node with max distance
+						BigInteger maxdist = newdist;
+						BigInteger nodemaxdist = n;
+						for (BigInteger i : closestSet.keySet()) {
+							BigInteger dist = Util.distance(i, destNode);
+
+							if (dist.compareTo(maxdist) > 0) {
 								maxdist = dist;
 								nodemaxdist = i;
 							}
