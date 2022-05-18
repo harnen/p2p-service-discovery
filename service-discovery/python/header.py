@@ -6,7 +6,7 @@ features = {'size': {'type': 'benign', 'default': 25000, 'keyword': 'SIZE', 'val
             'attackTopic': {'type': 'attack', 'default': 0, 'defaultAttack': 0, 'keyword': 'init.1uniqueNodeID.attackTopic', 'vals':[0]},
             'percentEvilTopic': {'type': 'attack', 'default': 0, 'defaultAttack': 1.0, 'keyword':'init.1uniqueNodeID.percentEvilTopic', 'vals':[0.5, 1.0, 2.0]}}
 
-benign_y_vals = ['registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 'regsAccepted', 'lookupAskedNodes']
+benign_y_vals = ['totalMsg','registrationMsgs', 'lookupMsgs', 'discovered', 'wasDiscovered', 'regsPlaced', 'regsAccepted', 'lookupAskedNodes']
 
 attack_y_vals = ['percentageMaliciousDiscovered', 'percentageEclipsedLookups', 'lookupAskedMaliciousNodes','maliciousResultsByHonest']
 
@@ -28,6 +28,7 @@ result_dir = './python_logs'
 
 
 titlePrettyText = {'registrationMsgs' : '#Registration Messages', 
+              'totalMsg' : '#Total received messages',
               'lookupMsgs': '#Lookup Messages', 
               'discovered' : '#Discovered Peers', 
               'wasDiscovered': '#Times Discovered by Others',
@@ -53,5 +54,7 @@ y_lims = {#'violin_size_discovered': 100,
           'violin_topic_lookupMsgs': 500,
           'violin_topic_registrationMsgs': 10000,
           'violin_topic_regsAccepted': 4000,
-          'violin_topic_wasDiscovered': 100
+          'violin_topic_wasDiscovered': 100,
+          'violin_topic_totalMsg':9000,
+          'violin_size_totalMsg':9000
         }
