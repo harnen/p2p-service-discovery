@@ -1,5 +1,9 @@
 package peersim.kademlia;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
 
 import peersim.config.Configuration;
@@ -289,12 +293,15 @@ public class CustomDistribution implements peersim.core.Control {
             
             node = new KademliaNode(id, attackerID, ip_address, 0);
             newNode.setProtocol(protocolID, null);
+            
             node.is_evil = true;
             ((KademliaProtocol) (newNode.getProtocol(evilProtocolID))).setNode(node);
             newNode.setKademliaProtocol((KademliaProtocol) (newNode.getProtocol(evilProtocolID)));
             ((KademliaProtocol) (newNode.getProtocol(evilProtocolID))).setProtocolID(evilProtocolID);
             //if (idDist.equals(KademliaCommonConfig.NON_UNIFORM_ID_DISTRIBUTION)) 
             ((KademliaProtocol) (newNode.getProtocol(evilProtocolID))).setTargetTopic(t);
+            ((KademliaProtocol) (newNode.getProtocol(evilProtocolID))).getNode().setTopic(t.getTopic(), newNode);
+            
         	
         }
 
@@ -303,20 +310,53 @@ public class CustomDistribution implements peersim.core.Control {
     
     private int calculateEvil(int targetTopic, int topicNum, double exp) {
     	
-    	ZipfDistribution zipf = new ZipfDistribution(topicNum,exp);
     	
-    	Integer [] topicsCounts = new Integer[topicNum];
-	    Arrays.fill(topicsCounts,  Integer.valueOf(0));
+    	try {
+    		String filename = "./config/zipf/zipf_" + "exp_" + exp + "topics_" + topicNum + "size_" + Network.size() + ".csv";
 
-	    //int targetNodes = 0;
-	    //int count=0;
-        for (int i = 0; i < Network.size(); ++i) {
-        	int topicIndex = zipf.sample() - 1;
-        	topicsCounts[topicIndex]++;
-        }
+    		BufferedReader br = new BufferedReader(new FileReader(filename));	
+    		
+			String line = "";
+			int i = 0;
+			br.readLine();//read header
+			int counter=0;
+			while ((line = br.readLine()) != null){
+				String[] data = line.split(",");  
+				int nodeID = Integer.valueOf(data[0]);
+				assert nodeID == i: "incorrect NodeID; should be " + i + " was " + nodeID;
+				
+				//convert to Integer to make sure the format is correct
+				int topic = Integer.valueOf(data[1]);
+				if(topic==targetTopic)counter++;
+			    i++;
 
-        return topicsCounts[targetTopic];
+			}
+			br.close();
+			return counter;
+    	}	catch (FileNotFoundException e){
+        	    System.out.println(e);
+        	    ZipfDistribution zipf = new ZipfDistribution(topicNum,exp);
+            	
+            	Integer [] topicsCounts = new Integer[topicNum];
+        	    Arrays.fill(topicsCounts,  Integer.valueOf(0));
+
+        	    //int targetNodes = 0;
+        	    //int count=0;
+                for (int i = 0; i < Network.size(); ++i) {
+                	int topicIndex = zipf.sample() - 1;
+                	topicsCounts[topicIndex]++;
+                }
+
+                return topicsCounts[targetTopic];
+        } catch (NumberFormatException e) {
+			System.err.println("Incorrect conversion from node ID or topic number");
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.err.println("Error reading the input file");
+			e.printStackTrace();
+		}
         
+    	return 0;
     	
     }
 
