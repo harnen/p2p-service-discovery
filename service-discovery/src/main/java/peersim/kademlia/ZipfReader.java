@@ -39,9 +39,10 @@ public class ZipfReader extends Discv5ZipfTrafficGenerator {
 	public boolean execute() {
 		//execute it only once
 		if(first) {
+			int[] topicsCounts = new int[maxtopicNum];
+
 			try {
-				
-				
+		
 				String filename = "./config/zipf/zipf_" + "exp_" + exp + "topics_" + maxtopicNum + "size_" + (Network.size()-calculateEvil()) + ".csv";
 				//if the distribution doesn't exist - create it
 				if(! new File(filename).exists()) {
@@ -55,34 +56,37 @@ public class ZipfReader extends Discv5ZipfTrafficGenerator {
 					//data should be in format: <node_id>, <topic>
 					String[] data = line.split(",");  
 					int nodeID = Integer.valueOf(data[0]);
-					assert nodeID == i: "incorrect NodeID; should be " + i + " was " + nodeID;
+					//assert nodeID == i: "incorrect NodeID; should be " + i + " was " + nodeID;
 					
 					//convert to Integer to make sure the format is correct
+					
+					Node start = Network.get(i);
+					
+					KademliaProtocol prot = (KademliaProtocol)start.getKademliaProtocol();
+
+		            while (prot.getNode().is_evil) {
+
+	                    Topic topic = prot.getTargetTopic();
+	   					startSimulation(topic,Network.get(i));
+	   					i++;
+	   					prot = (KademliaProtocol) Network.get(i).getKademliaProtocol();
+
+		            }
+		            
 					int topicNum = Integer.valueOf(data[1]);
 					String topicString = new String("t" + topicNum);
 				    Topic topic = new Topic(topicString);
 				    
-					Node start = Network.get(i);
-					KademliaProtocol prot = (KademliaProtocol)start.getKademliaProtocol();
+				    topicsCounts[topicNum]++;
+	
 					prot.setTargetTopic(topic);
 					
-					if(randomLookups==1) {
-						for(int j = 0;j<3;j++) {
-							Node nod = Network.get(i);
-							Message lookup = generateFindNodeMessage();
-							EDSimulator.add(0, lookup, nod, nod.getKademliaProtocol().getProtocolID());
-						}
-	                }
-					
-					int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
-				    Message registerMessage = generateRegisterMessage(topic.getTopic());
-				    Message lookupMessage = generateTopicLookupMessage(topic.getTopic());
 					prot.getNode().setTopic(topic.getTopic(), start);
-
-				    if(registerMessage != null) EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
-				    //start lookup messages later
-				    if(lookupMessage != null)EDSimulator.add(2*KademliaCommonConfig.AD_LIFE_TIME + time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
+					
+					startSimulation(topic,Network.get(i));
 				    i++;
+					
+
 				}
 				br.close();
 			}catch (NumberFormatException e) {
@@ -92,6 +96,10 @@ public class ZipfReader extends Discv5ZipfTrafficGenerator {
 				System.err.println("Error reading the input file");
 				e.printStackTrace();
 			}
+			for (int i = 1; i < maxtopicNum; i++){
+	        	System.out.println("count[topic " + (i) + "] = " + topicsCounts[i]);        	
+	           // if(a[i-1] < a[i]) return true;
+	        }
 			first=false;
 
 		}  
@@ -102,7 +110,7 @@ public class ZipfReader extends Discv5ZipfTrafficGenerator {
 	public void writeOutZipfDist(String filename) {
 		HashMap<Integer, Integer> data = new HashMap<Integer, Integer>();
 		Integer [] topicsCounts = new Integer[maxtopicNum];
-		System.out.println("maxTopicNum: " + maxtopicNum);
+		System.out.println("maxTopicNum: " + maxtopicNum+" "+Network.size());
 		Arrays.fill(topicsCounts,  Integer.valueOf(0));
 
 		for(int i = 0; i < Network.size(); i++) {
@@ -142,6 +150,25 @@ public class ZipfReader extends Discv5ZipfTrafficGenerator {
 		}
 	}
 	
+	private void startSimulation(Topic topic, Node start) {
+
+		if(randomLookups==1) {
+			for(int j = 0;j<3;j++) {
+				Message lookup = generateFindNodeMessage();
+				EDSimulator.add(0, lookup, start, start.getKademliaProtocol().getProtocolID());
+			}
+        }
+		
+		int time = CommonState.r.nextInt(KademliaCommonConfig.AD_LIFE_TIME);
+	    Message registerMessage = generateRegisterMessage(topic.getTopic());
+	    Message lookupMessage = generateTopicLookupMessage(topic.getTopic());
+
+	    if(registerMessage != null) EDSimulator.add(time, registerMessage, start, start.getKademliaProtocol().getProtocolID());
+	    //start lookup messages later
+	    if(lookupMessage != null)EDSimulator.add(2*KademliaCommonConfig.AD_LIFE_TIME + time, lookupMessage, start, start.getKademliaProtocol().getProtocolID());
+
+	}
+	
 	private int calculateEvil() {
 		
 		int counter=0;
@@ -155,7 +182,8 @@ public class ZipfReader extends Discv5ZipfTrafficGenerator {
             if (prot.getNode().is_evil) {
             	counter++;
             }
+            
 		}
-		return Network.size()-counter;
+		return counter;
 	}
 }
