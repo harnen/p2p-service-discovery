@@ -40,7 +40,9 @@ public class ZipfReader extends Discv5ZipfTrafficGenerator {
 		//execute it only once
 		if(first) {
 			try {
-				String filename = "./config/zipf/zipf_" + "exp_" + exp + "topics_" + maxtopicNum + "size_" + Network.size() + ".csv";
+				
+				
+				String filename = "./config/zipf/zipf_" + "exp_" + exp + "topics_" + maxtopicNum + "size_" + (Network.size()-calculateEvil()) + ".csv";
 				//if the distribution doesn't exist - create it
 				if(! new File(filename).exists()) {
 					writeOutZipfDist(filename);
@@ -138,5 +140,22 @@ public class ZipfReader extends Discv5ZipfTrafficGenerator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private int calculateEvil() {
+		
+		int counter=0;
+		for(int i = 0; i < Network.size(); i++) {
+			Node start = Network.get(i);
+			KademliaProtocol prot = (KademliaProtocol)start.getKademliaProtocol();
+            Topic topic = null;
+            String topicString="";
+   
+            // if the node is malicious, it targets only one topic read from config
+            if (prot.getNode().is_evil) {
+            	counter++;
+            }
+		}
+		return Network.size()-counter;
 	}
 }

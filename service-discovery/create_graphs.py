@@ -36,6 +36,6 @@ for simulation_type in ['benign', 'attack']:
     if simulation_type == 'benign':
         plotPerNodeStats(OUTDIR, simulation_type)
     else:
-        plotPerNodeStats(OUTDIR, simulation_type)
+        plotPerNodeStats(OUTDIR, simulation_type,graphType = GraphType.bar)
 
 
