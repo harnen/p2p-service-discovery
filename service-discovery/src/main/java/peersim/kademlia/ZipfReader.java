@@ -60,32 +60,29 @@ public class ZipfReader extends Discv5ZipfTrafficGenerator {
 					
 					//convert to Integer to make sure the format is correct
 					
-					Node start = Network.get(i);
-					
-					KademliaProtocol prot = (KademliaProtocol)start.getKademliaProtocol();
+		            		while (Network.get(i)!=null&&Network.get(i).getKademliaProtocol().getNode().is_evil) {
 
-		            while (prot.getNode().is_evil) {
-
-	                    Topic topic = prot.getTargetTopic();
+	                    			Topic topic = Network.get(i).getKademliaProtocol().getTargetTopic();
 	   					startSimulation(topic,Network.get(i));
 	   					i++;
-	   					prot = (KademliaProtocol) Network.get(i).getKademliaProtocol();
-
-		            }
-		            
-					int topicNum = Integer.valueOf(data[1]);
-					String topicString = new String("t" + topicNum);
-				    Topic topic = new Topic(topicString);
+						//prot = (KademliaProtocol) Network.get(i).getKademliaProtocol();
+						//else break;
+		            		}	
+		            		if(Network.get(i)!=null){
+						int topicNum = Integer.valueOf(data[1]);
+						String topicString = new String("t" + topicNum);
+				        	Topic topic = new Topic(topicString);
 				    
-				    topicsCounts[topicNum]++;
+						KademliaProtocol prot = Network.get(i).getKademliaProtocol();
+				        	topicsCounts[topicNum]++;
 	
-					prot.setTargetTopic(topic);
+						prot.setTargetTopic(topic);
 					
-					prot.getNode().setTopic(topic.getTopic(), start);
+						prot.getNode().setTopic(topic.getTopic(),Network.get(i));
 					
-					startSimulation(topic,Network.get(i));
-				    i++;
-					
+						startSimulation(topic,Network.get(i));
+				    		i++;
+					}
 
 				}
 				br.close();
