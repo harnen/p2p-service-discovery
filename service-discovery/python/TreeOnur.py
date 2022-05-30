@@ -1,11 +1,10 @@
-class TreeNode:
+class TreeOnurNode:
     def __init__(self):
         self.counter = 0
         self.zero = None
         self.one = None
         self.bound = 0
         self.timestamp = 0  #timestamp for lower-bound state
-        
     
     def getCounter(self):
         return self.counter
@@ -33,46 +32,30 @@ class TreeNode:
 #score is a similarity metric between the IP being inserted and IPs already in the tree
 #1 - the IP is exactly the same (shared all the bits) as all the IPs already in the table
 #0 - the IP is completely different (doesn't share a single bit) from IPs already in the table
-class Tree:	 
-    def __init__(self):
+class TreeOnur:	 
+    def __init__(self,  exp=False):
         self.comparators = [128, 64, 32, 16, 8, 4, 2, 1]
-        self.root = TreeNode()
+        self.root = TreeOnurNode()
         self.max_score = 0
+        self.exp = exp
         self.currTime = 0 # current simulation time (used for lower bound calculation)
-        self.max_depth = 32 # number of bits in an IP address
     
-    def getMinScore(self):
-        current = self.root
-        score = -self.root.getCounter()
-
-        for depth in range(0, self.max_depth+1):
-            score += current.getCounter()
-
-            #if one branch is over - return the score
-            if((current.zero is None) or (current.one is None)):
-                return score
-
-            #follow 
-            if(current.one.getCounter() < current.zero.getCounter()):
-                current = current.one
-            else:
-                current = current.zero
-        return score
-
     #get the score for an address without actually adding the addr
     def tryAdd(self, addr, time):
         self.currTime = time #update current time
         current = self.root
+        score = 0
         effBound = 0
-        balanced_score = self.root.getCounter()
-        max_score = self.root.getCounter()*self.max_depth
-        score = -self.root.getCounter()
-
+        max_score = 0
+        balanced_score = 0 
         traversed = ''
         if self.root is not None:
-            for depth in range(0, self.max_depth):
+            for depth in range(0, 32):
                 parent = current
-                score += current.getCounter()
+                if(self.exp == True):
+                    score += current.getCounter() * pow(2, depth)
+                else:
+                    score += (current.getCounter()/self.root.getCounter()) * pow(2, 32-depth)
             
                 octet = int(addr.split('.')[int(depth/8)])
                 comparator = self.comparators[int(depth % 8)]
@@ -91,7 +74,15 @@ class Tree:
             print('Bound of current node: ', traversed, ' is ', bound) 
             diff = self.currTime - current.getTimestamp()
             effBound = max(0, bound - diff)
-   
+            if(self.exp is True):
+                balanced_score = (self.root.getCounter()) * 32
+                max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
+            else:
+                balanced_score = self.root.getCounter()
+                max_score = self.root.getCounter()*32
+                # FIXME: why deduct the root counter ?
+                score -= self.root.getCounter()
+    
         print("TryAdd final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)
         if max_score == 0:
             max_score = 1
@@ -105,7 +96,7 @@ class Tree:
         prev = None
         traversed = ''
         self.currTime = currTime
-        for depth in range(0, self.max_depth):
+        for depth in range(0, 32):
             prev = current
             octet = int(addr.split('.')[int(depth/8)])
             comparator = self.comparators[int(depth % 8)]
@@ -130,29 +121,24 @@ class Tree:
 
     #add an IP to the tree
     def add(self, addr):
-        #print("add", addr)
         current = self.root
-        #balanced_score = self.root.getCounter()
-        min_score = self.getMinScore()
-        max_score = 32#self.root.getCounter() * self.max_depth
-        #don't take the root counter into account
-        #score = -self.root.getCounter()
+        max_bound = 0
         score = 0
-        for depth in range(0, self.max_depth):
+        for depth in range(0, 32):
             parent = current
-            expected = (self.root.getCounter() - 1)/(2**depth)
-            if(current.getCounter() > expected):
-                score += 1
-                        #score += current.getCounter()
-            print("depth", depth, "score after:", score, "counter:", current.getCounter(), "expected:", expected, "current.getCounter() - expected:", current.getCounter() - expected)
+            if(self.exp == True):
+                score += current.getCounter() * pow(2, depth)
+            else:
+                if self.root.getCounter() != 0:
+                    score += (current.getCounter()/self.root.getCounter()) *pow(2, depth-32)
             
             current.increment()
             octet = int(addr.split('.')[int(depth/8)])
-            comparator = self.comparators[int(depth % 3)]
+            comparator = self.comparators[int(depth % 8)]
             if((octet & comparator) == 0):
                 current = current.zero
                 if (current is None):
-                    current = TreeNode()
+                    current = TreeOnurNode()
                     # propage lower-bound state to new child
                     current.bound = parent.bound
                     current.timestamp = parent.timestamp
@@ -160,26 +146,28 @@ class Tree:
             else:
                 current = current.one
                 if (current is None):
-                    current = TreeNode()
+                    current = TreeOnurNode()
                     # propage lower-bound state to new child
                     current.bound = parent.bound
                     current.timestamp = parent.timestamp
                 parent.one = current
 
         #score += current.getCounter()
-        expected = self.root.getCounter()/(2**depth)
-        if(current.getCounter() > expected):
-                score += 1
         current.increment()
-
-        #assert(score >= min_score)
-        #assert(score <= max_score)
-        #print("Add final score: ", score, " min score: ", min_score, "Max score:", max_score)#, "New max score:", self.max_score)
+        balanced_score = 0
+        max_score = 0
+        if(self.exp == True):
+            balanced_score = (self.root.getCounter()) * 32
+            max_score = -(self.root.getCounter()) * (1 - pow(2, 33))
+        else:
+            balanced_score = self.root.getCounter()
+            max_score = self.root.getCounter()*32
+        print("Add final score: ", score, " Balanced score: ", balanced_score, "Max score:", max_score)#, "New max score:", self.max_score)
 
         if(max_score == 0):
             return 0
-        print("score:", score, "max_score:", max_score)
-        return score/max_score
+
+        return score
 
     # remove the nodes with zero count and propagate their lower bound
     # state upwards and store at first node with count > 0
@@ -190,7 +178,7 @@ class Tree:
         depthToDelete = None
         deleteNode = None
         deleteNodeParent = None
-        for depth in range(0, self.max_depth):
+        for depth in range(0, 32):
             current.decrement()
             if (delete is False) and (current.getCounter() == 0): # remove descendants
                 delete = True
@@ -210,7 +198,7 @@ class Tree:
             maxEffBound = 0
             current = deleteNode
             # obtain the highest lower-bound state in the deleted subtree
-            for depth in range(depthToDelete, self.max_depth):
+            for depth in range(depthToDelete, 32):
                 effBound = current.getBound() - (time - current.getTimestamp())
                 if effBound > maxEffBound:
                     maxEffBound = effBound
