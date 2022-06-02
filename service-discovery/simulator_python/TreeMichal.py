@@ -1,4 +1,6 @@
-class TreeNode:
+import sys
+
+class TreeMichalNode:
     def __init__(self):
         self.counter = 0
         self.zero = None
@@ -33,10 +35,10 @@ class TreeNode:
 #score is a similarity metric between the IP being inserted and IPs already in the tree
 #1 - the IP is exactly the same (shared all the bits) as all the IPs already in the table
 #0 - the IP is completely different (doesn't share a single bit) from IPs already in the table
-class Tree:	 
+class TreeMichal:	 
     def __init__(self):
         self.comparators = [128, 64, 32, 16, 8, 4, 2, 1]
-        self.root = TreeNode()
+        self.root = TreeMichalNode()
         self.max_score = 0
         self.currTime = 0 # current simulation time (used for lower bound calculation)
         self.max_depth = 32 # number of bits in an IP address
@@ -152,7 +154,7 @@ class Tree:
             if((octet & comparator) == 0):
                 current = current.zero
                 if (current is None):
-                    current = TreeNode()
+                    current = TreeMichalNode()
                     # propage lower-bound state to new child
                     current.bound = parent.bound
                     current.timestamp = parent.timestamp
@@ -160,7 +162,7 @@ class Tree:
             else:
                 current = current.one
                 if (current is None):
-                    current = TreeNode()
+                    current = TreeMichalNode()
                     # propage lower-bound state to new child
                     current.bound = parent.bound
                     current.timestamp = parent.timestamp
