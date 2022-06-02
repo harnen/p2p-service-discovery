@@ -2,15 +2,21 @@
 
 ## Overview
  
-DEVP2P is a set of network protocols which form the Ethereum peer-to-peer network and act as an entry point for multiple different networks and applications. A service discovery system is thus necessary to allow each user to find its peers. The main challenge facing such a decentralised system is to efficiently manage the scarce resources of registrant nodes. The platform needs to decide how to place service advertisement to enable fast lookups for application with thousands of users and avoid starving users of less popular services. This task is crucial for the efficiency of the whole platform, but becomes especially challenging under the presence of malicious nodes who can try to manipulate or overload the system.
 
-The goal of this project is to develop a secure, efficient and robust service discovery protocol for Ethereum 2.0 (Discv5). The project has 3 main stages:
+This is a follow-up research project on Service Discovery in Ethereum 2.0 (Discv5) (available at: https://github.com/harnen/p2p-service-discovery). The previous project was successfully completed, but requires additional security analysis, traffic optimization and documentation to allow integration and deployment in the production code. 
 
-* Develop a Discv5 simulation environment allowing us to prototype and evaluate different variants of the protocol (Objective 1).
-* Implement the proposed mechanism of service discovery (Objective 2).
-* Perform an extensive evaluation, verification and incremental improvement of the proposed protocol (Objective 3).
+DEVP2P is a set of network protocols that form the Ethereum peer-to-peer network and act as an entry point for multiple different networks and applications. A service discovery system is thus necessary to allow each user to find its peers. The main challenge facing such a decentralised system is to efficiently manage the scarce resources of registrant nodes. The platform needs to decide how to place service advertisements to enable fast lookups for applications with thousands of users and avoid having less popular services to be hard to find by their users. This task is crucial for the efficiency of the whole platform, but becomes especially challenging under the presence of malicious nodes who can try to manipulate or overload the system.
 
-An improved service discovery system will increase the synchronization speed between peers, improve user experience and enhance the overall security of the network by providing larger and more divers set of peers to connect to.
+To the best of our knowledge, there is no other existing work that proposes a service discovery mechanisms suitable for work with Ethereum 2.0. Similar work has been done for p2p content exchange networks (e.g., BitTorrent), but either require assistance from a centralized tracker, are not scalable enough or comes with an additional set of assumptions. Our goal is to discover nodes offering a specific service, without having a separate, dedicated p2p network (or a swarm) for each service.. Our solution aims at proposing a new service discovery mechanism for the DEVP2P network that can be used to discover any service in the network efficiently, with good performance for any service regardless of the popularity and with resistance to malicious nodes behaviour (with the focus on sybil, spam and eclipse attacks).
+
+The specific outcome of this project is to improve the service discovery mechanism, designed during the last project, on already identified aspects, such as traffic load balancing, optimal topic table structure or measurements on the resistance against various (e.g., DoS, Sybil and Eclipse) attacks by malicious nodes.
+The outcome of this project will be:
+* Improvement of the existing network simulator.
+* Specifications of the service discovery mechanism with the proposed improvements.
+* Technical report including the performance evaluation of the proposed mechanism along
+with an evaluation of the security resistance against security attacks.
+* (Optional) Service discovery performance evaluation in a real testbed using production
+software (go-ethereum).
 
 ## Project Plan
 
@@ -18,36 +24,49 @@ The project is organised in three main milestones of the project together with t
 * [X] Complete tasks 
 * [ ] Pending or uncomplete tasks
 
-* Objective 1: Discv5 simulation environment
-  * [X] Task 1: Selection of an appropriate simulator: Investigate the scalability of the Speer simulator (https://github.com/danalex97/Speer) which is written in Go. In case of problems, we will proceed with Peersim (http://peersim.sourceforge.net/) simulator in the rest of the tasks.
-  * [X] Task 2: Adding Ethereum DHT to the simulator: Implement the Ethereum’s modified version of Kademlia protocol in the chosen simulator.
-  * [X] Task 3: Adding discv5 to the simulator: Implement the existing discovery protocol using radius estimation in the chosen simulator.
-  * Deliverables: Discv5 network simulator, including code repository, docs and examples. Deadline: Deadline: 31st August 2020.
+* Objective 1: Traffic optimization and load balancing
+  * [X] Task: Improve the current discv5 to avoid hotspots in the network and avoid unnecessary load on participating nodes
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [evaluation results](doc/report_m1/report.md).
+  * Deadline: 31/3/2021
 
-* Objective 2: Implementation of the proposed enhancements to discv5
-  * [X] Task 4: New discv5 discovery: Implementation of the proposed topic registration and discovery protocol where registrar nodes make individual admission decisions on topic registration requests (based on considerations such as load, popularity of topic, and so on) in the chosen simulator.
-  * [X] Task 5: Adding Sybil resistance to discv5: Detection of Sybil attacks by evaluating different evaluating differenct attack vectors and proposing countermeasures.
-  * [X] Task 6: Large-scale simulations: Run large-scale simulations in a setting with hundred of thousands of nodes.
-  Deadline: 30th September 2020.
-  * Deliverables: Service discovery implementation in the simulation environment and an initial version of the specification.
+* Objective 2: Investigate topic table structure
+  * [X] Task: Investigate on the optimal structure of the topic table to ensure fairness among all topics
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [evaluation results](doc/report_m2/report.md).
+  * Deadline: 30/4/2021
+
+* Objective 3: Additional security analysis
+  * [X] Task: Extend on security analysis to avoid any malicious behaviour and measure the risk of sybil attacks.
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [security analysis report](doc/report_m3/report.md).
+  * Deadline: 21/5/2021
+
+* Objective 4: Configuration parameters analysis
+  * [X] Task: Extend existing evaluation to test multiple configuration parameters to choose the optimal ones to be used in production software.
+  * Deliverable: [Updated Discv5 specification](doc/specs.md) and [evaluation report](doc/report_m4_newvariant/report.md).
+  * Deadline: 21/6/2021
+
+* Objective 5: Publication-ready technical report
+  * [ ] Task: Write a technical report including the final specs of the discovery mechanism, all results of the evaluation and the conclusions of the investigation.
+  * Deliverable: Technical report including specs and evaluation. ([Ongoing work](https://github.com/harnen/service-discovery-paper) )
+  * Deadline: 21/7/2021
   
-* Objective 3: Performance evaluation and improvement
-  * [X] Task 7: Add threat model and performance analysis: Implement malicious nodes and computation of performance metrics for discovery and Sybil resistance.
-  * [X] Task 8: Evaluation of performance: Investigate the effectiveness of the proposed extensions under heavy presence of malicious nodes and make necessary changes to optimise the performance.
-  * Deliverables: Analysis and performance evaluation of service discovery in the presence of malicious actors and final specification of the protocol. Deadline: 30th November 2020.
-  
-## Service Discovery Requirements
+* Objective 6: Evaluation on a real testbed
+  * [ ] Task: Evaluate the service discovery mechanism using production software in a real testbed.
+  * Deliverable: Testbed instructions and evaluation report using final parameters (TBC)
+  * Deadline: 30/7/2021
+
+## Discv5 Service Discovery Requirements
 
 [Requirements](doc/requirements.md)
+
+## Discv5 Service Discovery Specifications
+
+[Specifications](doc/specs.md)
+
 
 ## Security Analysis
 
 [Security](doc/security.md)
 
-
-## Discv5 Service Discovery Design
-
-[Design](doc/design.md)
 
 ## Service Discovery Simulator
 
@@ -114,7 +133,7 @@ We should decide how to implement it.
 
 [Security report comparing two discovery protocols](doc/security_report/report.md)
 
-[Security report for final protocol](doc/ticket_security_report/report.md)-->
+[Security report for final protocol](doc/ticket_security_report/report.md)
 
 [Evaluation results](doc/FinalReport.pdf)
 
@@ -139,4 +158,4 @@ We should decide how to implement it.
 
 ## Other
 
-[Service discovery implementation](doc/discovery.md)
+[Service discovery implementation](doc/discovery.md)-->

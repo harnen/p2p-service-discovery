@@ -1,0 +1,180 @@
+
+# Existing Topic Attack
+
+## Active registrations
+* 50 sybil IPs, modifying sybil %. Topic 1, Topic 3, Topic 5.
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_number/topic1/registration_origin.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_number/topic3/registration_origin.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_number/topic5/registration_origin.png" width="30%" />
+</p>
+
+* 20 % sybils, modifying sybil IP Size. Topic 1, Topic 3, Topic 5.
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_ips/topic1/registration_origin.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_ips/topic3/registration_origin.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_ips/topic5/registration_origin.png" width="30%" />
+</p>
+
+
+## Discovery
+
+* Registrant discovery distribution
+
+  - 50 sybil IPs, modifying sybil %. Topic 1, Topic 3, Topic 5.
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_number/topic1/registrant_distribution.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_number/topic3/registrant_distribution.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_number/topic5/registrant_distribution.png" width="30%" />
+</p>
+
+  - 20 % sybils, modifying sybil IP Size. Topic 1, Topic 3, Topic 5.
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_ips/topic1/registrant_distribution.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_ips/topic3/registrant_distribution.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_ips/topic5/registrant_distribution.png" width="30%" />
+</p>
+
+
+* Time between registration to first discovery
+
+  - 50 sybil IPs, modifying sybil %. Topic 1, Topic 3, Topic 5.
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_number/topic1/min_time_discovery.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_number/topic3/min_time_discovery.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_number/topic5/min_time_discovery.png" width="30%" />
+</p>
+
+  - 20 % sybils, modifying sybil IP Size. Topic 1, Topic 3, Topic 5.
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_ips/topic1/min_time_discovery.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_ips/topic3/min_time_discovery.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_ips/topic5/min_time_discovery.png" width="30%" />
+</p>
+
+* Lookup hopcount
+
+  - 50 sybil IPs, modifying sybil %. Topic 1, Topic 3, Topic 5.
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_number/topic1/lookup_hopcount.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_number/topic3/lookup_hopcount.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_number/topic5/lookup_hopcount.png" width="30%" />
+</p>
+
+  - 20 % sybils, modifying sybil IP Size. Topic 1, Topic 3, Topic 5.
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_ips/topic1/lookup_hopcount.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_ips/topic3/lookup_hopcount.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_ips/topic5/lookup_hopcount.png" width="30%" />
+</p>
+
+## Table occupancy
+
+
+  - 50 sybil IPs, modifying sybil %. Topic 1, Topic 3, Topic 5.
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_number/topic1/storage_utilisation.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_number/topic3/storage_utilisation.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_number/topic5/storage_utilisation.png" width="30%" />
+</p>
+
+  - 20 % sybils, modifying sybil IP Size. Topic 1, Topic 3, Topic 5.
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/sybil_ips/topic1/storage_utilisation.png" width="30%" />
+ <img src="../imgs/security_existing_topic/sybil_ips/topic3/storage_utilisation.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/sybil_ips/topic5/storage_utilisation.png" width="30%" />
+</p>
+
+## Eclipsed nodes
+
+Topic 1, Topic 3, Topic 5
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/eclipsed_nodes_t1.png" width="30%" />
+ <img src="../imgs/security_existing_topic/eclipsed_nodes_t3.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/eclipsed_nodes_t5.png" width="30%" />
+</p>
+
+<!--## Search filter
+
+* Lookup hopcount. Topic 1, Topic 3, Topic 5
+
+<p align="center">
+  <img src="../imgs/security_existing_topic/lookup_hopcount_t1.png" width="30%" />
+ <img src="../imgs/security_existing_topic/lookup_hopcount_t3.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/lookup_hopcount_t5.png" width="30%" />
+</p>
+
+* Message quantity. Topic 1, Topic 3, Topic 5 
+
+<p align="center">
+ <img src="../imgs/security_existing_topic/message_quantity_t1.png" width="30%" />
+ <img src="../imgs/security_existing_topic/message_quantity_t3.png" width="30%" /> 
+ <img src="../imgs/security_existing_topic/message_quantity_t5.png" width="30%" />
+</p>-->
+
+
+
+# Dos Attack
+
+## Registrations
+
+<p align="center">
+  <img src="../imgs/security_dos/registration_origin.png" width="35%" />
+</p>
+
+## Time to register
+
+<p align="center">
+  <img src="../imgs/security_dos/avg_time_register.png" width="35%" />
+</p>
+
+## Time to discovery
+
+<p align="center">
+  <img src="../imgs/security_dos/min_time_discovery.png" width="35%" />
+</p>
+
+
+
+# Random Topic Attack
+
+* Active Registrations for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="../imgs/security_random_topic/attackPercent0.05/registration_origin_withmalicious.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.1/registration_origin_withmalicious.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.2/registration_origin_withmalicious.png" width="30%" />
+</p>
+
+* Average time to register for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="../imgs/security_random_topic/attackPercent0.05/avg_time_register.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.1/avg_time_register.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.2/avg_time_register.png" width="30%" />
+</p>
+
+* Average lookup hop count for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="../imgs/security_random_topic/attackPercent0.05/lookup_hopcount.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.1/lookup_hopcount.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.2/lookup_hopcount.png" width="30%" />
+</p>
+
+* Discovered nodes distribution for 5, 10 and 20 percent malicious nodes
+<p align="center">
+  <img src="../imgs/security_random_topic/attackPercent0.05/registrant_distribution.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.1/registrant_distribution.png" width="30%" />
+  <img src="../imgs/security_random_topic/attackPercent0.2/registrant_distribution.png" width="30%" />
+</p>
+
+# Conclusions
+
+* Although malicious nodes are able to place registrations to the system as they increase the IP addresses used in the attack, the number of registrations are not a majority and is not possible to eclipse other nodes with a limited number of IP addresses used.
+* Low popular topics are resistant to malicious registrars and spam attacks.
+* Registrations timeout are a good tool to limit the impacto of DoS attacks. REgistrations are slightly reduced with increasing DoS attakcs but all nodes are able to place enough registrations.
+* The performance of the network remains good under random topic attacks.

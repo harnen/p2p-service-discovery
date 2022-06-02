@@ -24,6 +24,11 @@
     	<artifactId>bcprov-jdk15on</artifactId>
     	<version>1.67</version>
 	</dependency>
+	<dependency>
+    	<groupId>com.github.seancfoley</groupId>
+    	<artifactId>ipaddress</artifactId>
+    	<version>5.3.3</version>
+	</dependency>
   	<dependency>
     	<groupId>org.jetbrains.kotlin</groupId>
     	<artifactId>kotlin-runtime</artifactId>
@@ -160,6 +165,7 @@
                   <configuration>
                       <artifactSet>
                           <includes>
+                              <include>com.github.seancfoley:ipaddress</include>
                               <include>org.json:json</include>
                               <include>com.google.guava:guava</include>
                               <include>org.apache.tuweni:tuweni-io</include>                              
@@ -175,7 +181,19 @@
                   </configuration>
               </execution>
           </executions>
-      </plugin>     
+  </plugin>
+	  <plugin>
+                <groupId>com.spotify.fmt</groupId>
+                <artifactId>fmt-maven-plugin</artifactId>
+                <version>2.18</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
     </plugins>
   </build>
 </project>
