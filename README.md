@@ -1,4 +1,4 @@
-# Research project on Service Discovery in Ethereum 2.0 (continuation of [this project](https://github.com/harnen/p2p-service-discovery))
+# This project is not supported anymore. You can find the up to date version in [this repo](https://github.com/datahop/p2p-service-discovery)
 
 ## Overview
  
